@@ -1,0 +1,6 @@
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\bin\Debug\SwCSharpAddin1.dll
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\bin\Debug\SwCSharpAddin1.pdb
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\bin\Debug\SolidWorksTools.dll
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\obj\Debug\SwCSharpAddin1.dll
+C:\Users\sbrawner\AppData\Local\Temporary Projects\SwCSharpAddin1\obj\Debug\SwCSharpAddin1.pdb

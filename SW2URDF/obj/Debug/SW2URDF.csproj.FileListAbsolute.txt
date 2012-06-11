@@ -1,0 +1,19 @@
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\bin\Debug\SW2URDF.dll
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\bin\Debug\SW2URDF.pdb
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\bin\Debug\SW2URDF.tlb
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\SW2URDF.dll
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\SW2URDF.pdb
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\GenerateResource.read.1.tlog
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\GenerateResource.write.1.tlog
+C:\Users\sbrawner\Documents\Visual Studio 2010\Projects\SW2URDF\SW2URDF\obj\Debug\SW2URDF.AssemblyExportForm.resources
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\SW2URDF.AssemblyExportForm.resources
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\GenerateResource.read.1.tlog
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\GenerateResource.write.1.tlog
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\SW2URDF.dll
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\SW2URDF.pdb
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\bin\Debug\SW2URDF.dll
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\bin\Debug\SW2URDF.pdb
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\bin\Debug\SW2URDF.tlb
+C:\Users\sbrawner\Documents\SW2URDF\SW2URDF\obj\Debug\SW2URDF.PartExportForm.resources
