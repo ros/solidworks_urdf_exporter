@@ -106,11 +106,18 @@
             this.label44 = new System.Windows.Forms.Label();
             this.textBox_collision_origin_yaw = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.label19 = new System.Windows.Forms.Label();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label35 = new System.Windows.Forms.Label();
+            this.textBox_name = new System.Windows.Forms.TextBox();
+            this.label36 = new System.Windows.Forms.Label();
+            this.checkBox_static = new System.Windows.Forms.CheckBox();
+            this.label45 = new System.Windows.Forms.Label();
+            this.textBox_save_as = new System.Windows.Forms.TextBox();
+            this.button_savename_browse = new System.Windows.Forms.Button();
+            this.saveFileDialog_save_as = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_visual)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_collision)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -214,7 +221,6 @@
             this.label2.Size = new System.Drawing.Size(53, 13);
             this.label2.TabIndex = 13;
             this.label2.Text = "Mass (kg)";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label3
             // 
@@ -641,7 +647,7 @@
             // 
             // button_cancel
             // 
-            this.button_cancel.Location = new System.Drawing.Point(12, 635);
+            this.button_cancel.Location = new System.Drawing.Point(12, 723);
             this.button_cancel.Name = "button_cancel";
             this.button_cancel.Size = new System.Drawing.Size(75, 23);
             this.button_cancel.TabIndex = 65;
@@ -651,7 +657,7 @@
             // 
             // button_finish
             // 
-            this.button_finish.Location = new System.Drawing.Point(505, 635);
+            this.button_finish.Location = new System.Drawing.Point(505, 723);
             this.button_finish.Name = "button_finish";
             this.button_finish.Size = new System.Drawing.Size(75, 23);
             this.button_finish.TabIndex = 64;
@@ -819,11 +825,21 @@
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.textBox_mass);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(12, 37);
+            this.groupBox1.Location = new System.Drawing.Point(12, 72);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(568, 160);
             this.groupBox1.TabIndex = 34;
             this.groupBox1.TabStop = false;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.Location = new System.Drawing.Point(6, 0);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(46, 13);
+            this.label15.TabIndex = 33;
+            this.label15.Text = "Inertial";
             // 
             // groupBox2
             // 
@@ -858,11 +874,21 @@
             this.groupBox2.Controls.Add(this.label23);
             this.groupBox2.Controls.Add(this.textBox_visual_origin_y);
             this.groupBox2.Controls.Add(this.label30);
-            this.groupBox2.Location = new System.Drawing.Point(12, 203);
+            this.groupBox2.Location = new System.Drawing.Point(12, 238);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(568, 299);
             this.groupBox2.TabIndex = 62;
             this.groupBox2.TabStop = false;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.Location = new System.Drawing.Point(3, 0);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(41, 13);
+            this.label19.TabIndex = 62;
+            this.label19.Text = "Visual";
             // 
             // groupBox3
             // 
@@ -883,47 +909,92 @@
             this.groupBox3.Controls.Add(this.textBox_collision_origin_x);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_z);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_y);
-            this.groupBox3.Location = new System.Drawing.Point(12, 508);
+            this.groupBox3.Location = new System.Drawing.Point(12, 543);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(568, 121);
             this.groupBox3.TabIndex = 67;
             this.groupBox3.TabStop = false;
             // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label15.Location = new System.Drawing.Point(6, 0);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(46, 13);
-            this.label15.TabIndex = 33;
-            this.label15.Text = "Inertial";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label19.Location = new System.Drawing.Point(3, 0);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(41, 13);
-            this.label19.TabIndex = 62;
-            this.label19.Text = "Visual";
-            // 
             // label35
             // 
             this.label35.AutoSize = true;
             this.label35.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label35.Location = new System.Drawing.Point(10, 0);
+            this.label35.Location = new System.Drawing.Point(3, 0);
             this.label35.Name = "label35";
             this.label35.Size = new System.Drawing.Size(54, 13);
             this.label35.TabIndex = 67;
             this.label35.Text = "Collision";
             // 
+            // textBox_name
+            // 
+            this.textBox_name.Location = new System.Drawing.Point(77, 43);
+            this.textBox_name.Name = "textBox_name";
+            this.textBox_name.Size = new System.Drawing.Size(356, 20);
+            this.textBox_name.TabIndex = 68;
+            this.textBox_name.TextChanged += new System.EventHandler(this.textBox_name_TextChanged);
+            // 
+            // label36
+            // 
+            this.label36.AutoSize = true;
+            this.label36.Location = new System.Drawing.Point(13, 46);
+            this.label36.Name = "label36";
+            this.label36.Size = new System.Drawing.Size(58, 13);
+            this.label36.TabIndex = 69;
+            this.label36.Text = "Link Name";
+            // 
+            // checkBox_static
+            // 
+            this.checkBox_static.AutoSize = true;
+            this.checkBox_static.Location = new System.Drawing.Point(475, 45);
+            this.checkBox_static.Name = "checkBox_static";
+            this.checkBox_static.Size = new System.Drawing.Size(53, 17);
+            this.checkBox_static.TabIndex = 70;
+            this.checkBox_static.Text = "Static";
+            this.checkBox_static.UseVisualStyleBackColor = true;
+            this.checkBox_static.CheckedChanged += new System.EventHandler(this.checkBox_static_CheckedChanged);
+            // 
+            // label45
+            // 
+            this.label45.AutoSize = true;
+            this.label45.Location = new System.Drawing.Point(20, 689);
+            this.label45.Name = "label45";
+            this.label45.Size = new System.Drawing.Size(46, 13);
+            this.label45.TabIndex = 71;
+            this.label45.Text = "Save as";
+            // 
+            // textBox_save_as
+            // 
+            this.textBox_save_as.Location = new System.Drawing.Point(72, 686);
+            this.textBox_save_as.Name = "textBox_save_as";
+            this.textBox_save_as.Size = new System.Drawing.Size(416, 20);
+            this.textBox_save_as.TabIndex = 72;
+            this.textBox_save_as.TextChanged += new System.EventHandler(this.textBox_save_as_TextChanged);
+            // 
+            // button_savename_browse
+            // 
+            this.button_savename_browse.Location = new System.Drawing.Point(505, 684);
+            this.button_savename_browse.Name = "button_savename_browse";
+            this.button_savename_browse.Size = new System.Drawing.Size(75, 23);
+            this.button_savename_browse.TabIndex = 73;
+            this.button_savename_browse.Text = "Browse...";
+            this.button_savename_browse.UseVisualStyleBackColor = true;
+            this.button_savename_browse.Click += new System.EventHandler(this.button_savename_browse_Click);
+            // 
+            // saveFileDialog_save_as
+            // 
+            this.saveFileDialog_save_as.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_save_as_FileOk);
+            // 
             // PartExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(592, 672);
+            this.ClientSize = new System.Drawing.Size(592, 758);
+            this.Controls.Add(this.button_savename_browse);
+            this.Controls.Add(this.textBox_save_as);
+            this.Controls.Add(this.label45);
+            this.Controls.Add(this.checkBox_static);
+            this.Controls.Add(this.label36);
+            this.Controls.Add(this.textBox_name);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.label14);
@@ -1031,5 +1102,12 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label35;
+        private System.Windows.Forms.TextBox textBox_name;
+        private System.Windows.Forms.Label label36;
+        private System.Windows.Forms.CheckBox checkBox_static;
+        private System.Windows.Forms.Label label45;
+        private System.Windows.Forms.TextBox textBox_save_as;
+        private System.Windows.Forms.Button button_savename_browse;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog_save_as;
     }
 }

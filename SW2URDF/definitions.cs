@@ -43,6 +43,8 @@ namespace SW2URDF
         }
         public string name
         { get; set; }
+        public string meshName
+        { get; set; }
         public double[] origin_inertial
         { get; set; }
         public double[] origin_visual

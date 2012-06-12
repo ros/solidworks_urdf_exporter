@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Reflection;
@@ -21,6 +22,8 @@ namespace SW2URDF
 
         public link mLink
         {get; set;}
+        public string mSavePath
+        { get; set;}
         private bool mBinary;
         private int mSTLUnits;
         private int mSTLQuality;
@@ -94,8 +97,17 @@ namespace SW2URDF
             setSTLExportPreferences();
             int errors = 0;
             int warnings = 0;
-            swModel.Extension.SaveAs(swModel.FeatureManager.FeatureStatistics.PartName + ".STL", (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
 
+            string saveDirectory = mSavePath + swModel.FeatureManager.FeatureStatistics.PartName;
+            if (!Directory.Exists(saveDirectory))
+            {
+                Directory.CreateDirectory(saveDirectory);
+            }
+            string saveName = saveDirectory + swModel.FeatureManager.FeatureStatistics.PartName;
+            swModel.Extension.SaveAs(saveName + ".STL", (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+            
+            URDFWriter uWriter = new URDFWriter(saveName + ".URDF");
+            uWriter.writeURDFFromLink(mLink);
 
             resetUserPreferences();
         }

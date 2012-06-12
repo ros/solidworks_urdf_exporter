@@ -148,6 +148,7 @@
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="URDFWriter.cs" />
     <EmbeddedResource Include="AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
