@@ -13,7 +13,7 @@ namespace SW2URDF
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
-            //settings.NewLineOnAttributes = true;
+            settings.NewLineOnAttributes = true;
             writer = XmlWriter.Create(savePath, settings);
                        
         }
