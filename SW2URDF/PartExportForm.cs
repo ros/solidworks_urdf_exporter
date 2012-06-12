@@ -269,7 +269,6 @@ namespace SW2URDF
         //public int mesh_triangles_collision
         //{ get; set; }
 
-            System.Windows.Forms.MessageBox.Show("Writing files");
             mPartExporter.exportLink();
             this.Close();
 
