@@ -18,7 +18,7 @@ namespace SW2URDF
     /// <summary>
     /// Summary description for SW2URDF.
     /// </summary>
-    [Guid("70786186-f614-4568-9a05-b39476cc24a6"), ComVisible(true)]
+    [Guid("65c9fc17-6a74-45a3-8f84-55185900275d"), ComVisible(true)]
     [SwAddin(
         Description = "SolidWorks to URDF exporter",
         Title = "SW2URDF",

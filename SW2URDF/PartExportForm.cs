@@ -18,6 +18,7 @@ namespace SW2URDF
         {
             InitializeComponent();
             mPartExporter = new PartExporter(iSwApp);
+
         }
 
         #region Basic event handelers
@@ -260,8 +261,7 @@ namespace SW2URDF
             mPartExporter.mLink.rgba[0] = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
             mPartExporter.mLink.rgba[1] = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
             mPartExporter.mLink.rgba[2] = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            mPartExporter.mLink.rgba[4] = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
-
+            mPartExporter.mLink.rgba[3] = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
             mPartExporter.mLink.gazebo_static = checkBox_static.Checked;
             mPartExporter.mSavePath = textBox_save_as.Text;
         //public int mesh_triangles_visual
@@ -269,6 +269,7 @@ namespace SW2URDF
         //public int mesh_triangles_collision
         //{ get; set; }
 
+            System.Windows.Forms.MessageBox.Show("Writing files");
             mPartExporter.exportLink();
             this.Close();
 

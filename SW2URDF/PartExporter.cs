@@ -41,7 +41,6 @@ namespace SW2URDF
             swPart = default(PartDoc);
             swModel = (ModelDoc2)iSwApp.ActiveDoc;
             swPart = (PartDoc)swModel;
-
             mLink = getLinkFromPart();
         }
 
@@ -51,15 +50,31 @@ namespace SW2URDF
         public link getLinkFromPart()
         {
             link part_link = new link();
-
+            part_link.rgba = new double[4];
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
             part_link.mass = swMass.Mass;
             part_link.moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
-            part_link.origin_inertial = swMass.CenterOfMass;
-            part_link.origin_visual = part_link.origin_inertial;
-            part_link.origin_collision = part_link.origin_visual;
+            double[] centerOfMass = swMass.CenterOfMass;
+            part_link.origin_inertial = new double[6];
+            part_link.origin_visual = new double[6];
+            part_link.origin_collision = new double[6];
+            for (int i = 0; i < 6; i++)
+            {
+                if (i < 3)
+                {
+                    part_link.origin_inertial[i] = centerOfMass[i];
+                    part_link.origin_visual[i] = centerOfMass[i];
+                    part_link.origin_collision[i] = centerOfMass[i];
+                }
+                else
+                {
+                    part_link.origin_inertial[i] = 0;
+                    part_link.origin_visual[i] = 0;
+                    part_link.origin_collision[i] = 0;
+                }
+            }
 
             return part_link;
         }
@@ -99,13 +114,14 @@ namespace SW2URDF
             int warnings = 0;
 
             string saveDirectory = mSavePath + swModel.FeatureManager.FeatureStatistics.PartName;
+            System.Windows.Forms.MessageBox.Show("Saving file to directory\n" + saveDirectory);
             if (!Directory.Exists(saveDirectory))
             {
                 Directory.CreateDirectory(saveDirectory);
             }
-            string saveName = saveDirectory + swModel.FeatureManager.FeatureStatistics.PartName;
+            string saveName = saveDirectory + "\\" + swModel.FeatureManager.FeatureStatistics.PartName;
             swModel.Extension.SaveAs(saveName + ".STL", (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            
+            mLink.meshName = saveName + ".STL";
             URDFWriter uWriter = new URDFWriter(saveName + ".URDF");
             uWriter.writeURDFFromLink(mLink);
 
