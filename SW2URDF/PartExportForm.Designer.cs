@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.trackBar_visual = new System.Windows.Forms.TrackBar();
             this.textBox_inertial_origin_x = new System.Windows.Forms.TextBox();
             this.textBox_inertial_origin_y = new System.Windows.Forms.TextBox();
             this.textBox_inertial_origin_z = new System.Windows.Forms.TextBox();
@@ -58,7 +57,6 @@
             this.label18 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
-            this.label_triangles_visual = new System.Windows.Forms.Label();
             this.label34 = new System.Windows.Forms.Label();
             this.button_texturebrowse = new System.Windows.Forms.Button();
             this.textBox_texture = new System.Windows.Forms.TextBox();
@@ -85,12 +83,9 @@
             this.textBox_visual_origin_roll = new System.Windows.Forms.TextBox();
             this.label28 = new System.Windows.Forms.Label();
             this.textBox_visual_origin_pitch = new System.Windows.Forms.TextBox();
-            this.label27 = new System.Windows.Forms.Label();
             this.textBox_visual_origin_yaw = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.button_cancel = new System.Windows.Forms.Button();
             this.button_finish = new System.Windows.Forms.Button();
-            this.trackBar_collision = new System.Windows.Forms.TrackBar();
             this.label37 = new System.Windows.Forms.Label();
             this.label38 = new System.Windows.Forms.Label();
             this.label39 = new System.Windows.Forms.Label();
@@ -103,7 +98,6 @@
             this.label43 = new System.Windows.Forms.Label();
             this.textBox_collision_origin_roll = new System.Windows.Forms.TextBox();
             this.textBox_collision_origin_pitch = new System.Windows.Forms.TextBox();
-            this.label44 = new System.Windows.Forms.Label();
             this.textBox_collision_origin_yaw = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -117,20 +111,16 @@
             this.textBox_save_as = new System.Windows.Forms.TextBox();
             this.button_savename_browse = new System.Windows.Forms.Button();
             this.saveFileDialog_save_as = new System.Windows.Forms.SaveFileDialog();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar_visual)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar_collision)).BeginInit();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButton2 = new System.Windows.Forms.RadioButton();
+            this.radioButton3 = new System.Windows.Forms.RadioButton();
+            this.radioButton4 = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // trackBar_visual
-            // 
-            this.trackBar_visual.Location = new System.Drawing.Point(299, 49);
-            this.trackBar_visual.Name = "trackBar_visual";
-            this.trackBar_visual.Size = new System.Drawing.Size(214, 45);
-            this.trackBar_visual.TabIndex = 1;
-            this.trackBar_visual.Scroll += new System.EventHandler(this.trackBar_visual_Scroll);
             // 
             // textBox_inertial_origin_x
             // 
@@ -380,19 +370,10 @@
             this.label16.TabIndex = 27;
             this.label16.Text = "Roll";
             // 
-            // label_triangles_visual
-            // 
-            this.label_triangles_visual.AutoSize = true;
-            this.label_triangles_visual.Location = new System.Drawing.Point(519, 49);
-            this.label_triangles_visual.Name = "label_triangles_visual";
-            this.label_triangles_visual.Size = new System.Drawing.Size(13, 13);
-            this.label_triangles_visual.TabIndex = 61;
-            this.label_triangles_visual.Text = "0";
-            // 
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(4, 230);
+            this.label34.Location = new System.Drawing.Point(8, 200);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(43, 13);
             this.label34.TabIndex = 60;
@@ -400,7 +381,7 @@
             // 
             // button_texturebrowse
             // 
-            this.button_texturebrowse.Location = new System.Drawing.Point(422, 264);
+            this.button_texturebrowse.Location = new System.Drawing.Point(397, 213);
             this.button_texturebrowse.Name = "button_texturebrowse";
             this.button_texturebrowse.Size = new System.Drawing.Size(75, 23);
             this.button_texturebrowse.TabIndex = 59;
@@ -410,9 +391,9 @@
             // 
             // textBox_texture
             // 
-            this.textBox_texture.Location = new System.Drawing.Point(13, 264);
+            this.textBox_texture.Location = new System.Drawing.Point(16, 216);
             this.textBox_texture.Name = "textBox_texture";
-            this.textBox_texture.Size = new System.Drawing.Size(380, 20);
+            this.textBox_texture.Size = new System.Drawing.Size(352, 20);
             this.textBox_texture.TabIndex = 58;
             this.textBox_texture.TextChanged += new System.EventHandler(this.textBox_texture_TextChanged);
             // 
@@ -427,7 +408,7 @@
             // 
             // domainUpDown_alpha
             // 
-            this.domainUpDown_alpha.Location = new System.Drawing.Point(493, 204);
+            this.domainUpDown_alpha.Location = new System.Drawing.Point(388, 166);
             this.domainUpDown_alpha.Name = "domainUpDown_alpha";
             this.domainUpDown_alpha.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_alpha.TabIndex = 57;
@@ -446,7 +427,7 @@
             // label33
             // 
             this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(453, 204);
+            this.label33.Location = new System.Drawing.Point(391, 150);
             this.label33.Name = "label33";
             this.label33.Size = new System.Drawing.Size(34, 13);
             this.label33.TabIndex = 56;
@@ -464,11 +445,12 @@
             // label32
             // 
             this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(460, 166);
+            this.label32.Location = new System.Drawing.Point(322, 150);
             this.label32.Name = "label32";
             this.label32.Size = new System.Drawing.Size(28, 13);
             this.label32.TabIndex = 55;
             this.label32.Text = "Blue";
+            this.label32.Click += new System.EventHandler(this.label32_Click);
             // 
             // textBox_visual_origin_z
             // 
@@ -481,7 +463,7 @@
             // label31
             // 
             this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(308, 204);
+            this.label31.Location = new System.Drawing.Point(253, 150);
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(36, 13);
             this.label31.TabIndex = 54;
@@ -499,7 +481,7 @@
             // label30
             // 
             this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(317, 166);
+            this.label30.Location = new System.Drawing.Point(191, 150);
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(27, 13);
             this.label30.TabIndex = 53;
@@ -515,7 +497,7 @@
             // 
             // domainUpDown_blue
             // 
-            this.domainUpDown_blue.Location = new System.Drawing.Point(493, 166);
+            this.domainUpDown_blue.Location = new System.Drawing.Point(322, 166);
             this.domainUpDown_blue.Name = "domainUpDown_blue";
             this.domainUpDown_blue.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_blue.TabIndex = 52;
@@ -532,7 +514,7 @@
             // 
             // domainUpDown_green
             // 
-            this.domainUpDown_green.Location = new System.Drawing.Point(350, 204);
+            this.domainUpDown_green.Location = new System.Drawing.Point(256, 166);
             this.domainUpDown_green.Name = "domainUpDown_green";
             this.domainUpDown_green.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_green.TabIndex = 51;
@@ -550,7 +532,7 @@
             // 
             // domainUpDown_red
             // 
-            this.domainUpDown_red.Location = new System.Drawing.Point(350, 166);
+            this.domainUpDown_red.Location = new System.Drawing.Point(190, 166);
             this.domainUpDown_red.Name = "domainUpDown_red";
             this.domainUpDown_red.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_red.TabIndex = 50;
@@ -569,11 +551,11 @@
             // label29
             // 
             this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(301, 132);
+            this.label29.Location = new System.Drawing.Point(174, 132);
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(31, 13);
+            this.label29.Size = new System.Drawing.Size(69, 13);
             this.label29.TabIndex = 49;
-            this.label29.Text = "Color";
+            this.label29.Text = "Custom Color";
             // 
             // label20
             // 
@@ -587,7 +569,7 @@
             // comboBox_materials
             // 
             this.comboBox_materials.FormattingEnabled = true;
-            this.comboBox_materials.Location = new System.Drawing.Point(88, 129);
+            this.comboBox_materials.Location = new System.Drawing.Point(13, 166);
             this.comboBox_materials.Name = "comboBox_materials";
             this.comboBox_materials.Size = new System.Drawing.Size(121, 21);
             this.comboBox_materials.TabIndex = 48;
@@ -604,7 +586,7 @@
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(4, 132);
+            this.label28.Location = new System.Drawing.Point(6, 132);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(73, 13);
             this.label28.TabIndex = 47;
@@ -618,15 +600,6 @@
             this.textBox_visual_origin_pitch.TabIndex = 44;
             this.textBox_visual_origin_pitch.TextChanged += new System.EventHandler(this.textBox_visual_origin_pitch_TextChanged);
             // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(301, 33);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(212, 13);
-            this.label27.TabIndex = 46;
-            this.label27.Text = "Maximum number of triangles in visual mesh";
-            // 
             // textBox_visual_origin_yaw
             // 
             this.textBox_visual_origin_yaw.Location = new System.Drawing.Point(215, 94);
@@ -635,18 +608,9 @@
             this.textBox_visual_origin_yaw.TabIndex = 45;
             this.textBox_visual_origin_yaw.TextChanged += new System.EventHandler(this.textBox_visual_origin_yaw_TextChanged);
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(523, 48);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(13, 13);
-            this.label1.TabIndex = 66;
-            this.label1.Text = "0";
-            // 
             // button_cancel
             // 
-            this.button_cancel.Location = new System.Drawing.Point(12, 723);
+            this.button_cancel.Location = new System.Drawing.Point(12, 670);
             this.button_cancel.Name = "button_cancel";
             this.button_cancel.Size = new System.Drawing.Size(75, 23);
             this.button_cancel.TabIndex = 65;
@@ -656,21 +620,13 @@
             // 
             // button_finish
             // 
-            this.button_finish.Location = new System.Drawing.Point(505, 723);
+            this.button_finish.Location = new System.Drawing.Point(506, 670);
             this.button_finish.Name = "button_finish";
             this.button_finish.Size = new System.Drawing.Size(75, 23);
             this.button_finish.TabIndex = 64;
             this.button_finish.Text = "Finish";
             this.button_finish.UseVisualStyleBackColor = true;
             this.button_finish.Click += new System.EventHandler(this.button_finish_Click);
-            // 
-            // trackBar_collision
-            // 
-            this.trackBar_collision.Location = new System.Drawing.Point(303, 48);
-            this.trackBar_collision.Name = "trackBar_collision";
-            this.trackBar_collision.Size = new System.Drawing.Size(214, 45);
-            this.trackBar_collision.TabIndex = 48;
-            this.trackBar_collision.Scroll += new System.EventHandler(this.trackBar_collision_Scroll);
             // 
             // label37
             // 
@@ -775,15 +731,6 @@
             this.textBox_collision_origin_pitch.TabIndex = 61;
             this.textBox_collision_origin_pitch.TextChanged += new System.EventHandler(this.textBox_collision_origin_pitch_TextChanged);
             // 
-            // label44
-            // 
-            this.label44.AutoSize = true;
-            this.label44.Location = new System.Drawing.Point(305, 32);
-            this.label44.Name = "label44";
-            this.label44.Size = new System.Drawing.Size(222, 13);
-            this.label44.TabIndex = 63;
-            this.label44.Text = "Maximum number of triangles in collision mesh";
-            // 
             // textBox_collision_origin_yaw
             // 
             this.textBox_collision_origin_yaw.Location = new System.Drawing.Point(219, 93);
@@ -842,12 +789,12 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.radioButton2);
+            this.groupBox2.Controls.Add(this.radioButton1);
+            this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.label19);
             this.groupBox2.Controls.Add(this.textBox_visual_origin_z);
-            this.groupBox2.Controls.Add(this.label_triangles_visual);
             this.groupBox2.Controls.Add(this.textBox_visual_origin_yaw);
-            this.groupBox2.Controls.Add(this.trackBar_visual);
-            this.groupBox2.Controls.Add(this.label27);
             this.groupBox2.Controls.Add(this.label34);
             this.groupBox2.Controls.Add(this.textBox_visual_origin_pitch);
             this.groupBox2.Controls.Add(this.button_texturebrowse);
@@ -875,7 +822,7 @@
             this.groupBox2.Controls.Add(this.label30);
             this.groupBox2.Location = new System.Drawing.Point(12, 286);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(568, 299);
+            this.groupBox2.Size = new System.Drawing.Size(568, 251);
             this.groupBox2.TabIndex = 62;
             this.groupBox2.TabStop = false;
             // 
@@ -891,13 +838,13 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.radioButton4);
+            this.groupBox3.Controls.Add(this.radioButton3);
+            this.groupBox3.Controls.Add(this.label27);
             this.groupBox3.Controls.Add(this.label35);
             this.groupBox3.Controls.Add(this.label40);
-            this.groupBox3.Controls.Add(this.label1);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_yaw);
-            this.groupBox3.Controls.Add(this.label44);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_pitch);
-            this.groupBox3.Controls.Add(this.trackBar_collision);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_roll);
             this.groupBox3.Controls.Add(this.label43);
             this.groupBox3.Controls.Add(this.label37);
@@ -908,7 +855,7 @@
             this.groupBox3.Controls.Add(this.textBox_collision_origin_x);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_z);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_y);
-            this.groupBox3.Location = new System.Drawing.Point(12, 591);
+            this.groupBox3.Location = new System.Drawing.Point(12, 543);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(568, 121);
             this.groupBox3.TabIndex = 67;
@@ -972,11 +919,73 @@
             // 
             this.saveFileDialog_save_as.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_save_as_FileOk);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(301, 33);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(94, 13);
+            this.label1.TabIndex = 66;
+            this.label1.Text = "Visual Mesh Detail";
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(301, 32);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(104, 13);
+            this.label27.TabIndex = 71;
+            this.label27.Text = "Collision Mesh Detail";
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Checked = true;
+            this.radioButton1.Location = new System.Drawing.Point(308, 61);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(58, 17);
+            this.radioButton1.TabIndex = 67;
+            this.radioButton1.TabStop = true;
+            this.radioButton1.Text = "Course";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // radioButton2
+            // 
+            this.radioButton2.AutoSize = true;
+            this.radioButton2.Location = new System.Drawing.Point(308, 94);
+            this.radioButton2.Name = "radioButton2";
+            this.radioButton2.Size = new System.Drawing.Size(45, 17);
+            this.radioButton2.TabIndex = 68;
+            this.radioButton2.Text = "Fine";
+            this.radioButton2.UseVisualStyleBackColor = true;
+            // 
+            // radioButton3
+            // 
+            this.radioButton3.AutoSize = true;
+            this.radioButton3.Checked = true;
+            this.radioButton3.Location = new System.Drawing.Point(308, 60);
+            this.radioButton3.Name = "radioButton3";
+            this.radioButton3.Size = new System.Drawing.Size(58, 17);
+            this.radioButton3.TabIndex = 72;
+            this.radioButton3.TabStop = true;
+            this.radioButton3.Text = "Course";
+            this.radioButton3.UseVisualStyleBackColor = true;
+            // 
+            // radioButton4
+            // 
+            this.radioButton4.AutoSize = true;
+            this.radioButton4.Location = new System.Drawing.Point(308, 94);
+            this.radioButton4.Name = "radioButton4";
+            this.radioButton4.Size = new System.Drawing.Size(45, 17);
+            this.radioButton4.TabIndex = 73;
+            this.radioButton4.Text = "Fine";
+            this.radioButton4.UseVisualStyleBackColor = true;
+            // 
             // PartExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(592, 758);
+            this.ClientSize = new System.Drawing.Size(592, 705);
             this.Controls.Add(this.button_savename_browse);
             this.Controls.Add(this.textBox_save_as);
             this.Controls.Add(this.label45);
@@ -991,8 +1000,6 @@
             this.Name = "PartExportForm";
             this.Text = "SolidWorks Part to URDF Link Exporter";
             this.Load += new System.EventHandler(this.PartExportForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar_visual)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.trackBar_collision)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -1006,7 +1013,6 @@
 
         #endregion
 
-        private System.Windows.Forms.TrackBar trackBar_visual;
         private System.Windows.Forms.TextBox textBox_inertial_origin_x;
         private System.Windows.Forms.TextBox textBox_inertial_origin_y;
         private System.Windows.Forms.TextBox textBox_inertial_origin_z;
@@ -1048,7 +1054,6 @@
         private System.Windows.Forms.Label label29;
         private System.Windows.Forms.ComboBox comboBox_materials;
         private System.Windows.Forms.Label label28;
-        private System.Windows.Forms.Label label27;
         private System.Windows.Forms.TextBox textBox_visual_origin_yaw;
         private System.Windows.Forms.TextBox textBox_visual_origin_pitch;
         private System.Windows.Forms.TextBox textBox_visual_origin_roll;
@@ -1064,7 +1069,6 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.Label label34;
         private System.Windows.Forms.Button button_texturebrowse;
-        private System.Windows.Forms.TrackBar trackBar_collision;
         private System.Windows.Forms.Label label37;
         private System.Windows.Forms.Label label38;
         private System.Windows.Forms.Label label39;
@@ -1077,12 +1081,9 @@
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.TextBox textBox_collision_origin_roll;
         private System.Windows.Forms.TextBox textBox_collision_origin_pitch;
-        private System.Windows.Forms.Label label44;
         private System.Windows.Forms.TextBox textBox_collision_origin_yaw;
         private System.Windows.Forms.Button button_cancel;
         private System.Windows.Forms.Button button_finish;
-        private System.Windows.Forms.Label label_triangles_visual;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
@@ -1095,5 +1096,11 @@
         private System.Windows.Forms.TextBox textBox_save_as;
         private System.Windows.Forms.Button button_savename_browse;
         private System.Windows.Forms.SaveFileDialog saveFileDialog_save_as;
+        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.RadioButton radioButton4;
+        private System.Windows.Forms.RadioButton radioButton3;
     }
 }

@@ -92,17 +92,17 @@ namespace SW2URDF
         public URDFPackage(string name, string dir)
         {
             packageName = name;
-            packageDirectory = "package:////" + name + "//";
-            meshesDirectory = packageDirectory + "meshes//";
-            robotsDirectory = packageDirectory + "robots//";
-            texturesDirectory = packageDirectory + "textures//";
+            packageDirectory = @"package://" + name + @"/";
+            meshesDirectory = packageDirectory + @"meshes/";
+            robotsDirectory = packageDirectory + @"robots/";
+            texturesDirectory = packageDirectory + @"textures/";
 
             char last = dir[dir.Length - 1];
-            dir = (last == '\\') ? dir : dir + "\\";
-            windowsPackageDirectory = dir + name + "\\";
-            windowsMeshesDirectory = windowsPackageDirectory + "meshes\\";
-            windowsRobotsDirectory = windowsPackageDirectory + "robots\\";
-            windowsTexturesDirectory = windowsPackageDirectory + "textures\\";
+            dir = (last == '\\') ? dir : dir + @"\";
+            windowsPackageDirectory = dir + name + @"\";
+            windowsMeshesDirectory = windowsPackageDirectory + @"meshes\";
+            windowsRobotsDirectory = windowsPackageDirectory + @"robots\";
+            windowsTexturesDirectory = windowsPackageDirectory + @"textures\";
         }
 
         public void createDirectories()
