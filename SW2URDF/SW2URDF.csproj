@@ -137,7 +137,6 @@
     </Compile>
     <Compile Include="AssyExporter.cs" />
     <Compile Include="URDFPackage.cs" />
-    <Compile Include="definitions.cs" />
     <Compile Include="EventHandling.cs" />
     <Compile Include="PartExporter.cs" />
     <Compile Include="PartExportForm.cs">
