@@ -69,6 +69,8 @@ namespace SW2URDF
     }
     public class link : URDFElement
     {
+        public List<link> Children
+        { get; set; }
         public string name
         { get; set; }
         public inertial Inertial
