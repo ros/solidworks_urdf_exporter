@@ -222,48 +222,47 @@ namespace SW2URDF
         {
             
             double value;
-
-            mPartExporter.mLink.name = textBox_name.Text;
-
-            mPartExporter.mLink.origin_inertial[0] = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_inertial[1] = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_inertial[2] = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_inertial[3] = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_inertial[4] = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_inertial[5] = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
-
-            mPartExporter.mLink.origin_visual[0] = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_visual[1] = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_visual[2] = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_visual[3] = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_visual[4] = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_visual[5] = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
-
-            mPartExporter.mLink.origin_collision[0] = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_collision[1] = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_collision[2] = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_collision[3] = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_collision[4] = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
-            mPartExporter.mLink.origin_collision[5] = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
-
-            mPartExporter.mLink.mass = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
-
-            mPartExporter.mLink.moment[0] = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
-            mPartExporter.mLink.moment[1] = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
-            mPartExporter.mLink.moment[2] = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
-            mPartExporter.mLink.moment[4] = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
-            mPartExporter.mLink.moment[5] = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
-            mPartExporter.mLink.moment[8] = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
-
-            mPartExporter.mLink.material = comboBox_materials.Text;
-            mPartExporter.mLink.texture = textBox_texture.Text;
-
-            mPartExporter.mLink.rgba[0] = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
-            mPartExporter.mLink.rgba[1] = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
-            mPartExporter.mLink.rgba[2] = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            mPartExporter.mLink.rgba[3] = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
-            mPartExporter.mLink.gazebo_static = checkBox_static.Checked;
+            mPartExporter.mPackageName = textBox_name.Text;
             mPartExporter.mSavePath = textBox_save_as.Text;
+
+            mPartExporter.mLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Origin.Roll = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
+
+            mPartExporter.mLink.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+
+            mPartExporter.mLink.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Collision.Origin.Z = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Collision.Origin.Roll = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
+
+            mPartExporter.mLink.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+
+            mPartExporter.mLink.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Inertia.Ixz = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Inertia.Iyy = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Inertia.Iyz = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
+
+            mPartExporter.mLink.Visual.Material.name = comboBox_materials.Text;
+            mPartExporter.mLink.Visual.Material.Texture.filename = textBox_texture.Text;
+
+            mPartExporter.mLink.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
+            mPartExporter.mLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+            //mPartExporter.mLink.gazebo_static = checkBox_static.Checked;
         //public int mesh_triangles_visual
         //{ get; set; }
         //public int mesh_triangles_collision
@@ -281,35 +280,38 @@ namespace SW2URDF
 
         private void PartExportForm_Load(object sender, EventArgs e)
         {
-            textBox_collision_origin_x.Text = mPartExporter.mLink.origin_collision[0].ToString();
-            textBox_collision_origin_y.Text = mPartExporter.mLink.origin_collision[1].ToString();
-            textBox_collision_origin_z.Text = mPartExporter.mLink.origin_collision[2].ToString();
+            textBox_name.Text = mPartExporter.mPackageName;
+            mPartExporter.mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+
+            textBox_collision_origin_x.Text = mPartExporter.mLink.Collision.Origin.X.ToString();
+            textBox_collision_origin_y.Text = mPartExporter.mLink.Collision.Origin.Y.ToString();
+            textBox_collision_origin_z.Text = mPartExporter.mLink.Collision.Origin.Z.ToString();
             textBox_collision_origin_roll.Text = "0";
             textBox_collision_origin_pitch.Text = "0";
             textBox_collision_origin_yaw.Text = "0";
 
-            textBox_visual_origin_x.Text = mPartExporter.mLink.origin_visual[0].ToString();
-            textBox_visual_origin_y.Text = mPartExporter.mLink.origin_visual[1].ToString();
-            textBox_visual_origin_z.Text = mPartExporter.mLink.origin_visual[2].ToString();
+            textBox_visual_origin_x.Text = mPartExporter.mLink.Visual.Origin.X.ToString();
+            textBox_visual_origin_y.Text = mPartExporter.mLink.Visual.Origin.Y.ToString();
+            textBox_visual_origin_z.Text = mPartExporter.mLink.Visual.Origin.Z.ToString();
             textBox_visual_origin_roll.Text = "0";
             textBox_visual_origin_pitch.Text = "0";
             textBox_visual_origin_yaw.Text = "0";
 
-            textBox_inertial_origin_x.Text = mPartExporter.mLink.origin_inertial[0].ToString();
-            textBox_inertial_origin_y.Text = mPartExporter.mLink.origin_inertial[1].ToString();
-            textBox_inertial_origin_z.Text = mPartExporter.mLink.origin_inertial[2].ToString();
+            textBox_inertial_origin_x.Text = mPartExporter.mLink.Inertial.Origin.X.ToString();
+            textBox_inertial_origin_y.Text = mPartExporter.mLink.Inertial.Origin.Y.ToString();
+            textBox_inertial_origin_z.Text = mPartExporter.mLink.Inertial.Origin.Z.ToString();
             textBox_inertial_origin_roll.Text = "0";
             textBox_inertial_origin_pitch.Text = "0";
             textBox_inertial_origin_yaw.Text = "0";
 
-            textBox_mass.Text = mPartExporter.mLink.mass.ToString();
+            textBox_mass.Text = mPartExporter.mLink.Inertial.Mass.Value.ToString();
 
-            textBox_ixx.Text = mPartExporter.mLink.moment[0].ToString();
-            textBox_ixy.Text = mPartExporter.mLink.moment[1].ToString();
-            textBox_ixz.Text = mPartExporter.mLink.moment[2].ToString();
-            textBox_iyy.Text = mPartExporter.mLink.moment[4].ToString();
-            textBox_iyz.Text = mPartExporter.mLink.moment[5].ToString();
-            textBox_izz.Text = mPartExporter.mLink.moment[8].ToString();
+            textBox_ixx.Text = mPartExporter.mLink.Inertial.Inertia.Ixx.ToString();
+            textBox_ixy.Text = mPartExporter.mLink.Inertial.Inertia.Ixy.ToString();
+            textBox_ixz.Text = mPartExporter.mLink.Inertial.Inertia.Ixz.ToString();
+            textBox_iyy.Text = mPartExporter.mLink.Inertial.Inertia.Iyy.ToString();
+            textBox_iyz.Text = mPartExporter.mLink.Inertial.Inertia.Iyz.ToString();
+            textBox_izz.Text = mPartExporter.mLink.Inertial.Inertia.Izz.ToString();
 
         }
         #endregion

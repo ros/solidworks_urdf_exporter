@@ -20,8 +20,12 @@ namespace SW2URDF
         ISldWorks iSwApp = null;
         ICommandManager iCmdMgr = null;
 
-        public link mLink
+        public robot mRobot
         {get; set;}
+        public link mLink
+        { get; set; }
+        public string mPackageName
+        { get; set; }
         public string mSavePath
         { get; set;}
         private bool mBinary;
@@ -41,7 +45,9 @@ namespace SW2URDF
             swPart = default(PartDoc);
             swModel = (ModelDoc2)iSwApp.ActiveDoc;
             swPart = (PartDoc)swModel;
+            mRobot = new robot();
             mLink = getLinkFromPart();
+            
         }
 
 
@@ -49,34 +55,24 @@ namespace SW2URDF
 
         public link getLinkFromPart()
         {
-            link part_link = new link();
-            part_link.rgba = new double[4];
-
+            link Link = new link();
+            //Link.Visual.Material.Color.rgba
+            
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
-            part_link.mass = swMass.Mass;
-            part_link.moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            Link.Inertial.Mass.Value = swMass.Mass;
+            
+            Link.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            
             double[] centerOfMass = swMass.CenterOfMass;
-            part_link.origin_inertial = new double[6];
-            part_link.origin_visual = new double[6];
-            part_link.origin_collision = new double[6];
-            for (int i = 0; i < 6; i++)
-            {
-                if (i < 3)
-                {
-                    part_link.origin_inertial[i] = centerOfMass[i];
-                    part_link.origin_visual[i] = centerOfMass[i];
-                    part_link.origin_collision[i] = centerOfMass[i];
-                }
-                else
-                {
-                    part_link.origin_inertial[i] = 0;
-                    part_link.origin_visual[i] = 0;
-                    part_link.origin_collision[i] = 0;
-                }
-            }
+            Link.Inertial.Origin.XYZ = centerOfMass;
+            Link.Inertial.Origin.RPY = new double[3] {0, 0, 0};
+            Link.Visual.Origin.XYZ = centerOfMass;
+            Link.Visual.Origin.RPY = new double[3] {0, 0, 0};
+            Link.Collision.Origin.XYZ = centerOfMass;
+            Link.Collision.Origin.RPY = new double[3] {0, 0, 0};
 
-            return part_link;
+            return Link;
         }
 
         public void saveUserPreferences()
@@ -108,22 +104,26 @@ namespace SW2URDF
 
         public void exportLink()
         {
+            //Creating package directories
+            URDFPackage package = new URDFPackage(mPackageName, mSavePath);
+            string meshFileName = package.WindowsMeshesDirectory + mLink.name + ".STL";
+            string urdfFileName = package.WindowsRobotsDirectory + mLink.name + ".URDF";
+
+            //Customizing STL preferences to how I want them
             saveUserPreferences();
             setSTLExportPreferences();
             int errors = 0;
             int warnings = 0;
 
-            string saveDirectory = mSavePath + swModel.FeatureManager.FeatureStatistics.PartName;
-            System.Windows.Forms.MessageBox.Show("Saving file to directory\n" + saveDirectory);
-            if (!Directory.Exists(saveDirectory))
-            {
-                Directory.CreateDirectory(saveDirectory);
-            }
-            string saveName = saveDirectory + "\\" + swModel.FeatureManager.FeatureStatistics.PartName;
-            swModel.Extension.SaveAs(saveName + ".STL", (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            mLink.meshName = saveName + ".STL";
-            URDFWriter uWriter = new URDFWriter(saveName + ".URDF");
-            uWriter.writeURDFFromLink(mLink);
+            //Saving part as STL mesh
+            swModel.Extension.SaveAs(meshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+            mLink.Visual.Geometry.Mesh.filename = meshFileName;
+            mLink.Collision.Geometry.Mesh.filename = meshFileName;
+
+            //Writing URDF to file
+            URDFWriter uWriter = new URDFWriter(urdfFileName);
+            mRobot.addLink(mLink);
+            mRobot.writeURDF(uWriter.writer);
 
             resetUserPreferences();
         }

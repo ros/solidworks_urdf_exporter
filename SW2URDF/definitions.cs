@@ -5,36 +5,36 @@ using System.Text;
 
 namespace SW2URDF
 {
-    public class joint
-    {
-        public joint()
-        {
-        }
-        public string name
-        { get; set; }
-        public int type
-        { get; set; }
-        public double[] origin
-        { get; set; }
-        public string parent
-        { get; set; }
-        public string child
-        { get; set; }
-        public double[] axis
-        { get; set; }
-        public double calibration_rising
-        { get; set; }
-        public double calibration_falling
-        { get; set; }
-        public double damping
-        { get; set; }
-        public double friction
-        { get; set; }
-        public double[] limits
-        { get; set; }
-        public double[] safety_controller
-        { get; set; }
-    }
+    //public class joint
+    //{
+    //    public joint()
+    //    {
+    //    }
+    //    public string name
+    //    { get; set; }
+    //    public int type
+    //    { get; set; }
+    //    public double[] origin
+    //    { get; set; }
+    //    public string parent
+    //    { get; set; }
+    //    public string child
+    //    { get; set; }
+    //    public double[] axis
+    //    { get; set; }
+    //    public double calibration_rising
+    //    { get; set; }
+    //    public double calibration_falling
+    //    { get; set; }
+    //    public double damping
+    //    { get; set; }
+    //    public double friction
+    //    { get; set; }
+    //    public double[] limits
+    //    { get; set; }
+    //    public double[] safety_controller
+    //    { get; set; }
+    //}
 
     //public class link
     //{
