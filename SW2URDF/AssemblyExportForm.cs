@@ -17,21 +17,21 @@ namespace SW2URDF
         public AssemblyExportForm(ISldWorks iSwApp)
         {
             InitializeComponent();
-            mAssyExporter = new AssyExporter(iSwApp);
+            //mAssyExporter = new AssyExporter(iSwApp);
         }
 
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
-            for (int i = 0; i < mAssyExporter.mLinks.Count; i++)
-            {
-                checkedListBox1.Items.Add(mAssyExporter.mLinks[i].name);
-            }
+            //for (int i = 0; i < mAssyExporter.mLinks.Count; i++)
+            //{
+            //    checkedListBox1.Items.Add(mAssyExporter.mLinks[i].name);
+            //}
         }
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
-            panel_joint.Visible = true;
+            panel_links.Visible = true;
         }
 
         private void button_link_cancel_Click(object sender, EventArgs e)
@@ -107,6 +107,21 @@ namespace SW2URDF
             {
                 checkedListBox1.SetItemChecked(i, false);
             }
+        }
+
+        private void button_links_previous_Click(object sender, EventArgs e)
+        {
+            panel_links.Visible = false;
+        }
+
+        private void button_links_next_Click(object sender, EventArgs e)
+        {
+            panel_joint.Visible = true;
+        }
+
+        private void button_links_cancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
 

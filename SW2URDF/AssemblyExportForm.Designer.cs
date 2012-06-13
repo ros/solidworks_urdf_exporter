@@ -51,10 +51,17 @@
             this.button_joint_next = new System.Windows.Forms.Button();
             this.button_select = new System.Windows.Forms.Button();
             this.button_deselect = new System.Windows.Forms.Button();
+            this.panel_links = new System.Windows.Forms.Panel();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.button_links_next = new System.Windows.Forms.Button();
+            this.button_links_previous = new System.Windows.Forms.Button();
+            this.button_links_cancel = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
             this.panel_joint.SuspendLayout();
             this.panel_mesh.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_visual)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_collision)).BeginInit();
+            this.panel_links.SuspendLayout();
             this.SuspendLayout();
             // 
             // button_link_next
@@ -309,12 +316,75 @@
             this.button_deselect.UseVisualStyleBackColor = true;
             this.button_deselect.Click += new System.EventHandler(this.button_deselect_Click);
             // 
+            // panel_links
+            // 
+            this.panel_links.Controls.Add(this.panel_joint);
+            this.panel_links.Controls.Add(this.label7);
+            this.panel_links.Controls.Add(this.button_links_cancel);
+            this.panel_links.Controls.Add(this.button_links_previous);
+            this.panel_links.Controls.Add(this.button_links_next);
+            this.panel_links.Controls.Add(this.groupBox3);
+            this.panel_links.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel_links.Location = new System.Drawing.Point(0, 0);
+            this.panel_links.Name = "panel_links";
+            this.panel_links.Size = new System.Drawing.Size(640, 512);
+            this.panel_links.TabIndex = 7;
+            this.panel_links.Visible = false;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Location = new System.Drawing.Point(20, 64);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(600, 395);
+            this.groupBox3.TabIndex = 0;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "groupBox3";
+            // 
+            // button_links_next
+            // 
+            this.button_links_next.Location = new System.Drawing.Point(545, 479);
+            this.button_links_next.Name = "button_links_next";
+            this.button_links_next.Size = new System.Drawing.Size(75, 23);
+            this.button_links_next.TabIndex = 1;
+            this.button_links_next.Text = "Next";
+            this.button_links_next.UseVisualStyleBackColor = true;
+            this.button_links_next.Click += new System.EventHandler(this.button_links_next_Click);
+            // 
+            // button_links_previous
+            // 
+            this.button_links_previous.Location = new System.Drawing.Point(450, 479);
+            this.button_links_previous.Name = "button_links_previous";
+            this.button_links_previous.Size = new System.Drawing.Size(75, 23);
+            this.button_links_previous.TabIndex = 2;
+            this.button_links_previous.Text = "Previous";
+            this.button_links_previous.UseVisualStyleBackColor = true;
+            this.button_links_previous.Click += new System.EventHandler(this.button_links_previous_Click);
+            // 
+            // button_links_cancel
+            // 
+            this.button_links_cancel.Location = new System.Drawing.Point(20, 479);
+            this.button_links_cancel.Name = "button_links_cancel";
+            this.button_links_cancel.Size = new System.Drawing.Size(75, 23);
+            this.button_links_cancel.TabIndex = 3;
+            this.button_links_cancel.Text = "Cancel";
+            this.button_links_cancel.UseVisualStyleBackColor = true;
+            this.button_links_cancel.Click += new System.EventHandler(this.button_links_cancel_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(20, 26);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(123, 13);
+            this.label7.TabIndex = 4;
+            this.label7.Text = "Customize link properties";
+            // 
             // AssemblyExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 512);
-            this.Controls.Add(this.panel_joint);
+            this.Controls.Add(this.panel_links);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.checkedListBox1);
             this.Controls.Add(this.button_link_cancel);
@@ -330,6 +400,8 @@
             this.panel_mesh.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_visual)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_collision)).EndInit();
+            this.panel_links.ResumeLayout(false);
+            this.panel_links.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -359,5 +431,11 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button_select;
         private System.Windows.Forms.Button button_deselect;
+        private System.Windows.Forms.Panel panel_links;
+        private System.Windows.Forms.Button button_links_previous;
+        private System.Windows.Forms.Button button_links_next;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Button button_links_cancel;
+        private System.Windows.Forms.Label label7;
     }
 }
