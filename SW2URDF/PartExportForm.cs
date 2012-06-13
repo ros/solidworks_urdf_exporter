@@ -262,11 +262,6 @@ namespace SW2URDF
             mPartExporter.mLink.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
             mPartExporter.mLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
             mPartExporter.mLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
-            //mPartExporter.mLink.gazebo_static = checkBox_static.Checked;
-        //public int mesh_triangles_visual
-        //{ get; set; }
-        //public int mesh_triangles_collision
-        //{ get; set; }
 
             mPartExporter.exportLink();
             this.Close();
@@ -281,7 +276,7 @@ namespace SW2URDF
         private void PartExportForm_Load(object sender, EventArgs e)
         {
             textBox_name.Text = mPartExporter.mPackageName;
-            mPartExporter.mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            textBox_save_as.Text = mPartExporter.mSavePath;
 
             textBox_collision_origin_x.Text = mPartExporter.mLink.Collision.Origin.X.ToString();
             textBox_collision_origin_y.Text = mPartExporter.mLink.Collision.Origin.Y.ToString();

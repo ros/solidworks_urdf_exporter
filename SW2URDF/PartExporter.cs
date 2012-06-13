@@ -45,6 +45,8 @@ namespace SW2URDF
             swPart = default(PartDoc);
             swModel = (ModelDoc2)iSwApp.ActiveDoc;
             swPart = (PartDoc)swModel;
+            mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            mPackageName = swModel.FeatureManager.FeatureStatistics.PartName;
             mRobot = new robot();
             mLink = getLinkFromPart();
             
