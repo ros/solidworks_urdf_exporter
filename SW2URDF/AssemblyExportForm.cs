@@ -34,7 +34,7 @@ namespace SW2URDF
         {
             for (int i = 0; i < checkedListBox1.Items.Count; i++)
             {
-                if checkedListBox1.CheckedIndices
+                
             }
 
 

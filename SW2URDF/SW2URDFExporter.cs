@@ -14,7 +14,7 @@ using System.Diagnostics;
 
 namespace SW2URDF
 {
-    class SW2URDFExporter
+    public class SW2URDFExporter
     {
          #region Local variables
         ISldWorks iSwApp = null;
@@ -46,21 +46,24 @@ namespace SW2URDF
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.FeatureManager.FeatureStatistics.PartName;
-            mRobot = new robot();
-            createURDFTree();          
+            mRobot = getRobotFromActiveModel();    
         }
 
-        public void createURDFTree()
+        public robot getRobotFromActiveModel()
         {
+            robot Robot = new robot();
+
             int modelType = ActiveSWModel.GetType();
-            if ( modelType == (int)swDocumentTypes_e.swDocPART)
+            if (modelType == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
-                getLinkFromActiveModel();
+                mRobot.addLinkTree(getLinksFromActiveModel());
             }
-            else if ( modelType == (int)swDocumentTypes_e.swDocASSEMBLY)
+            else if (modelType == (int)swDocumentTypes_e.swDocPART)
             {
-                getLinksFromActiveAssy();
+                Robot.addLink(getLinkFromActiveModel());
             }
+
+            return Robot;
         }
 
         public List<link> getLinksFromAssy(ModelDoc2 swModel)
@@ -80,7 +83,7 @@ namespace SW2URDF
             return links;
         }
 
-        public List<link> getLinksFromActiveAssy()
+        public List<link> getLinksFromActiveModel()
         {
             return getLinksFromAssy(ActiveSWModel);
         }
@@ -91,8 +94,7 @@ namespace SW2URDF
             List<link> links = new List<link>();
             object[] children = c.GetChildren();
             int childrenCount = c.IGetChildrenCount();
-            link parent = new link();
-            parent.name = c.Name2;
+            link parent = assignParentLinkFromComp(comp);
             for (int i = 0; i < childrenCount; i++)
             {
                 parent.Children.AddRange(getLinksFromComp(children[i]));
@@ -102,8 +104,84 @@ namespace SW2URDF
             return links;
         }
 
+        public link assignParentLinkFromComp(object comp)
+        {
+            IComponent c = (IComponent)comp;
+            IComponent ParentComp = c;
+            ModelDoc2 ParentDoc = c.GetModelDoc();
+            object[] children = c.GetChildren();
+            ModelDoc2 modeldoc = c.GetModelDoc();
+
+            if (modeldoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            {
+                return getLinkFromPartModel(modeldoc);
+            }
+            else
+            {
+                int priorityLevel = -1;
+                // Iteratively going through SolidWorks component structure to find the 'best' choice for the parent link
+                while (priorityLevel < 0)
+                {
+                    double largestFixedVolume = 0;
+                    double largestPartVolume = 0;
+                    double largestAssyVolume = 0;
+                    foreach (IComponent child in children)
+                    {
+                        IMassProperty childMass = child.GetModelDoc().childdoc.Extension.CreateMassProperty();
+                        double[] bb = child.GetBox(false, true);
+                        double childBBVolume = boundingBoxVolume(bb);
+
+                        //Highest priority is the largest fixed component
+                        if (child.IsFixed() && childMass.Volume > largestFixedVolume)
+                        {
+                            priorityLevel = 2;
+                            ParentComp = child;
+                            largestFixedVolume = childBBVolume;
+                        }
+                        //Second highest priority is the largest floating part
+                        else if (childMass.Volume > largestPartVolume && child.GetModelDoc().GetType() == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
+                        {
+                            priorityLevel = 1;
+                            ParentComp = child;
+                            largestPartVolume = childBBVolume;
+                        }
+                        //Third priority is the 'best' choice from the largest assembly
+                        else if (childMass.Volume > largestAssyVolume && child.GetModelDoc().GetType() == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
+                        {
+                            priorityLevel = 0;
+                            ParentComp = child;
+                            largestAssyVolume = childBBVolume;
+                        }
+                    }
+                    // If a fixed component was found that is an assembly, its children will be iterated through on the next run
+                    if (priorityLevel == 2 && ParentDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                    {
+                        priorityLevel = -1;
+                        children = ParentComp.GetChildren();
+                    }
+                    // If no parts were found, then the largest assembly will be iterated through to find the best choice
+                    else if (priorityLevel == 0)
+                    {
+                        priorityLevel = -1;
+                        children = ParentComp.GetChildren();
+                    }
+                    // Otherwise, if a part was finally selected for parent status, the parentdoc is selected and it is converted into a link
+                    else
+                    {
+                        ParentDoc = ParentComp.GetModelDoc();
+                    }
+                }
+                return getLinkFromPartModel(ParentDoc);
+            }
+        }
+
+        public double boundingBoxVolume(double[] bb)
+        {
+            return ((bb[3] - bb[0]) * (bb[4] - bb[1]) * (bb[5] - bb[2]));
+        }
+
         #region Part Exporting methods
-        public link getLinkFromPart(ModelDoc2 swModel)
+        public link getLinkFromPartModel(ModelDoc2 swModel)
         {
             link Link = new link();
             Link.name = swModel.FeatureManager.FeatureStatistics.PartName;
@@ -127,7 +205,7 @@ namespace SW2URDF
 
         public link getLinkFromActiveModel()
         {
-            return getLinkFromPart(ActiveSWModel);
+            return getLinkFromPartModel(ActiveSWModel);
         }
 
 
@@ -147,7 +225,7 @@ namespace SW2URDF
             int warnings = 0;
 
             //Saving part as STL mesh
-            swModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+            ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             mLink.Visual.Geometry.Mesh.filename = meshFileName;
             mLink.Collision.Geometry.Mesh.filename = meshFileName;
 

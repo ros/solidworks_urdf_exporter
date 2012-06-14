@@ -62,9 +62,17 @@ namespace SW2URDF
         {
             mLinks.Add(Link);
         }
+        public void addLinkTree(List<link> Links)
+        {
+            mLinks.AddRange(Links);
+        }
         public void addJoint(joint Joint)
         {
             mJoints.Add(Joint);
+        }
+        public void addJointTree(List<joint> Joints)
+        {
+            mJoints.AddRange(Joints);
         }
     }
     public class link : URDFElement
