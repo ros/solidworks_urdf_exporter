@@ -136,11 +136,9 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AssyExporter.cs" />
     <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="URDFPackage.cs" />
     <Compile Include="EventHandling.cs" />
-    <Compile Include="PartExporter.cs" />
     <Compile Include="PartExportForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -23,7 +23,7 @@ namespace SW2URDF
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
-            Exporter.getRobotFromActiveModel();
+            Exporter.createRobotFromActiveModel();
             fillLinkTreeView();
             //for (int i = 0; i < mAssyExporter.mLinks.Count; i++)
             //{
@@ -154,7 +154,7 @@ namespace SW2URDF
         public void fillLinkTreeView()
         {
             TreeNode baseNode = new TreeNode();
-            link baseLink = Exporter.mRobot.getBaseLink();
+            link baseLink = Exporter.mRobot.BaseLink;
             baseNode.Name = baseLink.name;
             foreach (link child in baseLink.Children)
             {

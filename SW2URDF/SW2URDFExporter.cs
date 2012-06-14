@@ -23,8 +23,6 @@ namespace SW2URDF
 
         public robot mRobot
         {get; set;}
-        public link mLink
-        { get; set; }
         public string mPackageName
         { get; set; }
         public string mSavePath
@@ -46,25 +44,23 @@ namespace SW2URDF
             ActiveSWModel = default(ModelDoc2);
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
-            mPackageName = ActiveSWModel.GetTitle();
-            //mRobot = getRobotFromActiveModel();    
+            mPackageName = ActiveSWModel.GetTitle();   
         }
 
-        public robot getRobotFromActiveModel()
+        public void createRobotFromActiveModel()
         {
-            robot Robot = new robot();
+            mRobot = new robot();
 
             int modelType = ActiveSWModel.GetType();
             if (modelType == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
-                mRobot.setBaseLink(getBaseLinkFromActiveModel());
+                mRobot.BaseLink = getBaseLinkFromActiveModel();
             }
             else if (modelType == (int)swDocumentTypes_e.swDocPART)
             {
-                Robot.setBaseLink(getLinkFromActiveModel());
+                mRobot.BaseLink = getLinkFromActiveModel();
             }
 
-            return Robot;
         }
 
         public link getBaseLinkFromAssy(ModelDoc2 swModel)
@@ -210,9 +206,9 @@ namespace SW2URDF
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
-            string meshFileName = package.MeshesDirectory + mLink.name + ".STL";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + mLink.name + ".STL";
-            string windowsURDFFileName = package.WindowsRobotsDirectory + mLink.name + ".URDF";
+            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
+            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.BaseLink.name + ".URDF";
 
             //Customizing STL preferences to how I want them
             saveUserPreferences();
@@ -222,8 +218,8 @@ namespace SW2URDF
 
             //Saving part as STL mesh
             ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            mLink.Visual.Geometry.Mesh.filename = meshFileName;
-            mLink.Collision.Geometry.Mesh.filename = meshFileName;
+            mRobot.BaseLink.Visual.Geometry.Mesh.filename = meshFileName;
+            mRobot.BaseLink.Collision.Geometry.Mesh.filename = meshFileName;
 
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);

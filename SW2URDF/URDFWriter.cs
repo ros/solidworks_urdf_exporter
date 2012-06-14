@@ -28,16 +28,14 @@ namespace SW2URDF
     }
     public class robot : URDFElement
     {
-        private link mBaseLink;
-        private List<link> mLinks;
-        private List<joint> mJoints;
+        public link BaseLink
+        { get; set; }
         public string name
         { get; set; }
 
         public robot()
         {
-            mLinks = new List<link>();
-            mJoints = new List<joint>();
+            BaseLink = new link();
         }
         new public void writeURDF(XmlWriter writer)
         {            
@@ -45,45 +43,12 @@ namespace SW2URDF
             writer.WriteStartElement("robot");
             writer.WriteAttributeString("name", name);
 
-            foreach (link Link in mLinks)
-            {
-                Link.writeURDF(writer);
-            }
-
-            foreach (joint Joint in mJoints)
-            {
-                Joint.writeURDF(writer);
-            }
+            BaseLink.writeURDF(writer);
 
             writer.WriteEndElement();
             writer.WriteEndDocument();
             writer.Close();
         }
-        //public void addLink(link Link)
-        //{
-        //    mLinks.Add(Link);
-        //}
-        public void addLinkTree(List<link> Links)
-        {
-            mLinks.AddRange(Links);
-        }
-        public void addJoint(joint Joint)
-        {
-            mJoints.Add(Joint);
-        }
-        public void addJointTree(List<joint> Joints)
-        {
-            mJoints.AddRange(Joints);
-        }
-        public void setBaseLink(link Link)
-        {
-            mBaseLink = Link;
-        }
-        public link getBaseLink()
-        {
-            return mBaseLink;
-        }
-
     }
     public class link : URDFElement
     {
@@ -101,6 +66,7 @@ namespace SW2URDF
         { get; set; }
         public link()
         {
+            Children = new List<link>();
             Inertial = new inertial();
             Visual = new visual();
             Collision = new collision();
@@ -115,24 +81,11 @@ namespace SW2URDF
             Collision.writeURDF( writer);
 
             writer.WriteEndElement();
-        }
-        public void makeParent()
-        {
-        }
-
-        public void removeLink()
-        {
-        }
-
-        public void moveLink()
-        {
-        }
-
-        public void makeIndependent()
-        {
-        }
-        public void makeDependent()
-        {
+            
+            foreach (link child in Children)
+            {
+                child.writeURDF(writer);
+            }
         }
     }
 
