@@ -13,29 +13,30 @@ namespace SW2URDF
 {
     public partial class AssemblyExportForm : Form
     {
-        public AssyExporter mAssyExporter;
+        public SW2URDFExporter Exporter;
         public AssemblyExportForm(ISldWorks iSwApp)
         {
             InitializeComponent();
-            mAssyExporter = new AssyExporter(iSwApp);
+            Exporter = new SW2URDFExporter(iSwApp);
         }
 
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
-            mAssyExporter.getLinksFromAssy();
-            for (int i = 0; i < mAssyExporter.mLinks.Count; i++)
-            {
-                checkedListBox1.Items.Add(mAssyExporter.mLinks.ElementAt(i).name);
-            }
+            Exporter.getRobotFromActiveModel();
+            fillLinkTreeView();
+            //for (int i = 0; i < mAssyExporter.mLinks.Count; i++)
+            //{
+            //    checkedListBox1.Items.Add(mAssyExporter.mLinks.ElementAt(i).name);
+            //}
         }
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
-            {
+            //for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            //{
                 
-            }
+            //}
 
 
             panel_links.Visible = true;
@@ -102,18 +103,18 @@ namespace SW2URDF
 
         private void button_select_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
-            {
-                checkedListBox1.SetItemChecked(i, true);
-            }
+            //for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            //{
+            //    checkedListBox1.SetItemChecked(i, true);
+            //}
         }
 
         private void button_deselect_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
-            {
-                checkedListBox1.SetItemChecked(i, false);
-            }
+            //for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            //{
+            //    checkedListBox1.SetItemChecked(i, false);
+            //}
         }
 
         private void button_links_previous_Click(object sender, EventArgs e)
@@ -129,6 +130,48 @@ namespace SW2URDF
         private void button_links_cancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void button_promote_parent_Click(object sender, EventArgs e)
+        {
+            //treeView_linktree.SelectedNode
+        }
+
+        private void button_change_parent_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button_delete_link_Click(object sender, EventArgs e)
+        {
+
+        }
+        public void fillLinkTreeView()
+        {
+            TreeNode baseNode = new TreeNode();
+            link baseLink = Exporter.mRobot.getBaseLink();
+            baseNode.Name = baseLink.name;
+            foreach (link child in baseLink.Children)
+            {
+                baseNode.Nodes.Add(createTreeNodeFromLink(child));
+            }
+            treeView_linktree.Nodes.Add(baseNode);
+
+        }
+        public TreeNode createTreeNodeFromLink(link Link)
+        {
+            TreeNode node = new TreeNode();
+            node.Name = Link.name;
+            foreach (link child in Link.Children)
+            {
+                node.Nodes.Add(createTreeNodeFromLink(child));
+            }
+            return node;
         }
 
 

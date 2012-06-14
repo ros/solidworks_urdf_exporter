@@ -18,7 +18,6 @@ namespace SW2URDF
         {
             InitializeComponent();
             Exporter = new SW2URDFExporter(iSwApp);
-
         }
 
         #region Basic event handelers
@@ -275,6 +274,7 @@ namespace SW2URDF
 
         private void PartExportForm_Load(object sender, EventArgs e)
         {
+            Exporter.getRobotFromActiveModel();
             textBox_name.Text = Exporter.mPackageName;
             textBox_save_as.Text = Exporter.mSavePath;
 

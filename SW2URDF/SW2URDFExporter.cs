@@ -11,6 +11,7 @@ using SolidWorksTools;
 using SolidWorksTools.File;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace SW2URDF
 {
@@ -45,8 +46,8 @@ namespace SW2URDF
             ActiveSWModel = default(ModelDoc2);
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
-            mPackageName = ActiveSWModel.FeatureManager.FeatureStatistics.PartName;
-            mRobot = getRobotFromActiveModel();    
+            mPackageName = ActiveSWModel.GetTitle();
+            //mRobot = getRobotFromActiveModel();    
         }
 
         public robot getRobotFromActiveModel()
@@ -56,61 +57,55 @@ namespace SW2URDF
             int modelType = ActiveSWModel.GetType();
             if (modelType == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
-                mRobot.addLinkTree(getLinksFromActiveModel());
+                mRobot.setBaseLink(getBaseLinkFromActiveModel());
             }
             else if (modelType == (int)swDocumentTypes_e.swDocPART)
             {
-                Robot.addLink(getLinkFromActiveModel());
+                Robot.setBaseLink(getLinkFromActiveModel());
             }
 
             return Robot;
         }
 
-        public List<link> getLinksFromAssy(ModelDoc2 swModel)
+        public link getBaseLinkFromAssy(ModelDoc2 swModel)
         {
-            List<link> links = new List<link>();
-
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
             varComp = (object[])swAssy.GetComponents(true);
 
-            for (int i = 0; i < varComp.Length; i++)
+            link baseLink = assignParentLinkFromChildren(varComp, swModel);
+            
+            foreach (IComponent comp in varComp)
             {
-                IComponent swComp = default(IComponent);
-                swComp = (IComponent)varComp[i];
-                links.AddRange(getLinksFromComp(swComp));
+                baseLink.Children.Add(getLinkFromComp(comp));
             }
 
-            return links;
+            return baseLink;
         }
 
-        public List<link> getLinksFromActiveModel()
+        public link getBaseLinkFromActiveModel()
         {
-            return getLinksFromAssy(ActiveSWModel);
+            return getBaseLinkFromAssy(ActiveSWModel);
         }
 
-        public List<link> getLinksFromComp(object comp)
+        public link getLinkFromComp(object comp)
         {
-            IComponent c = (IComponent)comp;
-            List<link> links = new List<link>();
-            object[] children = c.GetChildren();
-            int childrenCount = c.IGetChildrenCount();
-            link parent = assignParentLinkFromComp(comp);
-            for (int i = 0; i < childrenCount; i++)
+            IComponent parentComp = (IComponent)comp;
+            object[] children = parentComp.GetChildren();
+
+            link parent = assignParentLinkFromChildren(children, parentComp.GetModelDoc());
+
+            foreach (object child in children)
             {
-                parent.Children.AddRange(getLinksFromComp(children[i]));
+                parent.Children.Add(getLinkFromComp(child));
             }
 
-            links.Add(parent);
-            return links;
+            return parent;
         }
 
-        public link assignParentLinkFromComp(object comp)
+        public link assignParentLinkFromChildren(object[] children, ModelDoc2 ParentDoc)
         {
-            IComponent c = (IComponent)comp;
-            IComponent ParentComp = c;
-            ModelDoc2 ParentDoc = c.GetModelDoc();
-            object[] children = c.GetChildren();
-            ModelDoc2 modeldoc = c.GetModelDoc();
+            IComponent ParentComp = (IComponent)children[0];
+            ModelDoc2 modeldoc = ParentDoc;
 
             if (modeldoc.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
@@ -180,6 +175,7 @@ namespace SW2URDF
             return ((bb[3] - bb[0]) * (bb[4] - bb[1]) * (bb[5] - bb[2]));
         }
 
+        
         #region Part Exporting methods
         public link getLinkFromPartModel(ModelDoc2 swModel)
         {
@@ -231,7 +227,7 @@ namespace SW2URDF
 
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
-            mRobot.addLink(mLink);
+            //mRobot.addLink(mLink);
             mRobot.writeURDF(uWriter.writer);
 
             resetUserPreferences();

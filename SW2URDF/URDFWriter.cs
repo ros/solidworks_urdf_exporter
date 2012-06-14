@@ -28,6 +28,7 @@ namespace SW2URDF
     }
     public class robot : URDFElement
     {
+        private link mBaseLink;
         private List<link> mLinks;
         private List<joint> mJoints;
         public string name
@@ -58,10 +59,10 @@ namespace SW2URDF
             writer.WriteEndDocument();
             writer.Close();
         }
-        public void addLink(link Link)
-        {
-            mLinks.Add(Link);
-        }
+        //public void addLink(link Link)
+        //{
+        //    mLinks.Add(Link);
+        //}
         public void addLinkTree(List<link> Links)
         {
             mLinks.AddRange(Links);
@@ -74,6 +75,15 @@ namespace SW2URDF
         {
             mJoints.AddRange(Joints);
         }
+        public void setBaseLink(link Link)
+        {
+            mBaseLink = Link;
+        }
+        public link getBaseLink()
+        {
+            return mBaseLink;
+        }
+
     }
     public class link : URDFElement
     {
@@ -105,6 +115,24 @@ namespace SW2URDF
             Collision.writeURDF( writer);
 
             writer.WriteEndElement();
+        }
+        public void makeParent()
+        {
+        }
+
+        public void removeLink()
+        {
+        }
+
+        public void moveLink()
+        {
+        }
+
+        public void makeIndependent()
+        {
+        }
+        public void makeDependent()
+        {
         }
     }
 
