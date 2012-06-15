@@ -184,46 +184,13 @@ namespace SW2URDF
             LinkNode targetNode = (LinkNode)treeView_linktree.GetNodeAt(targetPoint);
 
             // Retrieve the node that was dragged.
-            LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
-            draggedNode.Remove();
-            targetNode.Nodes.Add(draggedNode);
-            //// Confirm that the node at the drop location is not 
-            //// the dragged node or a descendant of the dragged node.
-            //if (!draggedNode.Equals(targetNode) && !ContainsNode(draggedNode, targetNode))
-            //{
-            //    // If it is a move operation, remove the node from its current 
-            //    // location and add it to the node at the drop location.
-            //    if (e.Effect == DragDropEffects.Move)
-            //    {
-            //        draggedNode.Remove();
-
-            //    }
-
-            //    // If it is a copy operation, clone the dragged node 
-            //    // and add it to the node at the drop location.
-            //    else if (e.Effect == DragDropEffects.Copy)
-            //    {
-            //        targetNode.Nodes.Add((TreeNode)draggedNode.Clone());
-            //    }
-
-            //    // Expand the node at the location 
-            //    // to show the dropped node.
-            //    targetNode.Expand();
-            //}
-        }
-
-        // Determine whether one node is a parent 
-        // or ancestor of a second node.
-        private bool ContainsNode(TreeNode node1, TreeNode node2)
-        {
-            // Check the parent node of the second node.
-            if (node2.Parent == null) return false;
-            if (node2.Parent.Equals(node1)) return true;
-
-            // If the parent node is not null or equal to the first node, 
-            // call the ContainsNode method recursively using the parent of 
-            // the second node.
-            return ContainsNode(node1, node2.Parent);
+            LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));          
+            if (targetNode != null)
+            {
+                draggedNode.Remove();
+                targetNode.Nodes.Add(draggedNode);
+                targetNode.Expand();
+            }
         }
         #endregion
 

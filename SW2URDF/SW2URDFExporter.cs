@@ -106,7 +106,14 @@ namespace SW2URDF
             }
             else
             {
-                IComponent ParentComp = (IComponent)children[0];
+                IComponent ParentComp;
+                foreach (IComponent child in children)
+                {
+                    if (!child.IsHidden(true))
+                    {
+                        ParentComp = child;
+                    }
+                }
                 ModelDoc2 modeldoc = ParentDoc;
 
                 int priorityLevel = -1;
@@ -116,8 +123,10 @@ namespace SW2URDF
                     double largestFixedVolume = 0;
                     double largestPartVolume = 0;
                     double largestAssyVolume = 0;
+                    
                     ParentDoc = ParentComp.GetModelDoc();
                     int ParentType = ParentDoc.GetType();
+                    int c = 1;
                     foreach (IComponent child in children)
                     {
                         ModelDoc2 ChildDoc = child.GetModelDoc();
