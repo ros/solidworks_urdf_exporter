@@ -106,13 +106,20 @@ namespace SW2URDF
             }
             else
             {
-                IComponent ParentComp;
+                bool foundParent = false;
+                IComponent ParentComp = default(IComponent);
                 foreach (IComponent child in children)
                 {
                     if (!child.IsHidden(true))
                     {
                         ParentComp = child;
+                        foundParent = true;
+                        break;
                     }
+                }
+                if (!foundParent)
+                {
+                    throw new System.InvalidOperationException("All components are either hidden or suppressed");
                 }
                 ModelDoc2 modeldoc = ParentDoc;
 
@@ -126,7 +133,6 @@ namespace SW2URDF
                     
                     ParentDoc = ParentComp.GetModelDoc();
                     int ParentType = ParentDoc.GetType();
-                    int c = 1;
                     foreach (IComponent child in children)
                     {
                         ModelDoc2 ChildDoc = child.GetModelDoc();
