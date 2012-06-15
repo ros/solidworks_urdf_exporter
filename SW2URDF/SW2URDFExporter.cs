@@ -100,15 +100,15 @@ namespace SW2URDF
 
         public link assignParentLinkFromChildren(object[] children, ModelDoc2 ParentDoc)
         {
-            IComponent ParentComp = (IComponent)children[0];
-            ModelDoc2 modeldoc = ParentDoc;
-
-            if (modeldoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            if (ParentDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
-                return getLinkFromPartModel(modeldoc);
+                return getLinkFromPartModel(ParentDoc);
             }
             else
             {
+                IComponent ParentComp = (IComponent)children[0];
+                ModelDoc2 modeldoc = ParentDoc;
+
                 int priorityLevel = -1;
                 // Iteratively going through SolidWorks component structure to find the 'best' choice for the parent link
                 while (priorityLevel < 0)
@@ -116,10 +116,14 @@ namespace SW2URDF
                     double largestFixedVolume = 0;
                     double largestPartVolume = 0;
                     double largestAssyVolume = 0;
+                    ParentDoc = ParentComp.GetModelDoc();
+                    int ParentType = ParentDoc.GetType();
                     foreach (IComponent child in children)
                     {
-                        IMassProperty childMass = child.GetModelDoc().childdoc.Extension.CreateMassProperty();
-                        double[] bb = child.GetBox(false, true);
+                        ModelDoc2 ChildDoc = child.GetModelDoc();
+                        int ChildType = (int)ChildDoc.GetType();
+                        IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
+                        double[] bb = child.GetBox(false, false);
                         double childBBVolume = boundingBoxVolume(bb);
 
                         //Highest priority is the largest fixed component
@@ -130,22 +134,26 @@ namespace SW2URDF
                             largestFixedVolume = childBBVolume;
                         }
                         //Second highest priority is the largest floating part
-                        else if (childMass.Volume > largestPartVolume && child.GetModelDoc().GetType() == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
+                        else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
                         {
                             priorityLevel = 1;
                             ParentComp = child;
                             largestPartVolume = childBBVolume;
                         }
                         //Third priority is the 'best' choice from the largest assembly
-                        else if (childMass.Volume > largestAssyVolume && child.GetModelDoc().GetType() == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
+                        else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
                         {
                             priorityLevel = 0;
                             ParentComp = child;
                             largestAssyVolume = childBBVolume;
                         }
                     }
+
+
+                    ParentDoc = ParentComp.GetModelDoc();
+                    ParentType = ParentDoc.GetType();
                     // If a fixed component was found that is an assembly, its children will be iterated through on the next run
-                    if (priorityLevel == 2 && ParentDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                    if (priorityLevel == 2 && ParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
                     {
                         priorityLevel = -1;
                         children = ParentComp.GetChildren();
@@ -157,10 +165,10 @@ namespace SW2URDF
                         children = ParentComp.GetChildren();
                     }
                     // Otherwise, if a part was finally selected for parent status, the parentdoc is selected and it is converted into a link
-                    else
-                    {
-                        ParentDoc = ParentComp.GetModelDoc();
-                    }
+                }
+                if (ParentDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                {
+                    throw new System.InvalidOperationException("Parent link cannot be made from assembly");
                 }
                 return getLinkFromPartModel(ParentDoc);
             }
@@ -176,7 +184,7 @@ namespace SW2URDF
         public link getLinkFromPartModel(ModelDoc2 swModel)
         {
             link Link = new link();
-            Link.name = swModel.FeatureManager.FeatureStatistics.PartName;
+            Link.name = swModel.GetTitle();
             
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();

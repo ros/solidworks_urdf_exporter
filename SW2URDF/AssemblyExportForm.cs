@@ -11,8 +11,13 @@ using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
+
     public partial class AssemblyExportForm : Form
     {
+        private int NodeCount, FolderCount;
+        private string NodeMap;
+        TreeNode sourceNode;
+        private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
         public AssemblyExportForm(ISldWorks iSwApp)
         {
@@ -35,7 +40,7 @@ namespace SW2URDF
         {
             //for (int i = 0; i < checkedListBox1.Items.Count; i++)
             //{
-                
+
             //}
 
 
@@ -151,34 +156,134 @@ namespace SW2URDF
         {
 
         }
+
+        #region microsoft code
+        private void treeView_linktree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
+        {
+            DoDragDrop(e.Item, DragDropEffects.Move);
+
+        }
+        private void treeView_linktree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the mouse position.
+            Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
+
+            // Select the node at the mouse position.
+            treeView_linktree.SelectedNode = treeView_linktree.GetNodeAt(targetPoint);
+        }
+        private void treeView_linktree_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = e.AllowedEffect;
+        }
+        private void treeView_linktree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the drop location.
+            Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
+
+            // Retrieve the node at the drop location.
+            LinkNode targetNode = (LinkNode)treeView_linktree.GetNodeAt(targetPoint);
+
+            // Retrieve the node that was dragged.
+            LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
+            draggedNode.Remove();
+            targetNode.Nodes.Add(draggedNode);
+            //// Confirm that the node at the drop location is not 
+            //// the dragged node or a descendant of the dragged node.
+            //if (!draggedNode.Equals(targetNode) && !ContainsNode(draggedNode, targetNode))
+            //{
+            //    // If it is a move operation, remove the node from its current 
+            //    // location and add it to the node at the drop location.
+            //    if (e.Effect == DragDropEffects.Move)
+            //    {
+            //        draggedNode.Remove();
+
+            //    }
+
+            //    // If it is a copy operation, clone the dragged node 
+            //    // and add it to the node at the drop location.
+            //    else if (e.Effect == DragDropEffects.Copy)
+            //    {
+            //        targetNode.Nodes.Add((TreeNode)draggedNode.Clone());
+            //    }
+
+            //    // Expand the node at the location 
+            //    // to show the dropped node.
+            //    targetNode.Expand();
+            //}
+        }
+
+        // Determine whether one node is a parent 
+        // or ancestor of a second node.
+        private bool ContainsNode(TreeNode node1, TreeNode node2)
+        {
+            // Check the parent node of the second node.
+            if (node2.Parent == null) return false;
+            if (node2.Parent.Equals(node1)) return true;
+
+            // If the parent node is not null or equal to the first node, 
+            // call the ContainsNode method recursively using the parent of 
+            // the second node.
+            return ContainsNode(node1, node2.Parent);
+        }
+        #endregion
+
+
+
         public void fillLinkTreeView()
         {
-            TreeNode baseNode = new TreeNode();
+            LinkNode baseNode = new LinkNode();
             link baseLink = Exporter.mRobot.BaseLink;
             baseNode.Name = baseLink.name;
+            baseNode.Text = baseLink.name;
+            baseNode.Link = baseLink;
             foreach (link child in baseLink.Children)
             {
-                baseNode.Nodes.Add(createTreeNodeFromLink(child));
+                baseNode.Nodes.Add(createLinkNodeFromLink(child));
             }
             treeView_linktree.Nodes.Add(baseNode);
+            treeView_linktree.ExpandAll();
 
         }
-        public TreeNode createTreeNodeFromLink(link Link)
+        public LinkNode createLinkNodeFromLink(link Link)
         {
-            TreeNode node = new TreeNode();
+            LinkNode node = new LinkNode();
             node.Name = Link.name;
+            node.Text = Link.name;
+            node.Link = Link;
             foreach (link child in Link.Children)
             {
-                node.Nodes.Add(createTreeNodeFromLink(child));
+                node.Nodes.Add(createLinkNodeFromLink(child));
             }
+            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
             return node;
         }
-
-
-
-
-
-
-
+        public robot createRobotFromTreeView()
+        {
+            robot Robot = new robot();
+            Robot.name = Robot.BaseLink.name;
+            foreach (LinkNode node in treeView_linktree.Nodes)
+            {
+                if (node.Parent == null)
+                {
+                    Robot.BaseLink = createLinkFromLinkNode(node);
+                }
+            }
+            return Robot;
+        }
+        public link createLinkFromLinkNode(LinkNode node)
+        {
+            link Link = new link();
+            Link = node.Link;
+            foreach (LinkNode child in node.Nodes)
+            {
+                Link.Children.Add(createLinkFromLinkNode(child)); // Recreates the children of each embedded link
+            }
+            return Link;
+        }
+    }
+    public class LinkNode : TreeNode
+    {
+        public link Link
+        { get; set; }
     }
 }

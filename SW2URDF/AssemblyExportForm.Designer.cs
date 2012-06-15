@@ -64,6 +64,7 @@
             this.panel_mesh.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_visual)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_collision)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.panel_links.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -100,7 +101,6 @@
             // 
             // panel_joint
             // 
-            this.panel_joint.Controls.Add(this.panel_mesh);
             this.panel_joint.Controls.Add(this.label2);
             this.panel_joint.Controls.Add(this.groupBox1);
             this.panel_joint.Controls.Add(this.button_joint_cancel);
@@ -126,9 +126,9 @@
             this.panel_mesh.Controls.Add(this.button_mesh_previous);
             this.panel_mesh.Controls.Add(this.button_mesh_finish);
             this.panel_mesh.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel_mesh.Location = new System.Drawing.Point(0, 0);
+            this.panel_mesh.Location = new System.Drawing.Point(3, 16);
             this.panel_mesh.Name = "panel_mesh";
-            this.panel_mesh.Size = new System.Drawing.Size(640, 512);
+            this.panel_mesh.Size = new System.Drawing.Size(1246, 924);
             this.panel_mesh.TabIndex = 5;
             this.panel_mesh.Visible = false;
             // 
@@ -158,7 +158,7 @@
             this.groupBox2.AutoSize = true;
             this.groupBox2.Location = new System.Drawing.Point(20, 113);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(600, 354);
+            this.groupBox2.Size = new System.Drawing.Size(1206, 766);
             this.groupBox2.TabIndex = 7;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Mesh Configurations";
@@ -200,7 +200,7 @@
             // button_mesh_cancel
             // 
             this.button_mesh_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_mesh_cancel.Location = new System.Drawing.Point(20, 479);
+            this.button_mesh_cancel.Location = new System.Drawing.Point(20, 891);
             this.button_mesh_cancel.Name = "button_mesh_cancel";
             this.button_mesh_cancel.Size = new System.Drawing.Size(75, 23);
             this.button_mesh_cancel.TabIndex = 2;
@@ -211,7 +211,7 @@
             // button_mesh_previous
             // 
             this.button_mesh_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_mesh_previous.Location = new System.Drawing.Point(450, 479);
+            this.button_mesh_previous.Location = new System.Drawing.Point(1056, 891);
             this.button_mesh_previous.Name = "button_mesh_previous";
             this.button_mesh_previous.Size = new System.Drawing.Size(75, 23);
             this.button_mesh_previous.TabIndex = 1;
@@ -222,7 +222,7 @@
             // button_mesh_finish
             // 
             this.button_mesh_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_mesh_finish.Location = new System.Drawing.Point(545, 479);
+            this.button_mesh_finish.Location = new System.Drawing.Point(1151, 891);
             this.button_mesh_finish.Name = "button_mesh_finish";
             this.button_mesh_finish.Size = new System.Drawing.Size(75, 23);
             this.button_mesh_finish.TabIndex = 0;
@@ -245,6 +245,7 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.AutoSize = true;
+            this.groupBox1.Controls.Add(this.panel_mesh);
             this.groupBox1.Location = new System.Drawing.Point(20, 81);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(1252, 943);
@@ -323,6 +324,12 @@
             // 
             // treeView1
             // 
+            this.treeView1.AllowDrop = true;
+            this.treeView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView1.CheckBoxes = true;
+            this.treeView1.LabelEdit = true;
             this.treeView1.Location = new System.Drawing.Point(23, 81);
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(331, 378);
@@ -369,11 +376,20 @@
             // 
             // treeView_linktree
             // 
+            this.treeView_linktree.AllowDrop = true;
+            this.treeView_linktree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_linktree.CheckBoxes = true;
             this.treeView_linktree.Location = new System.Drawing.Point(34, 110);
             this.treeView_linktree.Name = "treeView_linktree";
             this.treeView_linktree.Size = new System.Drawing.Size(357, 363);
             this.treeView_linktree.TabIndex = 8;
             this.treeView_linktree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linktree_AfterSelect);
+            this.treeView_linktree.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_linktree_ItemDrag);
+            this.treeView_linktree.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragOver);
+            this.treeView_linktree.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragEnter);
+            this.treeView_linktree.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragDrop);
             // 
             // button_promote_parent
             // 
@@ -429,6 +445,7 @@
             this.panel_mesh.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_visual)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar_mesh_collision)).EndInit();
+            this.groupBox1.ResumeLayout(false);
             this.panel_links.ResumeLayout(false);
             this.panel_links.PerformLayout();
             this.ResumeLayout(false);
