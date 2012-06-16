@@ -26,24 +26,41 @@ namespace SW2URDF
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
             Exporter.createRobotFromActiveModel();
-            fillLinkTreeView();
+            fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
+            fillPropertyBoxes(Exporter.mRobot.BaseLink);
+            textBox_name.Text = Exporter.mPackageName;
+            textBox_save_as.Text = Exporter.mSavePath;
 
         }
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
-            Exporter.mRobot = createRobotFromTreeView();
-            //panel_links.Visible = true;
+            treeView_jointtree.Nodes.Clear();
+            Exporter.mRobot = createRobotFromLinkTreeView(treeView_linktree);
+            fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            panel_joint.Visible = true;
         }
 
         private void button_link_cancel_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-
-        private void groupBox1_Enter(object sender, EventArgs e)
+        private void button_joint_finish_Click(object sender, EventArgs e)
         {
+            this.Close();
+        }
 
+        private void button_joint_previous_Click(object sender, EventArgs e)
+        {
+            treeView_linktree.Nodes.Clear();
+            Exporter.mRobot = createRobotFromLinkTreeView(treeView_jointtree);
+            fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
+            panel_joint.Visible = false;
+        }
+
+        private void button_joint_cancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         //Joint form configuration controls
@@ -104,46 +121,50 @@ namespace SW2URDF
                 listBox_deleted.Items.Remove(item);
             }
 
-            // If dragging a node closer to root level onto a target node further, do parent swapping kung fu
-            if (draggedNode.Level < targetNode.Level)
-            {
-                LinkNode newParent = targetNode;
-                LinkNode newChild = draggedNode;
-                LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
-                newParent.Remove();
-                newChild.Remove();
-                newParent.Nodes.Add(newChild);
-                foreach (LinkNode node in newChild.Nodes)
-                {
-                    LinkNode newNode = node;
-                    newParent.Nodes.Add(newNode);
-                    newChild.Nodes.Remove(node);
-                }
-                if (sameGrandparent == null)
-                {
-                    treeView_linktree.Nodes.Add(newParent);
-                }
-                else
-                {
-                    sameGrandparent.Nodes.Add(newParent);
-                }
-            }
-            draggedNode.Remove();
+
+            
             if (targetNode == null)
             {
                 targetNode = (LinkNode)treeView_linktree.TopNode;
                 
                 if (targetNode == null)
                 {
+                    draggedNode.Remove();
                     treeView_linktree.Nodes.Add(draggedNode);                    
                 }
                 else
                 {
+                    draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
                 }
             }
             else
             {
+                // If dragging a node closer to root level onto a target node further, do parent swapping kung fu
+                if (draggedNode.Level < targetNode.Level)
+                {
+                    LinkNode newParent = targetNode;
+                    LinkNode newChild = draggedNode;
+                    LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
+                    newParent.Remove();
+                    newChild.Remove();
+                    newParent.Nodes.Add(newChild);
+                    foreach (LinkNode node in newChild.Nodes)
+                    {
+                        LinkNode newNode = node;
+                        newParent.Nodes.Add(newNode);
+                        newChild.Nodes.Remove(node);
+                    }
+                    if (sameGrandparent == null)
+                    {
+                        treeView_linktree.Nodes.Add(newParent);
+                    }
+                    else
+                    {
+                        sameGrandparent.Nodes.Add(newParent);
+                    }
+                }
+                draggedNode.Remove();
                 targetNode.Nodes.Add(draggedNode);   
             }
             targetNode.Expand();
@@ -190,10 +211,98 @@ namespace SW2URDF
         #endregion
 
         #region Robot<->Tree
-        public void fillLinkTreeView()
+
+        public void fillPropertyBoxes(link Link)
+        {
+            textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString();
+            textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString();
+            textBox_collision_origin_z.Text = Link.Collision.Origin.Z.ToString();
+            textBox_collision_origin_roll.Text = "0";
+            textBox_collision_origin_pitch.Text = "0";
+            textBox_collision_origin_yaw.Text = "0";
+
+            textBox_visual_origin_x.Text = Link.Visual.Origin.X.ToString();
+            textBox_visual_origin_y.Text = Link.Visual.Origin.Y.ToString();
+            textBox_visual_origin_z.Text = Link.Visual.Origin.Z.ToString();
+            textBox_visual_origin_roll.Text = "0";
+            textBox_visual_origin_pitch.Text = "0";
+            textBox_visual_origin_yaw.Text = "0";
+
+            textBox_inertial_origin_x.Text = Link.Inertial.Origin.X.ToString();
+            textBox_inertial_origin_y.Text = Link.Inertial.Origin.Y.ToString();
+            textBox_inertial_origin_z.Text = Link.Inertial.Origin.Z.ToString();
+            textBox_inertial_origin_roll.Text = "0";
+            textBox_inertial_origin_pitch.Text = "0";
+            textBox_inertial_origin_yaw.Text = "0";
+
+            textBox_mass.Text = Link.Inertial.Mass.Value.ToString();
+
+            textBox_ixx.Text = Link.Inertial.Inertia.Ixx.ToString();
+            textBox_ixy.Text = Link.Inertial.Inertia.Ixy.ToString();
+            textBox_ixz.Text = Link.Inertial.Inertia.Ixz.ToString();
+            textBox_iyy.Text = Link.Inertial.Inertia.Iyy.ToString();
+            textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString();
+            textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString();
+        }
+        public void saveLinkItemData(int index)
+        {
+            LinkItem item = (LinkItem)listBox_deleted.Items[index];
+            item.Link = saveLinkDataFromPropertyBoxes(item.Link);
+            listBox_deleted.Items[index] = item;
+        }
+        public void saveLinkNodeData(int index)
+        {
+            LinkNode node = (LinkNode)treeView_linktree.Nodes[index];
+            node.Link = saveLinkDataFromPropertyBoxes(node.Link);
+            treeView_linktree.Nodes[index] = node;
+        }
+        public link saveLinkDataFromPropertyBoxes(link Link)
+        {
+            double value;
+            Link.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Roll = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
+
+            Link.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+
+            Link.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Z = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Roll = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
+
+            Link.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+
+            Link.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
+            Link.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
+            Link.Inertial.Inertia.Ixz = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
+            Link.Inertial.Inertia.Iyy = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
+            Link.Inertial.Inertia.Iyz = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
+            Link.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
+
+            Link.Visual.Material.name = comboBox_materials.Text;
+            Link.Visual.Material.Texture.filename = textBox_texture.Text;
+
+            Link.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+
+            return Link;
+        }
+        public void fillTreeViewFromRobot(robot robot, TreeView tree)
         {
             LinkNode baseNode = new LinkNode();
-            link baseLink = Exporter.mRobot.BaseLink;
+            link baseLink = robot.BaseLink;
             baseNode.Name = baseLink.name;
             baseNode.Text = baseLink.name;
             baseNode.Link = baseLink;
@@ -201,10 +310,10 @@ namespace SW2URDF
             {
                 baseNode.Nodes.Add(createLinkNodeFromLink(child));
             }
-            treeView_linktree.Nodes.Add(baseNode);
-            treeView_linktree.ExpandAll();
-
+            tree.Nodes.Add(baseNode);
+            tree.ExpandAll();
         }
+
         public LinkNode createLinkNodeFromLink(link Link)
         {
             LinkNode node = new LinkNode();
@@ -218,30 +327,36 @@ namespace SW2URDF
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
             return node;
         }
-        public robot createRobotFromTreeView()
+        public robot createRobotFromLinkTreeView(TreeView tree)
         {
             robot Robot = new robot();
             Robot.name = Robot.BaseLink.name;
-            foreach (LinkNode node in treeView_linktree.Nodes)
+            foreach (LinkNode node in tree.Nodes)
             {
-                if (node.Parent == null)
+                if (node.Level == 0)
                 {
-                    Robot.BaseLink = createLinkFromLinkNode(node);
+                    Robot.BaseLink = createLinkFromLinkNode(node, 1);
                 }
             }
             return Robot;
         }
-        public link createLinkFromLinkNode(LinkNode node)
+
+        public link createLinkFromLinkNode(LinkNode node, int level)
         {
             link Link = new link();
             Link = node.Link;
             foreach (LinkNode child in node.Nodes)
             {
-                Link.Children.Add(createLinkFromLinkNode(child)); // Recreates the children of each embedded link
+                if (child.Level == level)
+                {
+                    Link.Children.Add(createLinkFromLinkNode(child, level + 1)); // Recreates the children of each embedded link
+                }
             }
             return Link;
         }
         #endregion
+
+        #region Link Properties Controls
 
         private void textBox_inertial_origin_x_TextChanged(object sender, EventArgs e)
         {
@@ -437,12 +552,168 @@ namespace SW2URDF
         {
 
         }
+
+        #endregion
+
+        private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            //if (previouslySelectedLinkNodeIndex != -1)
+            //{
+            //    saveLinkNodeData(previouslySelectedLinkNodeIndex);
+            //}
+            LinkNode node = (LinkNode)e.Node;
+            fillPropertyBoxes(node.Link);
+            //previouslySelectedLinkNodeIndex = node.Index;
+        }
+
+        private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //if (previouslySelectedLinkItemIndex != -1)
+            //{
+            //    saveLinkItemData(previouslySelectedLinkItemIndex);
+            //}
+            LinkItem item = (LinkItem)listBox_deleted.SelectedItem;
+            if (item != null)
+            {
+                fillPropertyBoxes(item.Link);
+            }
+            //previouslySelectedLinkItemIndex = item.Index;
+        }
+
+        #region joint property controls
+        private void label_damping_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_name_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBox_joint_type_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_x_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_roll_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_y_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_z_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_pitch_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_joint_yaw_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_axis_x_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_axis_y_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_axis_z_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_limit_lower_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_limit_upper_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_limit_effort_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_limit_velocity_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_calibration_rising_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_calibration_falling_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_friction_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_damping_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_soft_lower_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_soft_upper_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox_k_position_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_k_velocity_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
     }
 
     #region Derived classes
     public class LinkNode : TreeNode
     {
         public link Link
+        { get; set; }
+        public joint Joint
         { get; set; }
     }
     public class LinkItem : ListViewItem

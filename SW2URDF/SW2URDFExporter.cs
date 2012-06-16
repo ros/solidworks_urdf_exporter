@@ -63,24 +63,24 @@ namespace SW2URDF
 
         }
 
+        public link getBaseLinkFromActiveModel()
+        {
+            return getBaseLinkFromAssy(ActiveSWModel);
+        }
+
         public link getBaseLinkFromAssy(ModelDoc2 swModel)
         {
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
             varComp = (object[])swAssy.GetComponents(true);
 
             link baseLink = assignParentLinkFromChildren(varComp, swModel);
-            
+
             foreach (IComponent comp in varComp)
             {
                 baseLink.Children.Add(getLinkFromComp(comp));
             }
 
             return baseLink;
-        }
-
-        public link getBaseLinkFromActiveModel()
-        {
-            return getBaseLinkFromAssy(ActiveSWModel);
         }
 
         public link getLinkFromComp(object comp)
@@ -138,32 +138,31 @@ namespace SW2URDF
                         ModelDoc2 ChildDoc = child.GetModelDoc();
                         int ChildType = (int)ChildDoc.GetType();
                         IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
-                        double[] bb = child.GetBox(false, false);
-                        double childBBVolume = boundingBoxVolume(bb);
+                        
+                        double childVolume = childMass.Volume;
 
                         //Highest priority is the largest fixed component
                         if (child.IsFixed() && childMass.Volume > largestFixedVolume)
                         {
                             priorityLevel = 2;
                             ParentComp = child;
-                            largestFixedVolume = childBBVolume;
+                            largestFixedVolume = childVolume;
                         }
                         //Second highest priority is the largest floating part
                         else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
                         {
                             priorityLevel = 1;
                             ParentComp = child;
-                            largestPartVolume = childBBVolume;
+                            largestPartVolume = childVolume;
                         }
                         //Third priority is the 'best' choice from the largest assembly
                         else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
                         {
                             priorityLevel = 0;
                             ParentComp = child;
-                            largestAssyVolume = childBBVolume;
+                            largestAssyVolume = childVolume;
                         }
                     }
-
 
                     ParentDoc = ParentComp.GetModelDoc();
                     ParentType = ParentDoc.GetType();
@@ -188,12 +187,6 @@ namespace SW2URDF
                 return getLinkFromPartModel(ParentDoc);
             }
         }
-
-        public double boundingBoxVolume(double[] bb)
-        {
-            return ((bb[3] - bb[0]) * (bb[4] - bb[1]) * (bb[5] - bb[2]));
-        }
-
         
         #region Part Exporting methods
         public link getLinkFromPartModel(ModelDoc2 swModel)

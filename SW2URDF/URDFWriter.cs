@@ -64,6 +64,8 @@ namespace SW2URDF
         { get; set; }
         public gazebo Gazebo
         { get; set; }
+        public joint Joint
+        { get; set; }
         public link()
         {
             Children = new List<link>();
@@ -81,6 +83,10 @@ namespace SW2URDF
             Collision.writeURDF( writer);
 
             writer.WriteEndElement();
+            if (Joint != null)
+            {
+                Joint.writeURDF(writer);
+            }
             
             foreach (link child in Children)
             {
@@ -91,7 +97,7 @@ namespace SW2URDF
 
     public class inertial : URDFElement
     {
-        public origin_inertial Origin
+        public origin Origin
         { get; set; }
         public mass Mass
         { get; set; }
@@ -100,7 +106,7 @@ namespace SW2URDF
 
         public inertial()
         {
-            Origin = new origin_inertial();
+            Origin = new origin();
             Mass = new mass();
             Inertia = new inertia();
         }
@@ -116,7 +122,7 @@ namespace SW2URDF
         }
     }
 
-    public class origin_inertial : URDFElement
+    public class origin : URDFElement
     {
         private double[] xyz;
         public double[] XYZ
@@ -209,7 +215,7 @@ namespace SW2URDF
                 rpy[2] = value;
             }
         }
-        public origin_inertial()
+        public origin()
         {
             xyz = new double[3] { 0, 0, 0 };
             rpy = new double[3] { 0, 0, 0 };
@@ -371,16 +377,16 @@ namespace SW2URDF
 
     public class visual : URDFElement
     {
-        public origin_visual Origin
+        public origin Origin
         { get; set; }
-        public geometry_visual Geometry
+        public geometry Geometry
         { get; set; }
         public material Material
         { get; set; }
         public visual()
         {
-            Origin = new origin_visual();
-            Geometry = new geometry_visual();
+            Origin = new origin();
+            Geometry = new geometry();
             Material = new material();
         }
         new public void writeURDF(XmlWriter writer)
@@ -395,120 +401,13 @@ namespace SW2URDF
         }
     }
 
-    public class origin_visual : URDFElement
+    public class geometry : URDFElement
     {
-        private double[] xyz;
-        public double[] XYZ
-        {
-            get
-            {
-                return xyz;
-            }
-            set
-            {
-                xyz = value;
-            }
-        }
-        public double X
-        {
-            get
-            {
-                return xyz[0];
-            }
-            set
-            {
-                xyz[0] = value;
-            }
-        }
-        public double Y
-        {
-            get
-            {
-                return xyz[1];
-            }
-            set
-            {
-                xyz[1] = value;
-            }
-        }
-        public double Z
-        {
-            get
-            {
-                return xyz[2];
-            }
-            set
-            {
-                xyz[2] = value;
-            }
-        }
-
-        private double[] rpy;
-        public double[] RPY
-        {
-            get
-            {
-                return rpy;
-            }
-            set
-            {
-                rpy = value;
-            }
-        }
-        public double Roll
-        {
-            get
-            {
-                return rpy[0];
-            }
-            set
-            {
-                rpy[0] = value;
-            }
-        }
-        public double Pitch
-        {
-            get
-            {
-                return rpy[1];
-            }
-            set
-            {
-                rpy[1] = value;
-            }
-        }
-        public double Yaw
-        {
-            get
-            {
-                return rpy[2];
-            }
-            set
-            {
-                rpy[2] = value;
-            }
-        }
-        public origin_visual()
-        {
-            xyz = new double[3] { 0, 0, 0 };
-            rpy = new double[3] { 0, 0, 0 };
-        }
-        new public void writeURDF(XmlWriter writer)
-        {
-            writer.WriteStartElement("origin");
-            writer.WriteAttributeString("xyz", X.ToString() + " " + Y.ToString() + " " + Z.ToString());
-            writer.WriteAttributeString("rpy", Roll.ToString() + " " + Pitch.ToString() + " " + Yaw.ToString());
-            writer.WriteEndElement();
-        }
-    }
-
-    public class geometry_visual : URDFElement
-    {
-        public mesh_visual Mesh
+        public mesh Mesh
         { get; set; }
-        public geometry_visual()
+        public geometry()
         {
-            Mesh = new mesh_visual();
+            Mesh = new mesh();
         }
         new public void writeURDF(XmlWriter writer)
         {
@@ -520,11 +419,11 @@ namespace SW2URDF
         }
     }
 
-    public class mesh_visual : URDFElement
+    public class mesh : URDFElement
     {
         public string filename
         { get; set; }
-        public mesh_visual()
+        public mesh()
         {
         }
         new public void writeURDF(XmlWriter writer)
@@ -654,14 +553,14 @@ namespace SW2URDF
 
     public class collision : URDFElement
     {
-        public origin_collision Origin
+        public origin Origin
         { get; set; }
-        public geometry_collision Geometry
+        public geometry Geometry
         { get; set; }
         public collision()
         {
-            Origin = new origin_collision();
-            Geometry = new geometry_collision();
+            Origin = new origin();
+            Geometry = new geometry();
         }
         new public void writeURDF(XmlWriter writer)
         {
@@ -674,7 +573,89 @@ namespace SW2URDF
         }
     }
 
-    public class origin_collision : URDFElement
+
+
+
+    public class joint : URDFElement
+    {
+        public string name
+        { get; set; }
+        public string type
+        { get; set; }
+        public origin Origin
+        { get; set; }
+        public parent_link Parent
+        { get; set; }
+        public child_link Child
+        { get; set; }
+        public axis Axis
+        { get; set;}
+        public limit Limit
+        { get; set; }
+        public calibration Calibration
+        { get; set; }
+        public dynamics Dynamics
+        { get; set; }
+        public safety_controller Safety
+        { get; set; }
+
+        public joint()
+        {
+            Origin = new origin();
+            Parent = new parent_link();
+            Child = new child_link();
+            Axis = new axis();
+            Limit = new limit();
+            Calibration = new calibration();
+            Dynamics = new dynamics();
+            Safety = new safety_controller();
+        }
+        new public void writeURDF(XmlWriter writer)
+        {
+            writer.WriteStartElement("link");
+            writer.WriteAttributeString("name", "joint_" + name);
+            writer.WriteAttributeString("type", type);
+
+            Origin.writeURDF(writer);
+            Parent.writeURDF(writer);
+            Child.writeURDF(writer);
+            Axis.writeURDF(writer);
+            Limit.writeURDF(writer);
+            Calibration.writeURDF(writer);
+            Dynamics.writeURDF(writer);
+            Safety.writeURDF(writer);
+
+            writer.WriteEndElement();
+        }
+    }
+
+    public class parent_link : URDFElement
+    {
+        public string name
+        { get; set; }
+        public parent_link()
+        {
+        }
+        new public void writeURDF(XmlWriter writer)
+        {
+
+        }
+    }
+
+    public class child_link : URDFElement
+    {
+        public string name
+        { get; set; }
+        public child_link()
+        {
+        }
+        new public void writeURDF(XmlWriter writer)
+        {
+
+        }
+    }
+
+    public class axis : URDFElement
     {
         private double[] xyz;
         public double[] XYZ
@@ -721,111 +702,108 @@ namespace SW2URDF
                 xyz[2] = value;
             }
         }
-
-        private double[] rpy;
-        public double[] RPY
+        public axis()
         {
-            get
-            {
-                return rpy;
-            }
-            set
-            {
-                rpy = value;
-            }
-        }
-        public double Roll
-        {
-            get
-            {
-                return rpy[0];
-            }
-            set
-            {
-                rpy[0] = value;
-            }
-        }
-        public double Pitch
-        {
-            get
-            {
-                return rpy[1];
-            }
-            set
-            {
-                rpy[1] = value;
-            }
-        }
-        public double Yaw
-        {
-            get
-            {
-                return rpy[2];
-            }
-            set
-            {
-                rpy[2] = value;
-            }
-        }
-        public origin_collision()
-        {
-            xyz = new double[3] { 0, 0, 0 };
-            rpy = new double[3] { 0, 0, 0 };
+            xyz = new double[] { 0, 0, 0 };
         }
         new public void writeURDF(XmlWriter writer)
         {
-            writer.WriteStartElement("origin");
+            writer.WriteStartElement("axis");
             writer.WriteAttributeString("xyz", X.ToString() + " " + Y.ToString() + " " + Z.ToString());
-            writer.WriteAttributeString("rpy", Roll.ToString() + " " + Pitch.ToString() + " " + Yaw.ToString());
             writer.WriteEndElement();
         }
     }
 
-    public class geometry_collision : URDFElement
+    public class limit : URDFElement
     {
-        public mesh_collision Mesh
+        public double lower
         { get; set; }
-        public geometry_collision()
+        public double upper
+        { get; set; }
+        public double effort
+        { get; set; }
+        public double velocity
+        { get; set; }
+        public limit()
         {
-            Mesh = new mesh_collision();
+            lower = 0; upper = 0; effort = 0; velocity = 0;
         }
         new public void writeURDF(XmlWriter writer)
         {
-            writer.WriteStartElement("geometry");
-
-            Mesh.writeURDF( writer);
-
+            writer.WriteStartElement("limit");
+            writer.WriteAttributeString("lower", lower.ToString());
+            writer.WriteAttributeString("upper", upper.ToString());
+            writer.WriteAttributeString("effort", effort.ToString());
+            writer.WriteAttributeString("velocity", velocity.ToString());
             writer.WriteEndElement();
         }
     }
 
-    public class mesh_collision : URDFElement
+    public class calibration : URDFElement
     {
-        public string filename
+        public double rising
         { get; set; }
-        public mesh_collision()
+        public double falling
+        { get; set; }
+
+        public calibration()
         {
+            rising = 0; falling = 0;
         }
         new public void writeURDF(XmlWriter writer)
         {
-            writer.WriteStartElement("mesh");
-            writer.WriteAttributeString("filename", filename);
-            writer.WriteEndElement(); //mesh
+            writer.WriteStartElement("calibration");
+            writer.WriteAttributeString("rising", rising.ToString());
+            writer.WriteAttributeString("falling", falling.ToString());
+            writer.WriteEndElement();
         }
     }
 
-
-
-    public class joint : URDFElement
+    public class dynamics : URDFElement
     {
-        public joint()
+        public double damping
+        { get; set; }
+        public double friction
+        { get; set; }
+
+        public dynamics()
         {
+            damping = 0; friction = 0;
         }
         new public void writeURDF(XmlWriter writer)
         {
-
+            writer.WriteStartElement("dynamics");
+            writer.WriteAttributeString("damping", damping.ToString());
+            writer.WriteAttributeString("friction", friction.ToString());
+            writer.WriteEndElement();
         }
     }
+
+    public class safety_controller : URDFElement
+    {
+        public double soft_lower
+        { get; set; }
+        public double soft_upper
+        { get; set; }
+        public double k_position
+        { get; set; }
+        public double k_velocity
+        { get; set; }
+        public safety_controller()
+        {
+            soft_lower = 0; soft_upper = 0; k_position = 0; k_velocity = 0;
+        }
+        new public void writeURDF(XmlWriter writer)
+        {
+            writer.WriteStartElement("safety_controller");
+            writer.WriteAttributeString("soft_lower_limit", soft_lower.ToString());
+            writer.WriteAttributeString("soft_upper_limit", soft_upper.ToString());
+            writer.WriteAttributeString("k_position", k_position.ToString());
+            writer.WriteAttributeString("k_velocity", k_velocity.ToString());
+            writer.WriteEndElement();
+        }
+    }
+
 
     public class gazebo : URDFElement
     {

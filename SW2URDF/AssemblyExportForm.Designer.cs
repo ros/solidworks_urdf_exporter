@@ -124,9 +124,72 @@
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_name = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.panel_joint = new System.Windows.Forms.Panel();
+            this.label5 = new System.Windows.Forms.Label();
+            this.textBox1_k_velocity = new System.Windows.Forms.TextBox();
+            this.label77 = new System.Windows.Forms.Label();
+            this.textBox_soft_lower = new System.Windows.Forms.TextBox();
+            this.label78 = new System.Windows.Forms.Label();
+            this.textBox_soft_upper = new System.Windows.Forms.TextBox();
+            this.label79 = new System.Windows.Forms.Label();
+            this.label80 = new System.Windows.Forms.Label();
+            this.textBox_k_position = new System.Windows.Forms.TextBox();
+            this.label81 = new System.Windows.Forms.Label();
+            this.textBox_friction = new System.Windows.Forms.TextBox();
+            this.label_friction = new System.Windows.Forms.Label();
+            this.textBox_damping = new System.Windows.Forms.TextBox();
+            this.label_damping = new System.Windows.Forms.Label();
+            this.label76 = new System.Windows.Forms.Label();
+            this.textBox_calibration_rising = new System.Windows.Forms.TextBox();
+            this.label7_calibration_rising = new System.Windows.Forms.Label();
+            this.textBox_calibration_falling = new System.Windows.Forms.TextBox();
+            this.label73 = new System.Windows.Forms.Label();
+            this.label74 = new System.Windows.Forms.Label();
+            this.textBox_limit_velocity = new System.Windows.Forms.TextBox();
+            this.label70 = new System.Windows.Forms.Label();
+            this.textBox_limit_lower = new System.Windows.Forms.TextBox();
+            this.label66 = new System.Windows.Forms.Label();
+            this.textBox_limit_upper = new System.Windows.Forms.TextBox();
+            this.label_limit_upper = new System.Windows.Forms.Label();
+            this.label68 = new System.Windows.Forms.Label();
+            this.textBox_limit_effort = new System.Windows.Forms.TextBox();
+            this.label69 = new System.Windows.Forms.Label();
+            this.label65 = new System.Windows.Forms.Label();
+            this.label64 = new System.Windows.Forms.Label();
+            this.label63 = new System.Windows.Forms.Label();
+            this.textBox_joint_name = new System.Windows.Forms.TextBox();
+            this.label62 = new System.Windows.Forms.Label();
+            this.comboBox_joint_type = new System.Windows.Forms.ComboBox();
+            this.textBox_axis_x = new System.Windows.Forms.TextBox();
+            this.label58 = new System.Windows.Forms.Label();
+            this.textBox_axis_y = new System.Windows.Forms.TextBox();
+            this.label59 = new System.Windows.Forms.Label();
+            this.label60 = new System.Windows.Forms.Label();
+            this.textBox_axis_z = new System.Windows.Forms.TextBox();
+            this.label61 = new System.Windows.Forms.Label();
+            this.textBox_joint_x = new System.Windows.Forms.TextBox();
+            this.label51 = new System.Windows.Forms.Label();
+            this.textBox_joint_yaw = new System.Windows.Forms.TextBox();
+            this.textBox_joint_pitch = new System.Windows.Forms.TextBox();
+            this.label52 = new System.Windows.Forms.Label();
+            this.textBox_joint_roll = new System.Windows.Forms.TextBox();
+            this.textBox_joint_y = new System.Windows.Forms.TextBox();
+            this.label53 = new System.Windows.Forms.Label();
+            this.label54 = new System.Windows.Forms.Label();
+            this.label55 = new System.Windows.Forms.Label();
+            this.label56 = new System.Windows.Forms.Label();
+            this.textBox_joint_z = new System.Windows.Forms.TextBox();
+            this.label57 = new System.Windows.Forms.Label();
+            this.label_child = new System.Windows.Forms.Label();
+            this.label_parent = new System.Windows.Forms.Label();
+            this.treeView_jointtree = new System.Windows.Forms.TreeView();
+            this.button_joint_finish = new System.Windows.Forms.Button();
+            this.button_joint_previous = new System.Windows.Forms.Button();
+            this.button_joint_cancel = new System.Windows.Forms.Button();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
+            this.panel_joint.SuspendLayout();
             this.SuspendLayout();
             // 
             // button_link_next
@@ -191,6 +254,7 @@
             this.treeView_linktree.Size = new System.Drawing.Size(267, 459);
             this.treeView_linktree.TabIndex = 8;
             this.treeView_linktree.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_linktree_ItemDrag);
+            this.treeView_linktree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linktree_AfterSelect);
             this.treeView_linktree.DragDrop += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragDrop);
             this.treeView_linktree.DragEnter += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragEnter);
             this.treeView_linktree.DragOver += new System.Windows.Forms.DragEventHandler(this.treeView_linktree_DragOver);
@@ -206,6 +270,7 @@
             this.listBox_deleted.Name = "listBox_deleted";
             this.listBox_deleted.Size = new System.Drawing.Size(186, 459);
             this.listBox_deleted.TabIndex = 9;
+            this.listBox_deleted.SelectedIndexChanged += new System.EventHandler(this.listBox_deleted_SelectedIndexChanged);
             this.listBox_deleted.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBox_deleted_DragDrop);
             this.listBox_deleted.DragEnter += new System.Windows.Forms.DragEventHandler(this.listBox_deleted_DragEnter);
             this.listBox_deleted.DragOver += new System.Windows.Forms.DragEventHandler(this.listBox_deleted_DragOver);
@@ -1067,16 +1132,625 @@
             this.label4.TabIndex = 74;
             this.label4.Text = "Configure link properties and link tree";
             // 
+            // panel_joint
+            // 
+            this.panel_joint.Controls.Add(this.label5);
+            this.panel_joint.Controls.Add(this.textBox1_k_velocity);
+            this.panel_joint.Controls.Add(this.label77);
+            this.panel_joint.Controls.Add(this.textBox_soft_lower);
+            this.panel_joint.Controls.Add(this.label78);
+            this.panel_joint.Controls.Add(this.textBox_soft_upper);
+            this.panel_joint.Controls.Add(this.label79);
+            this.panel_joint.Controls.Add(this.label80);
+            this.panel_joint.Controls.Add(this.textBox_k_position);
+            this.panel_joint.Controls.Add(this.label81);
+            this.panel_joint.Controls.Add(this.textBox_friction);
+            this.panel_joint.Controls.Add(this.label_friction);
+            this.panel_joint.Controls.Add(this.textBox_damping);
+            this.panel_joint.Controls.Add(this.label_damping);
+            this.panel_joint.Controls.Add(this.label76);
+            this.panel_joint.Controls.Add(this.textBox_calibration_rising);
+            this.panel_joint.Controls.Add(this.label7_calibration_rising);
+            this.panel_joint.Controls.Add(this.textBox_calibration_falling);
+            this.panel_joint.Controls.Add(this.label73);
+            this.panel_joint.Controls.Add(this.label74);
+            this.panel_joint.Controls.Add(this.textBox_limit_velocity);
+            this.panel_joint.Controls.Add(this.label70);
+            this.panel_joint.Controls.Add(this.textBox_limit_lower);
+            this.panel_joint.Controls.Add(this.label66);
+            this.panel_joint.Controls.Add(this.textBox_limit_upper);
+            this.panel_joint.Controls.Add(this.label_limit_upper);
+            this.panel_joint.Controls.Add(this.label68);
+            this.panel_joint.Controls.Add(this.textBox_limit_effort);
+            this.panel_joint.Controls.Add(this.label69);
+            this.panel_joint.Controls.Add(this.label65);
+            this.panel_joint.Controls.Add(this.label64);
+            this.panel_joint.Controls.Add(this.label63);
+            this.panel_joint.Controls.Add(this.textBox_joint_name);
+            this.panel_joint.Controls.Add(this.label62);
+            this.panel_joint.Controls.Add(this.comboBox_joint_type);
+            this.panel_joint.Controls.Add(this.textBox_axis_x);
+            this.panel_joint.Controls.Add(this.label58);
+            this.panel_joint.Controls.Add(this.textBox_axis_y);
+            this.panel_joint.Controls.Add(this.label59);
+            this.panel_joint.Controls.Add(this.label60);
+            this.panel_joint.Controls.Add(this.textBox_axis_z);
+            this.panel_joint.Controls.Add(this.label61);
+            this.panel_joint.Controls.Add(this.textBox_joint_x);
+            this.panel_joint.Controls.Add(this.label51);
+            this.panel_joint.Controls.Add(this.textBox_joint_yaw);
+            this.panel_joint.Controls.Add(this.textBox_joint_pitch);
+            this.panel_joint.Controls.Add(this.label52);
+            this.panel_joint.Controls.Add(this.textBox_joint_roll);
+            this.panel_joint.Controls.Add(this.textBox_joint_y);
+            this.panel_joint.Controls.Add(this.label53);
+            this.panel_joint.Controls.Add(this.label54);
+            this.panel_joint.Controls.Add(this.label55);
+            this.panel_joint.Controls.Add(this.label56);
+            this.panel_joint.Controls.Add(this.textBox_joint_z);
+            this.panel_joint.Controls.Add(this.label57);
+            this.panel_joint.Controls.Add(this.label_child);
+            this.panel_joint.Controls.Add(this.label_parent);
+            this.panel_joint.Controls.Add(this.treeView_jointtree);
+            this.panel_joint.Controls.Add(this.button_joint_finish);
+            this.panel_joint.Controls.Add(this.button_joint_previous);
+            this.panel_joint.Controls.Add(this.button_joint_cancel);
+            this.panel_joint.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel_joint.Location = new System.Drawing.Point(0, 0);
+            this.panel_joint.Name = "panel_joint";
+            this.panel_joint.Size = new System.Drawing.Size(1073, 688);
+            this.panel_joint.TabIndex = 80;
+            this.panel_joint.Visible = false;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(25, 9);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(127, 13);
+            this.label5.TabIndex = 148;
+            this.label5.Text = "Configure Joint Properties";
+            // 
+            // textBox1_k_velocity
+            // 
+            this.textBox1_k_velocity.Location = new System.Drawing.Point(978, 572);
+            this.textBox1_k_velocity.Name = "textBox1_k_velocity";
+            this.textBox1_k_velocity.Size = new System.Drawing.Size(40, 20);
+            this.textBox1_k_velocity.TabIndex = 146;
+            this.textBox1_k_velocity.TextChanged += new System.EventHandler(this.textBox1_k_velocity_TextChanged);
+            // 
+            // label77
+            // 
+            this.label77.AutoSize = true;
+            this.label77.Location = new System.Drawing.Point(920, 575);
+            this.label77.Name = "label77";
+            this.label77.Size = new System.Drawing.Size(52, 13);
+            this.label77.TabIndex = 147;
+            this.label77.Text = "k velocity";
+            // 
+            // textBox_soft_lower
+            // 
+            this.textBox_soft_lower.Location = new System.Drawing.Point(978, 492);
+            this.textBox_soft_lower.Name = "textBox_soft_lower";
+            this.textBox_soft_lower.Size = new System.Drawing.Size(40, 20);
+            this.textBox_soft_lower.TabIndex = 139;
+            this.textBox_soft_lower.TextChanged += new System.EventHandler(this.textBox_soft_lower_TextChanged);
+            // 
+            // label78
+            // 
+            this.label78.AutoSize = true;
+            this.label78.Location = new System.Drawing.Point(900, 495);
+            this.label78.Name = "label78";
+            this.label78.Size = new System.Drawing.Size(72, 13);
+            this.label78.TabIndex = 142;
+            this.label78.Text = "soft lower limit";
+            // 
+            // textBox_soft_upper
+            // 
+            this.textBox_soft_upper.Location = new System.Drawing.Point(978, 520);
+            this.textBox_soft_upper.Name = "textBox_soft_upper";
+            this.textBox_soft_upper.Size = new System.Drawing.Size(40, 20);
+            this.textBox_soft_upper.TabIndex = 140;
+            this.textBox_soft_upper.TextChanged += new System.EventHandler(this.textBox_soft_upper_TextChanged);
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.Location = new System.Drawing.Point(898, 523);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(74, 13);
+            this.label79.TabIndex = 143;
+            this.label79.Text = "soft upper limit";
+            // 
+            // label80
+            // 
+            this.label80.AutoSize = true;
+            this.label80.Location = new System.Drawing.Point(924, 464);
+            this.label80.Name = "label80";
+            this.label80.Size = new System.Drawing.Size(84, 13);
+            this.label80.TabIndex = 145;
+            this.label80.Text = "Safety Controller";
+            // 
+            // textBox_k_position
+            // 
+            this.textBox_k_position.Location = new System.Drawing.Point(978, 546);
+            this.textBox_k_position.Name = "textBox_k_position";
+            this.textBox_k_position.Size = new System.Drawing.Size(40, 20);
+            this.textBox_k_position.TabIndex = 141;
+            this.textBox_k_position.TextChanged += new System.EventHandler(this.textBox_k_position_TextChanged);
+            // 
+            // label81
+            // 
+            this.label81.AutoSize = true;
+            this.label81.Location = new System.Drawing.Point(920, 549);
+            this.label81.Name = "label81";
+            this.label81.Size = new System.Drawing.Size(52, 13);
+            this.label81.TabIndex = 144;
+            this.label81.Text = "k position";
+            // 
+            // textBox_friction
+            // 
+            this.textBox_friction.Location = new System.Drawing.Point(801, 492);
+            this.textBox_friction.Name = "textBox_friction";
+            this.textBox_friction.Size = new System.Drawing.Size(40, 20);
+            this.textBox_friction.TabIndex = 134;
+            this.textBox_friction.TextChanged += new System.EventHandler(this.textBox_friction_TextChanged);
+            // 
+            // label_friction
+            // 
+            this.label_friction.AutoSize = true;
+            this.label_friction.Location = new System.Drawing.Point(735, 497);
+            this.label_friction.Name = "label_friction";
+            this.label_friction.Size = new System.Drawing.Size(67, 13);
+            this.label_friction.TabIndex = 136;
+            this.label_friction.Text = "friction (N*m)";
+            // 
+            // textBox_damping
+            // 
+            this.textBox_damping.Location = new System.Drawing.Point(801, 518);
+            this.textBox_damping.Name = "textBox_damping";
+            this.textBox_damping.Size = new System.Drawing.Size(40, 20);
+            this.textBox_damping.TabIndex = 135;
+            this.textBox_damping.TextChanged += new System.EventHandler(this.textBox_damping_TextChanged);
+            // 
+            // label_damping
+            // 
+            this.label_damping.AutoSize = true;
+            this.label_damping.Location = new System.Drawing.Point(676, 521);
+            this.label_damping.Name = "label_damping";
+            this.label_damping.Size = new System.Drawing.Size(119, 13);
+            this.label_damping.TabIndex = 137;
+            this.label_damping.Text = "damping (N*m*s*rad^-1)";
+            this.label_damping.Click += new System.EventHandler(this.label_damping_Click);
+            // 
+            // label76
+            // 
+            this.label76.AutoSize = true;
+            this.label76.Location = new System.Drawing.Point(710, 462);
+            this.label76.Name = "label76";
+            this.label76.Size = new System.Drawing.Size(53, 13);
+            this.label76.TabIndex = 138;
+            this.label76.Text = "Dynamics";
+            // 
+            // textBox_calibration_rising
+            // 
+            this.textBox_calibration_rising.Location = new System.Drawing.Point(557, 492);
+            this.textBox_calibration_rising.Name = "textBox_calibration_rising";
+            this.textBox_calibration_rising.Size = new System.Drawing.Size(40, 20);
+            this.textBox_calibration_rising.TabIndex = 127;
+            this.textBox_calibration_rising.TextChanged += new System.EventHandler(this.textBox_calibration_rising_TextChanged);
+            // 
+            // label7_calibration_rising
+            // 
+            this.label7_calibration_rising.AutoSize = true;
+            this.label7_calibration_rising.Location = new System.Drawing.Point(520, 495);
+            this.label7_calibration_rising.Name = "label7_calibration_rising";
+            this.label7_calibration_rising.Size = new System.Drawing.Size(31, 13);
+            this.label7_calibration_rising.TabIndex = 130;
+            this.label7_calibration_rising.Text = "rising";
+            // 
+            // textBox_calibration_falling
+            // 
+            this.textBox_calibration_falling.Location = new System.Drawing.Point(557, 518);
+            this.textBox_calibration_falling.Name = "textBox_calibration_falling";
+            this.textBox_calibration_falling.Size = new System.Drawing.Size(40, 20);
+            this.textBox_calibration_falling.TabIndex = 128;
+            this.textBox_calibration_falling.TextChanged += new System.EventHandler(this.textBox_calibration_falling_TextChanged);
+            // 
+            // label73
+            // 
+            this.label73.AutoSize = true;
+            this.label73.Location = new System.Drawing.Point(517, 521);
+            this.label73.Name = "label73";
+            this.label73.Size = new System.Drawing.Size(34, 13);
+            this.label73.TabIndex = 131;
+            this.label73.Text = "falling";
+            // 
+            // label74
+            // 
+            this.label74.AutoSize = true;
+            this.label74.Location = new System.Drawing.Point(521, 462);
+            this.label74.Name = "label74";
+            this.label74.Size = new System.Drawing.Size(56, 13);
+            this.label74.TabIndex = 133;
+            this.label74.Text = "Calibration";
+            // 
+            // textBox_limit_velocity
+            // 
+            this.textBox_limit_velocity.Location = new System.Drawing.Point(978, 392);
+            this.textBox_limit_velocity.Name = "textBox_limit_velocity";
+            this.textBox_limit_velocity.Size = new System.Drawing.Size(40, 20);
+            this.textBox_limit_velocity.TabIndex = 125;
+            this.textBox_limit_velocity.TextChanged += new System.EventHandler(this.textBox_limit_velocity_TextChanged);
+            // 
+            // label70
+            // 
+            this.label70.AutoSize = true;
+            this.label70.Location = new System.Drawing.Point(928, 395);
+            this.label70.Name = "label70";
+            this.label70.Size = new System.Drawing.Size(43, 13);
+            this.label70.TabIndex = 126;
+            this.label70.Text = "velocity";
+            // 
+            // textBox_limit_lower
+            // 
+            this.textBox_limit_lower.Location = new System.Drawing.Point(978, 314);
+            this.textBox_limit_lower.Name = "textBox_limit_lower";
+            this.textBox_limit_lower.Size = new System.Drawing.Size(40, 20);
+            this.textBox_limit_lower.TabIndex = 118;
+            this.textBox_limit_lower.TextChanged += new System.EventHandler(this.textBox_limit_lower_TextChanged);
+            // 
+            // label66
+            // 
+            this.label66.AutoSize = true;
+            this.label66.Location = new System.Drawing.Point(940, 317);
+            this.label66.Name = "label66";
+            this.label66.Size = new System.Drawing.Size(32, 13);
+            this.label66.TabIndex = 121;
+            this.label66.Text = "lower";
+            // 
+            // textBox_limit_upper
+            // 
+            this.textBox_limit_upper.Location = new System.Drawing.Point(978, 340);
+            this.textBox_limit_upper.Name = "textBox_limit_upper";
+            this.textBox_limit_upper.Size = new System.Drawing.Size(40, 20);
+            this.textBox_limit_upper.TabIndex = 119;
+            this.textBox_limit_upper.TextChanged += new System.EventHandler(this.textBox_limit_upper_TextChanged);
+            // 
+            // label_limit_upper
+            // 
+            this.label_limit_upper.AutoSize = true;
+            this.label_limit_upper.Location = new System.Drawing.Point(938, 345);
+            this.label_limit_upper.Name = "label_limit_upper";
+            this.label_limit_upper.Size = new System.Drawing.Size(34, 13);
+            this.label_limit_upper.TabIndex = 122;
+            this.label_limit_upper.Text = "upper";
+            // 
+            // label68
+            // 
+            this.label68.AutoSize = true;
+            this.label68.Location = new System.Drawing.Point(924, 289);
+            this.label68.Name = "label68";
+            this.label68.Size = new System.Drawing.Size(28, 13);
+            this.label68.TabIndex = 124;
+            this.label68.Text = "Limit";
+            // 
+            // textBox_limit_effort
+            // 
+            this.textBox_limit_effort.Location = new System.Drawing.Point(978, 366);
+            this.textBox_limit_effort.Name = "textBox_limit_effort";
+            this.textBox_limit_effort.Size = new System.Drawing.Size(40, 20);
+            this.textBox_limit_effort.TabIndex = 120;
+            this.textBox_limit_effort.TextChanged += new System.EventHandler(this.textBox_limit_effort_TextChanged);
+            // 
+            // label69
+            // 
+            this.label69.AutoSize = true;
+            this.label69.Location = new System.Drawing.Point(940, 369);
+            this.label69.Name = "label69";
+            this.label69.Size = new System.Drawing.Size(31, 13);
+            this.label69.TabIndex = 123;
+            this.label69.Text = "effort";
+            // 
+            // label65
+            // 
+            this.label65.AutoSize = true;
+            this.label65.Location = new System.Drawing.Point(506, 158);
+            this.label65.Name = "label65";
+            this.label65.Size = new System.Drawing.Size(56, 13);
+            this.label65.TabIndex = 117;
+            this.label65.Text = "Child Link:";
+            // 
+            // label64
+            // 
+            this.label64.AutoSize = true;
+            this.label64.Location = new System.Drawing.Point(499, 131);
+            this.label64.Name = "label64";
+            this.label64.Size = new System.Drawing.Size(64, 13);
+            this.label64.TabIndex = 116;
+            this.label64.Text = "Parent Link:";
+            // 
+            // label63
+            // 
+            this.label63.AutoSize = true;
+            this.label63.Location = new System.Drawing.Point(521, 201);
+            this.label63.Name = "label63";
+            this.label63.Size = new System.Drawing.Size(60, 13);
+            this.label63.TabIndex = 115;
+            this.label63.Text = "Joint Name";
+            // 
+            // textBox_joint_name
+            // 
+            this.textBox_joint_name.Location = new System.Drawing.Point(534, 216);
+            this.textBox_joint_name.Name = "textBox_joint_name";
+            this.textBox_joint_name.Size = new System.Drawing.Size(229, 20);
+            this.textBox_joint_name.TabIndex = 114;
+            this.textBox_joint_name.TextChanged += new System.EventHandler(this.textBox_joint_name_TextChanged);
+            // 
+            // label62
+            // 
+            this.label62.AutoSize = true;
+            this.label62.Location = new System.Drawing.Point(819, 201);
+            this.label62.Name = "label62";
+            this.label62.Size = new System.Drawing.Size(56, 13);
+            this.label62.TabIndex = 113;
+            this.label62.Text = "Joint Type";
+            // 
+            // comboBox_joint_type
+            // 
+            this.comboBox_joint_type.FormattingEnabled = true;
+            this.comboBox_joint_type.Items.AddRange(new object[] {
+            "Revolute (Rotation)",
+            "Continuous (Revolute)",
+            "Prismatic (Linear)",
+            "Fixed"});
+            this.comboBox_joint_type.Location = new System.Drawing.Point(851, 216);
+            this.comboBox_joint_type.Name = "comboBox_joint_type";
+            this.comboBox_joint_type.Size = new System.Drawing.Size(121, 21);
+            this.comboBox_joint_type.TabIndex = 112;
+            this.comboBox_joint_type.SelectedIndexChanged += new System.EventHandler(this.comboBox_joint_type_SelectedIndexChanged);
+            // 
+            // textBox_axis_x
+            // 
+            this.textBox_axis_x.Location = new System.Drawing.Point(801, 310);
+            this.textBox_axis_x.Name = "textBox_axis_x";
+            this.textBox_axis_x.Size = new System.Drawing.Size(40, 20);
+            this.textBox_axis_x.TabIndex = 105;
+            this.textBox_axis_x.TextChanged += new System.EventHandler(this.textBox_axis_x_TextChanged);
+            // 
+            // label58
+            // 
+            this.label58.AutoSize = true;
+            this.label58.Location = new System.Drawing.Point(783, 310);
+            this.label58.Name = "label58";
+            this.label58.Size = new System.Drawing.Size(12, 13);
+            this.label58.TabIndex = 108;
+            this.label58.Text = "x";
+            // 
+            // textBox_axis_y
+            // 
+            this.textBox_axis_y.Location = new System.Drawing.Point(801, 336);
+            this.textBox_axis_y.Name = "textBox_axis_y";
+            this.textBox_axis_y.Size = new System.Drawing.Size(40, 20);
+            this.textBox_axis_y.TabIndex = 106;
+            this.textBox_axis_y.TextChanged += new System.EventHandler(this.textBox_axis_y_TextChanged);
+            // 
+            // label59
+            // 
+            this.label59.AutoSize = true;
+            this.label59.Location = new System.Drawing.Point(783, 339);
+            this.label59.Name = "label59";
+            this.label59.Size = new System.Drawing.Size(12, 13);
+            this.label59.TabIndex = 109;
+            this.label59.Text = "y";
+            // 
+            // label60
+            // 
+            this.label60.AutoSize = true;
+            this.label60.Location = new System.Drawing.Point(780, 284);
+            this.label60.Name = "label60";
+            this.label60.Size = new System.Drawing.Size(26, 13);
+            this.label60.TabIndex = 111;
+            this.label60.Text = "Axis";
+            // 
+            // textBox_axis_z
+            // 
+            this.textBox_axis_z.Location = new System.Drawing.Point(801, 362);
+            this.textBox_axis_z.Name = "textBox_axis_z";
+            this.textBox_axis_z.Size = new System.Drawing.Size(40, 20);
+            this.textBox_axis_z.TabIndex = 107;
+            this.textBox_axis_z.TextChanged += new System.EventHandler(this.textBox_axis_z_TextChanged);
+            // 
+            // label61
+            // 
+            this.label61.AutoSize = true;
+            this.label61.Location = new System.Drawing.Point(783, 364);
+            this.label61.Name = "label61";
+            this.label61.Size = new System.Drawing.Size(12, 13);
+            this.label61.TabIndex = 110;
+            this.label61.Text = "z";
+            // 
+            // textBox_joint_x
+            // 
+            this.textBox_joint_x.Location = new System.Drawing.Point(557, 310);
+            this.textBox_joint_x.Name = "textBox_joint_x";
+            this.textBox_joint_x.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_x.TabIndex = 92;
+            this.textBox_joint_x.TextChanged += new System.EventHandler(this.textBox_joint_x_TextChanged);
+            // 
+            // label51
+            // 
+            this.label51.AutoSize = true;
+            this.label51.Location = new System.Drawing.Point(612, 314);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(25, 13);
+            this.label51.TabIndex = 99;
+            this.label51.Text = "Roll";
+            // 
+            // textBox_joint_yaw
+            // 
+            this.textBox_joint_yaw.Location = new System.Drawing.Point(644, 362);
+            this.textBox_joint_yaw.Name = "textBox_joint_yaw";
+            this.textBox_joint_yaw.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_yaw.TabIndex = 104;
+            this.textBox_joint_yaw.TextChanged += new System.EventHandler(this.textBox_joint_yaw_TextChanged);
+            // 
+            // textBox_joint_pitch
+            // 
+            this.textBox_joint_pitch.Location = new System.Drawing.Point(644, 336);
+            this.textBox_joint_pitch.Name = "textBox_joint_pitch";
+            this.textBox_joint_pitch.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_pitch.TabIndex = 103;
+            this.textBox_joint_pitch.TextChanged += new System.EventHandler(this.textBox_joint_pitch_TextChanged);
+            // 
+            // label52
+            // 
+            this.label52.AutoSize = true;
+            this.label52.Location = new System.Drawing.Point(539, 310);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(12, 13);
+            this.label52.TabIndex = 95;
+            this.label52.Text = "x";
+            // 
+            // textBox_joint_roll
+            // 
+            this.textBox_joint_roll.Location = new System.Drawing.Point(643, 310);
+            this.textBox_joint_roll.Name = "textBox_joint_roll";
+            this.textBox_joint_roll.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_roll.TabIndex = 102;
+            this.textBox_joint_roll.TextChanged += new System.EventHandler(this.textBox_joint_roll_TextChanged);
+            // 
+            // textBox_joint_y
+            // 
+            this.textBox_joint_y.Location = new System.Drawing.Point(557, 336);
+            this.textBox_joint_y.Name = "textBox_joint_y";
+            this.textBox_joint_y.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_y.TabIndex = 93;
+            this.textBox_joint_y.TextChanged += new System.EventHandler(this.textBox_joint_y_TextChanged);
+            // 
+            // label53
+            // 
+            this.label53.AutoSize = true;
+            this.label53.Location = new System.Drawing.Point(539, 339);
+            this.label53.Name = "label53";
+            this.label53.Size = new System.Drawing.Size(12, 13);
+            this.label53.TabIndex = 96;
+            this.label53.Text = "y";
+            // 
+            // label54
+            // 
+            this.label54.AutoSize = true;
+            this.label54.Location = new System.Drawing.Point(520, 283);
+            this.label54.Name = "label54";
+            this.label54.Size = new System.Drawing.Size(51, 13);
+            this.label54.TabIndex = 98;
+            this.label54.Text = "Origin (m)";
+            // 
+            // label55
+            // 
+            this.label55.AutoSize = true;
+            this.label55.Location = new System.Drawing.Point(607, 340);
+            this.label55.Name = "label55";
+            this.label55.Size = new System.Drawing.Size(31, 13);
+            this.label55.TabIndex = 100;
+            this.label55.Text = "Pitch";
+            // 
+            // label56
+            // 
+            this.label56.AutoSize = true;
+            this.label56.Location = new System.Drawing.Point(610, 365);
+            this.label56.Name = "label56";
+            this.label56.Size = new System.Drawing.Size(28, 13);
+            this.label56.TabIndex = 101;
+            this.label56.Text = "Yaw";
+            // 
+            // textBox_joint_z
+            // 
+            this.textBox_joint_z.Location = new System.Drawing.Point(557, 362);
+            this.textBox_joint_z.Name = "textBox_joint_z";
+            this.textBox_joint_z.Size = new System.Drawing.Size(40, 20);
+            this.textBox_joint_z.TabIndex = 94;
+            this.textBox_joint_z.TextChanged += new System.EventHandler(this.textBox_joint_z_TextChanged);
+            // 
+            // label57
+            // 
+            this.label57.AutoSize = true;
+            this.label57.Location = new System.Drawing.Point(540, 365);
+            this.label57.Name = "label57";
+            this.label57.Size = new System.Drawing.Size(12, 13);
+            this.label57.TabIndex = 97;
+            this.label57.Text = "z";
+            // 
+            // label_child
+            // 
+            this.label_child.AutoSize = true;
+            this.label_child.Location = new System.Drawing.Point(562, 158);
+            this.label_child.Name = "label_child";
+            this.label_child.Size = new System.Drawing.Size(30, 13);
+            this.label_child.TabIndex = 91;
+            this.label_child.Text = "Child";
+            // 
+            // label_parent
+            // 
+            this.label_parent.AutoSize = true;
+            this.label_parent.Location = new System.Drawing.Point(561, 131);
+            this.label_parent.Name = "label_parent";
+            this.label_parent.Size = new System.Drawing.Size(38, 13);
+            this.label_parent.TabIndex = 90;
+            this.label_parent.Text = "Parent";
+            // 
+            // treeView_jointtree
+            // 
+            this.treeView_jointtree.Location = new System.Drawing.Point(18, 113);
+            this.treeView_jointtree.Name = "treeView_jointtree";
+            this.treeView_jointtree.Size = new System.Drawing.Size(461, 524);
+            this.treeView_jointtree.TabIndex = 89;
+            this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            // 
+            // button_joint_finish
+            // 
+            this.button_joint_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_joint_finish.Location = new System.Drawing.Point(987, 651);
+            this.button_joint_finish.Name = "button_joint_finish";
+            this.button_joint_finish.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_finish.TabIndex = 88;
+            this.button_joint_finish.Text = "Finish";
+            this.button_joint_finish.UseVisualStyleBackColor = true;
+            this.button_joint_finish.Click += new System.EventHandler(this.button_joint_finish_Click);
+            // 
+            // button_joint_previous
+            // 
+            this.button_joint_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_joint_previous.Location = new System.Drawing.Point(906, 651);
+            this.button_joint_previous.Name = "button_joint_previous";
+            this.button_joint_previous.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_previous.TabIndex = 87;
+            this.button_joint_previous.Text = "Previous";
+            this.button_joint_previous.UseVisualStyleBackColor = true;
+            this.button_joint_previous.Click += new System.EventHandler(this.button_joint_previous_Click);
+            // 
+            // button_joint_cancel
+            // 
+            this.button_joint_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_joint_cancel.Location = new System.Drawing.Point(12, 653);
+            this.button_joint_cancel.Name = "button_joint_cancel";
+            this.button_joint_cancel.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_cancel.TabIndex = 86;
+            this.button_joint_cancel.Text = "Cancel";
+            this.button_joint_cancel.UseVisualStyleBackColor = true;
+            this.button_joint_cancel.Click += new System.EventHandler(this.button_joint_cancel_Click);
+            // 
             // AssemblyExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1073, 688);
-            this.Controls.Add(this.button_savename_browse);
-            this.Controls.Add(this.textBox_save_as);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label3);
+            this.Controls.Add(this.button_savename_browse);
             this.Controls.Add(this.textBox_name);
+            this.Controls.Add(this.textBox_save_as);
+            this.Controls.Add(this.panel_joint);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox4);
@@ -1099,6 +1773,8 @@
             this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
+            this.panel_joint.ResumeLayout(false);
+            this.panel_joint.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1201,5 +1877,67 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBox_name;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Panel panel_joint;
+        private System.Windows.Forms.TreeView treeView_jointtree;
+        private System.Windows.Forms.Button button_joint_finish;
+        private System.Windows.Forms.Button button_joint_previous;
+        private System.Windows.Forms.Button button_joint_cancel;
+        private System.Windows.Forms.TextBox textBox1_k_velocity;
+        private System.Windows.Forms.Label label77;
+        private System.Windows.Forms.TextBox textBox_soft_lower;
+        private System.Windows.Forms.Label label78;
+        private System.Windows.Forms.TextBox textBox_soft_upper;
+        private System.Windows.Forms.Label label79;
+        private System.Windows.Forms.Label label80;
+        private System.Windows.Forms.TextBox textBox_k_position;
+        private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.TextBox textBox_friction;
+        private System.Windows.Forms.Label label_friction;
+        private System.Windows.Forms.TextBox textBox_damping;
+        private System.Windows.Forms.Label label_damping;
+        private System.Windows.Forms.Label label76;
+        private System.Windows.Forms.TextBox textBox_calibration_rising;
+        private System.Windows.Forms.Label label7_calibration_rising;
+        private System.Windows.Forms.TextBox textBox_calibration_falling;
+        private System.Windows.Forms.Label label73;
+        private System.Windows.Forms.Label label74;
+        private System.Windows.Forms.TextBox textBox_limit_velocity;
+        private System.Windows.Forms.Label label70;
+        private System.Windows.Forms.TextBox textBox_limit_lower;
+        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.TextBox textBox_limit_upper;
+        private System.Windows.Forms.Label label_limit_upper;
+        private System.Windows.Forms.Label label68;
+        private System.Windows.Forms.TextBox textBox_limit_effort;
+        private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label65;
+        private System.Windows.Forms.Label label64;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.TextBox textBox_joint_name;
+        private System.Windows.Forms.Label label62;
+        private System.Windows.Forms.ComboBox comboBox_joint_type;
+        private System.Windows.Forms.TextBox textBox_axis_x;
+        private System.Windows.Forms.Label label58;
+        private System.Windows.Forms.TextBox textBox_axis_y;
+        private System.Windows.Forms.Label label59;
+        private System.Windows.Forms.Label label60;
+        private System.Windows.Forms.TextBox textBox_axis_z;
+        private System.Windows.Forms.Label label61;
+        private System.Windows.Forms.TextBox textBox_joint_x;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.TextBox textBox_joint_yaw;
+        private System.Windows.Forms.TextBox textBox_joint_pitch;
+        private System.Windows.Forms.Label label52;
+        private System.Windows.Forms.TextBox textBox_joint_roll;
+        private System.Windows.Forms.TextBox textBox_joint_y;
+        private System.Windows.Forms.Label label53;
+        private System.Windows.Forms.Label label54;
+        private System.Windows.Forms.Label label55;
+        private System.Windows.Forms.Label label56;
+        private System.Windows.Forms.TextBox textBox_joint_z;
+        private System.Windows.Forms.Label label57;
+        private System.Windows.Forms.Label label_child;
+        private System.Windows.Forms.Label label_parent;
+        private System.Windows.Forms.Label label5;
     }
 }
