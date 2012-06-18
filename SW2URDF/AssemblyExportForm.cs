@@ -27,7 +27,7 @@ namespace SW2URDF
         {
             Exporter.createRobotFromActiveModel();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            fillPropertyBoxes(Exporter.mRobot.BaseLink);
+            fillLinkPropertyBoxes(Exporter.mRobot.BaseLink);
             textBox_name.Text = Exporter.mPackageName;
             textBox_save_as.Text = Exporter.mSavePath;
 
@@ -37,6 +37,7 @@ namespace SW2URDF
         {
             treeView_jointtree.Nodes.Clear();
             Exporter.mRobot = createRobotFromLinkTreeView(treeView_linktree);
+            Exporter.createJoints();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             panel_joint.Visible = true;
         }
@@ -47,6 +48,9 @@ namespace SW2URDF
         }
         private void button_joint_finish_Click(object sender, EventArgs e)
         {
+            LinkNode node = (LinkNode)treeView_jointtree.SelectedNode;
+            node.Joint = saveJointDataFromPropertyBoxes();
+            Exporter.exportRobot();
             this.Close();
         }
 
@@ -212,7 +216,7 @@ namespace SW2URDF
 
         #region Robot<->Tree
 
-        public void fillPropertyBoxes(link Link)
+        public void fillLinkPropertyBoxes(link Link)
         {
             textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString();
             textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString();
@@ -243,6 +247,38 @@ namespace SW2URDF
             textBox_iyy.Text = Link.Inertial.Inertia.Iyy.ToString();
             textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString();
             textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString();
+        }
+        public void fillJointPropertyBoxes(joint Joint)
+        {
+            textBox_joint_name.Text = Joint.name;
+            comboBox_joint_type.Text = Joint.type;
+
+            textBox_joint_x.Text = Joint.Origin.X.ToString();
+            textBox_joint_y.Text = Joint.Origin.Y.ToString();
+            textBox_joint_z.Text = Joint.Origin.Z.ToString();
+            textBox_joint_roll.Text = Joint.Origin.Roll.ToString();
+            textBox_joint_pitch.Text = Joint.Origin.Pitch.ToString();
+            textBox_joint_yaw.Text = Joint.Origin.Yaw.ToString();
+
+            textBox_axis_x.Text = Joint.Axis.X.ToString();
+            textBox_axis_y.Text = Joint.Axis.Y.ToString();
+            textBox_axis_z.Text = Joint.Axis.Z.ToString();
+
+            textBox_limit_lower.Text = Joint.Limit.lower.ToString();
+            textBox_limit_upper.Text = Joint.Limit.upper.ToString();
+            textBox_limit_effort.Text = Joint.Limit.effort.ToString();
+            textBox_limit_velocity.Text = Joint.Limit.effort.ToString();
+
+            textBox_calibration_rising.Text = Joint.Calibration.rising.ToString();
+            textBox_calibration_falling.Text = Joint.Calibration.falling.ToString();
+
+            textBox_friction.Text = Joint.Dynamics.friction.ToString();
+            textBox_damping.Text = Joint.Dynamics.damping.ToString();
+
+            textBox_soft_lower.Text = Joint.Safety.soft_lower.ToString();
+            textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString();
+            textBox_k_position.Text = Joint.Safety.k_position.ToString();
+            textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString();
         }
         public void saveLinkItemData(int index)
         {
@@ -353,6 +389,52 @@ namespace SW2URDF
                 }
             }
             return Link;
+        }
+
+        public robot exportJointPropertiesToRobot(robot Robot)
+        {
+            saveJointDataFromPropertyBoxes();
+
+            return Robot;
+        }
+
+        public joint saveJointDataFromPropertyBoxes()
+        {
+            joint Joint = new joint();
+            double value = 0;
+
+            Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
+            Joint.name = textBox_joint_name.Text;
+            Joint.type = comboBox_joint_type.Text;
+
+            Joint.Origin.X = (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
+            Joint.Origin.Y = (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
+            Joint.Origin.Z = (Double.TryParse(textBox_joint_z.Text, out value)) ? value : 0;
+            Joint.Origin.Roll = (Double.TryParse(textBox_joint_roll.Text, out value)) ? value : 0;
+            Joint.Origin.Pitch = (Double.TryParse(textBox_joint_pitch.Text, out value)) ? value : 0;
+            Joint.Origin.Yaw = (Double.TryParse(textBox_joint_yaw.Text, out value)) ? value : 0;
+
+            Joint.Axis.X = (Double.TryParse(textBox_axis_x.Text, out value)) ? value : 0;
+            Joint.Axis.Y = (Double.TryParse(textBox_axis_y.Text, out value)) ? value : 0;
+            Joint.Axis.Z = (Double.TryParse(textBox_axis_z.Text, out value)) ? value : 0;
+
+            Joint.Limit.lower = (Double.TryParse(textBox_limit_lower.Text, out value)) ? value : 0;
+            Joint.Limit.upper = (Double.TryParse(textBox_limit_upper.Text, out value)) ? value : 0;
+            Joint.Limit.effort = (Double.TryParse(textBox_limit_effort.Text, out value)) ? value : 0;
+            Joint.Limit.velocity = (Double.TryParse(textBox_limit_velocity.Text, out value)) ? value : 0;
+
+            Joint.Calibration.rising = (Double.TryParse(textBox_calibration_rising.Text, out value)) ? value : 0;
+            Joint.Calibration.falling = (Double.TryParse(textBox_calibration_falling.Text, out value)) ? value : 0;
+
+            Joint.Dynamics.friction = (Double.TryParse(textBox_friction.Text, out value)) ? value : 0;
+            Joint.Dynamics.damping = (Double.TryParse(textBox_damping.Text, out value)) ? value : 0;
+
+            Joint.Safety.soft_lower = (Double.TryParse(textBox_soft_lower.Text, out value)) ? value : 0;
+            Joint.Safety.soft_upper = (Double.TryParse(textBox_soft_upper.Text, out value)) ? value : 0;
+            Joint.Safety.k_position = (Double.TryParse(textBox_k_position.Text, out value)) ? value : 0;
+            Joint.Safety.k_velocity = (Double.TryParse(textBox_k_velocity.Text, out value)) ? value : 0;
+
+            return Joint;
         }
         #endregion
 
@@ -557,27 +639,17 @@ namespace SW2URDF
 
         private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            //if (previouslySelectedLinkNodeIndex != -1)
-            //{
-            //    saveLinkNodeData(previouslySelectedLinkNodeIndex);
-            //}
             LinkNode node = (LinkNode)e.Node;
-            fillPropertyBoxes(node.Link);
-            //previouslySelectedLinkNodeIndex = node.Index;
+            fillLinkPropertyBoxes(node.Link);
         }
 
         private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //if (previouslySelectedLinkItemIndex != -1)
-            //{
-            //    saveLinkItemData(previouslySelectedLinkItemIndex);
-            //}
             LinkItem item = (LinkItem)listBox_deleted.SelectedItem;
             if (item != null)
             {
-                fillPropertyBoxes(item.Link);
+                fillLinkPropertyBoxes(item.Link);
             }
-            //previouslySelectedLinkItemIndex = item.Index;
         }
 
         #region joint property controls
@@ -586,9 +658,10 @@ namespace SW2URDF
 
         }
 
-        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-
+            LinkNode node = (LinkNode)e.Node;
+            fillJointPropertyBoxes(node.Link.Joint);
         }
 
         private void textBox_joint_name_TextChanged(object sender, EventArgs e)

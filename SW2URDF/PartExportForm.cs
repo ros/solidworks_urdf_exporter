@@ -262,7 +262,7 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
 
-            Exporter.exportLink();
+            Exporter.exportRobot();
             this.Close();
 
         }

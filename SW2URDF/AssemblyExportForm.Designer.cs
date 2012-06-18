@@ -126,7 +126,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
-            this.textBox1_k_velocity = new System.Windows.Forms.TextBox();
+            this.textBox_k_velocity = new System.Windows.Forms.TextBox();
             this.label77 = new System.Windows.Forms.Label();
             this.textBox_soft_lower = new System.Windows.Forms.TextBox();
             this.label78 = new System.Windows.Forms.Label();
@@ -1135,7 +1135,7 @@
             // panel_joint
             // 
             this.panel_joint.Controls.Add(this.label5);
-            this.panel_joint.Controls.Add(this.textBox1_k_velocity);
+            this.panel_joint.Controls.Add(this.textBox_k_velocity);
             this.panel_joint.Controls.Add(this.label77);
             this.panel_joint.Controls.Add(this.textBox_soft_lower);
             this.panel_joint.Controls.Add(this.label78);
@@ -1211,13 +1211,13 @@
             this.label5.TabIndex = 148;
             this.label5.Text = "Configure Joint Properties";
             // 
-            // textBox1_k_velocity
+            // textBox_k_velocity
             // 
-            this.textBox1_k_velocity.Location = new System.Drawing.Point(978, 572);
-            this.textBox1_k_velocity.Name = "textBox1_k_velocity";
-            this.textBox1_k_velocity.Size = new System.Drawing.Size(40, 20);
-            this.textBox1_k_velocity.TabIndex = 146;
-            this.textBox1_k_velocity.TextChanged += new System.EventHandler(this.textBox1_k_velocity_TextChanged);
+            this.textBox_k_velocity.Location = new System.Drawing.Point(978, 572);
+            this.textBox_k_velocity.Name = "textBox_k_velocity";
+            this.textBox_k_velocity.Size = new System.Drawing.Size(40, 20);
+            this.textBox_k_velocity.TabIndex = 146;
+            this.textBox_k_velocity.TextChanged += new System.EventHandler(this.textBox1_k_velocity_TextChanged);
             // 
             // label77
             // 
@@ -1705,7 +1705,7 @@
             this.treeView_jointtree.Name = "treeView_jointtree";
             this.treeView_jointtree.Size = new System.Drawing.Size(461, 524);
             this.treeView_jointtree.TabIndex = 89;
-            this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
+            this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_jointtree_AfterSelect);
             // 
             // button_joint_finish
             // 
@@ -1882,7 +1882,7 @@
         private System.Windows.Forms.Button button_joint_finish;
         private System.Windows.Forms.Button button_joint_previous;
         private System.Windows.Forms.Button button_joint_cancel;
-        private System.Windows.Forms.TextBox textBox1_k_velocity;
+        private System.Windows.Forms.TextBox textBox_k_velocity;
         private System.Windows.Forms.Label label77;
         private System.Windows.Forms.TextBox textBox_soft_lower;
         private System.Windows.Forms.Label label78;

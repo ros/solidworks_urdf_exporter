@@ -1,7 +1,17 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Collections;
+using System.Reflection;
+
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swpublished;
+using SolidWorks.Interop.swconst;
+using SolidWorksTools;
+using SolidWorksTools.File;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace SW2URDF
@@ -65,6 +75,14 @@ namespace SW2URDF
         public gazebo Gazebo
         { get; set; }
         public joint Joint
+        { get; set; }
+
+        // The SW part component object
+        public IComponent2 SWComponent
+        { get; set; }
+
+        // The distance from the SW root assembly
+        public int SWComponentLevel
         { get; set; }
         public link()
         {
@@ -635,9 +653,13 @@ namespace SW2URDF
         { get; set; }
         public parent_link()
         {
+            name = "";
         }
         new public void writeURDF(XmlWriter writer)
         {
+            writer.WriteStartElement("parent");
+            writer.WriteAttributeString("link", name);
+            writer.WriteEndElement();
 
         }
     }
@@ -648,10 +670,13 @@ namespace SW2URDF
         { get; set; }
         public child_link()
         {
+            name = "";
         }
         new public void writeURDF(XmlWriter writer)
         {
-
+            writer.WriteStartElement("child");
+            writer.WriteAttributeString("link", name);
+            writer.WriteEndElement();
         }
     }
 
