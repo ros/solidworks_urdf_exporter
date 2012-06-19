@@ -27,7 +27,6 @@ namespace SW2URDF
         {
             Exporter.createRobotFromActiveModel();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            fillLinkPropertyBoxes(Exporter.mRobot.BaseLink);
             textBox_name.Text = Exporter.mPackageName;
             textBox_save_as.Text = Exporter.mSavePath;
 
@@ -39,8 +38,6 @@ namespace SW2URDF
             Exporter.mRobot = createRobotFromLinkTreeView(treeView_linktree);
             Exporter.createJoints();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
-            //LinkNode node = (LinkNode)treeView_jointtree
-            //fillJointPropertyBoxes(node.Joint);
             panel_joint.Visible = true;
         }
 

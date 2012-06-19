@@ -302,6 +302,8 @@ namespace SW2URDF
             int warnings = 0;
 
             ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
+            iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swRebuildActiveDoc, ref errors);
+            modeldoc = iSwApp.ActiveDoc();
             modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             return meshFileName;
         }
