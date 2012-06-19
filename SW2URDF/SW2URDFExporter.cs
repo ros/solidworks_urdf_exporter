@@ -89,8 +89,21 @@ namespace SW2URDF
             IComponent2 parentComp = (IComponent2)comp;
             object[] children = parentComp.GetChildren();
 
-            link parent = assignParentLinkFromChildren(children, parentComp.GetModelDoc());
-            parent.SWComponentLevel += level;
+            ModelDoc2 parentdoc = parentComp.GetModelDoc();
+            link parent;
+            if (parentdoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            {
+                parent = getLinkFromPartModel(parentdoc);
+                parent.SWComponent = parentComp;
+                parent.SWComponentLevel = level;
+                return parent;
+            }
+            else
+            {
+                parent = assignParentLinkFromChildren(children, parentComp.GetModelDoc());
+                parent.SWComponentLevel += level;
+            }
+            
             foreach (object child in children)
             {
                 parent.Children.Add(getLinkFromComp(child, level + 1));
@@ -99,20 +112,21 @@ namespace SW2URDF
             return parent;
         }
 
-        public link assignParentLinkFromChildren(object[] children, ModelDoc2 ParentDoc)
+        public link getLinkFromPartComp(IComponent2 comp)
+        {
+            link Link = getLinkFromPartModel(comp.GetModelDoc2());
+            Link.SWComponent = comp;
+            return Link;
+        }
+
+        //This method could stand to be cleaned up
+        public link assignParentLinkFromChildren(object[] children,  ModelDoc2 ParentDoc)
         {
             int descentLevel = 0;
             link Link = new link();
-            if (ParentDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
-            {
-                Link = getLinkFromPartModel(ParentDoc);
-                Link.SWComponentLevel = descentLevel;
-                return Link;
-            }
-            else
-            {
+            IComponent2 ParentComp = default(IComponent2);
+ 
                 bool foundParent = false;
-                IComponent2 ParentComp = default(IComponent2);
                 foreach (IComponent2 child in children)
                 {
                     if (!child.IsHidden(true))
@@ -196,7 +210,7 @@ namespace SW2URDF
                 Link.SWComponentLevel = descentLevel;
                 return Link;
             }
-        }
+        
 
         public void createJoints()
         {
@@ -216,7 +230,7 @@ namespace SW2URDF
         public joint createJointFromLinks(link parent, link child)
         {
             joint Joint = new joint();
-            Joint.name = "joint_" + parent.name + "_to_" + child.name;
+            Joint.name = parent.name + "_to_" + child.name;
             
             Joint.Origin.X = parent.Inertial.Origin.X - child.Inertial.Origin.X;
             Joint.Origin.Y = parent.Inertial.Origin.Y - child.Inertial.Origin.Y;
@@ -289,8 +303,6 @@ namespace SW2URDF
 
             ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
             modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            Link.Visual.Geometry.Mesh.filename = meshFileName;
-            Link.Collision.Geometry.Mesh.filename = meshFileName;
             return meshFileName;
         }
         #region Part Exporting methods

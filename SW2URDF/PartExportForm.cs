@@ -223,7 +223,6 @@ namespace SW2URDF
             double value;
             Exporter.mPackageName = textBox_name.Text;
             Exporter.mSavePath = textBox_save_as.Text;
-
             Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
@@ -262,7 +261,7 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
 
-            Exporter.exportRobot();
+            Exporter.exportLink();
             this.Close();
 
         }

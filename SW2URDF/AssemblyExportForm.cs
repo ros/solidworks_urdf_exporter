@@ -39,6 +39,8 @@ namespace SW2URDF
             Exporter.mRobot = createRobotFromLinkTreeView(treeView_linktree);
             Exporter.createJoints();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            //LinkNode node = (LinkNode)treeView_jointtree
+            //fillJointPropertyBoxes(node.Joint);
             panel_joint.Visible = true;
         }
 
@@ -49,7 +51,10 @@ namespace SW2URDF
         private void button_joint_finish_Click(object sender, EventArgs e)
         {
             LinkNode node = (LinkNode)treeView_jointtree.SelectedNode;
-            node.Joint = saveJointDataFromPropertyBoxes();
+            if (node != null)
+            {
+                node.Joint = saveJointDataFromPropertyBoxes();
+            }
             Exporter.exportRobot();
             this.Close();
         }
@@ -389,13 +394,6 @@ namespace SW2URDF
                 }
             }
             return Link;
-        }
-
-        public robot exportJointPropertiesToRobot(robot Robot)
-        {
-            saveJointDataFromPropertyBoxes();
-
-            return Robot;
         }
 
         public joint saveJointDataFromPropertyBoxes()
