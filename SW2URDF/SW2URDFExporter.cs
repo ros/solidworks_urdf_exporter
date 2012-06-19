@@ -35,7 +35,6 @@ namespace SW2URDF
         public List<link> mLinks
         { get; set; }
         ModelDoc2 ActiveSWModel;
-        object[] varComp;
         #endregion
 
         public SW2URDFExporter(ISldWorks iSldWorksApp)
@@ -73,7 +72,7 @@ namespace SW2URDF
         public link getBaseLinkFromAssy(ModelDoc2 swModel)
         {
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
-            varComp = (object[])swAssy.GetComponents(true);
+            object[] varComp = swAssy.GetComponents(true);
 
             link baseLink = assignParentLinkFromChildren(varComp, swModel);
             foreach (IComponent2 comp in varComp)
@@ -87,37 +86,124 @@ namespace SW2URDF
         public link getLinkFromComp(object comp, int level)
         {
             IComponent2 parentComp = (IComponent2)comp;
-            object[] children = parentComp.GetChildren();
-
             ModelDoc2 parentdoc = parentComp.GetModelDoc();
-            link parent;
+            link Link;
+            
             if (parentdoc.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
-                parent = getLinkFromPartModel(parentdoc);
-                parent.SWComponent = parentComp;
-                parent.SWComponentLevel = level;
-                return parent;
+                Link = getLinkFromPartModel(parentdoc);
+                Link.SWComponent = parentComp;
+                Link.SWComponentLevel = level;
+                return Link;
             }
             else
             {
-                parent = assignParentLinkFromChildren(children, parentComp.GetModelDoc());
+                object[] children = parentComp.GetChildren();
+                link parent = assignParentLinkFromChildren(children, parentComp.GetModelDoc());
+                //children.Remove(parent);
                 parent.SWComponentLevel += level;
+                            
+                foreach (object child in children)
+                {
+                    parent.Children.Add(getLinkFromComp(child, level + 1));
+                }
+                //parent.SWComponent = parentComp;
+                return parent;
             }
-            
-            foreach (object child in children)
-            {
-                parent.Children.Add(getLinkFromComp(child, level + 1));
-            }
-            //parent.SWComponent = parentComp;
-            return parent;
+
         }
 
-        public link getLinkFromPartComp(IComponent2 comp)
+        public link createSparseBranchFromComponents(IComponent2 comp, int level)
         {
-            link Link = getLinkFromPartModel(comp.GetModelDoc2());
+            link Link = new link();
+            if (comp.IGetChildrenCount() == 0)
+            {
+                Link = getLinkFromComp(comp, level);
+            }
+            else
+            {
+                List<IComponent2> children = comp.GetChildren();
+                foreach (IComponent2 child in children)
+                {
+                    Link.Children.Add(createSparseBranchFromComponents(child, level + 1));
+                }
+            }
             Link.SWComponent = comp;
+            Link.SWComponentLevel = level;
             return Link;
         }
+
+        public link assignParentLinks(link top, int level)
+        {
+            if (top.Children.Count > 0)
+            {
+                link AssignedParentLink = new link();
+                foreach (link child in top.Children)
+                {
+                    AssignedParentLink = child;
+                }
+                top.Children.Remove(AssignedParentLink);
+                AssignedParentLink.Children.AddRange(top.Children);
+                return AssignedParentLink;
+            }
+            return top;           
+        }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //        List<IComponent2> children = comp.GetChildren();
+        //        IComponent2 AssignedParentComp = default(IComponent2);
+        //        ModelDoc2 ParentDoc = comp.GetModelDoc();
+        //        int ParentType = ParentDoc.GetType();
+
+        //        //Find the most suitable component from children to make the parent link from
+        //        foreach (IComponent2 child in children)
+        //        {
+        //            AssignedParentComp = child;
+        //        }
+
+        //        //Remove found link from the children
+        //        children.Remove(AssignedParentComp);
+        //        ParentDoc = AssignedParentComp.GetModelDoc();
+        //        ParentType = ParentDoc.GetType();
+        //        link AssignedParentLink = new link();
+
+        //        // If a fixed component was found that is an assembly, its children will be iterated through on the next run
+        //        if (priorityLevel == 2 && ParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
+        //        {
+        //            AssignedParentLink = createBranchFromComponents(Top, AssignedParentComp, level + 1);
+        //        }
+        //        // If no parts were found, then the largest assembly will be iterated through to find the best choice
+        //        else if (priorityLevel == 0)
+        //        {
+        //            AssignedParentLink = createBranchFromComponents(Top, AssignedParentComp, level + 1);
+        //        }
+        //        else // Otherwise if a component was selected for the parent link, it is assigned to the highest level that was needed
+        //        {
+        //            AssignedParentLink = getLinkFromComp(AssignedParentComp, level);
+        //        }
+        //        foreach (IComponent2 child in children)
+        //        {
+        //            AssignedParentLink.Children.Add(createBranchFromComponents(AssignedParentLink, child, level + 1);
+        //        }
+        //    }
+
+        //    return Top;
+        //}
 
         //This method could stand to be cleaned up
         public link assignParentLinkFromChildren(object[] children,  ModelDoc2 ParentDoc)
@@ -302,9 +388,11 @@ namespace SW2URDF
             int warnings = 0;
 
             ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
-            iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swRebuildActiveDoc, ref errors);
-            modeldoc = iSwApp.ActiveDoc();
+            
+            iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
+            modeldoc = iSwApp.IActiveDoc2;
             modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+            iSwApp.CloseDoc(Link.name + ".sldprt");
             return meshFileName;
         }
         #region Part Exporting methods
@@ -396,3 +484,33 @@ namespace SW2URDF
         #endregion
     }
 }
+
+
+
+                    //ModelDoc2 ChildDoc = child.GetModelDoc();
+                    //int ChildType = (int)ChildDoc.GetType();
+                    //IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
+
+                    //double childVolume = childMass.Volume;
+
+                    ////Highest priority is the largest fixed component
+                    //if (child.IsFixed() && childMass.Volume > largestFixedVolume)
+                    //{
+                    //    priorityLevel = 2;
+                    //    AssignedParentComp = child;
+                    //    largestFixedVolume = childVolume;
+                    //}
+                    ////Second highest priority is the largest floating part
+                    //else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
+                    //{
+                    //    priorityLevel = 1;
+                    //    AssignedParentComp = child;
+                    //    largestPartVolume = childVolume;
+                    //}
+                    ////Third priority is the 'best' choice from the largest assembly
+                    //else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
+                    //{
+                    //    priorityLevel = 0;
+                    //    AssignedParentComp = child;
+                    //    largestAssyVolume = childVolume;
+                    //} 

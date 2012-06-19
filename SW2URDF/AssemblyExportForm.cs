@@ -368,7 +368,7 @@ namespace SW2URDF
         public robot createRobotFromLinkTreeView(TreeView tree)
         {
             robot Robot = new robot();
-            Robot.name = Robot.BaseLink.name;
+            
             foreach (LinkNode node in tree.Nodes)
             {
                 if (node.Level == 0)
@@ -376,6 +376,7 @@ namespace SW2URDF
                     Robot.BaseLink = createLinkFromLinkNode(node, 1);
                 }
             }
+            Robot.name = Exporter.mRobot.name;
             return Robot;
         }
 

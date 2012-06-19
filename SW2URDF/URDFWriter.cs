@@ -630,7 +630,7 @@ namespace SW2URDF
         }
         new public void writeURDF(XmlWriter writer)
         {
-            writer.WriteStartElement("link");
+            writer.WriteStartElement("joint");
             writer.WriteAttributeString("name", "joint_" + name);
             writer.WriteAttributeString("type", type);
 
