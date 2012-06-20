@@ -136,6 +136,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="dof.cs" />
     <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="URDFPackage.cs" />
     <Compile Include="EventHandling.cs" />
