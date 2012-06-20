@@ -12,32 +12,75 @@ using SolidWorksTools.File;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SW2URDF
 {
-    public class dof
+    public class MatrixOPS
     {
+        public Matrix rref(Matrix m)
+        {
+            return m;
+        }
+
+        public Matrix nullSpace(Matrix m)
+        {
+            return m;
+        }
+    }
+
+    public class constraint
+    {
+        public Vector vec
+        { get; set; }
         public bool constrained
         { get; set; }
-        public double upper_limit
-        { get; set; }
-        public double lower_limit
-        { get; set; }
     }
+
+    public class constraints
+    {
+        public constraint X
+        { get; set; }
+        public constraint Y
+        { get; set; }
+        public constraint Z
+        { get; set; }
+        public constraint Roll
+        { get; set; }
+        public constraint Pitch
+        { get; set; }
+        public constraint Yaw
+        { get; set; }
+
+        public void setLinearVector(Vector v)
+        {
+
+        }
+        public void setTwoLinearVectors(Vector v1, Vector v2)
+        {
+        }
+        public void setThreeLinearVectors(Vector v1, Vector v2, Vector v3)
+        {
+        }
+        public void setRotationVector(Vector v)
+        {
+        }
+        public void setTwoRotationVectors(Vector v1, Vector v2)
+        {
+        }
+        public void setThreeRotationVectors(Vector v1, Vector v2, Vector v3)
+        {
+        }   
+    }
+
     public class relation
     {
-        public dof X
-        { get; set; }
-        public dof Y
-        { get; set; }
-        public dof Z
-        { get; set; }
-        public dof Roll
-        { get; set; }
-        public dof Pitch
-        { get; set; }
-        public dof Yaw
-        { get; set; }
+        private Matrix Jacobian;
+
+        public relation()
+        {
+            Jacobian = new DenseMatrix(12);
+        }
 
         public void constrainRelationFromMate(Mate2 mate, IComponent2 comp1, IComponent2 comp2)
         {
@@ -46,12 +89,12 @@ namespace SW2URDF
                 case (int)swMateType_e.swMateCOINCIDENT:
                     MateEntity2 entity1 = mate.MateEntity(0);
                     MateEntity2 entity2 = mate.MateEntity(1);
-                    constrainRelation(entity1, entity2);
+                    //constrainRelation(entity1, entity2);
 
                     for (int i = 0; i < mate.GetMateEntityCount(); i++)
                     {
                         MateEntity2 entity = mate.MateEntity(i);
-                        entity.ReferenceType2
+
                     }
                     break;
                 case (int)swMateType_e.swMateCONCENTRIC:

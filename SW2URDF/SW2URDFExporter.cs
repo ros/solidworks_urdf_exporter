@@ -19,7 +19,6 @@ namespace SW2URDF
     {
         #region Local variables
         ISldWorks iSwApp = null;
-        ICommandManager iCmdMgr = null;
 
         public robot mRobot
         { get; set; }

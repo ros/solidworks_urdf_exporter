@@ -31,7 +31,6 @@ namespace SW2URDF
         ISldWorks iSwApp = null;
         ICommandManager iCmdMgr = null;
         int addinID = 0;
-        BitmapHandler iBmp;
 
         public const int mainCmdGroupID = 5;
         public const int mainItemID1 = 0;
