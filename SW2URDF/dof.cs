@@ -44,6 +44,15 @@ namespace SW2URDF
             switch (mate.Type)
             {
                 case (int)swMateType_e.swMateCOINCIDENT:
+                    MateEntity2 entity1 = mate.MateEntity(0);
+                    MateEntity2 entity2 = mate.MateEntity(1);
+                    constrainRelation(entity1, entity2);
+
+                    for (int i = 0; i < mate.GetMateEntityCount(); i++)
+                    {
+                        MateEntity2 entity = mate.MateEntity(i);
+                        entity.ReferenceType2
+                    }
                     break;
                 case (int)swMateType_e.swMateCONCENTRIC:
                     break;
@@ -92,6 +101,38 @@ namespace SW2URDF
                 case (int)swMateType_e.swMateSLIDER:
                     break;
 
+            }
+        }
+        public void constrainRelationFromCoincidentMate(MateEntity2 entity1, MateEntity2 entity2)
+        {
+            switch (entity1.ReferenceType2)
+            {
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Set:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cone:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_SweptSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_MultipleSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GenSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GeneralCurve:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_UNKNOWN:
+                    break;
             }
         }
 
