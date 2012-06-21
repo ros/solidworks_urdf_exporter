@@ -12,74 +12,61 @@ using SolidWorksTools.File;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
+using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
 
 namespace SW2URDF
 {
     public class MatrixOPS
     {
-        public Matrix rref(Matrix m)
-        {
-            return m;
-        }
 
-        public Matrix nullSpace(Matrix m)
-        {
-            return m;
-        }
-    }
-
-    public class constraint
-    {
-        public Vector vec
-        { get; set; }
-        public bool constrained
-        { get; set; }
     }
 
     public class constraints
     {
-        public constraint X
+        public Vector X
         { get; set; }
-        public constraint Y
+        public Vector Y
         { get; set; }
-        public constraint Z
+        public Vector Z
         { get; set; }
-        public constraint Roll
+        public Vector Roll
         { get; set; }
-        public constraint Pitch
+        public Vector Pitch
         { get; set; }
-        public constraint Yaw
+        public Vector Yaw
+        { get; set; }
+        public int constrainedDOFs
         { get; set; }
 
-        public void setLinearVector(Vector v)
-        {
+        public const Vector axis1 = (DenseVector)new double[3] { 1, 0, 0 };
+        public const Vector axis2 = (DenseVector)new double[3] { 0, 1, 0 };
+        public const Vector axis3 = (DenseVector)new double[3] { 0, 0, 1 };
 
-        }
-        public void setTwoLinearVectors(Vector v1, Vector v2)
+        [Flags]
+        public enum ConstrainedDOFs
         {
-        }
-        public void setThreeLinearVectors(Vector v1, Vector v2, Vector v3)
-        {
-        }
-        public void setRotationVector(Vector v)
-        {
-        }
-        public void setTwoRotationVectors(Vector v1, Vector v2)
-        {
-        }
-        public void setThreeRotationVectors(Vector v1, Vector v2, Vector v3)
-        {
-        }   
+            X = 1,
+            Y = 2,
+            Z = 4,
+            Roll = 8,
+            Pitch = 16,
+            Yaw = 32,
+        }  
     }
 
     public class relation
     {
         private Matrix Jacobian;
+        private int firstFreeRow;
+        private constraints parentRelationConstraints;
+        private constraints childRelationConstraints;
+        private constraints jointConstraints;
 
         public relation()
         {
             Jacobian = new DenseMatrix(12);
+            firstFreeRow = 0;
         }
 
         public void constrainRelationFromMate(Mate2 mate, IComponent2 comp1, IComponent2 comp2)
@@ -146,6 +133,131 @@ namespace SW2URDF
 
             }
         }
+
+        public void addConstraintsToJacobian(constraints c1, constraints c2)
+        {
+            int constrainedDOFs = jointConstraints.constrainedDOFs | ( c1.constrainedDOFs & c2.constrainedDOFs);
+
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
+            {
+                addConstraintVectorToJacobian(vectorCat(c1.X, c2.X));
+            }
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Y) != 0)
+            {
+            }
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Z) != 0)
+            {
+            }
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Roll) != 0)
+            {
+            }
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Pitch) != 0)
+            {
+            }
+            if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Yaw) != 0)
+            {
+            }
+
+        }
+
+        public Vector vectorCat(Vector v1, Vector v2)
+        {
+            Vector vec = new DenseVector(v1.Count + v2.Count);
+            v1.CopyTo(vec);
+            v2.CopyTo(vec, 0, v1.Count, v2.Count);
+            return vec;
+        }
+        public Matrix rref(Matrix m)
+        {
+            return m;
+        }
+
+        public Matrix nullSpace(Matrix m)
+        {
+            return m;
+        }
+
+        public void addConstraintVectorToJacobian(Vector v)
+        {
+            if (isLinearlyIndependent(Jacobian, v))
+            {
+                Jacobian.SetRow(firstFreeRow, v);
+                firstFreeRow++;
+            }
+        }
+
+        public bool isLinearlyIndependent(Matrix m, Vector v)
+        {
+            return true;
+        }
+        public constraints setConstraints(MateEntity2 entity)
+        {
+            constraints entityConstraints = new constraints();
+            switch (entity.ReferenceType2)
+            {
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
+                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
+                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
+                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
+                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
+                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Set:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cone:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_SweptSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_MultipleSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GenSurface:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GeneralCurve:
+                    break;
+                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_UNKNOWN:
+                    break;
+            }
+            return entityConstraints;
+        }
+
+        public Matrix getRotationMatrix(MathTransform transform)
+        {
+            var rot = new DenseMatrix(3);
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    rot.At(i, j, transform.ArrayData[i + 3*j]);
+            return rot;
+        }
+                
         public void constrainRelationFromCoincidentMate(MateEntity2 entity1, MateEntity2 entity2)
         {
             switch (entity1.ReferenceType2)
