@@ -169,11 +169,80 @@ namespace SW2URDF
         }
         public Matrix rref(Matrix m)
         {
+            int minDimension = Math.Min(m.ColumnCount, m.RowCount);
+            // Swap rows to get prepared for row echelon form
+            for (int i = 0; i < minDimension; i++)
+            {
+                for (int j = i; j < minDimension; j++)
+                {
+                    Vector v = (Vector)m.Row(j);
+                    if (v[i] != 0)
+                    {
+                        m.SetRow(j, m.Row(i));
+                        m.SetRow(i, v);
+                        break;
+                    }
+                }
+            }
+            for (int i = 0; i < m.RowCount; i++)
+            {
+                Vector v1 = (Vector)m.Row(i);
+                int index = -1;
+
+                //Find the first non-zero entry in row i (will either by the diagonal or to its right)
+                for (int j = i; j < m.ColumnCount; j++)
+                {
+                    if (v1[j] != 0)
+                    {
+                        index = j;
+                        break;
+                    }
+                }
+
+                //If there are no more non-zero entries to be found, the matrix is now in row echelon form (and then some)
+                if (index == -1)
+                {
+                    break;
+                }
+                for (int j = 0; j < m.RowCount; j++)
+                {
+                    if (i != j)
+                    {
+                        
+                        Vector v2 = (Vector)m.Row(j);
+                        m.SetRow(j, v1 * v2[index] / v1[index] - v2);
+                    }
+                }
+            }
+
+            //Reduce the left most values to 1
+            for (int i = 0; i < m.RowCount; i++)
+            {
+                Vector v = (Vector)m.Row(i);
+                int index = -1;
+                //Find the first non-zero entry in this row vector
+                for (int j = i; j < m.ColumnCount; j++)
+                {
+                    if (v[j] != 0)
+                    {
+                        index = j;
+                        break;
+                    }
+                }
+                //If there are no more non-zero entries to be found, the matrix is now in reduced row echelon form
+                if (index == -1)
+                {
+                    break;
+                }
+                m.SetRow(i, v / v[i]);
+            }
             return m;
         }
 
         public Matrix nullSpace(Matrix m)
         {
+            m = rref(m); //Null(A) = Null(rref(A))
+
             return m;
         }
 
