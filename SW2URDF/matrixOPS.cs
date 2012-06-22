@@ -146,18 +146,46 @@ namespace MatrixOPS
             return m;
         }
 
-        public void addConstraintVectorToMatrix(Matrix m, Vector v)
+        public Matrix addConstraintVectorToMatrix(Matrix m, Vector v)
         {
-            if (isLinearlyIndependent(m, v))
+            if (m.ColumnCount != v.Count)
             {
-                m.SetRow(firstFreeRow, v);
-                firstFreeRow++;
+                return m;
             }
+            int row = firstEmptyRow(m);
+            if (row == -1)
+            {
+                return m;
+            }
+            m.SetRow(row, v);
+            return m;
         }
 
         public bool isLinearlyIndependent(Matrix m, Vector v)
         {
             return true;
+        }
+
+        public int firstEmptyRow(Matrix m)
+        {
+            for (int i = 0; i < m.RowCount; i++)
+            {
+                bool isEmpty = true;
+                for (int j = 0; j < m.ColumnCount; j++)
+                {
+                    if (m[i, j] != 0)
+                    {
+                        isEmpty = false;
+                        break;
+                    }
+                }
+                if (isEmpty)
+                {
+                    return i;
+                }
+                
+            }
+            return -1;
         }
     }
 }

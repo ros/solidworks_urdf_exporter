@@ -18,11 +18,6 @@ using MatrixOPS;
 
 namespace SW2URDF
 {
-    public class MatrixOPS
-    {
-
-    }
-
     public class constraints
     {
         public Vector X
@@ -63,6 +58,7 @@ namespace SW2URDF
         private constraints parentRelationConstraints;
         private constraints childRelationConstraints;
         private constraints jointConstraints;
+        private ops OPS;
 
         public relation()
         {
@@ -82,7 +78,7 @@ namespace SW2URDF
                     for (int i = 0; i < mate.GetMateEntityCount(); i++)
                     {
                         MateEntity2 entity = mate.MateEntity(i);
-
+                        OPS = new ops();
                     }
                     break;
                 case (int)swMateType_e.swMateCONCENTRIC:
@@ -141,125 +137,37 @@ namespace SW2URDF
 
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {
-                addConstraintVectorToJacobian(vectorCat(c1.X, c2.X));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.X, c2.X));
+                Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Y) != 0)
             {
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Y, c2.Y));
+                Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Z) != 0)
             {
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Z, c2.Z));
+                Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Roll) != 0)
             {
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Roll, c2.Roll));
+                Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Pitch) != 0)
             {
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Pitch, c2.Pitch));
+                Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Yaw) != 0)
             {
-            }
-
-        }
-
-        public Vector vectorCat(Vector v1, Vector v2)
-        {
-            Vector vec = new DenseVector(v1.Count + v2.Count);
-            v1.CopyTo(vec);
-            v2.CopyTo(vec, 0, v1.Count, v2.Count);
-            return vec;
-        }
-        public Matrix rref(Matrix m)
-        {
-            int minDimension = Math.Min(m.ColumnCount, m.RowCount);
-            // Swap rows to get prepared for row echelon form
-            for (int i = 0; i < minDimension; i++)
-            {
-                for (int j = i; j < minDimension; j++)
-                {
-                    Vector v = (Vector)m.Row(j);
-                    if (v[i] != 0)
-                    {
-                        m.SetRow(j, m.Row(i));
-                        m.SetRow(i, v);
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < m.RowCount; i++)
-            {
-                Vector v1 = (Vector)m.Row(i);
-                int index = -1;
-
-                //Find the first non-zero entry in row i (will either by the diagonal or to its right)
-                for (int j = i; j < m.ColumnCount; j++)
-                {
-                    if (v1[j] != 0)
-                    {
-                        index = j;
-                        break;
-                    }
-                }
-
-                //If there are no more non-zero entries to be found, the matrix is now in row echelon form (and then some)
-                if (index == -1)
-                {
-                    break;
-                }
-                for (int j = 0; j < m.RowCount; j++)
-                {
-                    if (i != j)
-                    {
-                        
-                        Vector v2 = (Vector)m.Row(j);
-                        m.SetRow(j, v1 * v2[index] / v1[index] - v2);
-                    }
-                }
-            }
-
-            //Reduce the left most values to 1
-            for (int i = 0; i < m.RowCount; i++)
-            {
-                Vector v = (Vector)m.Row(i);
-                int index = -1;
-                //Find the first non-zero entry in this row vector
-                for (int j = i; j < m.ColumnCount; j++)
-                {
-                    if (v[j] != 0)
-                    {
-                        index = j;
-                        break;
-                    }
-                }
-                //If there are no more non-zero entries to be found, the matrix is now in reduced row echelon form
-                if (index == -1)
-                {
-                    break;
-                }
-                m.SetRow(i, v / v[i]);
-            }
-            return m;
-        }
-
-        public Matrix nullSpace(Matrix m)
-        {
-            m = rref(m); //Null(A) = Null(rref(A))
-
-            return m;
-        }
-
-        public void addConstraintVectorToJacobian(Vector v)
-        {
-            if (isLinearlyIndependent(Jacobian, v))
-            {
-                Jacobian.SetRow(firstFreeRow, v);
-                firstFreeRow++;
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Yaw, c2.Yaw));
+                Jacobian = OPS.rref(Jacobian);
             }
         }
 
-        public bool isLinearlyIndependent(Matrix m, Vector v)
-        {
-            return true;
-        }
+        
         public constraints setConstraints(MateEntity2 entity)
         {
             constraints entityConstraints = new constraints();
@@ -327,41 +235,5 @@ namespace SW2URDF
                     rot.At(i, j, transform.ArrayData[i + 3*j]);
             return rot;
         }
-                
-        public void constrainRelationFromCoincidentMate(MateEntity2 entity1, MateEntity2 entity2)
-        {
-            switch (entity1.ReferenceType2)
-            {
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Set:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cone:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_SweptSurface:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_MultipleSurface:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GenSurface:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_GeneralCurve:
-                    break;
-                case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_UNKNOWN:
-                    break;
-            }
-        }
-
-
     }
-
 }
