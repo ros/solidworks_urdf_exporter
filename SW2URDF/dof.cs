@@ -64,6 +64,7 @@ namespace SW2URDF
         {
             Jacobian = new DenseMatrix(12);
             firstFreeRow = 0;
+            OPS = new ops();
         }
 
         public void constrainRelationFromMate(Mate2 mate, IComponent2 comp1, IComponent2 comp2)
@@ -71,15 +72,10 @@ namespace SW2URDF
             switch (mate.Type)
             {
                 case (int)swMateType_e.swMateCOINCIDENT:
-                    MateEntity2 entity1 = mate.MateEntity(0);
-                    MateEntity2 entity2 = mate.MateEntity(1);
-                    //constrainRelation(entity1, entity2);
-
-                    for (int i = 0; i < mate.GetMateEntityCount(); i++)
-                    {
-                        MateEntity2 entity = mate.MateEntity(i);
-                        OPS = new ops();
-                    }
+                    constraints entityConstraints1 = setConstraints(mate.MateEntity(0));
+                    constraints entityConstraints2 = setConstraints(mate.MateEntity(1));
+                    constraints mateConstraints = setConstraints(mate);
+                    addConstraintsToJacobian(entityConstraints1, entityConstraints2, mateConstraints);
                     break;
                 case (int)swMateType_e.swMateCONCENTRIC:
                     break;
@@ -131,38 +127,38 @@ namespace SW2URDF
             }
         }
 
-        public void addConstraintsToJacobian(constraints c1, constraints c2)
+        public void addConstraintsToJacobian(constraints entityConstraints1, constraints entityConstraints2, constraints mateConstraints)
         {
-            int constrainedDOFs = jointConstraints.constrainedDOFs | ( c1.constrainedDOFs & c2.constrainedDOFs);
+            int constrainedDOFs = jointConstraints.constrainedDOFs | ( entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs);
 
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.X, c2.X));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.X, entityConstraints2.X));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Y) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Y, c2.Y));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Y, entityConstraints2.Y));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Z) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Z, c2.Z));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Z, entityConstraints2.Z));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Roll) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Roll, c2.Roll));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Roll, entityConstraints2.Roll));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Pitch) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Pitch, c2.Pitch));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Pitch, entityConstraints2.Pitch));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Yaw) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(c1.Yaw, c2.Yaw));
+                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Yaw, entityConstraints2.Yaw));
                 Jacobian = OPS.rref(Jacobian);
             }
         }
@@ -225,6 +221,71 @@ namespace SW2URDF
                     break;
             }
             return entityConstraints;
+        }
+        public constraints setConstraints(Mate2 mate)
+        {
+            constraints mateConstraints = new constraints();
+            switch (mate.Type)
+            {
+                case (int)swMateType_e.swMateCOINCIDENT:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateCONCENTRIC:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMatePERPENDICULAR:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.Pitch | (int)constraints.ConstrainedDOFs.Yaw);
+                    break;
+                case (int)swMateType_e.swMatePARALLEL:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateTANGENT:
+                    break;
+                case (int)swMateType_e.swMateDISTANCE:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateANGLE:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateUNKNOWN:
+                    break;
+                case (int)swMateType_e.swMateSYMMETRIC:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateCAMFOLLOWER:
+                    break;
+                case (int)swMateType_e.swMateGEAR:
+                    break;
+                case (int)swMateType_e.swMateWIDTH:
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    break;
+                case (int)swMateType_e.swMateLOCKTOSKETCH:
+                    break;
+                case (int)swMateType_e.swMateRACKPINION:
+                    break;
+                case (int)swMateType_e.swMateMAXMATES:
+                    break;
+                case (int)swMateType_e.swMatePATH:
+                    break;
+                case (int)swMateType_e.swMateLOCK:
+                    break;
+                case (int)swMateType_e.swMateSCREW:
+                    break;
+                case (int)swMateType_e.swMateLINEARCOUPLER:
+                    break;
+                case (int)swMateType_e.swMateUNIVERSALJOINT:
+                    break;
+                case (int)swMateType_e.swMateCOORDINATE:
+                    break;
+                case (int)swMateType_e.swMateSLOT:
+                    break;
+                case (int)swMateType_e.swMateHINGE:
+                    break;
+                case (int)swMateType_e.swMateSLIDER:
+                    break;
+
+            }
+            return mateConstraints;
         }
 
         public Matrix getRotationMatrix(MathTransform transform)
