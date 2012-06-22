@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MatrixOPS;
 
 namespace SW2URDF
 {
