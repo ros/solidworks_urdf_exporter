@@ -261,6 +261,15 @@ namespace SW2URDF
             joint Joint = new joint();
             Joint.name = parent.name + "_to_" + child.name;
 
+            relation R = new relation();
+            foreach (Mate2 mate in parent.SWComponent.GetMates())
+            {
+                if (mate.GetMateEntityCount() == 2)
+                {
+                    R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
+                }
+            }
+
             Joint.Origin.X = parent.Inertial.Origin.X - child.Inertial.Origin.X;
             Joint.Origin.Y = parent.Inertial.Origin.Y - child.Inertial.Origin.Y;
             Joint.Origin.Z = parent.Inertial.Origin.Z - child.Inertial.Origin.Z;

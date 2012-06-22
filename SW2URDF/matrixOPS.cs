@@ -142,9 +142,71 @@ namespace MatrixOPS
         public Matrix nullSpace(Matrix m)
         {
             m = rref(m); //Null(A) = Null(rref(A))
+            Matrix null_m = new DenseMatrix(m.ColumnCount, m.RowCount);
 
-            return m;
+            int lead = 0;
+            Vector zeros = new DenseVector(m.RowCount);
+            Vector column = new DenseVector(m.RowCount);
+            for (int i = 0; i < m.ColumnCount; i++)
+            {
+                if (m[i, lead] == 1)
+                {
+                    null_m.SetColumn(i, zeros);
+                    lead++;
+                }
+                else
+                {
+                    for (int j = 0; j < lead; j++)
+                    {
+                        int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i-1);
+                        column[columnIndex] = m[j, i];
+                    }
+                    null_m.SetColumn(i, column);
+                }
+            }
+
+            return null_m;
         }
+
+        // These sets of methods finds the bottom-most one in a column vector from a matrix.
+        public int findLeadingOneinVector(Vector v)
+        {
+            return findLeadingOneinVector(v, 0, v.Count);
+        }
+        // Sets a lower bound in case this vector only has values thare are to the right of other leading ones
+        public int findLeadingOneinVector(Vector v, int lowerBound)
+        {
+            return findLeadingOneinVector(v, lowerBound, v.Count);
+        }
+        // Sets an upper bound to reduce the number of computations. I.E in a rref matrix the 1 should be on or above the diagonal
+        public int findLeadingOneinVector(Vector v, int lowerBound, int upperBound)
+        {
+            // If the upperBound is less than the lowerBound, the vector is searched backwards (to help speed up computation in some cases)
+            if (upperBound < lowerBound)
+            {
+                for (int i = upperBound - 1; i >= lowerBound; i--)
+                {
+                    if (v[i] == 1)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+            else
+            {
+                for (int i = lowerBound; i < upperBound; i++)
+                {
+                    if (v[i] == 1)
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+        }
+
+
 
         public Matrix addConstraintVectorToMatrix(Matrix m, Vector v)
         {
