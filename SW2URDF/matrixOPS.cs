@@ -15,6 +15,8 @@ namespace MatrixOPS
     public class ops
     {
         private int firstFreeRow;
+
+        // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
         public Matrix str2mat(string S)
         {
             S = S.Trim(new char[] { '[', ']', ' ' });          
@@ -39,6 +41,8 @@ namespace MatrixOPS
             }
             return m;
         }
+
+        // Convert a math.net Numerics Matrix into a MATLAB type string representation
         public string mat2str(Matrix m)
         {
             string s = "[";
@@ -60,6 +64,8 @@ namespace MatrixOPS
             s = s.Insert(s.Length, "]");
             return s;
         }
+
+        // Concatenates two vectors together. Why doesn't math.net numerics have this functionality
         public Vector vectorCat(Vector v1, Vector v2)
         {
             Vector vec = new DenseVector(v1.Count + v2.Count);
@@ -67,6 +73,8 @@ namespace MatrixOPS
             v2.CopyTo(vec, 0, v1.Count, v2.Count);
             return vec;
         }
+
+        // Calculates the row reduced echelon form of a matrix. It really sucks that math.net numerics doesn't include this as a builtin function
         public Matrix rref(Matrix m)
         {
             int minDimension = Math.Min(m.ColumnCount, m.RowCount);
@@ -138,7 +146,8 @@ namespace MatrixOPS
             }
             return m;
         }
-
+        
+        // Calculates the null space of a matrix
         public Matrix nullSpace(Matrix m)
         {
             m = rref(m); //Null(A) = Null(rref(A))
@@ -149,6 +158,7 @@ namespace MatrixOPS
             Vector column = new DenseVector(m.RowCount);
             for (int i = 0; i < m.ColumnCount; i++)
             {
+                // This DOF is constrained
                 if (m[i, lead] == 1)
                 {
                     null_m.SetColumn(i, zeros);
@@ -156,6 +166,7 @@ namespace MatrixOPS
                 }
                 else
                 {
+                    // Fill column vector with parameters
                     for (int j = 0; j < lead; j++)
                     {
                         int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i-1);
@@ -164,11 +175,10 @@ namespace MatrixOPS
                     null_m.SetColumn(i, column);
                 }
             }
-
             return null_m;
         }
 
-        // These sets of methods finds the bottom-most one in a column vector from a matrix.
+        // This set of methods finds the bottom-most one in a column vector from a matrix.
         public int findLeadingOneinVector(Vector v)
         {
             return findLeadingOneinVector(v, 0, v.Count);
@@ -206,28 +216,21 @@ namespace MatrixOPS
             }
         }
 
-
-
-        public Matrix addConstraintVectorToMatrix(Matrix m, Vector v)
+        // Inserts the vector into the first empty row of a matrix (if the column count matches)
+        public Matrix addVectorToMatrix(Matrix m, Vector v)
         {
-            if (m.ColumnCount != v.Count)
+            if (m.ColumnCount == v.Count)
             {
-                return m;
+                int row = firstEmptyRow(m);
+                if (row != -1)
+                {
+                    m.SetRow(row, v);
+                }
             }
-            int row = firstEmptyRow(m);
-            if (row == -1)
-            {
-                return m;
-            }
-            m.SetRow(row, v);
             return m;
         }
 
-        public bool isLinearlyIndependent(Matrix m, Vector v)
-        {
-            return true;
-        }
-
+        // Finds the first empty (all entries are 0) row in a matrix. Returns -1 if no row is non-zero
         public int firstEmptyRow(Matrix m)
         {
             for (int i = 0; i < m.RowCount; i++)

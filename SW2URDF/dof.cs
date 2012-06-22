@@ -133,32 +133,33 @@ namespace SW2URDF
 
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.X, entityConstraints2.X));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.X, entityConstraints2.X));
+                // After adding constraint, the Jacobian is put into row-reduced echelon form which serves to remove any non-linearly independent rows
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Y) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Y, entityConstraints2.Y));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Y, entityConstraints2.Y));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Z) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Z, entityConstraints2.Z));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Z, entityConstraints2.Z));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Roll) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Roll, entityConstraints2.Roll));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Roll, entityConstraints2.Roll));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Pitch) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Pitch, entityConstraints2.Pitch));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Pitch, entityConstraints2.Pitch));
                 Jacobian = OPS.rref(Jacobian);
             }
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.Yaw) != 0)
             {
-                Jacobian = OPS.addConstraintVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Yaw, entityConstraints2.Yaw));
+                Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Yaw, entityConstraints2.Yaw));
                 Jacobian = OPS.rref(Jacobian);
             }
         }
