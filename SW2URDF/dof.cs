@@ -18,6 +18,7 @@ using MatrixOPS;
 
 namespace SW2URDF
 {
+    // The constraint class represents a 6-DOF constraint. Each dof can be represented by a single axis. This doesn't support non-linear contraints (I.E movements constrained in circles, parabolas, screws, etc...), yet.
     public class constraints
     {
         public Vector X
@@ -51,10 +52,11 @@ namespace SW2URDF
         }  
     }
 
+    // There has to be a better name for what this class does, but for now it will stay as its named. The purpose of this class is to convert SolidWorks mates and their entities into
+    // allowable degrees of freedom for the joint. From this information you can get the type, location, axis and hopefully limits for the joint
     public class relation
     {
         private Matrix Jacobian;
-        private int firstFreeRow;
         private constraints parentRelationConstraints;
         private constraints childRelationConstraints;
         private constraints jointConstraints;
@@ -63,10 +65,10 @@ namespace SW2URDF
         public relation()
         {
             Jacobian = new DenseMatrix(12);
-            firstFreeRow = 0;
             OPS = new ops();
         }
 
+        // This method adds constraints to the Jacobian based on the the mate type, and mating entities
         public void constrainRelationFromMate(Mate2 mate, IComponent2 comp1, IComponent2 comp2)
         {
             switch (mate.Type)
@@ -127,6 +129,7 @@ namespace SW2URDF
             }
         }
 
+        // This method adds the constrained degrees of freedom to the Jacobian based on the constraints from each entity and the mate constraints.
         public void addConstraintsToJacobian(constraints entityConstraints1, constraints entityConstraints2, constraints mateConstraints)
         {
             int constrainedDOFs = jointConstraints.constrainedDOFs | ( entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs);
@@ -164,7 +167,7 @@ namespace SW2URDF
             }
         }
 
-        
+        // This method returns the constraints derived from the mating entity. For example a point is constrained in three linear directions but no rotational directions.
         public constraints setConstraints(MateEntity2 entity)
         {
             constraints entityConstraints = new constraints();
@@ -223,6 +226,8 @@ namespace SW2URDF
             }
             return entityConstraints;
         }
+
+        // This method returns the maximum possible constraints derived from the mate itself. For example a concentric mate can constrain two entities in three linear directions and two rotational directions (two spheres are constrained like a point, a cylinder like a cylinder).
         public constraints setConstraints(Mate2 mate)
         {
             constraints mateConstraints = new constraints();
@@ -232,7 +237,7 @@ namespace SW2URDF
                     mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
                     break;
                 case (int)swMateType_e.swMateCONCENTRIC:
-                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+                    mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
                     break;
                 case (int)swMateType_e.swMatePERPENDICULAR:
                     mateConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.Pitch | (int)constraints.ConstrainedDOFs.Yaw);
@@ -289,6 +294,7 @@ namespace SW2URDF
             return mateConstraints;
         }
 
+        // Used to get the 3x3 rotation matrix from a SolidWorks MathTransform
         public Matrix getRotationMatrix(MathTransform transform)
         {
             var rot = new DenseMatrix(3);
