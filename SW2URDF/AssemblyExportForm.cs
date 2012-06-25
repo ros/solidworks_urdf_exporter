@@ -118,15 +118,15 @@ namespace SW2URDF
             // Retrieve the node that was dragged.
 
             //Retrieve the node/item that was dragged
-            if (e.Data.GetType() == typeof(LinkItem))
+            if (e.Data.GetType() == typeof(LinkNode))
+            {
+                draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
+            }
+            else if ((LinkItem)e.Data.GetData(typeof(LinkItem)) != null)
             {
                 LinkItem item = (LinkItem)e.Data.GetData(typeof(LinkItem));
                 draggedNode = LinkItemToLinkNode(item);
                 listBox_deleted.Items.Remove(item);
-            }
-            else if (e.Data.GetType() == typeof(LinkNode))
-            {
-                draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
             }
             else
             {
@@ -147,12 +147,16 @@ namespace SW2URDF
                 {
                     draggedNode.Remove();
                     treeView_linktree.Nodes.Add(draggedNode);
+                    treeView_linktree.ExpandAll();
+                    return;
                 }
                 else
                 {
                     targetNode = (LinkNode)treeView_linktree.TopNode;
                     draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
+                    targetNode.ExpandAll();
+                    return;
                 }
             }
             else
@@ -188,9 +192,9 @@ namespace SW2URDF
                     }
                 }
                 draggedNode.Remove();
-                targetNode.Nodes.Add(draggedNode);   
+                targetNode.Nodes.Add(draggedNode);
+                targetNode.ExpandAll();
             }
-            targetNode.Expand();
         }
         private void listBox_deleted_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
         {
@@ -218,6 +222,7 @@ namespace SW2URDF
         {
             LinkNode node = (LinkNode)e.Node;
             fillLinkPropertyBoxes(node.Link);
+            node.Link.SWComponent.Select(false);
         }
 
         private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
@@ -235,6 +240,11 @@ namespace SW2URDF
             item.Name = node.Name;
             item.Link = node.Link;
             item.Text = node.Text;
+            item.Link.Children.Clear();
+            foreach (LinkNode child in node.Nodes)
+            {
+                item.Link.Children.Add(createLinkFromLinkNode(child));
+            }
             return item;
         }
         public LinkNode LinkItemToLinkNode(LinkItem item)
@@ -243,6 +253,10 @@ namespace SW2URDF
             node.Name = item.Name;
             node.Link = item.Link;
             node.Text = item.Text;
+            foreach(link child in item.Link.Children)
+            {
+                node.Nodes.Add(createLinkNodeFromLink(child));
+            }
             return node;
         }
         #endregion

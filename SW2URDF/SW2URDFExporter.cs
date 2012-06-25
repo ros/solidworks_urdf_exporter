@@ -372,6 +372,13 @@ namespace SW2URDF
             Link.Collision.Origin.XYZ = centerOfMass;
             Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
 
+            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
+            double[] values = swModel.MaterialPropertyValues;
+            Link.Visual.Material.Color.Red = values[0];
+            Link.Visual.Material.Color.Green = values[1];
+            Link.Visual.Material.Color.Blue = values[2];
+            Link.Visual.Material.Color.Alpha = values[7];
+
             return Link;
         }
 
