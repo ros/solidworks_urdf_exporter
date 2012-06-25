@@ -118,7 +118,7 @@ namespace SW2URDF
             // Retrieve the node that was dragged.
 
             //Retrieve the node/item that was dragged
-            if (e.Data.GetType() == typeof(LinkNode))
+            if ((LinkNode)e.Data.GetData(typeof(LinkNode)) != null)
             {
                 draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
             }
@@ -294,38 +294,78 @@ namespace SW2URDF
             textBox_iyy.Text = Link.Inertial.Inertia.Iyy.ToString();
             textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString();
             textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString();
+
+            domainUpDown_red.Text = Link.Visual.Material.Color.Red.ToString();
+            domainUpDown_green.Text = Link.Visual.Material.Color.Green.ToString();
+            domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString();
+            domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString();
         }
         public void fillJointPropertyBoxes(joint Joint)
         {
-            textBox_joint_name.Text = Joint.name;
-            comboBox_joint_type.Text = Joint.type;
+            if (Joint == null)
+            {
+                textBox_joint_name.Text = "";
+                comboBox_joint_type.Text = "";
 
-            textBox_joint_x.Text = Joint.Origin.X.ToString();
-            textBox_joint_y.Text = Joint.Origin.Y.ToString();
-            textBox_joint_z.Text = Joint.Origin.Z.ToString();
-            textBox_joint_roll.Text = Joint.Origin.Roll.ToString();
-            textBox_joint_pitch.Text = Joint.Origin.Pitch.ToString();
-            textBox_joint_yaw.Text = Joint.Origin.Yaw.ToString();
+                textBox_joint_x.Text = "";
+                textBox_joint_y.Text = "";
+                textBox_joint_z.Text = "";
+                textBox_joint_roll.Text = "";
+                textBox_joint_pitch.Text = "";
+                textBox_joint_yaw.Text = "";
 
-            textBox_axis_x.Text = Joint.Axis.X.ToString();
-            textBox_axis_y.Text = Joint.Axis.Y.ToString();
-            textBox_axis_z.Text = Joint.Axis.Z.ToString();
+                textBox_axis_x.Text = "";
+                textBox_axis_y.Text = "";
+                textBox_axis_z.Text = "";
 
-            textBox_limit_lower.Text = Joint.Limit.lower.ToString();
-            textBox_limit_upper.Text = Joint.Limit.upper.ToString();
-            textBox_limit_effort.Text = Joint.Limit.effort.ToString();
-            textBox_limit_velocity.Text = Joint.Limit.effort.ToString();
+                textBox_limit_lower.Text = "";
+                textBox_limit_upper.Text = "";
+                textBox_limit_effort.Text = "";
+                textBox_limit_velocity.Text = "";
 
-            textBox_calibration_rising.Text = Joint.Calibration.rising.ToString();
-            textBox_calibration_falling.Text = Joint.Calibration.falling.ToString();
+                textBox_calibration_rising.Text = "";
+                textBox_calibration_falling.Text = "";
 
-            textBox_friction.Text = Joint.Dynamics.friction.ToString();
-            textBox_damping.Text = Joint.Dynamics.damping.ToString();
+                textBox_friction.Text = "";
+                textBox_damping.Text = "";
 
-            textBox_soft_lower.Text = Joint.Safety.soft_lower.ToString();
-            textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString();
-            textBox_k_position.Text = Joint.Safety.k_position.ToString();
-            textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString();
+                textBox_soft_lower.Text = "";
+                textBox_soft_upper.Text = "";
+                textBox_k_position.Text = "";
+                textBox_k_velocity.Text = "";
+            }
+            else
+            {
+                textBox_joint_name.Text = Joint.name;
+                comboBox_joint_type.Text = Joint.type;
+
+                textBox_joint_x.Text = Joint.Origin.X.ToString();
+                textBox_joint_y.Text = Joint.Origin.Y.ToString();
+                textBox_joint_z.Text = Joint.Origin.Z.ToString();
+                textBox_joint_roll.Text = Joint.Origin.Roll.ToString();
+                textBox_joint_pitch.Text = Joint.Origin.Pitch.ToString();
+                textBox_joint_yaw.Text = Joint.Origin.Yaw.ToString();
+
+                textBox_axis_x.Text = Joint.Axis.X.ToString();
+                textBox_axis_y.Text = Joint.Axis.Y.ToString();
+                textBox_axis_z.Text = Joint.Axis.Z.ToString();
+
+                textBox_limit_lower.Text = Joint.Limit.lower.ToString();
+                textBox_limit_upper.Text = Joint.Limit.upper.ToString();
+                textBox_limit_effort.Text = Joint.Limit.effort.ToString();
+                textBox_limit_velocity.Text = Joint.Limit.effort.ToString();
+
+                textBox_calibration_rising.Text = Joint.Calibration.rising.ToString();
+                textBox_calibration_falling.Text = Joint.Calibration.falling.ToString();
+
+                textBox_friction.Text = Joint.Dynamics.friction.ToString();
+                textBox_damping.Text = Joint.Dynamics.damping.ToString();
+
+                textBox_soft_lower.Text = Joint.Safety.soft_lower.ToString();
+                textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString();
+                textBox_k_position.Text = Joint.Safety.k_position.ToString();
+                textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString();
+            }
         }
         public void saveLinkItemData(int index)
         {

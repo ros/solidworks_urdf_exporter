@@ -72,6 +72,15 @@ namespace MatrixOPS
             return vec;
         }
 
+        public Vector vectorCat(Vector v1, Vector v2, Vector v3, Vector v4)
+        {
+            Vector vec = new DenseVector(v1.Count + v2.Count + v3.Count + v4.Count);
+            v1.CopyTo(vec, 0, 0, v1.Count);
+            v2.CopyTo(vec, 0, v1.Count, v2.Count);
+            v3.CopyTo(vec, 0, v1.Count + v2.Count, v3.Count);
+            v4.CopyTo(vec, 0, v1.Count + v2.Count + v3.Count, v4.Count);
+            return vec;
+        }
         // Calculates the row reduced echelon form of a matrix. It really sucks that math.net numerics doesn't include this as a builtin function
         public Matrix rref(Matrix m)
         {
@@ -140,6 +149,11 @@ namespace MatrixOPS
                 {
                     break;
                 }
+                //We are dividing by 0 here. Stop doing it!
+                if (v[i] == 0)
+                {
+                    int c = 1; //Whoops!
+                }
                 m.SetRow(i, v / v[i]);
             }
             return m;
@@ -168,7 +182,14 @@ namespace MatrixOPS
                     for (int j = 0; j < lead; j++)
                     {
                         int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i-1);
-                        column[columnIndex] = m[j, i];
+                        if (columnIndex != -1)
+                        {
+                            column[columnIndex] = m[j, i];
+                        }
+                        //else
+                        //{
+                        //    column[columnIndex] = 0;
+                        //}
                     }
                     null_m.SetColumn(i, column);
                 }
