@@ -14,8 +14,6 @@ namespace MatrixOPS
 {
     public class ops
     {
-        private int firstFreeRow;
-
         // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
         public Matrix str2mat(string S)
         {

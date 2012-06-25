@@ -114,60 +114,77 @@ namespace SW2URDF
             // Retrieve the node at the drop location.
             LinkNode targetNode = (LinkNode)treeView_linktree.GetNodeAt(targetPoint);
 
+            LinkNode draggedNode;
             // Retrieve the node that was dragged.
-            LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
-            if (draggedNode == null)
+
+            //Retrieve the node/item that was dragged
+            if (e.Data.GetType() == typeof(LinkItem))
             {
                 LinkItem item = (LinkItem)e.Data.GetData(typeof(LinkItem));
-                if (item == null)
-                {
-                    return;
-                }
                 draggedNode = LinkItemToLinkNode(item);
                 listBox_deleted.Items.Remove(item);
             }
+            else if (e.Data.GetType() == typeof(LinkNode))
+            {
+                draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
+            }
+            else
+            {
+                return;
+            }
 
+            // If the node is picked up and dragged back on to itself, please don't crash
+            if (draggedNode == targetNode)
+            {
+                return;
+            }
 
-            
+            // If the it was dropped into the box itself, but not onto an actual node
             if (targetNode == null)
             {
-                targetNode = (LinkNode)treeView_linktree.TopNode;
-                
-                if (targetNode == null)
+                // If for some reason the tree is empty
+                if (treeView_linktree.Nodes.Count == 0)
                 {
                     draggedNode.Remove();
-                    treeView_linktree.Nodes.Add(draggedNode);                    
+                    treeView_linktree.Nodes.Add(draggedNode);
                 }
                 else
                 {
+                    targetNode = (LinkNode)treeView_linktree.TopNode;
                     draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
                 }
             }
             else
             {
-                // If dragging a node closer to root level onto a target node further, do parent swapping kung fu
+                // If dragging a node closer onto its ancestor do parent swapping kungfu
                 if (draggedNode.Level < targetNode.Level)
                 {
-                    LinkNode newParent = targetNode;
-                    LinkNode newChild = draggedNode;
-                    LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
-                    newParent.Remove();
-                    newChild.Remove();
-                    newParent.Nodes.Add(newChild);
-                    foreach (LinkNode node in newChild.Nodes)
+                    int level_diff = targetNode.Level - draggedNode.Level;
+                    LinkNode ancestor_node = targetNode;
+                    for (int i = 0; i < level_diff; i++)
                     {
-                        LinkNode newNode = node;
-                        newParent.Nodes.Add(newNode);
-                        newChild.Nodes.Remove(node);
+                        //Ascend up the target's node (new parent) parent tree the level difference to get the ancestoral node that is at the same level
+                        //as the dragged node (the new child)
+                        ancestor_node = (LinkNode)ancestor_node.Parent;
                     }
-                    if (sameGrandparent == null)
+                    // If the dragged node is in the same line as the target node, then the real kungfu begins
+                    if (ancestor_node == draggedNode)
                     {
-                        treeView_linktree.Nodes.Add(newParent);
-                    }
-                    else
-                    {
-                        sameGrandparent.Nodes.Add(newParent);
+                        LinkNode newParent = targetNode;
+                        LinkNode newChild = draggedNode;
+                        LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
+                        newParent.Remove(); // Remove the target node from the tree
+                        newChild.Remove();  // Remove the dragged node from the tree
+                        newParent.Nodes.Add(newChild); // 
+                        if (sameGrandparent == null)
+                        {
+                            treeView_linktree.Nodes.Add(newParent);
+                        }
+                        else
+                        {
+                            sameGrandparent.Nodes.Add(newParent);
+                        }
                     }
                 }
                 draggedNode.Remove();
@@ -196,7 +213,21 @@ namespace SW2URDF
         {
             this.listBox_deleted.DoDragDrop(this.listBox_deleted.SelectedItem, DragDropEffects.Move);
         }
-        
+
+        private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            LinkNode node = (LinkNode)e.Node;
+            fillLinkPropertyBoxes(node.Link);
+        }
+
+        private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LinkItem item = (LinkItem)listBox_deleted.SelectedItem;
+            if (item != null)
+            {
+                fillLinkPropertyBoxes(item.Link);
+            }
+        }
 
         public LinkItem LinkNodeToLinkItem(LinkNode node)
         {
@@ -373,23 +404,20 @@ namespace SW2URDF
             {
                 if (node.Level == 0)
                 {
-                    Robot.BaseLink = createLinkFromLinkNode(node, 1);
+                    Robot.BaseLink = createLinkFromLinkNode(node);
                 }
             }
             Robot.name = Exporter.mRobot.name;
             return Robot;
         }
 
-        public link createLinkFromLinkNode(LinkNode node, int level)
+        public link createLinkFromLinkNode(LinkNode node)
         {
-            link Link = new link();
-            Link = node.Link;
+            link Link = node.Link;
+            Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-                if (child.Level == level)
-                {
-                    Link.Children.Add(createLinkFromLinkNode(child, level + 1)); // Recreates the children of each embedded link
-                }
+                Link.Children.Add(createLinkFromLinkNode(child)); // Recreates the children of each embedded link
             }
             return Link;
         }
@@ -632,21 +660,6 @@ namespace SW2URDF
         }
 
         #endregion
-
-        private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            LinkNode node = (LinkNode)e.Node;
-            fillLinkPropertyBoxes(node.Link);
-        }
-
-        private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            LinkItem item = (LinkItem)listBox_deleted.SelectedItem;
-            if (item != null)
-            {
-                fillLinkPropertyBoxes(item.Link);
-            }
-        }
 
         #region joint property controls
         private void label_damping_Click(object sender, EventArgs e)

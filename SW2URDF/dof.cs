@@ -36,10 +36,6 @@ namespace SW2URDF
         public int constrainedDOFs
         { get; set; }
 
-        public const Vector axis1 = (DenseVector)new double[3] { 1, 0, 0 };
-        public const Vector axis2 = (DenseVector)new double[3] { 0, 1, 0 };
-        public const Vector axis3 = (DenseVector)new double[3] { 0, 0, 1 };
-
         [Flags]
         public enum ConstrainedDOFs
         {
@@ -49,7 +45,12 @@ namespace SW2URDF
             Roll = 8,
             Pitch = 16,
             Yaw = 32,
-        }  
+        }
+        public constraints()
+        {
+            constrainedDOFs = 0;
+        }
+
     }
 
     // There has to be a better name for what this class does, but for now it will stay as its named. The purpose of this class is to convert SolidWorks mates and their entities into
@@ -57,15 +58,20 @@ namespace SW2URDF
     public class relation
     {
         private Matrix Jacobian;
-        private constraints parentRelationConstraints;
-        private constraints childRelationConstraints;
         private constraints jointConstraints;
         private ops OPS;
+
+
+        private Vector axis1 = new DenseVector(new double[3] { 1, 0, 0 });
+        private Vector axis2 = new DenseVector(new double[3] { 0, 1, 0 });
+        private Vector axis3 = new DenseVector(new double[3] { 0, 0, 1 });
 
         public relation()
         {
             Jacobian = new DenseMatrix(12);
             OPS = new ops();
+            jointConstraints = new constraints();
+            jointConstraints.constrainedDOFs = 0;
         }
 
         // This method adds constraints to the Jacobian based on the the mate type, and mating entities
@@ -165,47 +171,52 @@ namespace SW2URDF
                 Jacobian = OPS.addVectorToMatrix(Jacobian, OPS.vectorCat(entityConstraints1.Yaw, entityConstraints2.Yaw));
                 Jacobian = OPS.rref(Jacobian);
             }
+            jointConstraints.constrainedDOFs |= constrainedDOFs;
         }
 
         // This method returns the constraints derived from the mating entity. For example a point is constrained in three linear directions but no rotational directions.
         public constraints setConstraints(MateEntity2 entity)
         {
             constraints entityConstraints = new constraints();
+            if (entity.ReferenceComponent == null)
+            {
+                return entityConstraints;
+            }
             switch (entity.ReferenceType2)
             {
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
-                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
-                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis3);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * constraints.axis2);
+                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
+                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
                     break;

@@ -262,7 +262,8 @@ namespace SW2URDF
             Joint.name = parent.name + "_to_" + child.name;
 
             relation R = new relation();
-            foreach (Mate2 mate in parent.SWComponent.GetMates())
+            object[] mates = parent.SWComponent.GetMates();
+            foreach (Mate2 mate in mates)
             {
                 if (mate.GetMateEntityCount() == 2)
                 {
