@@ -262,6 +262,7 @@ namespace SW2URDF
             object[] mates = parent.SWComponent.GetMates();
             foreach (Mate2 mate in mates)
             {
+                int type = mate.Type;
                 if (mate.GetMateEntityCount() == 2)
                 {
                     R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
@@ -301,7 +302,8 @@ namespace SW2URDF
         public joint relationToJoint(relation R)
         {
             joint Joint = new joint();
-            if (R.getNumberOfFreeDOFs() != 1)
+            int numberDOFs = R.getNumberOfFreeDOFs();
+            if (numberDOFs != 1)
             {
                 Joint.type = "Fixed";
             }

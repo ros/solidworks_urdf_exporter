@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace MatrixOPS
 {
@@ -150,11 +151,11 @@ namespace MatrixOPS
                     break;
                 }
                 //We are dividing by 0 here. Stop doing it!
-                if (v[i] == 0)
+                if (v[index] == 0)
                 {
                     int c = 1; //Whoops!
                 }
-                m.SetRow(i, v / v[i]);
+                m.SetRow(i, v / v[index]);
             }
             return m;
         }
@@ -270,6 +271,25 @@ namespace MatrixOPS
                 
             }
             return -1;
+        }
+
+        public Vector projectLineToPlane(Vector normal, Vector line)
+        {
+            Vector v = crossProduct3(normal, crossProduct3(line, normal));
+            return (DenseVector)v.Normalize(2);
+        }
+
+        public Vector crossProduct3(Vector v1, Vector v2)
+        {
+            Vector v = new DenseVector(v1.Count);
+            if (v1.Count == 3 && v2.Count == 3)
+            {
+                v[0] = v1[1] * v2[2] - v1[2] * v2[1];
+                v[1] = v1[2] * v2[0] - v1[0] * v2[2];
+                v[2] = v1[0] * v2[1] - v1[1] * v2[0];
+            }
+            return v;
+            
         }
     }
 }

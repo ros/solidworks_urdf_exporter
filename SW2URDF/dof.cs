@@ -70,7 +70,7 @@ namespace SW2URDF
         public relation()
         {
             Jacobian = new DenseMatrix(12);
-            Jacobian.SetSubMatrix(0,6,0,6,DenseMatrix.Identity(6));
+            Jacobian.SetSubMatrix(0, 6, 0, 6, DenseMatrix.Identity(6));
             OPS = new ops();
             jointConstraints = new constraints();
             jointConstraints.constrainedDOFs = 0;
@@ -151,8 +151,8 @@ namespace SW2URDF
         public void addConstraintsToJacobian(constraints entityConstraints1, constraints entityConstraints2, constraints mateConstraints)
         {
 
-            int constrainedDOFs = ( entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs);
-            Vector Zeros3 = (DenseVector) new double[3]{0,0,0};
+            int constrainedDOFs = (entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs);
+            Vector Zeros3 = (DenseVector)new double[3] { 0, 0, 0 };
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {
                 Vector v = OPS.vectorCat(entityConstraints1.X, Zeros3, entityConstraints2.X, Zeros3);
@@ -203,43 +203,55 @@ namespace SW2URDF
                 return entityConstraints;
             }
             int c = entity.ReferenceType;
+
+            MathTransform componentTransform = entity.ReferenceComponent.Transform2;
+            MathVector axisX = new MathVector();
+            MathVector axisY = new MathVector();
+            MathVector axisZ = new MathVector();
+            MathVector transform = new MathVector();
+            double scale;
+            componentTransform.GetData2(axis1, axis2, axis3, transform, scale);
+            double[] entityParams = entity.EntityParams;
+            Vector position = new DenseVector(new double[] {entityParams[0], entityParams[1], entityParams[2]});
+            Vector vector = new DenseVector(new double[] {entityParams[3], entityParams[4], entityParams[5]});
             // ReferenceType is obsoleted by ReferenceType2 but they reference different enumerations and I don't know why
-            // The first one is the one I really wanted.
+            // The first one is the one makes things simpler (I think).
             switch (entity.ReferenceType)
             {
+                // [TODO] verify these are all correct
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
-                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
+                    entityConstraints.X = MathVectorToVector(axisX);
+                    entityConstraints.Y = MathVectorToVector(axisY);
+                    entityConstraints.Z = MathVectorToVector(axisZ);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.X = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
+                    entityConstraints.Y = OPS.crossProduct3(vector, entityConstraints.X);
+                    entityConstraints.Roll = entityConstraints.X;
+                    entityConstraints.Pitch = entityConstraints.Y;
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
-                    entityConstraints.Z = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.X = MathVectorToVector(axisX);
+                    entityConstraints.Y = MathVectorToVector(axisY);
+                    entityConstraints.Z = MathVectorToVector(axisZ);
+                    entityConstraints.Roll = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
+                    entityConstraints.Pitch = OPS.crossProduct3(vector, entityConstraints.Roll);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis3);
+                    entityConstraints.X = vector;
+                    entityConstraints.Roll = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
+                    entityConstraints.Pitch = OPS.crossProduct3(vector, entityConstraints.Roll);
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
                     entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Y = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
-                    entityConstraints.Roll = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis1);
-                    entityConstraints.Pitch = (DenseVector)(getRotationMatrix(entity.ReferenceComponent.Transform2) * axis2);
+                    entityConstraints.X = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
+                    entityConstraints.Y = OPS.crossProduct3(vector, entityConstraints.X);
+                    entityConstraints.Roll = entityConstraints.X;
+                    entityConstraints.Pitch = entityConstraints.Y;
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
                     break;
@@ -332,10 +344,22 @@ namespace SW2URDF
         public Matrix getRotationMatrix(MathTransform transform)
         {
             var rot = new DenseMatrix(3);
+            //transform.
             for (int i = 0; i < 3; i++)
                 for (int j = 0; j < 3; j++)
-                    rot.At(i, j, transform.ArrayData[i + 3*j]);
+                    rot.At(i, j, transform.ArrayData[i + 3 * j]);
             return rot;
+        }
+
+        public Vector MathVectorToVector(MathVector mVector)
+        {
+            // I'm pretty sure the length of the MathVector is always 3
+            Vector v = new DenseVector(3);
+            for (int i = 0; i < 3; i++)
+            {
+                v[i] = mVector.ArrayData[i];
+            }
+            return v;
         }
 
         public int getNumberOfFreeDOFs()
@@ -345,7 +369,19 @@ namespace SW2URDF
             int freeDOFs = 0;
             for (int i = 0; i < JacobianNullSpace.ColumnCount; i++)
             {
-                if (JacobianNullSpace.Column(i) != Zeros)
+                bool isZeros = true;
+                Vector column = (DenseVector)JacobianNullSpace.Column(i);
+
+                //There has to be a better way to check if this column vector is just zeros.
+                for (int j = 0; j < column.Count; j++)
+                {
+                    if (column[j] != 0)
+                    {
+                        isZeros = false;
+                        break;
+                    }
+                }
+                if (!isZeros)
                 {
                     freeDOFs++;
                 }
