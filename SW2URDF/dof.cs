@@ -42,9 +42,11 @@ namespace SW2URDF
             X = 1,
             Y = 2,
             Z = 4,
+            XYZ = X | Y | Z,
             Roll = 8,
             Pitch = 16,
             Yaw = 32,
+            RPY = Roll | Pitch | Yaw,
         }
         public constraints()
         {
@@ -151,7 +153,9 @@ namespace SW2URDF
         public void addConstraintsToJacobian(constraints entityConstraints1, constraints entityConstraints2, constraints mateConstraints)
         {
 
-            int constrainedDOFs = (entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs);
+            int constrainedDOFs = (entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs & mateConstraints.constrainedDOFs);
+            constraints drivingEntity = (entityConstraints1.constrainedDOFs & (int)constraints.ConstrainedDOFs.XYZ >
+                                         entityConstraints2.constrainedDOFs & (int)constraints.ConstrainedDOFs.XYZ) ? entityConstraints1
             Vector Zeros3 = (DenseVector)new double[3] { 0, 0, 0 };
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {
@@ -197,62 +201,25 @@ namespace SW2URDF
         // This method returns the constraints derived from the mating entity. For example a point is constrained in three linear directions but no rotational directions.
         public constraints setConstraints(MateEntity2 entity)
         {
-            constraints entityConstraints = new constraints();
             if (entity.ReferenceComponent == null)
             {
-                return entityConstraints;
+                return null;
             }
-            int c = entity.ReferenceType;
 
-            MathTransform componentTransform = entity.ReferenceComponent.Transform2;
-            MathVector axisX = new MathVector();
-            MathVector axisY = new MathVector();
-            MathVector axisZ = new MathVector();
-            MathVector transform = new MathVector();
-            double scale;
-            componentTransform.GetData2(axis1, axis2, axis3, transform, scale);
-            double[] entityParams = entity.EntityParams;
-            Vector position = new DenseVector(new double[] {entityParams[0], entityParams[1], entityParams[2]});
-            Vector vector = new DenseVector(new double[] {entityParams[3], entityParams[4], entityParams[5]});
             // ReferenceType is obsoleted by ReferenceType2 but they reference different enumerations and I don't know why
-            // The first one is the one makes things simpler (I think).
+            // The first one makes things simpler (I think).
             switch (entity.ReferenceType)
             {
-                // [TODO] verify these are all correct
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Point:
-                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z);
-                    entityConstraints.X = MathVectorToVector(axisX);
-                    entityConstraints.Y = MathVectorToVector(axisY);
-                    entityConstraints.Z = MathVectorToVector(axisZ);
-                    break;
+                    return setPointConstraints(entity);
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Line:
-                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
-                    entityConstraints.Y = OPS.crossProduct3(vector, entityConstraints.X);
-                    entityConstraints.Roll = entityConstraints.X;
-                    entityConstraints.Pitch = entityConstraints.Y;
-                    break;
+                    return setLineOrCylinderConstraints(entity);             
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Circle:
-                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = MathVectorToVector(axisX);
-                    entityConstraints.Y = MathVectorToVector(axisY);
-                    entityConstraints.Z = MathVectorToVector(axisZ);
-                    entityConstraints.Roll = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
-                    entityConstraints.Pitch = OPS.crossProduct3(vector, entityConstraints.Roll);
-                    break;
+                    return setCircleConstraints(entity);
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Plane:
-                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = vector;
-                    entityConstraints.Roll = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
-                    entityConstraints.Pitch = OPS.crossProduct3(vector, entityConstraints.Roll);
-                    break;
+                    return setPlaneConstraints(entity);
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Cylinder:
-                    entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
-                    entityConstraints.X = OPS.projectLineToPlane(vector, MathVectorToVector(axisX));
-                    entityConstraints.Y = OPS.crossProduct3(vector, entityConstraints.X);
-                    entityConstraints.Roll = entityConstraints.X;
-                    entityConstraints.Pitch = entityConstraints.Y;
-                    break;
+                    return setLineOrCylinderConstraints(entity);
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Sphere:
                     break;
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_Set:
@@ -270,7 +237,7 @@ namespace SW2URDF
                 case (int)swMateEntity2ReferenceType_e.swMateEntity2ReferenceType_UNKNOWN:
                     break;
             }
-            return entityConstraints;
+            return null;
         }
 
         // This method returns the maximum possible constraints derived from the mate itself. For example a concentric mate can constrain two entities in three linear directions and two rotational directions (two spheres are constrained like a point, a cylinder like a cylinder).
@@ -338,6 +305,98 @@ namespace SW2URDF
 
             }
             return mateConstraints;
+        }
+
+        // A point is constrained in three linear directions. They do not need to be transformed because they are orthogonal
+        public constraints setPointConstraints(MateEntity2 entity)
+        {
+            constraints entityConstraints = new constraints();
+            entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z);
+            entityConstraints.X = axis1;
+            entityConstraints.Y = axis2;
+            entityConstraints.Z = axis3;
+            return entityConstraints;
+        }
+
+        // A line or cylinder have two linear constraints orthogonal to and two rotational constraints around the axis of rotation
+        public constraints setLineOrCylinderConstraints(MateEntity2 entity)
+        {
+            double[] entityParams = entity.EntityParams;
+            Vector position = new DenseVector(new double[] { entityParams[0], entityParams[1], entityParams[2] });
+            Vector axis = new DenseVector(new double[] { entityParams[3], entityParams[4], entityParams[5] });
+
+            constraints entityConstraints = new constraints();
+            entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+
+            // Get some unit vector on the plane defined by the line/cylinder axis
+            Vector projectedLine = OPS.projectLineToPlane(axis, axis1);
+            if (projectedLine.SumMagnitudes() == 0)
+            {
+                entityConstraints.X = axis2;
+            }
+            else
+            {
+                entityConstraints.X = (DenseVector)projectedLine.Normalize(2);
+            }
+
+            // The cross product of the line vector with the first orthogonal constraint yields the third orthogonal vector
+            entityConstraints.Y = OPS.crossProduct3(axis, entityConstraints.X);
+            entityConstraints.Roll = entityConstraints.X;
+            entityConstraints.Pitch = entityConstraints.Y;
+            return entityConstraints;
+        }
+
+        // A circle is constrained in three directions and has rotation constrained in two directions
+        public constraints setCircleConstraints(MateEntity2 entity)
+        {
+            double[] entityParams = entity.EntityParams;
+            Vector position = new DenseVector(new double[] { entityParams[0], entityParams[1], entityParams[2] });
+            Vector normal = new DenseVector(new double[] { entityParams[3], entityParams[4], entityParams[5] });
+
+            constraints entityConstraints = new constraints();
+            entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Y | (int)constraints.ConstrainedDOFs.Z | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+            entityConstraints.X = axis1;
+            entityConstraints.Y = axis2;
+            entityConstraints.Z = axis3;
+
+            // Get some unit vector on the plane the circle lies in
+            Vector projectedLine = OPS.projectLineToPlane(normal, axis1);
+            if (projectedLine.SumMagnitudes() == 0)
+            {
+                entityConstraints.Roll = axis2;
+            }
+            else
+            {
+                entityConstraints.Roll = (DenseVector)projectedLine.Normalize(2);
+            }
+
+            // The cross product of the normal and the roll constaint yied the pitch constraint
+            entityConstraints.Pitch = OPS.crossProduct3(normal, entityConstraints.Roll);
+            return entityConstraints;
+        }
+
+        // A plane has one linear constraint along the plane normal and two rotational constraints around axes that are orthogonal to the plane normal
+        public constraints setPlaneConstraints(MateEntity2 entity)
+        {
+            double[] entityParams = entity.EntityParams;
+            Vector position = new DenseVector(new double[] { entityParams[0], entityParams[1], entityParams[2] });
+            Vector normal = new DenseVector(new double[] { entityParams[3], entityParams[4], entityParams[5] });
+
+            constraints entityConstraints = new constraints();
+            entityConstraints.constrainedDOFs = ((int)constraints.ConstrainedDOFs.X | (int)constraints.ConstrainedDOFs.Roll | (int)constraints.ConstrainedDOFs.Pitch);
+            entityConstraints.X = normal;
+
+            Vector projectedLine = OPS.projectLineToPlane(normal, axis1);
+            if (projectedLine.SumMagnitudes() == 0)
+            {
+                entityConstraints.Roll = axis2;
+            }
+            else
+            {
+                entityConstraints.Roll = (DenseVector)projectedLine.Normalize(2);
+            }
+            entityConstraints.Pitch = OPS.crossProduct3(normal, entityConstraints.Roll);
+            return entityConstraints;
         }
 
         // Used to get the 3x3 rotation matrix from a SolidWorks MathTransform

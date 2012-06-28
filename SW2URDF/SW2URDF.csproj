@@ -139,6 +139,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="jointEstimation.cs" />
     <Compile Include="dof.cs" />
     <Compile Include="matrixOPS.cs" />
     <Compile Include="SW2URDFExporter.cs" />

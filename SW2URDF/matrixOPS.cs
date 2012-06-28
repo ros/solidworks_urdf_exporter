@@ -275,8 +275,8 @@ namespace MatrixOPS
 
         public Vector projectLineToPlane(Vector normal, Vector line)
         {
-            Vector v = crossProduct3(normal, crossProduct3(line, normal));
-            return (DenseVector)v.Normalize(2);
+            return crossProduct3(normal, crossProduct3(line, normal));
+            
         }
 
         public Vector crossProduct3(Vector v1, Vector v2)
