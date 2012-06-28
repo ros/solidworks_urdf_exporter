@@ -154,8 +154,7 @@ namespace SW2URDF
         {
 
             int constrainedDOFs = (entityConstraints1.constrainedDOFs & entityConstraints2.constrainedDOFs & mateConstraints.constrainedDOFs);
-            constraints drivingEntity = (entityConstraints1.constrainedDOFs & (int)constraints.ConstrainedDOFs.XYZ >
-                                         entityConstraints2.constrainedDOFs & (int)constraints.ConstrainedDOFs.XYZ) ? entityConstraints1
+
             Vector Zeros3 = (DenseVector)new double[3] { 0, 0, 0 };
             if ((constrainedDOFs & (int)constraints.ConstrainedDOFs.X) != 0)
             {

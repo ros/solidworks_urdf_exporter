@@ -43,6 +43,7 @@ namespace SW2URDF
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.GetTitle();
+            MathUtility math = iSwApp.GetMathUtility();
         }
 
         #region SW to Robot methods
@@ -260,15 +261,17 @@ namespace SW2URDF
         {
             relation R = new relation();
             object[] mates = parent.SWComponent.GetMates();
-            foreach (Mate2 mate in mates)
-            {
-                int type = mate.Type;
-                if (mate.GetMateEntityCount() == 2)
-                {
-                    R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
-                }
-            }
-            joint Joint = relationToJoint(R);
+            //foreach (Mate2 mate in mates)
+            //{
+            //    int type = mate.Type;
+            //    if (mate.GetMateEntityCount() == 2)
+            //    {
+            //        R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
+            //    }
+            //}
+
+            jointEstimation estimation = new jointEstimation(iSwApp);
+            joint Joint = estimation.estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent, true);
             Joint.name = parent.name + "_to_" + child.name;
             Joint.Origin.X = parent.Inertial.Origin.X - child.Inertial.Origin.X;
             Joint.Origin.Y = parent.Inertial.Origin.Y - child.Inertial.Origin.Y;
