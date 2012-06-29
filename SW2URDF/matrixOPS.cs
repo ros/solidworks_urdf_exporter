@@ -10,18 +10,20 @@ using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra;
+using System.Numerics;
 
 namespace MatrixOPS
 {
     public class ops
     {
+        public double epsilon = 1e-15;
         // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
         public Matrix str2mat(string S)
         {
-            S = S.Trim(new char[] { '[', ']', ' ' });          
+            S = S.Trim(new char[] { '[', ']', ' ' });
             string[] rows = S.Split(';');
             int rowCount = rows.Length;
-            string[] firstRow = rows[0].Split(' ');
+            string[] firstRow = rows[0].Trim().Split(' ');
             int columnCount = firstRow.Length;
             Matrix m = new DenseMatrix(rowCount, columnCount);
             for (int i = 0; i < rowCount; i++)
@@ -44,7 +46,7 @@ namespace MatrixOPS
         // Convert a math.net Numerics Matrix into a MATLAB type string representation
         public string mat2str(Matrix m)
         {
-            string s = "[";
+            string s = "";
             for (int i = 0; i < m.RowCount; i++)
             {
                 for (int j = 0; j < m.ColumnCount; j++)
@@ -55,12 +57,8 @@ namespace MatrixOPS
                         s = s.Insert(s.Length, " ");
                     }
                 }
-                if (i != m.RowCount - 1)
-                {
-                    s = s.Insert(s.Length, ";");
-                }
+                s = s.Insert(s.Length, "\n");
             }
-            s = s.Insert(s.Length, "]");
             return s;
         }
 
@@ -83,120 +81,134 @@ namespace MatrixOPS
             return vec;
         }
         // Calculates the row reduced echelon form of a matrix. It really sucks that math.net numerics doesn't include this as a builtin function
-        public Matrix rref(Matrix m)
-        {
-            int minDimension = Math.Min(m.ColumnCount, m.RowCount);
-            // Swap rows to get prepared for row echelon form
-            for (int i = 0; i < minDimension; i++)
-            {
-                for (int j = i; j < minDimension; j++)
-                {
-                    Vector v = (Vector)m.Row(j);
-                    if (v[i] != 0)
-                    {
-                        m.SetRow(j, m.Row(i));
-                        m.SetRow(i, v);
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < m.RowCount; i++)
-            {
-                Vector v1 = (Vector)m.Row(i);
-                int index = -1;
+        // 6/28. Now I know why... It's difficult to write one that can do it with floating point precision. So this one currently is broken
 
-                //Find the first non-zero entry in row i (will either by the diagonal or to its right)
-                for (int j = i; j < m.ColumnCount; j++)
-                {
-                    if (v1[j] != 0)
-                    {
-                        index = j;
-                        break;
-                    }
-                }
+        //public Matrix rref(Matrix m)
+        //{
+        //    int minDimension = Math.Min(m.ColumnCount, m.RowCount);
+        //    // Swap rows to get prepared for row echelon form
+        //    for (int i = 0; i < minDimension; i++)
+        //    {
+        //        for (int j = i; j < minDimension; j++)
+        //        {
+        //            Vector v = (Vector)m.Row(j);
+        //            if (v[i] > epsilon)
+        //            {
+        //                m.SetRow(j, m.Row(i));
+        //                m.SetRow(i, v);
+        //                break;
+        //            }
+        //            else
+        //            {
+        //                m[j, i] = 0;
+        //            }
+        //        }
+        //    }
+        //    for (int i = 0; i < m.RowCount; i++)
+        //    {
+        //        Vector v1 = (Vector)m.Row(i);
+        //        int index = -1;
 
-                //If there are no more non-zero entries to be found, the matrix is now in row echelon form (and then some)
-                if (index == -1)
-                {
-                    break;
-                }
-                for (int j = 0; j < m.RowCount; j++)
-                {
-                    if (i != j)
-                    {
+        //        //Find the first non-zero entry in row i (will either by the diagonal or to its right)
+        //        for (int j = i; j < m.ColumnCount; j++)
+        //        {
+        //            if (v1[j] > epsilon)
+        //            {
+        //                index = j;
+        //                break;
+        //            }
+        //            else
+        //            {
+        //                m[i, j] = 0;
+        //            }
+        //        }
 
-                        Vector v2 = (Vector)m.Row(j);
-                        m.SetRow(j, v1 * v2[index] / v1[index] - v2);
-                    }
-                }
-            }
+        //        //If there are no more non-zero entries to be found, the matrix is now in row echelon form (and then some)
+        //        if (index == -1)
+        //        {
+        //            break;
+        //        }
+        //        for (int j = 0; j < m.RowCount; j++)
+        //        {
+        //            if (i != j)
+        //            {
 
-            //Reduce the left most values to 1
-            for (int i = 0; i < m.RowCount; i++)
-            {
-                Vector v = (Vector)m.Row(i);
-                int index = -1;
-                //Find the first non-zero entry in this row vector
-                for (int j = i; j < m.ColumnCount; j++)
-                {
-                    if (v[j] != 0)
-                    {
-                        index = j;
-                        break;
-                    }
-                }
-                //If there are no more non-zero entries to be found, the matrix is now in reduced row echelon form
-                if (index == -1)
-                {
-                    break;
-                }
-                //We are dividing by 0 here. Stop doing it!
-                if (v[index] == 0)
-                {
-                    int c = 1; //Whoops!
-                }
-                m.SetRow(i, v / v[index]);
-            }
-            return m;
-        }
-        
+        //                Vector v2 = (Vector)m.Row(j);
+        //                m.SetRow(j, v1 * v2[index] / v1[index] - v2);
+        //            }
+        //        }
+        //    }
+
+        //    //Reduce the left most values to 1
+        //    for (int i = 0; i < m.RowCount; i++)
+        //    {
+        //        Vector v = (Vector)m.Row(i);
+        //        int index = -1;
+        //        //Find the first non-zero entry in this row vector
+        //        for (int j = i; j < m.ColumnCount; j++)
+        //        {
+        //            if (v[j] > epsilon)
+        //            {
+        //                index = j;
+        //                break;
+        //            }
+        //            else
+        //            {
+        //                v[j] = 0;
+        //            }
+        //        }
+        //        //If there are no more non-zero entries to be found, the matrix is now in reduced row echelon form
+        //        if (index == -1)
+        //        {
+        //            break;
+        //        }
+        //        //We are dividing by 0 here. Stop doing it!
+        //        if (v[index] == 0)
+        //        {
+        //            int c = 1; //Whoops!
+        //        }
+        //        m.SetRow(i, v / v[index]);
+        //    }
+        //    return m;
+        //}
+
         // Calculates the null space of a matrix
-        public Matrix nullSpace(Matrix m)
-        {
-            m = rref(m); //Null(A) = Null(rref(A))
-            Matrix null_m = new DenseMatrix(m.ColumnCount, m.RowCount);
+        //public Matrix nullSpace(Matrix m)
+        //{
+        //    m = rref(m); //Null(A) = Null(rref(A))
+        //    Matrix null_m = new DenseMatrix(m.ColumnCount, m.RowCount);
 
-            int lead = 0;
-            Vector zeros = new DenseVector(m.RowCount);
-            Vector column = new DenseVector(m.RowCount);
-            for (int i = 0; i < m.ColumnCount; i++)
-            {
-                // This DOF is constrained
-                if (m[i, lead] == 1)
-                {
-                    null_m.SetColumn(i, zeros);
-                    lead++;
-                }
-                else
-                {
-                    // Fill column vector with parameters
-                    for (int j = 0; j < lead; j++)
-                    {
-                        int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i-1);
-                        if (columnIndex != -1)
-                        {
-                            column[columnIndex] = m[j, i];
-                        }
-                        //else
-                        //{
-                        //    column[columnIndex] = 0;
-                        //}
-                    }
-                    null_m.SetColumn(i, column);
-                }
-            }
-            return null_m;
-        }
+        //    int lead = 0;
+        //    Vector zeros = new DenseVector(m.RowCount);
+        //    Vector column = new DenseVector(m.RowCount);
+        //    for (int i = 0; i < m.ColumnCount; i++)
+        //    {
+        //        // This DOF is constrained
+        //        if (m[i, lead] == 1)
+        //        {
+        //            null_m.SetColumn(i, zeros);
+        //            lead++;
+        //        }
+        //        else
+        //        {
+        //            // Fill column vector with parameters
+        //            for (int j = 0; j < lead; j++)
+        //            {
+        //                int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i - 1);
+        //                if (columnIndex != -1)
+        //                {
+        //                    column[columnIndex] = m[j, i];
+        //                }
+        //                //else
+        //                //{
+        //                //    column[columnIndex] = 0;
+        //                //}
+        //            }
+        //            null_m.SetColumn(i, column);
+        //        }
+        //    }
+        //    return null_m;
+        //}
 
         // This set of methods finds the bottom-most one in a column vector from a matrix.
         public int findLeadingOneinVector(Vector v)
@@ -268,20 +280,20 @@ namespace MatrixOPS
                 {
                     return i;
                 }
-                
+
             }
             return -1;
         }
 
-        public Vector projectLineToPlane(Vector normal, Vector line)
+        public Vector<double> projectLineToPlane(Vector<double> normal, Vector<double> line)
         {
             return crossProduct3(normal, crossProduct3(line, normal));
-            
+
         }
 
-        public Vector crossProduct3(Vector v1, Vector v2)
+        public Vector<double> crossProduct3(Vector<double> v1, Vector<double> v2)
         {
-            Vector v = new DenseVector(v1.Count);
+            Vector<double> v = new DenseVector(v1.Count);
             if (v1.Count == 3 && v2.Count == 3)
             {
                 v[0] = v1[1] * v2[2] - v1[2] * v2[1];
@@ -289,7 +301,126 @@ namespace MatrixOPS
                 v[2] = v1[0] * v2[1] - v1[1] * v2[0];
             }
             return v;
-            
+
+        }
+
+        public Matrix eig(Matrix<double> m)
+        {
+            if (m == null)
+            {
+                return null;
+            }
+            var eigen = m.Evd();
+            var eigenValues = eigen.EigenValues();
+            var eigenVectors = eigen.EigenVectors();
+            var n = new DenseMatrix(eigenVectors.RowCount, eigenVectors.ColumnCount + 1);
+            n.SetSubMatrix(0, eigenVectors.RowCount, 0, eigenVectors.ColumnCount, eigenVectors);
+            for (int i = 0; i < eigenValues.Count; i++)
+            {
+                n.At(i, eigenVectors.ColumnCount, eigenValues[i].Magnitude);
+            }
+            return n;
+        }
+
+        public bool equals(Matrix<double> m1, Matrix<double> m2)
+        {
+            return equals(m1, m2, Double.Epsilon);
+
+        }
+        public bool equals(Matrix<double> m1, Matrix<double> m2, double epsilon)
+        {
+            if (m1.RowCount != m2.RowCount)
+            {
+                return false;
+            }
+            if (m1.ColumnCount != m2.ColumnCount)
+            {
+                return false;
+            }
+            for (int i = 0; i < m1.RowCount; i++)
+            {
+                for (int j = 0; j < m1.ColumnCount; j++)
+                {
+                    if (Math.Abs(m1[i, j] - m2[i, j]) >= epsilon)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        public bool equals(Vector<double> v1, Vector<double> v2)
+        {
+            return equals(v1, v2, Double.Epsilon);
+        }
+        public bool equals(Vector<double> v1, Vector<double> v2, double epsilon)
+        {
+            if (v1.Count != v2.Count)
+            {
+                return false;
+            }
+            for (int i = 0; i < v1.Count; i++)
+            {
+                if (Math.Abs(v1[i] - v2[i]) >= epsilon)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public int findDominantDirection(Matrix<double> m, double factor)
+        {
+            double[] zeros3 = new double[] { 0, 0, 0 };
+            Vector<double> v1 = crossProduct3(m.Row(0)/m.Row(0).Norm(2), m.Row(1)/m.Row(1).Norm(2));
+            if (v1.Norm(2) < 0.1)
+            {
+                m.SetRow(1, zeros3);
+            }
+            Vector<double> v2 = crossProduct3(m.Row(0) / m.Row(0).Norm(2), m.Row(2) / m.Row(2).Norm(2));
+            if (v2.Norm(2) < 0.1)
+            {
+                m.SetRow(2, zeros3);
+            }
+            Vector<double> v3 = crossProduct3(m.Row(1) / m.Row(1).Norm(2), m.Row(2) / m.Row(2).Norm(2));
+            if (v3.Norm(2) < 0.1)
+            {
+                if (m.Row(1).Norm(2) > m.Row(2).Norm(2))
+                {
+                    m.SetRow(2, zeros3);
+                }
+                else
+                {
+                    m.SetRow(1, zeros3);
+                }
+            }
+
+            double nextMagnitude = 0;
+            double largestMagnitude = 0;
+            int selectedRow = -1;
+            for (int i = 0; i < m.RowCount; i++)
+            {
+                Vector<double> v = m.Row(i);
+                double mag = v.Norm(2);
+                if (mag > largestMagnitude)
+                {
+                    nextMagnitude = largestMagnitude;
+                    largestMagnitude = mag;
+                    selectedRow = i;
+                }
+                else if (mag > nextMagnitude)
+                {
+                    nextMagnitude = mag;
+                }
+            }
+            if (factor * largestMagnitude > nextMagnitude)
+            {
+                return selectedRow;
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 }

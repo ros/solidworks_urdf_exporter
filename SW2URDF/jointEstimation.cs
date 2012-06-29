@@ -35,24 +35,34 @@ namespace SW2URDF
             OPS = new ops();
         }
 
-        public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 comp1, IComponent2 comp2, bool checkBothDirections)
+        public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child, bool checkBothDirections)
         {
             Matrix rotationAxes = new DenseMatrix(3, 3);
             Matrix translationAxes = new DenseMatrix(3, 3);
             for (int i = 0; i < 3; i++)
             {
-                MathTransform comp1TransformBefore = comp1.Transform2;
-                double[] data1 = comp1TransformBefore.ArrayData;
-                MathTransform comp2TransformBefore = comp2.Transform2;
-                double[] data2 = comp2TransformBefore.ArrayData;
-                comp1.Select(false);
+                MathTransform parentTransformBefore = parent.Transform2;
+                double[] data1 = parentTransformBefore.ArrayData;
+                MathTransform childTransformBefore = child.Transform2;
+                double[] data2 = childTransformBefore.ArrayData;
+                double[] newData = new double[16];
+                Array.Copy(data2, newData, 16);
+                newData[9 + i] += 0.1;
+                childTransformBefore.ArrayData = newData;
+                parent.Select(false);
                 assy.FixComponent();
-                MathTransform comp2TransformTry = comp2TransformBefore;
-                comp2TransformTry.ArrayData[9 + i] = comp2TransformTry.ArrayData[9 + i] + 0.1;
-                double[] data4 = comp2TransformTry.ArrayData;
-                data4[9 + i] += 0.1;
-                comp2TransformTry.ArrayData = data4;
-                comp2.SetTransformAndSolve2(comp2TransformTry);
+                
+                
+                //comp2TransformTry.ArrayData = new double[16];
+                //v.
+                //comp2TransformTry.SetData() = new double[16];
+                //comp2TransformTry.ArrayData[9 + i] = 0.1;
+                //    childTransformBefore;
+                //comp2TransformTry.ArrayData[9 + i] = comp2TransformTry.ArrayData[9 + i] + 0.1;
+                //double[] data4 = comp2TransformTry.ArrayData;
+                //data4[9 + i] += 0.1;
+                //comp2TransformTry.ArrayData = data4;
+                child.SetTransformAndSolve2(childTransformBefore);
 
                 // If dragging the second component moves the first one, then the link should be reversed
                 //if (checkBothDirections)
@@ -64,82 +74,88 @@ namespace SW2URDF
                 //        return estimateJointFromComponents(assy, comp2, comp1, false);
                 //    }
                 //}
-                double[] data3 = comp2.Transform2.ArrayData;
+                double[] data3 = child.Transform2.ArrayData;
 
-                MathTransform intermediateTransform = comp2TransformBefore.Inverse().Multiply(comp2.Transform2); // It appears the multiply function left multiplies the argument
+                childTransformBefore.ArrayData = data2;
+                // This part is not working quite right...
+                MathTransform intermediateTransform = child.Transform2.Multiply(childTransformBefore.Inverse()); // It appears the multiply function left multiplies the argument
                 translationAxes.SetRow(i, new double[] { intermediateTransform.ArrayData[9], intermediateTransform.ArrayData[10], intermediateTransform.ArrayData[11] });
 
                 // Reset component2
-                comp2.SetTransformAndSolve2(comp2TransformBefore);
+                child.SetTransformAndSolve2(childTransformBefore);
+                parent.Select(false);
+                assy.UnfixComponent();
             }
             for (int i = 0; i < 3; i++)
             {
-                //MathTransform comp1TransformBefore = comp1.Transform2;
-                //double[] data1 = comp1TransformBefore.ArrayData;
-                //MathTransform comp2TransformBefore = comp2.Transform2;
-                //double[] data2 = comp2TransformBefore.ArrayData;
+                MathTransform parentTransformBefore = parent.Transform2;
+                double[] data1 = parentTransformBefore.ArrayData;
+                MathTransform childTransformBefore = child.Transform2;
+                double[] data2 = childTransformBefore.ArrayData;
 
-                //MathVector rotVector = swMathUtility.CreateVector(axes.Row(i).ToArray());
-                //MathPoint position = swMathUtility.CreatePoint(new double[]{0,0,0});
-                //MathTransform comp2TransformTry = swMathUtility.CreateTransformRotateAxis(position, rotVector, 180);
-                //comp1.Select(false);
-                //assy.FixComponent();
-                //comp2.SetTransformAndSolve2(comp2TransformTry);
+                MathVector rotVector = swMathUtility.CreateVector(axes.Row(i).ToArray());
+                MathPoint position = swMathUtility.CreatePoint(new double[] { 0, 0, 0 });
+                MathTransform comp2TransformTry = swMathUtility.CreateTransformRotateAxis(position, rotVector, 180);
+                parent.Select(false);
+                assy.FixComponent();
+                child.SetTransformAndSolve2(comp2TransformTry);
 
-                ////// If moving the second component moves the first one, then the link should be reversed
-                ////if (checkBothDirections)
-                ////{
-                ////    if (!equals(comp1.Transform2,comp1TransformBefore))
-                ////    {
-                ////        comp1.SetTransformAndSolve2(comp1TransformBefore);
-                ////        comp2.SetTransformAndSolve2(comp2TransformBefore);
-                ////        return estimateJointFromComponents(assy, comp2, comp1, false);
-                ////    }
-                ////}
-
-                //double[] data3 = comp2.Transform2.ArrayData;
-
-                //MathTransform intermediateTransform = comp2.Transform2.Multiply(comp2TransformBefore.Inverse());
-
-                //Matrix rot = getRotationMatrix(intermediateTransform);
-                //var eigen = rot.Evd();
-                //var eigenValues = eigen.EigenValues();
-                //Vector eigenVector = new DenseVector(3);
-                //for (int j = 0; j < eigenValues.Count; j++)
+                //// If moving the second component moves the first one, then the link should be reversed
+                //if (checkBothDirections)
                 //{
-                //    if (eigenValues[j] == 1)
+                //    if (!equals(comp1.Transform2,comp1TransformBefore))
                 //    {
-                //        eigenVector = (DenseVector)eigen.EigenVectors().Column(j);
+                //        comp1.SetTransformAndSolve2(comp1TransformBefore);
+                //        comp2.SetTransformAndSolve2(comp2TransformBefore);
+                //        return estimateJointFromComponents(assy, comp2, comp1, false);
                 //    }
                 //}
+
+                double[] data3 = child.Transform2.ArrayData;
+
+                MathTransform intermediateTransform = child.Transform2.Multiply(childTransformBefore.Inverse());
+
+                Matrix rot = getRotationMatrix(intermediateTransform);
+                var eigen = rot.Evd();
+                var eigenValues = eigen.EigenValues();
+                Vector eigenVector = new DenseVector(3);
+                for (int j = 0; j < eigenValues.Count; j++)
+                {
+                    if (eigenValues[j] == 1)
+                    {
+                        eigenVector = (DenseVector)eigen.EigenVectors().Column(j);
+                    }
+                }
                 //Matrix nullSpaceMatrix = OPS.nullSpace(rot);
-                //rotationAxes.SetRow(i, eigenVector);
-                //// Reset component2
-                ////comp2.SetTransformAndSolve2(comp2TransformBefore);
-                ////comp1.Select(false);
-                ////assy.UnfixComponent();
+                rotationAxes.SetRow(i, eigenVector);
+                // Reset component2
+                child.SetTransformAndSolve2(childTransformBefore);
+                parent.Select(false);
+                assy.UnfixComponent();
             }
 
             int rotationRank = rotationAxes.Rank();
-            int translationRank = translationAxes.Rank();
+
+            int rotationIndex = OPS.findDominantDirection(rotationAxes, 0.1);
+            int translationIndex = OPS.findDominantDirection(translationAxes, 0.1);
+            //int translationRank = translationAxes.Rank();
             joint Joint = new joint();
-            if (rotationRank + translationRank >2 )
+            if (rotationIndex < 0 && translationIndex < 0 )
             {
                 Joint.type = "Fixed";
             }
-            else if (rotationRank == 1)
+            else if (rotationRank >= 0)
             {
                 Joint.type = "Revolute";
 
-                rotationAxes = OPS.rref(rotationAxes);
-                Joint.Axis.XYZ = rotationAxes.Row(0).ToArray();
+                Joint.Axis.XYZ = rotationAxes.Row(rotationIndex).ToArray();
             }
             else
             {
                 Joint.type = "Prismatic";
 
-                translationAxes = OPS.rref(translationAxes);
-                Joint.Axis.XYZ = translationAxes.Row(0).ToArray();
+                //translationAxes = OPS.rref(translationAxes);
+                Joint.Axis.XYZ = translationAxes.Row(translationIndex).ToArray();
             }
             return Joint;
         }

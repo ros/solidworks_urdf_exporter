@@ -458,7 +458,11 @@ namespace SW2URDF
             {
                 if (node.Level == 0)
                 {
-                    Robot.BaseLink = createLinkFromLinkNode(node);
+                    link BaseLink = createLinkFromLinkNode(node);
+                    if (BaseLink != null)
+                    {
+                        Robot.BaseLink = BaseLink;
+                    }
                 }
             }
             Robot.name = Exporter.mRobot.name;
@@ -467,13 +471,24 @@ namespace SW2URDF
 
         public link createLinkFromLinkNode(LinkNode node)
         {
-            link Link = node.Link;
-            Link.Children.Clear();
-            foreach (LinkNode child in node.Nodes)
+            if (node.Checked)
             {
-                Link.Children.Add(createLinkFromLinkNode(child)); // Recreates the children of each embedded link
+                link Link = node.Link;
+                Link.Children.Clear();
+                foreach (LinkNode child in node.Nodes)
+                {
+                    link childLink = createLinkFromLinkNode(child);
+                    if (childLink != null)
+                    {
+                        Link.Children.Add(childLink); // Recreates the children of each embedded link
+                    }
+                }
+                return Link;
             }
-            return Link;
+            else
+            {
+                return null;
+            }
         }
 
         public joint saveJointDataFromPropertyBoxes()
