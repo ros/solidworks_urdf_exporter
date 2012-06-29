@@ -259,26 +259,12 @@ namespace SW2URDF
 
         public joint createJointFromLinks(link parent, link child)
         {
-            //relation R = new relation();
             object[] mates = parent.SWComponent.GetMates();
-            //foreach (Mate2 mate in mates)
-            //{
-            //    int type = mate.Type;
-            //    if (mate.GetMateEntityCount() == 2)
-            //    {
-            //        R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
-            //    }
-            //}
+
 
             jointEstimation estimation = new jointEstimation(iSwApp);
             joint Joint = estimation.estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent, true);
             Joint.name = parent.name + "_to_" + child.name;
-            Joint.Origin.X = parent.Inertial.Origin.X - child.Inertial.Origin.X;
-            Joint.Origin.Y = parent.Inertial.Origin.Y - child.Inertial.Origin.Y;
-            Joint.Origin.Z = parent.Inertial.Origin.Z - child.Inertial.Origin.Z;
-            Joint.Origin.Roll = parent.Inertial.Origin.Roll - child.Inertial.Origin.Roll;
-            Joint.Origin.Pitch = parent.Inertial.Origin.Pitch - child.Inertial.Origin.Pitch;
-            Joint.Origin.Yaw = parent.Inertial.Origin.Yaw - child.Inertial.Origin.Yaw;
 
             Joint.Parent.name = parent.name;
             Joint.Child.name = child.name;
@@ -302,38 +288,6 @@ namespace SW2URDF
             return Joint;
         }
 
-        //public joint relationToJoint(relation R)
-        //{
-        //    joint Joint = new joint();
-        //    int numberDOFs = R.getNumberOfFreeDOFs();
-        //    if (numberDOFs != 1)
-        //    {
-        //        Joint.type = "Fixed";
-        //    }
-        //    else
-        //    {
-        //        int freeColumn = R.getFreeDOFColumnNumber();
-        //        if (freeColumn < 0)
-        //        {
-        //            Joint.type = "Fixed";
-        //        }
-        //        else if (freeColumn < 3)
-        //        {
-        //            Joint.type = "Prismatic";
-        //            Joint.Axis.XYZ = R.getAxesValues(freeColumn);
-        //        }
-        //        else if (freeColumn < 6)
-        //        {
-        //            Joint.type = "Continuous";
-        //            Joint.Axis.XYZ = R.getAxesValues(freeColumn);
-        //        }
-        //        else
-        //        {
-        //            Joint.type = "Fixed";
-        //        }
-        //    }
-        //    return Joint;
-        //}
         #endregion
 
         #region Export Methods

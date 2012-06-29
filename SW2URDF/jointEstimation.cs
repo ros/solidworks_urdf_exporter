@@ -46,14 +46,14 @@ namespace SW2URDF
             Matrix<double> rotationPositions = new DenseMatrix(3, 3);
             Matrix<double> translationPositions = new DenseMatrix(3, 3);
 
+            // Save the original transform
+            MathTransform parentTransformBefore = parent.Transform2;
+
+            // Save the original transform
+            MathTransform childTransformBefore = child.Transform2;
+
             for (int i = 0; i < 3; i++)
             {
-                // Save the original transform
-                MathTransform parentTransformBefore = parent.Transform2;
-
-                // Save the original transform
-                MathTransform childTransformBefore = child.Transform2;
-
                 //Temporary
                 double[] data2 = childTransformBefore.ArrayData;
                 double[] copiedData = new double[16];
@@ -87,12 +87,6 @@ namespace SW2URDF
             }
             for (int i = 0; i < 3; i++)
             {
-                //Save the original transform
-                MathTransform parentTransformBefore = parent.Transform2;
-
-                //Save original transform
-                MathTransform childTransformBefore = child.Transform2;
-
                 //Temporary
                 double[] data2 = childTransformBefore.ArrayData;
                 double[] copiedData = new double[16];
@@ -181,7 +175,7 @@ namespace SW2URDF
                 Joint.type = "Fixed";
                 return Joint;
             }
-            // If the translation axes are fully constrained but there is one dominant rotation axis its a revolute joint
+            // If the translation axes are fully constrained but there is one dominant rotation axis it's a revolute joint
             if (rotationIndex >= 0 && translationIndex == -2)
             {
                 Joint.type = "Revolute";
@@ -189,9 +183,12 @@ namespace SW2URDF
                 double mag = rotationAxes.Row(rotationIndex).Norm(2);
                 Vector<double> normalized = rotationAxes.Row(rotationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
+
+                origin estimitation is not correct here!
                 Joint.Origin.XYZ = rotationPositions.Row(rotationIndex).ToArray();
+                Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
             }
-            // If the rotation axes are fully constrained but there is one dominant translation axis, its a prismatic joint
+            // If the rotation axes are fully constrained but there is one dominant translation axis, it's a prismatic joint
             else if (translationIndex >= 0 && rotationIndex == -2)
             {
                 Joint.type = "Prismatic";
@@ -199,6 +196,10 @@ namespace SW2URDF
                 double mag = translationAxes.Row(translationIndex).Norm(2);
                 Vector<double> normalized = translationAxes.Row(translationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
+
+                Origin Estimation is Not correct here
+                Joint.Origin.XYZ = translationPositions.Row(translationIndex).ToArray();
+                Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
             }
             else
             {

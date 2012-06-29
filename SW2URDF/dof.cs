@@ -479,3 +479,52 @@
 //        }
 //    }
 //}
+
+
+//from SW2URDFExporter
+
+
+//public joint relationToJoint(relation R)
+//{
+//    joint Joint = new joint();
+//    int numberDOFs = R.getNumberOfFreeDOFs();
+//    if (numberDOFs != 1)
+//    {
+//        Joint.type = "Fixed";
+//    }
+//    else
+//    {
+//        int freeColumn = R.getFreeDOFColumnNumber();
+//        if (freeColumn < 0)
+//        {
+//            Joint.type = "Fixed";
+//        }
+//        else if (freeColumn < 3)
+//        {
+//            Joint.type = "Prismatic";
+//            Joint.Axis.XYZ = R.getAxesValues(freeColumn);
+//        }
+//        else if (freeColumn < 6)
+//        {
+//            Joint.type = "Continuous";
+//            Joint.Axis.XYZ = R.getAxesValues(freeColumn);
+//        }
+//        else
+//        {
+//            Joint.type = "Fixed";
+//        }
+//    }
+//    return Joint;
+//}
+
+//from CreateJointFromLinks()
+//relation R = new relation();
+
+//foreach (Mate2 mate in mates)
+//{
+//    int type = mate.Type;
+//    if (mate.GetMateEntityCount() == 2)
+//    {
+//        R.constrainRelationFromMate(mate, mate.MateEntity(0).ReferenceComponent, mate.MateEntity(1).ReferenceComponent);
+//    }
+//}

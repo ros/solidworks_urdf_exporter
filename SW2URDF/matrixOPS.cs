@@ -428,5 +428,13 @@ namespace MatrixOPS
                 return -1;
             }
         }
+        public double[] getRPYFromMatrix(Matrix<double> m)
+        {
+            double roll, pitch, yaw;
+            roll = Math.Atan2(m[1, 0], m[0, 0]);
+            pitch = Math.Atan2(-m[2,0], Math.Sqrt(m[2,1]*m[2,1] + m[2,2]*m[2,2]));
+            yaw = Math.Atan2(m[2,1], m[2,2]);
+            return new double[] {roll, pitch, yaw};
+        }
     }
 }
