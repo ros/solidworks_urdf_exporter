@@ -371,6 +371,11 @@ namespace MatrixOPS
 
         public int findDominantDirection(Matrix<double> m, double factor)
         {
+            if (m.Rank() == 0)
+            {
+                // -2 for completely constrained
+                return -2;
+            }
             double[] zeros3 = new double[] { 0, 0, 0 };
             Vector<double> v1 = crossProduct3(m.Row(0)/m.Row(0).Norm(2), m.Row(1)/m.Row(1).Norm(2));
             if (v1.Norm(2) < 0.1)
@@ -394,7 +399,7 @@ namespace MatrixOPS
                     m.SetRow(1, zeros3);
                 }
             }
-
+            
             double nextMagnitude = 0;
             double largestMagnitude = 0;
             int selectedRow = -1;
@@ -419,6 +424,7 @@ namespace MatrixOPS
             }
             else
             {
+                // -1 for underconstrained
                 return -1;
             }
         }

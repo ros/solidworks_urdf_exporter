@@ -43,6 +43,9 @@ namespace SW2URDF
             // A collection of axes that the object may be translated on
             Matrix<double> translationAxes = new DenseMatrix(3, 3);
 
+            Matrix<double> rotationPositions = new DenseMatrix(3, 3);
+            Matrix<double> translationPositions = new DenseMatrix(3, 3);
+
             for (int i = 0; i < 3; i++)
             {
                 // Save the original transform
@@ -63,7 +66,7 @@ namespace SW2URDF
                 // Perform the transform operation
                 parent.Select(false);
                 assy.FixComponent();
-                dragComponentInDirection((AssemblyDoc)iSwApp.ActiveDoc, child, axes.Row(i) * 0.01);
+                dragComponentInDirection((AssemblyDoc)iSwApp.ActiveDoc, child, axes.Row(i) * 0.0001);
                 //child.SetTransformAndSolve2(childTransformBefore);
 
                 //Temp
@@ -75,6 +78,7 @@ namespace SW2URDF
 
                 // Add the translation that occured to the object
                 translationAxes.SetRow(i, new double[] { intermediateTransform.ArrayData[9], intermediateTransform.ArrayData[10], intermediateTransform.ArrayData[11] });
+                translationPositions.SetRow(i, new double[] { childTransformBefore.ArrayData[9], childTransformBefore.ArrayData[10], childTransformBefore.ArrayData[11] });
 
                 // Reset component2
                 child.SetTransformAndSolve2(childTransformBefore);
@@ -132,6 +136,7 @@ namespace SW2URDF
                     }
                     rotationAxes.SetRow(i, eigenVector);
                 }
+                rotationPositions.SetRow(i, new double[] { intermediateTransform.ArrayData[9], intermediateTransform.ArrayData[10], intermediateTransform.ArrayData[11] });
                 
                 // Reset component2
                 child.SetTransformAndSolve2(childTransformBefore);
@@ -147,38 +152,47 @@ namespace SW2URDF
             
             joint Joint = new joint();
             int rotOrTrans = -1;
+            //Because this makes such small moves, it may be difficult to discern whether an object is rotatable or translatable, so a check needs to occur
             if (rotationIndex >= 0 && translationIndex >= 0)
             {
                 rotOrTrans = isRotationOrTranslation((AssemblyDoc)iSwApp.ActiveDoc, child, rotationAxes.Row(rotationIndex), translationAxes.Row(translationIndex));
+                
+                //If it couldn't be figured out, just make it a fixed joint and let the user solve the dilemma
                 if (rotOrTrans < 0)
                 {
                     Joint.type = "Fixed";
                     return Joint;
                 }
+                // If translation, reset the rotation
                 else if (rotOrTrans == 0)
                 {
-                    rotationIndex = -1;
+                    rotationIndex = -2;
                 }
+                // If rotation, reset translation
                 else
                 {
-                    translationIndex = -1;
+                    translationIndex = -2;
                 }
             }
 
+            // If both are over constrained or underconstrained just make it a fixed joint and let the user solve
             if (rotationIndex < 0 && translationIndex < 0)
             {
                 Joint.type = "Fixed";
                 return Joint;
             }
-            if (rotationIndex >= 0)
+            // If the translation axes are fully constrained but there is one dominant rotation axis its a revolute joint
+            if (rotationIndex >= 0 && translationIndex == -2)
             {
                 Joint.type = "Revolute";
 
                 double mag = rotationAxes.Row(rotationIndex).Norm(2);
                 Vector<double> normalized = rotationAxes.Row(rotationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
+                Joint.Origin.XYZ = rotationPositions.Row(rotationIndex).ToArray();
             }
-            else
+            // If the rotation axes are fully constrained but there is one dominant translation axis, its a prismatic joint
+            else if (translationIndex >= 0 && rotationIndex == -2)
             {
                 Joint.type = "Prismatic";
 
@@ -186,28 +200,29 @@ namespace SW2URDF
                 Vector<double> normalized = translationAxes.Row(translationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
             }
+            else
+            {
+                Joint.type = "Fixed";
+            }
             return Joint;
         }
 
         public void dragComponentInDirection(AssemblyDoc assy, IComponent2 comp, Vector<double> direction)
         {
-            DragOperator drag = assy.GetDragOperator();
-
-            // 0 for moving the minimal amount of components necessary
-            drag.DragMode = 0;
-
-            // 0 for a translation move (though the ultimate move may not be translation)
-            drag.TransformType = 0;
-
-            drag.AddComponent(comp, false);
+            //DragOperator drag = assy.GetDragOperator();
+            //drag.DragMode = 0;
+            //drag.TransformType = 0;
+            //drag.AddComponent(comp, false);
 
             double[] matValues = new double[16];
             matValues[9] = direction[0]; matValues[10] = direction[1]; matValues[11] = direction[2];
             MathTransform transform = swMathUtility.CreateTransform(matValues);
 
-            drag.BeginDrag();
-            drag.Drag(transform);
-            drag.EndDrag();
+            comp.SetTransformAndSolve2(transform.Multiply(comp.Transform2));
+
+            //drag.BeginDrag();
+            //drag.Drag(transform);
+            //drag.EndDrag();
         }
 
         public int isRotationOrTranslation(AssemblyDoc assy, IComponent2 comp, Vector<double> rotationAxis, Vector<double> translationAxis)
@@ -255,6 +270,7 @@ namespace SW2URDF
                 }
             }
             drag.EndDrag();
+            comp.SetTransformAndSolve2(previousTransform);
             return -1;
         }
 
