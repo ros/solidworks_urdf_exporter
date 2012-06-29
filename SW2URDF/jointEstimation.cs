@@ -63,8 +63,8 @@ namespace SW2URDF
                 // Perform the transform operation
                 parent.Select(false);
                 assy.FixComponent();
-                dragComponentInDirection((AssemblyDoc)iSwApp.ActiveDoc, child, axes.Row(i) * 1e-15);
-                child.SetTransformAndSolve2(childTransformBefore);
+                dragComponentInDirection((AssemblyDoc)iSwApp.ActiveDoc, child, axes.Row(i) * 0.01);
+                //child.SetTransformAndSolve2(childTransformBefore);
 
                 //Temp
                 double[] data3 = child.Transform2.ArrayData;
@@ -144,12 +144,33 @@ namespace SW2URDF
             int translationIndex = OPS.findDominantDirection(translationAxes, 0.1);
 
             //Create the joint
+            
             joint Joint = new joint();
-            if (rotationIndex < 0 && translationIndex < 0 )
+            int rotOrTrans = -1;
+            if (rotationIndex >= 0 && translationIndex >= 0)
+            {
+                rotOrTrans = isRotationOrTranslation((AssemblyDoc)iSwApp.ActiveDoc, child, rotationAxes.Row(rotationIndex), translationAxes.Row(translationIndex));
+                if (rotOrTrans < 0)
+                {
+                    Joint.type = "Fixed";
+                    return Joint;
+                }
+                else if (rotOrTrans == 0)
+                {
+                    rotationIndex = -1;
+                }
+                else
+                {
+                    translationIndex = -1;
+                }
+            }
+
+            if (rotationIndex < 0 && translationIndex < 0)
             {
                 Joint.type = "Fixed";
+                return Joint;
             }
-            else if (rotationIndex >= 0)
+            if (rotationIndex >= 0)
             {
                 Joint.type = "Revolute";
 
@@ -187,6 +208,96 @@ namespace SW2URDF
             drag.BeginDrag();
             drag.Drag(transform);
             drag.EndDrag();
+        }
+
+        public int isRotationOrTranslation(AssemblyDoc assy, IComponent2 comp, Vector<double> rotationAxis, Vector<double> translationAxis)
+        {
+            if (rotationAxis.DotProduct(translationAxis) > 0.95)
+            {
+                //What we have here is a screw joint
+                return -2;
+            }
+            DragOperator drag = assy.GetDragOperator();
+            double Factor = 0.01;
+            MathTransform previousTransform = comp.Transform2;
+            MathTransform transform = swMathUtility.CreateTransform(new double[] {0,0,0, 
+                                                                                  0,0,0, 
+                                                                                  0,0,0, 
+                                                                                  Factor * translationAxis[0], Factor * translationAxis[1], Factor * translationAxis[2], 
+                                                                                  1,0,0,0});
+
+            // 0 for moving the minimal amount of components necessary
+            drag.DragMode = 0;
+
+            // 0 for a translation move (though the ultimate move may not be translation)
+            drag.TransformType = 2;
+
+            drag.UseAbsoluteTransform = false;
+
+            drag.AddComponent(comp, false);
+            MathTransform intermediateTransform = default(MathTransform);
+
+            int rotOrTrans = -1;
+            drag.BeginDrag();
+
+            for (int i = 0; i < 100; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    drag.Drag(transform);
+                }
+                intermediateTransform = comp.Transform2.Multiply(previousTransform.Inverse());
+                rotOrTrans = isRotationOrTranslation(intermediateTransform, rotationAxis, translationAxis, 0.1);
+                if (rotOrTrans >= 0)
+                {
+                    drag.EndDrag();
+                    return rotOrTrans;
+                }
+            }
+            drag.EndDrag();
+            return -1;
+        }
+
+        public int isRotationOrTranslation(MathTransform transform, Vector<double> rotationAxis, Vector<double> translationAxis, double confidence)
+        {
+            Vector<double> translation = new DenseVector(new double[] {transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11]});
+            Vector<double> rotation;
+            Matrix rot = getRotationMatrix(transform);
+            if (!OPS.equals(rot, DenseMatrix.Identity(3)))
+            {
+                var eigen = rot.Evd();
+                var eigenValues = eigen.EigenValues();
+                Vector eigenVector = new DenseVector(3);
+                for (int j = 0; j < eigenValues.Count; j++)
+                {
+                    if (eigenValues[j].Real - 1 < 1e-10 && eigenValues[j].Imaginary == 0)
+                    {
+                        eigenVector = (DenseVector)eigen.EigenVectors().Column(j);
+                    }
+                }
+                rotation = eigenVector;
+            }
+            else
+            {
+                // 0 for translation
+                return 0;
+            }
+
+            if (rotation.DotProduct(rotationAxis) * (1 - confidence) > translation.DotProduct(translationAxis))
+            {
+                // 1 for rotation
+                return 1;
+            }
+            else if (rotation.DotProduct(rotationAxis) < (1 - confidence) * translation.DotProduct(translationAxis))
+            {
+                return 0;
+            }
+            else
+            {
+                //Too early to tell
+                return -1;
+            }
+
         }
 
         public void dragComponent(AssemblyDoc assy, IComponent2 comp, MathTransform transform)
