@@ -37,48 +37,43 @@ namespace SW2URDF
 
         public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child, bool checkBothDirections)
         {
-            Matrix rotationAxes = new DenseMatrix(3, 3);
-            Matrix translationAxes = new DenseMatrix(3, 3);
+            //A Collection of axes that the object may be rotated around
+            Matrix<double> rotationAxes = new DenseMatrix(3, 3);
+            double[] rotationConfidences = new double[3];
+            // A collection of axes that the object may be translated on
+            Matrix<double> translationAxes = new DenseMatrix(3, 3);
+
             for (int i = 0; i < 3; i++)
             {
+                // Save the original transform
                 MathTransform parentTransformBefore = parent.Transform2;
-                double[] data1 = parentTransformBefore.ArrayData;
+
+                // Save the original transform
                 MathTransform childTransformBefore = child.Transform2;
+
+                //Temporary
                 double[] data2 = childTransformBefore.ArrayData;
+                double[] copiedData = new double[16];
+                Array.Copy(data2, copiedData, 16);
                 double[] newData = new double[16];
                 Array.Copy(data2, newData, 16);
                 newData[9 + i] += 0.1;
                 childTransformBefore.ArrayData = newData;
+
+                // Perform the transform operation
                 parent.Select(false);
                 assy.FixComponent();
-                
-                
-                //comp2TransformTry.ArrayData = new double[16];
-                //v.
-                //comp2TransformTry.SetData() = new double[16];
-                //comp2TransformTry.ArrayData[9 + i] = 0.1;
-                //    childTransformBefore;
-                //comp2TransformTry.ArrayData[9 + i] = comp2TransformTry.ArrayData[9 + i] + 0.1;
-                //double[] data4 = comp2TransformTry.ArrayData;
-                //data4[9 + i] += 0.1;
-                //comp2TransformTry.ArrayData = data4;
+                dragComponentInDirection((AssemblyDoc)iSwApp.ActiveDoc, child, axes.Row(i) * 1e-15);
                 child.SetTransformAndSolve2(childTransformBefore);
 
-                // If dragging the second component moves the first one, then the link should be reversed
-                //if (checkBothDirections)
-                //{
-                //    if (!equals(comp1.Transform2, comp1TransformBefore))
-                //    {
-                //        comp1.SetTransformAndSolve2(comp1TransformBefore);
-                //        comp2.SetTransformAndSolve2(comp2TransformBefore);
-                //        return estimateJointFromComponents(assy, comp2, comp1, false);
-                //    }
-                //}
+                //Temp
                 double[] data3 = child.Transform2.ArrayData;
 
+                // Compare the before with the after
                 childTransformBefore.ArrayData = data2;
-                // This part is not working quite right...
-                MathTransform intermediateTransform = child.Transform2.Multiply(childTransformBefore.Inverse()); // It appears the multiply function left multiplies the argument
+                MathTransform intermediateTransform = child.Transform2.Multiply(childTransformBefore.Inverse());
+
+                // Add the translation that occured to the object
                 translationAxes.SetRow(i, new double[] { intermediateTransform.ArrayData[9], intermediateTransform.ArrayData[10], intermediateTransform.ArrayData[11] });
 
                 // Reset component2
@@ -88,89 +83,97 @@ namespace SW2URDF
             }
             for (int i = 0; i < 3; i++)
             {
+                //Save the original transform
                 MathTransform parentTransformBefore = parent.Transform2;
-                double[] data1 = parentTransformBefore.ArrayData;
-                MathTransform childTransformBefore = child.Transform2;
-                double[] data2 = childTransformBefore.ArrayData;
 
+                //Save original transform
+                MathTransform childTransformBefore = child.Transform2;
+
+                //Temporary
+                double[] data2 = childTransformBefore.ArrayData;
+                double[] copiedData = new double[16];
+                Array.Copy(data2, copiedData, 16);
+
+                // Get the vector and position to rotate around to create a transform
                 MathVector rotVector = swMathUtility.CreateVector(axes.Row(i).ToArray());
-                MathPoint position = swMathUtility.CreatePoint(new double[] { 0, 0, 0 });
-                MathTransform comp2TransformTry = swMathUtility.CreateTransformRotateAxis(position, rotVector, 180);
+                MathPoint position = swMathUtility.CreatePoint(new double[] { childTransformBefore.ArrayData[9], childTransformBefore.ArrayData[10], childTransformBefore.ArrayData[11] });
+                MathTransform comp2TransformTry = swMathUtility.CreateTransformRotateAxis(position, rotVector, 1e-15);
+                double[] trydata = comp2TransformTry.ArrayData;
+                MathTransform composedTransform = comp2TransformTry.Multiply(childTransformBefore);
+                double[] compdata = composedTransform.ArrayData;
+
+                //Perform the transform
                 parent.Select(false);
                 assy.FixComponent();
-                child.SetTransformAndSolve2(comp2TransformTry);
 
-                //// If moving the second component moves the first one, then the link should be reversed
-                //if (checkBothDirections)
-                //{
-                //    if (!equals(comp1.Transform2,comp1TransformBefore))
-                //    {
-                //        comp1.SetTransformAndSolve2(comp1TransformBefore);
-                //        comp2.SetTransformAndSolve2(comp2TransformBefore);
-                //        return estimateJointFromComponents(assy, comp2, comp1, false);
-                //    }
-                //}
+                composedTransform = comp2TransformTry.Multiply(composedTransform);
+                dragComponent((AssemblyDoc)iSwApp.ActiveDoc, child, composedTransform);
+
 
                 double[] data3 = child.Transform2.ArrayData;
 
+                //Compare the before and after
                 MathTransform intermediateTransform = child.Transform2.Multiply(childTransformBefore.Inverse());
 
+                //Find the eigen vector of the matrix whose eigen value is 1 (which should be the rotation axis)
                 Matrix rot = getRotationMatrix(intermediateTransform);
-                var eigen = rot.Evd();
-                var eigenValues = eigen.EigenValues();
-                Vector eigenVector = new DenseVector(3);
-                for (int j = 0; j < eigenValues.Count; j++)
+                if (!OPS.equals(rot, DenseMatrix.Identity(3)))
                 {
-                    if (eigenValues[j] == 1)
+                    var eigen = rot.Evd();
+                    var eigenValues = eigen.EigenValues();
+                    Vector eigenVector = new DenseVector(3);
+                    for (int j = 0; j < eigenValues.Count; j++)
                     {
-                        eigenVector = (DenseVector)eigen.EigenVectors().Column(j);
+                        if (eigenValues[j].Real - 1 < 1e-10 && eigenValues[j].Imaginary == 0)
+                        {
+                            eigenVector = (DenseVector)eigen.EigenVectors().Column(j);
+                            rotationConfidences[i] = eigenVector.DotProduct(axes.Row(i));
+                        }
                     }
+                    rotationAxes.SetRow(i, eigenVector);
                 }
-                //Matrix nullSpaceMatrix = OPS.nullSpace(rot);
-                rotationAxes.SetRow(i, eigenVector);
+                
                 // Reset component2
                 child.SetTransformAndSolve2(childTransformBefore);
                 parent.Select(false);
                 assy.UnfixComponent();
             }
 
-            int rotationRank = rotationAxes.Rank();
-
+            //Find the predominominant axis that the object is translated or rotated around
             int rotationIndex = OPS.findDominantDirection(rotationAxes, 0.1);
             int translationIndex = OPS.findDominantDirection(translationAxes, 0.1);
-            //int translationRank = translationAxes.Rank();
+
+            //Create the joint
             joint Joint = new joint();
             if (rotationIndex < 0 && translationIndex < 0 )
             {
                 Joint.type = "Fixed";
             }
-            else if (rotationRank >= 0)
+            else if (rotationIndex >= 0)
             {
                 Joint.type = "Revolute";
 
-                Joint.Axis.XYZ = rotationAxes.Row(rotationIndex).ToArray();
+                double mag = rotationAxes.Row(rotationIndex).Norm(2);
+                Vector<double> normalized = rotationAxes.Row(rotationIndex) / mag;
+                Joint.Axis.XYZ = normalized.ToArray();
             }
             else
             {
                 Joint.type = "Prismatic";
 
-                //translationAxes = OPS.rref(translationAxes);
-                Joint.Axis.XYZ = translationAxes.Row(translationIndex).ToArray();
+                double mag = translationAxes.Row(translationIndex).Norm(2);
+                Vector<double> normalized = translationAxes.Row(translationIndex) / mag;
+                Joint.Axis.XYZ = normalized.ToArray();
             }
             return Joint;
         }
 
-        public void dragComponentInDirection(AssemblyDoc assy, IComponent2 comp, Vector direction)
+        public void dragComponentInDirection(AssemblyDoc assy, IComponent2 comp, Vector<double> direction)
         {
             DragOperator drag = assy.GetDragOperator();
 
             // 0 for moving the minimal amount of components necessary
-            // 2 to solve by relaxation
             drag.DragMode = 0;
-            //drag.GraphicsRedrawEnabled = true;
-            //drag.SmartMating = true;
-            //drag.IsDragSpecific = true;
-            //drag.
 
             // 0 for a translation move (though the ultimate move may not be translation)
             drag.TransformType = 0;
@@ -179,14 +182,28 @@ namespace SW2URDF
 
             double[] matValues = new double[16];
             matValues[9] = direction[0]; matValues[10] = direction[1]; matValues[11] = direction[2];
-
             MathTransform transform = swMathUtility.CreateTransform(matValues);
-            
+
             drag.BeginDrag();
-            //drag.DragAsUI(transform);
             drag.Drag(transform);
             drag.EndDrag();
+        }
 
+        public void dragComponent(AssemblyDoc assy, IComponent2 comp, MathTransform transform)
+        {
+            DragOperator drag = assy.GetDragOperator();
+
+            // 0 for moving the minimal amount of components necessary
+            drag.DragMode = 0;
+
+            // 0 for a translation move (though the ultimate move may not be translation)
+            drag.TransformType = 2;
+
+            drag.AddComponent(comp, false);
+            
+            drag.BeginDrag();
+            drag.Drag(transform);
+            drag.EndDrag();
         }
         public Matrix getRotationMatrix(MathTransform transform)
         {
