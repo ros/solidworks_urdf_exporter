@@ -291,35 +291,40 @@ namespace SW2URDF
             Exporter.createRobotFromActiveModel();
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
-            textBox_collision_origin_x.Text = Exporter.mRobot.BaseLink.Collision.Origin.X.ToString();
-            textBox_collision_origin_y.Text = Exporter.mRobot.BaseLink.Collision.Origin.Y.ToString();
-            textBox_collision_origin_z.Text = Exporter.mRobot.BaseLink.Collision.Origin.Z.ToString();
+            textBox_collision_origin_x.Text = Exporter.mRobot.BaseLink.Collision.Origin.X.ToString("G5");
+            textBox_collision_origin_y.Text = Exporter.mRobot.BaseLink.Collision.Origin.Y.ToString("G5");
+            textBox_collision_origin_z.Text = Exporter.mRobot.BaseLink.Collision.Origin.Z.ToString("G5");
             textBox_collision_origin_roll.Text = "0";
             textBox_collision_origin_pitch.Text = "0";
             textBox_collision_origin_yaw.Text = "0";
 
-            textBox_visual_origin_x.Text = Exporter.mRobot.BaseLink.Visual.Origin.X.ToString();
-            textBox_visual_origin_y.Text = Exporter.mRobot.BaseLink.Visual.Origin.Y.ToString();
-            textBox_visual_origin_z.Text = Exporter.mRobot.BaseLink.Visual.Origin.Z.ToString();
+            textBox_visual_origin_x.Text = Exporter.mRobot.BaseLink.Visual.Origin.X.ToString("G5");
+            textBox_visual_origin_y.Text = Exporter.mRobot.BaseLink.Visual.Origin.Y.ToString("G5");
+            textBox_visual_origin_z.Text = Exporter.mRobot.BaseLink.Visual.Origin.Z.ToString("G5");
             textBox_visual_origin_roll.Text = "0";
             textBox_visual_origin_pitch.Text = "0";
             textBox_visual_origin_yaw.Text = "0";
 
-            textBox_inertial_origin_x.Text = Exporter.mRobot.BaseLink.Inertial.Origin.X.ToString();
-            textBox_inertial_origin_y.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Y.ToString();
-            textBox_inertial_origin_z.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Z.ToString();
+            domainUpDown_red.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Red.ToString("G5");
+            domainUpDown_green.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Green.ToString("G5");
+            domainUpDown_blue.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Blue.ToString("G5");
+            domainUpDown_alpha.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha.ToString("G5");
+
+            textBox_inertial_origin_x.Text = Exporter.mRobot.BaseLink.Inertial.Origin.X.ToString("G5");
+            textBox_inertial_origin_y.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Y.ToString("G5");
+            textBox_inertial_origin_z.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Z.ToString("G5");
             textBox_inertial_origin_roll.Text = "0";
             textBox_inertial_origin_pitch.Text = "0";
             textBox_inertial_origin_yaw.Text = "0";
 
-            textBox_mass.Text = Exporter.mRobot.BaseLink.Inertial.Mass.Value.ToString();
+            textBox_mass.Text = Exporter.mRobot.BaseLink.Inertial.Mass.Value.ToString("G5");
 
-            textBox_ixx.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx.ToString();
-            textBox_ixy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy.ToString();
-            textBox_ixz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz.ToString();
-            textBox_iyy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy.ToString();
-            textBox_iyz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz.ToString();
-            textBox_izz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Izz.ToString();
+            textBox_ixx.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx.ToString("G5");
+            textBox_ixy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy.ToString("G5");
+            textBox_ixz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz.ToString("G5");
+            textBox_iyy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy.ToString("G5");
+            textBox_iyz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz.ToString("G5");
+            textBox_izz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Izz.ToString("G5");
 
         }
         #endregion

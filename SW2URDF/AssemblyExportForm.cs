@@ -80,6 +80,18 @@ namespace SW2URDF
 
         }
 
+        private void treeView_linktree_Delete(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Back)
+            {
+                LinkNode deletedNode = (LinkNode)treeView_linktree.SelectedNode;
+                if (deletedNode != null)
+                {
+                    deletedNode.Remove();
+                    listBox_deleted.Items.Add(LinkNodeToLinkItem(deletedNode));
+                }
+            }
+        }
 
         #region Dragging and Dropping Links
         private void treeView_linktree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
@@ -222,6 +234,15 @@ namespace SW2URDF
             LinkNode node = (LinkNode)e.Node;
             fillLinkPropertyBoxes(node.Link);
             node.Link.SWComponent.Select(false);
+            treeView_linktree.Focus();
+        }
+
+        private void treeView_linktree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            LinkNode node = (LinkNode)e.Node;
+            fillLinkPropertyBoxes(node.Link);
+            node.Link.SWComponent.Select(false);
+            treeView_linktree.Focus();
         }
 
         private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
@@ -264,40 +285,40 @@ namespace SW2URDF
 
         public void fillLinkPropertyBoxes(link Link)
         {
-            textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString();
-            textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString();
-            textBox_collision_origin_z.Text = Link.Collision.Origin.Z.ToString();
+            textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString("G5");
+            textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString("G5");
+            textBox_collision_origin_z.Text = Link.Collision.Origin.Z.ToString("G5");
             textBox_collision_origin_roll.Text = "0";
             textBox_collision_origin_pitch.Text = "0";
             textBox_collision_origin_yaw.Text = "0";
 
-            textBox_visual_origin_x.Text = Link.Visual.Origin.X.ToString();
-            textBox_visual_origin_y.Text = Link.Visual.Origin.Y.ToString();
-            textBox_visual_origin_z.Text = Link.Visual.Origin.Z.ToString();
+            textBox_visual_origin_x.Text = Link.Visual.Origin.X.ToString("G5");
+            textBox_visual_origin_y.Text = Link.Visual.Origin.Y.ToString("G5");
+            textBox_visual_origin_z.Text = Link.Visual.Origin.Z.ToString("G5");
             textBox_visual_origin_roll.Text = "0";
             textBox_visual_origin_pitch.Text = "0";
             textBox_visual_origin_yaw.Text = "0";
 
-            textBox_inertial_origin_x.Text = Link.Inertial.Origin.X.ToString();
-            textBox_inertial_origin_y.Text = Link.Inertial.Origin.Y.ToString();
-            textBox_inertial_origin_z.Text = Link.Inertial.Origin.Z.ToString();
+            textBox_inertial_origin_x.Text = Link.Inertial.Origin.X.ToString("G5");
+            textBox_inertial_origin_y.Text = Link.Inertial.Origin.Y.ToString("G5");
+            textBox_inertial_origin_z.Text = Link.Inertial.Origin.Z.ToString("G5");
             textBox_inertial_origin_roll.Text = "0";
             textBox_inertial_origin_pitch.Text = "0";
             textBox_inertial_origin_yaw.Text = "0";
 
-            textBox_mass.Text = Link.Inertial.Mass.Value.ToString();
+            textBox_mass.Text = Link.Inertial.Mass.Value.ToString("G5");
 
-            textBox_ixx.Text = Link.Inertial.Inertia.Ixx.ToString();
-            textBox_ixy.Text = Link.Inertial.Inertia.Ixy.ToString();
-            textBox_ixz.Text = Link.Inertial.Inertia.Ixz.ToString();
-            textBox_iyy.Text = Link.Inertial.Inertia.Iyy.ToString();
-            textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString();
-            textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString();
+            textBox_ixx.Text = Link.Inertial.Inertia.Ixx.ToString("G5");
+            textBox_ixy.Text = Link.Inertial.Inertia.Ixy.ToString("G5");
+            textBox_ixz.Text = Link.Inertial.Inertia.Ixz.ToString("G5");
+            textBox_iyy.Text = Link.Inertial.Inertia.Iyy.ToString("G5");
+            textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString("G5");
+            textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString("G5");
 
-            domainUpDown_red.Text = Link.Visual.Material.Color.Red.ToString();
-            domainUpDown_green.Text = Link.Visual.Material.Color.Green.ToString();
-            domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString();
-            domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString();
+            domainUpDown_red.Text = Link.Visual.Material.Color.Red.ToString("G5");
+            domainUpDown_green.Text = Link.Visual.Material.Color.Green.ToString("G5");
+            domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString("G5");
+            domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString("G5");
         }
         public void fillJointPropertyBoxes(joint Joint)
         {
@@ -338,32 +359,34 @@ namespace SW2URDF
                 textBox_joint_name.Text = Joint.name;
                 comboBox_joint_type.Text = Joint.type;
 
-                textBox_joint_x.Text = Joint.Origin.X.ToString();
-                textBox_joint_y.Text = Joint.Origin.Y.ToString();
-                textBox_joint_z.Text = Joint.Origin.Z.ToString();
-                textBox_joint_roll.Text = Joint.Origin.Roll.ToString();
-                textBox_joint_pitch.Text = Joint.Origin.Pitch.ToString();
-                textBox_joint_yaw.Text = Joint.Origin.Yaw.ToString();
+                //Maximum decimal places to use (not counting exponential notation) is 5
 
-                textBox_axis_x.Text = Joint.Axis.X.ToString();
-                textBox_axis_y.Text = Joint.Axis.Y.ToString();
-                textBox_axis_z.Text = Joint.Axis.Z.ToString();
+                textBox_joint_x.Text = Joint.Origin.X.ToString("G5");
+                textBox_joint_y.Text = Joint.Origin.Y.ToString("G5");
+                textBox_joint_z.Text = Joint.Origin.Z.ToString("G5");
+                textBox_joint_roll.Text = Joint.Origin.Roll.ToString("G5");
+                textBox_joint_pitch.Text = Joint.Origin.Pitch.ToString("G5");
+                textBox_joint_yaw.Text = Joint.Origin.Yaw.ToString("G5");
 
-                textBox_limit_lower.Text = Joint.Limit.lower.ToString();
-                textBox_limit_upper.Text = Joint.Limit.upper.ToString();
-                textBox_limit_effort.Text = Joint.Limit.effort.ToString();
-                textBox_limit_velocity.Text = Joint.Limit.effort.ToString();
+                textBox_axis_x.Text = Joint.Axis.X.ToString("G5");
+                textBox_axis_y.Text = Joint.Axis.Y.ToString("G5");
+                textBox_axis_z.Text = Joint.Axis.Z.ToString("G5");
 
-                textBox_calibration_rising.Text = Joint.Calibration.rising.ToString();
-                textBox_calibration_falling.Text = Joint.Calibration.falling.ToString();
+                textBox_limit_lower.Text = Joint.Limit.lower.ToString("G5");
+                textBox_limit_upper.Text = Joint.Limit.upper.ToString("G5");
+                textBox_limit_effort.Text = Joint.Limit.effort.ToString("G5");
+                textBox_limit_velocity.Text = Joint.Limit.effort.ToString("G5");
 
-                textBox_friction.Text = Joint.Dynamics.friction.ToString();
-                textBox_damping.Text = Joint.Dynamics.damping.ToString();
+                textBox_calibration_rising.Text = Joint.Calibration.rising.ToString("G5");
+                textBox_calibration_falling.Text = Joint.Calibration.falling.ToString("G5");
 
-                textBox_soft_lower.Text = Joint.Safety.soft_lower.ToString();
-                textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString();
-                textBox_k_position.Text = Joint.Safety.k_position.ToString();
-                textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString();
+                textBox_friction.Text = Joint.Dynamics.friction.ToString("G5");
+                textBox_damping.Text = Joint.Dynamics.damping.ToString("G5");
+
+                textBox_soft_lower.Text = Joint.Safety.soft_lower.ToString("G5");
+                textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString("G5");
+                textBox_k_position.Text = Joint.Safety.k_position.ToString("G5");
+                textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString("G5");
             }
         }
         public void saveLinkItemData(int index)
@@ -874,6 +897,7 @@ namespace SW2URDF
         {
 
         }
+
     }
 
     #region Derived classes
