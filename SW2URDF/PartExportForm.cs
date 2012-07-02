@@ -182,12 +182,12 @@ namespace SW2URDF
 
         private void button_texturebrowse_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.RestoreDirectory = true;
+            openFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                textBox_texture.Text = saveFileDialog1.FileName;
+                textBox_texture.Text = openFileDialog1.FileName;
             }
         }
         #endregion
@@ -244,12 +244,31 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
 
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
+
+            Exporter.mRobot.BaseLink.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+
+
             Exporter.mRobot.BaseLink.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+
+            Exporter.mRobot.BaseLink.Visual.Material.name = comboBox_materials.Text;
+            Exporter.mRobot.BaseLink.Visual.Material.Texture.wFilename = textBox_texture.Text;
+
+            Exporter.mRobot.BaseLink.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+
 
             Exporter.mRobot.BaseLink.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
@@ -258,26 +277,8 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
 
-            Exporter.mRobot.BaseLink.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
-
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
-
-            Exporter.mRobot.BaseLink.Visual.Material.name = comboBox_materials.Text;
-            Exporter.mRobot.BaseLink.Visual.Material.Texture.filename = textBox_texture.Text;
-
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
-
             Exporter.exportLink();
             this.Close();
-
         }
 
         private void button_cancel_Click(object sender, EventArgs e)

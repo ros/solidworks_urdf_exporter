@@ -412,7 +412,7 @@ namespace SW2URDF
             Link.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
 
             Link.Visual.Material.name = comboBox_materials.Text;
-            Link.Visual.Material.Texture.filename = textBox_texture.Text;
+            Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
             Link.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
             Link.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
@@ -669,12 +669,12 @@ namespace SW2URDF
 
         private void button_texturebrowse_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.RestoreDirectory = true;
+            openFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                textBox_texture.Text = saveFileDialog1.FileName;
+                textBox_texture.Text = openFileDialog1.FileName;
             }
         }
 

@@ -558,6 +558,8 @@ namespace SW2URDF
     {
         public string filename
         { get; set; }
+        public string wFilename
+        { get; set; }
         public texture()
         {
         }

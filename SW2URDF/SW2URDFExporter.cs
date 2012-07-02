@@ -293,6 +293,7 @@ namespace SW2URDF
         #region Export Methods
 
         //Copy and export textures here
+
         public void exportRobot()
         {
             //Creating package directories
@@ -305,7 +306,7 @@ namespace SW2URDF
             setSTLExportPreferences();
 
             //Saving part as STL mesh
-            string filename = exportMeshes(mRobot.BaseLink, package);
+            string filename = exportFiles(mRobot.BaseLink, package);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
 
@@ -316,14 +317,17 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
-        public string exportMeshes(link Link, URDFPackage package)
+        public string exportFiles(link Link, URDFPackage package)
         {
             foreach (link child in Link.Children)
             {
-                string filename = exportMeshes(child, package);
+                string filename = exportFiles(child, package);
                 child.Visual.Geometry.Mesh.filename = filename;
                 child.Collision.Geometry.Mesh.filename = filename;
             }
+            Link.Visual.Material.Texture.filename = package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);         
+            string textureSavePath = package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
+
             string meshFileName = package.MeshesDirectory + Link.name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + Link.name + ".STL";
 
@@ -336,6 +340,8 @@ namespace SW2URDF
             modeldoc = iSwApp.IActiveDoc2;
             modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             iSwApp.CloseDoc(Link.name + ".sldprt");
+
+            System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
             return meshFileName;
         }
         #endregion
@@ -395,6 +401,10 @@ namespace SW2URDF
             ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = meshFileName;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = meshFileName;
+
+            mRobot.BaseLink.Visual.Material.Texture.filename = package.TexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
+            string textureSavePath = package.WindowsTexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
+            System.IO.File.Copy(mRobot.BaseLink.Visual.Material.Texture.wFilename, textureSavePath, true);
 
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
