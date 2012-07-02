@@ -184,7 +184,7 @@ namespace SW2URDF
                 Vector<double> normalized = rotationAxes.Row(rotationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
 
-                origin estimitation is not correct here!
+                //origin estimitation is not correct here!
                 Joint.Origin.XYZ = rotationPositions.Row(rotationIndex).ToArray();
                 Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
             }
@@ -197,7 +197,7 @@ namespace SW2URDF
                 Vector<double> normalized = translationAxes.Row(translationIndex) / mag;
                 Joint.Axis.XYZ = normalized.ToArray();
 
-                Origin Estimation is Not correct here
+                //Origin Estimation is Not correct here
                 Joint.Origin.XYZ = translationPositions.Row(translationIndex).ToArray();
                 Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
             }

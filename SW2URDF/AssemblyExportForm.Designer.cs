@@ -121,8 +121,6 @@
             this.button_savename_browse = new System.Windows.Forms.Button();
             this.textBox_save_as = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox_name = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
@@ -186,6 +184,7 @@
             this.button_joint_finish = new System.Windows.Forms.Button();
             this.button_joint_previous = new System.Windows.Forms.Button();
             this.button_joint_cancel = new System.Windows.Forms.Button();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -1081,7 +1080,7 @@
             // 
             // button_savename_browse
             // 
-            this.button_savename_browse.Location = new System.Drawing.Point(510, 67);
+            this.button_savename_browse.Location = new System.Drawing.Point(508, 52);
             this.button_savename_browse.Name = "button_savename_browse";
             this.button_savename_browse.Size = new System.Drawing.Size(75, 23);
             this.button_savename_browse.TabIndex = 79;
@@ -1091,37 +1090,21 @@
             // 
             // textBox_save_as
             // 
-            this.textBox_save_as.Location = new System.Drawing.Point(108, 70);
+            this.textBox_save_as.Location = new System.Drawing.Point(20, 55);
             this.textBox_save_as.Name = "textBox_save_as";
-            this.textBox_save_as.Size = new System.Drawing.Size(385, 20);
+            this.textBox_save_as.Size = new System.Drawing.Size(461, 20);
             this.textBox_save_as.TabIndex = 78;
             this.textBox_save_as.TextChanged += new System.EventHandler(this.textBox_save_as_TextChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(22, 73);
+            this.label2.Location = new System.Drawing.Point(19, 39);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(77, 13);
+            this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 77;
-            this.label2.Text = "Save Directory";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(19, 42);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(81, 13);
-            this.label3.TabIndex = 76;
-            this.label3.Text = "Package Name";
-            // 
-            // textBox_name
-            // 
-            this.textBox_name.Location = new System.Drawing.Point(108, 39);
-            this.textBox_name.Name = "textBox_name";
-            this.textBox_name.Size = new System.Drawing.Size(235, 20);
-            this.textBox_name.TabIndex = 75;
-            this.textBox_name.TextChanged += new System.EventHandler(this.textBox_name_TextChanged);
+            this.label2.Text = "Save Package as:";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label4
             // 
@@ -1745,11 +1728,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1073, 688);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.button_savename_browse);
-            this.Controls.Add(this.textBox_name);
             this.Controls.Add(this.textBox_save_as);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.button_savename_browse);
             this.Controls.Add(this.panel_joint);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.groupBox3);
@@ -1874,8 +1855,6 @@
         private System.Windows.Forms.Button button_savename_browse;
         private System.Windows.Forms.TextBox textBox_save_as;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox_name;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel panel_joint;
         private System.Windows.Forms.TreeView treeView_jointtree;
@@ -1939,5 +1918,6 @@
         private System.Windows.Forms.Label label_child;
         private System.Windows.Forms.Label label_parent;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
     }
 }

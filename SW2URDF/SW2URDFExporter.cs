@@ -291,6 +291,8 @@ namespace SW2URDF
         #endregion
 
         #region Export Methods
+
+        //Copy and export textures here
         public void exportRobot()
         {
             //Creating package directories

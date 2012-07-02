@@ -5,8 +5,8 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Windows.Forms;
-
 using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
@@ -27,8 +27,7 @@ namespace SW2URDF
         {
             Exporter.createRobotFromActiveModel();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            textBox_name.Text = Exporter.mPackageName;
-            textBox_save_as.Text = Exporter.mSavePath;
+            textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
         }
 
@@ -670,7 +669,13 @@ namespace SW2URDF
 
         private void button_texturebrowse_Click(object sender, EventArgs e)
         {
-
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                textBox_texture.Text = saveFileDialog1.FileName;
+            }
         }
 
         private void textBox_collision_origin_x_TextChanged(object sender, EventArgs e)
@@ -725,7 +730,14 @@ namespace SW2URDF
 
         private void button_savename_browse_Click(object sender, EventArgs e)
         {
-
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            saveFileDialog1.FileName = Path.GetFileName(textBox_save_as.Text);
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                textBox_save_as.Text = saveFileDialog1.FileName;
+            }
         }
 
         #endregion
@@ -857,6 +869,11 @@ namespace SW2URDF
 
         }
         #endregion
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 
     #region Derived classes

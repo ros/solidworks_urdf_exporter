@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.IO;
 
 using SolidWorks.Interop.sldworks;
 
@@ -42,7 +43,14 @@ namespace SW2URDF
 
         private void button_savename_browse_Click(object sender, EventArgs e)
         {
-
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            saveFileDialog1.FileName = Path.GetFileName(textBox_save_as.Text);
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                textBox_save_as.Text = saveFileDialog1.FileName;
+            }
         }
         #endregion
 
@@ -174,7 +182,13 @@ namespace SW2URDF
 
         private void button_texturebrowse_Click(object sender, EventArgs e)
         {
-
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                textBox_texture.Text = saveFileDialog1.FileName;
+            }
         }
         #endregion
         
@@ -221,8 +235,8 @@ namespace SW2URDF
         {
             
             double value;
-            Exporter.mPackageName = textBox_name.Text;
-            Exporter.mSavePath = textBox_save_as.Text;
+            Exporter.mPackageName = Path.GetFileName(textBox_save_as.Text);
+            Exporter.mSavePath = Path.GetDirectoryName(textBox_save_as.Text);
             Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
@@ -274,8 +288,7 @@ namespace SW2URDF
         private void PartExportForm_Load(object sender, EventArgs e)
         {
             Exporter.createRobotFromActiveModel();
-            textBox_name.Text = Exporter.mPackageName;
-            textBox_save_as.Text = Exporter.mSavePath;
+            textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
             textBox_collision_origin_x.Text = Exporter.mRobot.BaseLink.Collision.Origin.X.ToString();
             textBox_collision_origin_y.Text = Exporter.mRobot.BaseLink.Collision.Origin.Y.ToString();
