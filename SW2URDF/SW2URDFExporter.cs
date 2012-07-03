@@ -75,16 +75,19 @@ namespace SW2URDF
 
             link baseLink = new link();
             //link baseLink = assignParentLinks(sparseLink, 0);
-            foreach (IComponent2 comp in varComp)
-            {
-                link sparseLink = createSparseBranchFromComponents(comp, 0);
-                if (sparseLink != null)
-                {
-                    baseLink.Children.Add(sparseLink);
-                }
-            }
+            //foreach (IComponent2 comp in varComp)
+            //{
+            //    link sparseLink = createSparseBranchFromComponents(comp, 0);
+            //    if (sparseLink != null)
+            //    {
+            //        baseLink.Children.Add(sparseLink);
+            //    }
+            //}
 
-            return assignParentLinks(baseLink, 0);
+            //return assignParentLinks(baseLink, 0);
+            IComponent2 parent = findParent(varComp, 0);
+            List<IComponent2> list = new List<IComponent2>();
+            return createLinkFromAttachedLinks(parent, list, 0);
         }
 
         public link getLinkFromPartComp(object comp, int level)
@@ -95,7 +98,6 @@ namespace SW2URDF
 
             if (parentdoc == null)
             {
-                //parentdoc can sometimes be null here!
                 throw new System.InvalidOperationException("Component " + parentComp.Name2 + " is null");
             }
 
@@ -103,6 +105,35 @@ namespace SW2URDF
             Link.SWComponent = parentComp;
             Link.SWComponentLevel = level;
             Link.uniqueName = parentComp.Name2;
+            return Link;
+        }
+
+        public link createLinkFromAttachedLinks(IComponent2 comp, List<IComponent2> matedComponents, int level)
+        {
+            link Link = getLinkFromPartModel(comp.GetModelDoc2());
+            object[] mates = comp.GetMates();
+
+            //Dies at level 1 here
+            foreach (object mate in mates)
+            {
+                if (mate is Mate2)
+                {
+                    Mate2 swMate = (Mate2)mate;
+                    int entityCount = swMate.GetMateEntityCount();
+                    for (int i = 0; i < entityCount; i++)
+                    {
+                        MateEntity2 entity = swMate.MateEntity(i);
+                        bool alreadyFound = entity.ReferenceComponent == comp || matedComponents.Contains(entity.ReferenceComponent);
+                        if (!alreadyFound)
+                        {
+                            matedComponents.Add(entity.ReferenceComponent);
+                            Link.Children.Add(createLinkFromAttachedLinks(entity.ReferenceComponent, matedComponents, level + 1));
+                        }
+                    }
+                }
+            }
+
+            Link.SWComponent = comp;
             return Link;
         }
 
@@ -238,6 +269,72 @@ namespace SW2URDF
             }
             return top;
         }
+
+        public IComponent2 findParent(object[] children, int level)
+        {
+            IComponent2 AssignedParentComponent = default(IComponent2);
+            int priorityLevel = -1;
+            double largestFixedVolume = 0;
+            double largestPartVolume = 0;
+            double largestAssyVolume = 0;
+
+            // Iterate through children to find the 'best' component for parent status. It may be several assemblies down.
+            foreach (IComponent2 child in children)
+            {
+                if (!child.IsHidden(true))
+                {
+                    ModelDoc2 ChildDoc = child.GetModelDoc();
+                    if (ChildDoc == null)
+                    {
+                        throw new System.InvalidOperationException("Component " + child.Name2 + " is null");
+                    }
+                    int ChildType = (int)ChildDoc.GetType();
+
+                    IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
+
+                    double childVolume = childMass.Volume;
+
+                    //Highest priority is the largest fixed component
+                    if (child.IsFixed() && childMass.Volume > largestFixedVolume)
+                    {
+                        priorityLevel = 2;
+                        AssignedParentComponent = child;
+                        largestFixedVolume = childVolume;
+                    }
+                    //Second highest priority is the largest floating part
+                    else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
+                    {
+                        priorityLevel = 1;
+                        AssignedParentComponent = child;
+                        largestPartVolume = childVolume;
+                    }
+                    //Third priority is the 'best' choice from the largest assembly
+                    else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
+                    {
+                        priorityLevel = 0;
+                        AssignedParentComponent = child;
+                        largestAssyVolume = childVolume;
+                    }
+                }
+            }
+
+            ModelDoc2 AssignedParentDoc = AssignedParentComponent.GetModelDoc();
+            int AssignedParentType = AssignedParentDoc.GetType();
+            // If a fixed component was chosen and it is an assembly, iterate through assembly
+            if (priorityLevel == 2 && AssignedParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                return findParent(AssignedParentComponent.GetChildren(), level + 1);
+
+            }
+            // If no parts were found, iterate through the chosen assembly
+            else if (priorityLevel == 0)
+            {
+                return findParent(AssignedParentComponent.GetChildren(), level + 1);
+            }
+
+            return AssignedParentComponent;
+
+        }
         #endregion
 
         #region Joint methods
@@ -368,7 +465,7 @@ namespace SW2URDF
         {
             link Link = new link();
             Link.name = swModel.GetTitle();
-            
+
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();

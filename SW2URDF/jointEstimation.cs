@@ -37,6 +37,11 @@ namespace SW2URDF
 
         public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child, bool checkBothDirections)
         {
+            //MathPoint point1, point2, point3;
+            //MathVector vec1, vec2, vec3;
+            //int status1, status2, status3;
+            //int remainingDOFs = parent.GetRemainingDOFs(out status1, out point1, out status2, out vec1, out status2, out point2, out status2, out vec2, out status3, out vec3, out status3, out vec3);
+
             //A Collection of axes that the object may be rotated around
             Matrix<double> rotationAxes = new DenseMatrix(3, 3);
             double[] rotationConfidences = new double[3];

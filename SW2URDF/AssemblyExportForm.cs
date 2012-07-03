@@ -8,6 +8,10 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swpublished;
+using SolidWorks.Interop.swconst;
+using SolidWorksTools;
+using SolidWorksTools.File;
 
 namespace SW2URDF
 {
@@ -29,10 +33,10 @@ namespace SW2URDF
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
-            foreach (LinkNode node in treeView_linktree.Nodes)
-            {
-                checkNode(node);
-            }
+            //foreach (LinkNode node in treeView_linktree.Nodes)
+            //{
+            //    checkNode(node);
+            //}
         }
 
         private void button_link_next_Click(object sender, EventArgs e)
@@ -309,7 +313,7 @@ namespace SW2URDF
             node.Text = item.Text;
             foreach (link child in item.Link.Children)
             {
-                node.Nodes.Add(createLinkNodeFromLink(child));
+                node.Nodes.Add(createLinkNodeFromLink(child, true));
             }
             return node;
         }
@@ -491,25 +495,38 @@ namespace SW2URDF
             baseNode.Name = baseLink.name;
             baseNode.Text = baseLink.name;
             baseNode.Link = baseLink;
+            if (tree == treeView_linktree)
+            {
+                baseNode.Checked = true;
+            }
             foreach (link child in baseLink.Children)
             {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child));
+                baseNode.Nodes.Add(createLinkNodeFromLink(child, tree == treeView_linktree));
             }
             tree.Nodes.Add(baseNode);
             tree.ExpandAll();
         }
 
-        public LinkNode createLinkNodeFromLink(link Link)
+        public LinkNode createLinkNodeFromLink(link Link, bool checkChecks)
         {
             LinkNode node = new LinkNode();
             node.Name = Link.name;
             node.Text = Link.name;
             node.Link = Link;
+
             foreach (link child in Link.Children)
             {
-                node.Nodes.Add(createLinkNodeFromLink(child));
+                node.Nodes.Add(createLinkNodeFromLink(child, checkChecks));
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
+            Link.SWComponent.Select(false);
+            AssemblyDoc parentDoc = (AssemblyDoc)Link.SWComponent.GetParent().GetModelDoc2();
+            parentDoc.FixComponent();
+            if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
+            {
+                node.Checked = true;
+            }
+            parentDoc.UnfixComponent();
             return node;
         }
         public robot createRobotFromTreeView(TreeView tree)
