@@ -29,12 +29,21 @@ namespace SW2URDF
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
+            foreach (LinkNode node in treeView_linktree.Nodes)
+            {
+                checkNode(node);
+            }
         }
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
             treeView_jointtree.Nodes.Clear();
-            Exporter.mRobot = createRobotFromLinkTreeView(treeView_linktree);
+            if (treeView_linktree.SelectedNode != null)
+            {
+                LinkNode node = (LinkNode)treeView_linktree.SelectedNode;
+                saveLinkDataFromPropertyBoxes(node.Link);
+            }
+            Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
             Exporter.createJoints();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             panel_joint.Visible = true;
@@ -51,6 +60,7 @@ namespace SW2URDF
             {
                 node.Joint = saveJointDataFromPropertyBoxes();
             }
+            Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             Exporter.exportRobot();
             this.Close();
         }
@@ -58,7 +68,7 @@ namespace SW2URDF
         private void button_joint_previous_Click(object sender, EventArgs e)
         {
             treeView_linktree.Nodes.Clear();
-            Exporter.mRobot = createRobotFromLinkTreeView(treeView_jointtree);
+            Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
             panel_joint.Visible = false;
         }
@@ -72,12 +82,36 @@ namespace SW2URDF
 
         private void button_select_Click(object sender, EventArgs e)
         {
+            foreach (LinkNode node in treeView_linktree.Nodes)
+            {
+                checkNode(node);
+            }
+        }
 
+        private void checkNode(LinkNode node)
+        {
+            node.Checked = true;
+            foreach (LinkNode child in node.Nodes)
+            {
+                checkNode(child);
+            }
         }
 
         private void button_deselect_Click(object sender, EventArgs e)
         {
+            foreach (LinkNode node in treeView_linktree.Nodes)
+            {
+                uncheckNode(node);
+            }
+        }
 
+        private void uncheckNode(LinkNode node)
+        {
+            node.Checked = false;
+            foreach (LinkNode child in node.Nodes)
+            {
+                uncheckNode(child);
+            }
         }
 
         private void treeView_linktree_Delete(object sender, KeyEventArgs e)
@@ -263,7 +297,7 @@ namespace SW2URDF
             item.Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-                item.Link.Children.Add(createLinkFromLinkNode(child));
+                item.Link.Children.Add(createLinkFromLinkNode(child, false));
             }
             return item;
         }
@@ -273,7 +307,7 @@ namespace SW2URDF
             node.Name = item.Name;
             node.Link = item.Link;
             node.Text = item.Text;
-            foreach(link child in item.Link.Children)
+            foreach (link child in item.Link.Children)
             {
                 node.Nodes.Add(createLinkNodeFromLink(child));
             }
@@ -327,6 +361,9 @@ namespace SW2URDF
                 textBox_joint_name.Text = "";
                 comboBox_joint_type.Text = "";
 
+                label_parent.Text = "";
+                label_child.Text = "";
+
                 textBox_joint_x.Text = "";
                 textBox_joint_y.Text = "";
                 textBox_joint_z.Text = "";
@@ -358,6 +395,9 @@ namespace SW2URDF
             {
                 textBox_joint_name.Text = Joint.name;
                 comboBox_joint_type.Text = Joint.type;
+
+                label_parent.Text = Joint.Parent.name;
+                label_child.Text = Joint.Child.name;
 
                 //Maximum decimal places to use (not counting exponential notation) is 5
 
@@ -472,17 +512,17 @@ namespace SW2URDF
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
             return node;
         }
-        public robot createRobotFromLinkTreeView(TreeView tree)
+        public robot createRobotFromTreeView(TreeView tree)
         {
             robot Robot = new robot();
-            
+
             foreach (LinkNode node in tree.Nodes)
             {
                 if (node.Level == 0)
                 {
-                    link BaseLink = createLinkFromLinkNode(node);
-                    if (BaseLink != null)
+                    if (tree != treeView_linktree || node.Checked)
                     {
+                        link BaseLink = createLinkFromLinkNode(node, tree == treeView_linktree);
                         Robot.BaseLink = BaseLink;
                     }
                 }
@@ -491,26 +531,19 @@ namespace SW2URDF
             return Robot;
         }
 
-        public link createLinkFromLinkNode(LinkNode node)
+        public link createLinkFromLinkNode(LinkNode node, bool checkChecks)
         {
-            if (node.Checked)
+            link Link = node.Link;
+            Link.Children.Clear();
+            foreach (LinkNode child in node.Nodes)
             {
-                link Link = node.Link;
-                Link.Children.Clear();
-                foreach (LinkNode child in node.Nodes)
+                if (!checkChecks || child.Checked)
                 {
-                    link childLink = createLinkFromLinkNode(child);
-                    if (childLink != null)
-                    {
-                        Link.Children.Add(childLink); // Recreates the children of each embedded link
-                    }
+                    link childLink = createLinkFromLinkNode(child, checkChecks);
+                    Link.Children.Add(childLink); // Recreates the children of each embedded link
                 }
-                return Link;
             }
-            else
-            {
-                return null;
-            }
+            return Link;
         }
 
         public joint saveJointDataFromPropertyBoxes()

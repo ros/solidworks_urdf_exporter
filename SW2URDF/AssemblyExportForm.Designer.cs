@@ -863,7 +863,6 @@
             this.textBox_inertial_origin_x.Name = "textBox_inertial_origin_x";
             this.textBox_inertial_origin_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_x.TabIndex = 3;
-            this.textBox_inertial_origin_x.Text = "1.2345E-67";
             this.textBox_inertial_origin_x.TextChanged += new System.EventHandler(this.textBox_inertial_origin_x_TextChanged);
             // 
             // label16
@@ -1672,18 +1671,16 @@
             this.label_child.AutoSize = true;
             this.label_child.Location = new System.Drawing.Point(562, 158);
             this.label_child.Name = "label_child";
-            this.label_child.Size = new System.Drawing.Size(30, 13);
+            this.label_child.Size = new System.Drawing.Size(0, 13);
             this.label_child.TabIndex = 91;
-            this.label_child.Text = "Child";
             // 
             // label_parent
             // 
             this.label_parent.AutoSize = true;
             this.label_parent.Location = new System.Drawing.Point(561, 131);
             this.label_parent.Name = "label_parent";
-            this.label_parent.Size = new System.Drawing.Size(38, 13);
+            this.label_parent.Size = new System.Drawing.Size(0, 13);
             this.label_parent.TabIndex = 90;
-            this.label_parent.Text = "Parent";
             // 
             // treeView_jointtree
             // 

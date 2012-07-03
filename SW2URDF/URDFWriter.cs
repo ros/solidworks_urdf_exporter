@@ -66,6 +66,8 @@ namespace SW2URDF
         { get; set; }
         public string name
         { get; set; }
+        public string uniqueName
+        { get; set; }
         public inertial Inertial
         { get; set; }
         public visual Visual
@@ -94,7 +96,7 @@ namespace SW2URDF
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("link");
-            writer.WriteAttributeString("name", "link_" + name);
+            writer.WriteAttributeString("name", "link_" + uniqueName);
 
             Inertial.writeURDF( writer);
             Visual.writeURDF( writer);
@@ -562,12 +564,17 @@ namespace SW2URDF
         { get; set; }
         public texture()
         {
+            wFilename = "";
+            filename = "";
         }
         new public void writeURDF(XmlWriter writer)
         {
-            writer.WriteStartElement("texture");
-            writer.WriteAttributeString("filename", filename);
-            writer.WriteEndElement();
+            if (wFilename != "")
+            {
+                writer.WriteStartElement("texture");
+                writer.WriteAttributeString("filename", filename);
+                writer.WriteEndElement();
+            }
         }
     }
 

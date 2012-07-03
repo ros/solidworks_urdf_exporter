@@ -104,6 +104,7 @@ namespace SW2URDF
             Link = getLinkFromPartModel(parentdoc);
             Link.SWComponent = parentComp;
             Link.SWComponentLevel = level;
+            Link.uniqueName = parentComp.Name2;
             return Link;
         }
 
@@ -264,10 +265,10 @@ namespace SW2URDF
 
             jointEstimation estimation = new jointEstimation(iSwApp);
             joint Joint = estimation.estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent, true);
-            Joint.name = parent.name + "_to_" + child.name;
+            Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
 
-            Joint.Parent.name = parent.name;
-            Joint.Child.name = child.name;
+            Joint.Parent.name = parent.uniqueName;
+            Joint.Child.name = child.uniqueName;
 
             Joint.Dynamics.friction = 0;
             Joint.Dynamics.damping = 0;
@@ -325,27 +326,31 @@ namespace SW2URDF
                 child.Visual.Geometry.Mesh.filename = filename;
                 child.Collision.Geometry.Mesh.filename = filename;
             }
-            Link.Visual.Material.Texture.filename = package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);         
-            string textureSavePath = package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
-
+            if (Link.Visual.Material.Texture.wFilename != "")
+            {
+                if (!System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
+                {
+                    Link.Visual.Material.Texture.filename = package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
+                    string textureSavePath = package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
+                    System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
+                }
+            }
             string meshFileName = package.MeshesDirectory + Link.name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + Link.name + ".STL";
 
             int errors = 0;
             int warnings = 0;
 
-            ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
-
-            iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
-            modeldoc = iSwApp.IActiveDoc2;
-            modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            iSwApp.CloseDoc(Link.name + ".sldprt");
-
-            correctSTLMesh(windowsMeshFileName);
-
-            if (Link.Visual.Material.Texture.wFilename != "")
+            if (!System.IO.File.Exists(windowsMeshFileName))
             {
-                System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
+                ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
+
+                iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
+                modeldoc = iSwApp.IActiveDoc2;
+                modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+                iSwApp.CloseDoc(Link.name + ".sldprt");
+
+                correctSTLMesh(windowsMeshFileName);
             }
             return meshFileName;
         }
@@ -364,6 +369,7 @@ namespace SW2URDF
         {
             link Link = new link();
             Link.name = swModel.GetTitle();
+            
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
@@ -384,7 +390,7 @@ namespace SW2URDF
             Link.Visual.Material.Color.Red = values[0];
             Link.Visual.Material.Color.Green = values[1];
             Link.Visual.Material.Color.Blue = values[2];
-            Link.Visual.Material.Color.Alpha = values[7];
+            Link.Visual.Material.Color.Alpha = 1.0 - values[7];
 
             return Link;
         }
