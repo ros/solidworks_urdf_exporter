@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Reflection;
+using System.Windows.Forms;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swpublished;
@@ -234,13 +235,25 @@ namespace SW2URDF
 
         public void assemblyURDFExporter()
         {
-            AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
-            exportForm.Show();
+            if (MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                modeldoc.Save3(options, 0, 0);
+                AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
+                exportForm.Show();
+            }
         }
         public void partURDFExporter()
         {
-            PartExportForm exportForm = new PartExportForm(iSwApp);
-            exportForm.Show();
+            if (MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                modeldoc.Save3(options, 0, 0);
+                PartExportForm exportForm = new PartExportForm(iSwApp);
+                exportForm.Show();
+            }
         }
 
         public void FlyoutCallback()

@@ -61,8 +61,6 @@ namespace SW2URDF
             {
                 mRobot.BaseLink = getLinkFromActiveModel();
             }
-
-
         }
 
         public link getBaseLinkFromActiveModel()
@@ -347,7 +345,8 @@ namespace SW2URDF
 
                 iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
                 modeldoc = iSwApp.IActiveDoc2;
-                modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
+                int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
                 iSwApp.CloseDoc(Link.name + ".sldprt");
 
                 correctSTLMesh(windowsMeshFileName);

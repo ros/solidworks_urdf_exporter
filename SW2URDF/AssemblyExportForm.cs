@@ -24,7 +24,7 @@ namespace SW2URDF
 
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
-        {
+        {           
             Exporter.createRobotFromActiveModel();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
