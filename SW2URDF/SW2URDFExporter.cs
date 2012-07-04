@@ -190,7 +190,7 @@ namespace SW2URDF
             }
             IComponent2 comp = Link.SWComponent;
             int SWComponentLevel = Link.SWComponentLevel;
-            while (SWComponentLevel > 0)
+            while (SWComponentLevel > 0 )
             {
                 IComponent2 parentComp = comp.GetParent();
                 ModelDoc2 parentDoc = parentComp.GetModelDoc2();
