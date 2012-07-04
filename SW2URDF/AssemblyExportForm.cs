@@ -520,13 +520,22 @@ namespace SW2URDF
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
             Link.SWComponent.Select(false);
-            AssemblyDoc parentDoc = (AssemblyDoc)Link.SWComponent.GetParent().GetModelDoc2();
-            parentDoc.FixComponent();
-            if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
+
+            IComponent2 parent = Link.SWComponent.GetParent();
+            if (parent != null)
             {
-                node.Checked = true;
+                ModelDoc2 parentModel = parent.GetModelDoc2();
+                if (parentModel.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                {
+                    AssemblyDoc parentDoc = (AssemblyDoc)parentModel;
+                    parentDoc.FixComponent();
+                    if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
+                    {
+                        node.Checked = true;
+                    }
+                    parentDoc.UnfixComponent();
+                }
             }
-            parentDoc.UnfixComponent();
             return node;
         }
         public robot createRobotFromTreeView(TreeView tree)

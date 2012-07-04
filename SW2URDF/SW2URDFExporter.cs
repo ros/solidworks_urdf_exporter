@@ -87,7 +87,8 @@ namespace SW2URDF
             //return assignParentLinks(baseLink, 0);
             IComponent2 parent = findParent(varComp, 0);
             List<IComponent2> list = new List<IComponent2>();
-            return createLinkFromAttachedLinks(parent, list, 0);
+            list.Add(parent);
+            return createBaseComponent(swModel);
         }
 
         public link getLinkFromPartComp(object comp, int level)
@@ -111,30 +112,140 @@ namespace SW2URDF
         public link createLinkFromAttachedLinks(IComponent2 comp, List<IComponent2> matedComponents, int level)
         {
             link Link = getLinkFromPartModel(comp.GetModelDoc2());
-            object[] mates = comp.GetMates();
+            Link.SWComponent = comp;
 
-            //Dies at level 1 here
-            foreach (object mate in mates)
+            object[] mates = comp.GetMates();
+            if (mates != null)
             {
-                if (mate is Mate2)
+                //Dies at level 1 here
+                foreach (object mate in mates)
                 {
-                    Mate2 swMate = (Mate2)mate;
-                    int entityCount = swMate.GetMateEntityCount();
-                    for (int i = 0; i < entityCount; i++)
+                    if (mate is Mate2)
                     {
-                        MateEntity2 entity = swMate.MateEntity(i);
-                        bool alreadyFound = entity.ReferenceComponent == comp || matedComponents.Contains(entity.ReferenceComponent);
-                        if (!alreadyFound)
+                        Mate2 swMate = (Mate2)mate;
+                        int type = swMate.Type;
+                        int entityCount = swMate.GetMateEntityCount();
+                        for (int i = 0; i < entityCount; i++)
                         {
-                            matedComponents.Add(entity.ReferenceComponent);
-                            Link.Children.Add(createLinkFromAttachedLinks(entity.ReferenceComponent, matedComponents, level + 1));
+                            MateEntity2 entity = swMate.MateEntity(i);
+                            int t = entity.ReferenceType2;
+                            IComponent2 entityComponent = default(IComponent2);
+
+                            if (entity.ReferenceComponent != null)
+                            {
+                                entityComponent = entity.ReferenceComponent;
+                            }
+                            if (entityComponent != null)
+                            {
+                                ModelDoc2 model = entityComponent.GetModelDoc2();
+                                bool alreadyFound = entity.ReferenceComponent == comp || matedComponents.Contains(entity.ReferenceComponent);
+                                if (!alreadyFound)
+                                {
+                                    matedComponents.Add(entity.ReferenceComponent);
+                                    if (model.GetType() == (int)swDocumentTypes_e.swDocPART)
+                                    {
+                                        Link.Children.Add(createLinkFromAttachedLinks(entity.ReferenceComponent, matedComponents, level + 1));
+                                    }
+                                }
+                            }
                         }
+                    }
+                    else if (mate is MateInPlace)
+                    {
+                        int c = 1;
                     }
                 }
             }
 
-            Link.SWComponent = comp;
             return Link;
+        }
+
+        public link createBaseComponent(IComponent2 component, List<IComponent2> matedComponents, int level)
+        {
+            link Link;
+            ModelDoc2 model = component.GetModelDoc2();
+
+            IComponent2 parentComp = findParent(component.GetChildren(), level + 1);
+            Link = getLinkFromPartModel(parentComp.GetModelDoc2());
+            IComponent2 parentAssy = parentComp.GetParent();
+
+            Link.Children.AddRange(createLinksFromMatedComponents(parentComp, model, matedComponents, level));
+            return Link;
+        }
+
+        public link createBaseComponent(ModelDoc2 model)
+        {
+            link Link;
+            List<IComponent2> matedComponents = new List<IComponent2>();
+            if (model.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                AssemblyDoc assy = (AssemblyDoc)model;
+                IComponent2 parentComp = findParent(assy.GetComponents(false), 0);
+                Link = getLinkFromPartModel(parentComp.GetModelDoc2());
+                Link.Children.AddRange(createLinksFromMatedComponents(parentComp, model, matedComponents, 0));
+            }
+            else
+            {
+                Link = getLinkFromPartModel(model);
+            }
+            IComponent2 comp = Link.SWComponent;
+            int SWComponentLevel = Link.SWComponentLevel;
+            while (SWComponentLevel > 0)
+            {
+                IComponent2 parentComp = comp.GetParent();
+                ModelDoc2 parentDoc = parentComp.GetModelDoc2();
+                Link.Children.AddRange(createLinksFromMatedComponents(comp, parentDoc, matedComponents, SWComponentLevel));
+                SWComponentLevel--;
+            }
+            return Link;
+        }
+
+        public List<link> createLinksFromMatedComponents(IComponent2 component, ModelDoc2 parentModel, List<IComponent2> matedComponents, int level)
+        {
+            List<link> links = new List<link>();
+            AssemblyDoc parentAssy = (AssemblyDoc)parentModel;
+            ModelDoc2 model = component.GetModelDoc2();
+            int errors = 0;
+            iSwApp.ActivateDoc3(parentModel.GetTitle() + ".sldasm", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
+
+            IComponent2 componentNew = parentAssy.GetComponentByName(component.Name2);
+            object[] mates = componentNew.GetMates();
+            if (mates != null)
+            {
+                foreach (object mate in mates)
+                {
+                    if (mate is Mate2)
+                    {
+                        Mate2 swMate = (Mate2)mate;
+                        for (int i = 0; i < swMate.GetMateEntityCount(); i++)
+                        {
+                            MateEntity2 entity = swMate.MateEntity(i);
+                            IComponent2 entityComponent = default(IComponent2);
+                            if (entity.ReferenceComponent != null)
+                            {
+                                entityComponent = entity.ReferenceComponent;
+                            }
+                            if (entityComponent != null)
+                            {
+                                ModelDoc2 entitymodel = entityComponent.GetModelDoc2();
+                                if (!matedComponents.Contains(entity.ReferenceComponent))
+                                {
+                                    matedComponents.Add(entity.ReferenceComponent);
+                                    if (model.GetType() == (int)swDocumentTypes_e.swDocPART)
+                                    {
+                                        link childLink = getLinkFromPartModel(model);
+                                        
+                                        childLink.Children.AddRange(createLinksFromMatedComponents(entityComponent, entityComponent.GetParent().GetModelDoc2(),matedComponents, level + 1));
+                                        links.Add(childLink);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            iSwApp.ActiveDoc.Close();
+            return links;
         }
 
         public link createSparseBranchFromComponents(IComponent2 comp, int level)
