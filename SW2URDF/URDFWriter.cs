@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
+using System.Text;
 
 namespace SW2URDF
 {
@@ -22,6 +23,8 @@ namespace SW2URDF
         public URDFWriter(string savePath)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Encoding = new UTF8Encoding(false);
+            settings.OmitXmlDeclaration = true;
             settings.Indent = true;
             settings.NewLineOnAttributes = true;
             writer = XmlWriter.Create(savePath, settings);                       
@@ -96,7 +99,7 @@ namespace SW2URDF
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("link");
-            writer.WriteAttributeString("name", "link_" + uniqueName);
+            writer.WriteAttributeString("name", uniqueName);
 
             Inertial.writeURDF( writer);
             Visual.writeURDF( writer);
@@ -478,6 +481,7 @@ namespace SW2URDF
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("material");
+            writer.WriteAttributeString("name", name);
 
             Color.writeURDF( writer);
             Texture.writeURDF( writer);

@@ -12,7 +12,13 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra;
 using System.Numerics;
 
-namespace MatrixOPS
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swpublished;
+using SolidWorks.Interop.swconst;
+using SolidWorksTools;
+using SolidWorksTools.File;
+
+namespace SW2URDF
 {
     public class ops
     {
@@ -70,7 +76,6 @@ namespace MatrixOPS
             v2.CopyTo(vec, 0, v1.Count, v2.Count);
             return vec;
         }
-
         public Vector vectorCat(Vector v1, Vector v2, Vector v3, Vector v4)
         {
             Vector vec = new DenseVector(v1.Count + v2.Count + v3.Count + v4.Count);
@@ -80,6 +85,7 @@ namespace MatrixOPS
             v4.CopyTo(vec, 0, v1.Count + v2.Count + v3.Count, v4.Count);
             return vec;
         }
+
         // Calculates the row reduced echelon form of a matrix. It really sucks that math.net numerics doesn't include this as a builtin function
         // 6/28. Now I know why... It's difficult to write one that can do it with floating point precision. So this one currently is broken
 
@@ -211,6 +217,8 @@ namespace MatrixOPS
         //}
 
         // This set of methods finds the bottom-most one in a column vector from a matrix.
+
+
         public int findLeadingOneinVector(Vector v)
         {
             return findLeadingOneinVector(v, 0, v.Count);
@@ -428,7 +436,14 @@ namespace MatrixOPS
                 return -1;
             }
         }
-        public double[] getRPYFromMatrix(Matrix<double> m)
+
+        public double[] getXYZ(Matrix<double> m)
+        {
+            double[] XYZ = new double[3];
+            XYZ[0] = m[0, 3]; XYZ[1] = m[1, 3]; XYZ[2] = m[2, 3];
+            return XYZ;
+        }
+        public double[] getRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
             roll = Math.Atan2(m[1, 0], m[0, 0]);
@@ -436,5 +451,52 @@ namespace MatrixOPS
             yaw = Math.Atan2(m[2,1], m[2,2]);
             return new double[] {roll, pitch, yaw};
         }
+        public double[] getRPY(MathTransform transform)
+        {
+            Matrix m = getRotationMatrix(transform);
+            return getRPY(m);
+        }
+        public Matrix<double> getRotation(double[] RPY)
+        {
+            Matrix<double> R1 = DenseMatrix.Identity(4);
+            Matrix<double> R2 = DenseMatrix.Identity(4);
+            Matrix<double> R3 = DenseMatrix.Identity(4);
+
+            R1[0,0] = Math.Cos(RPY[0]); R1[0,1] = -Math.Sin(RPY[0]); R1[1,0] = Math.Sin(RPY[0]); R1[1,1] = Math.Cos(RPY[0]);
+            R2[0,0] = Math.Cos(RPY[1]); R2[0,2] = Math.Sin(RPY[1]); R2[2,0] = -Math.Sin(RPY[1]); R2[2,2] = Math.Cos(RPY[1]);
+            R3[1,1] = Math.Cos(RPY[2]); R3[1,2] = -Math.Sin(RPY[2]); R3[2,1] = Math.Sin(RPY[2]); R3[2,2] = Math.Cos(RPY[2]);
+
+            return R1 * R2 * R3;
+        }
+        public Matrix<double> getTranslation(double[] XYZ)
+        {
+            Matrix<double> m = DenseMatrix.Identity(4);
+            m[0, 3] = XYZ[0]; m[1, 3] = XYZ[1]; m[2, 3] = XYZ[2];
+            return m;
+        }
+        public Matrix<double> getTransformation(double[] XYZ, double[] RPY)
+        {
+            Matrix<double> translation = getTranslation(XYZ);
+            Matrix<double> rotation = getRotation(RPY);
+
+            return rotation * translation;
+        }
+        public Matrix getRotationMatrix(MathTransform transform)
+        {
+            var rot = new DenseMatrix(3);
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    rot.At(i, j, transform.ArrayData[i + 3 * j]);
+            return rot;
+        }
+
+        public Matrix<double> getTransformation(Vector<double> translationVector, Vector<double> rotationVector, double angle)
+        {
+            Matrix<double> transform = DenseMatrix.Identity(4);
+
+            return transform;
+        }
+
+            
     }
 }

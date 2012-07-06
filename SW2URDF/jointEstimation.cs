@@ -17,7 +17,6 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra;
 using System.Numerics;
 //using MathNet.Numerics.LinearAlgebra.Complex;
-using MatrixOPS;
 
 namespace SW2URDF
 {
@@ -191,7 +190,7 @@ namespace SW2URDF
 
                 //origin estimitation is not correct here!
                 Joint.Origin.XYZ = rotationPositions.Row(rotationIndex).ToArray();
-                Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
+                Joint.Origin.RPY = OPS.getRPY(getRotationMatrix(child.Transform2));
             }
             // If the rotation axes are fully constrained but there is one dominant translation axis, it's a prismatic joint
             else if (translationIndex >= 0 && rotationIndex == -2)
@@ -204,7 +203,7 @@ namespace SW2URDF
 
                 //Origin Estimation is Not correct here
                 Joint.Origin.XYZ = translationPositions.Row(translationIndex).ToArray();
-                Joint.Origin.RPY = OPS.getRPYFromMatrix(getRotationMatrix(child.Transform2));
+                Joint.Origin.RPY = OPS.getRPY(getRotationMatrix(child.Transform2));
             }
             else
             {
