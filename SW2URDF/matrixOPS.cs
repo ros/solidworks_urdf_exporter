@@ -443,6 +443,12 @@ namespace SW2URDF
             XYZ[0] = m[0, 3]; XYZ[1] = m[1, 3]; XYZ[2] = m[2, 3];
             return XYZ;
         }
+        public double[] getXYZ(MathTransform transform)
+        {
+            double[] XYZ = new double[3];
+            XYZ[0] = transform.ArrayData[9]; XYZ[1] = transform.ArrayData[10]; XYZ[2] = transform.ArrayData[11];
+            return XYZ;
+        }
         public double[] getRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
@@ -478,8 +484,7 @@ namespace SW2URDF
         {
             Matrix<double> translation = getTranslation(XYZ);
             Matrix<double> rotation = getRotation(RPY);
-
-            return rotation * translation;
+            return translation * rotation;
         }
         public Matrix getRotationMatrix(MathTransform transform)
         {
@@ -495,6 +500,25 @@ namespace SW2URDF
             Matrix<double> transform = DenseMatrix.Identity(4);
 
             return transform;
+        }
+        public Matrix<double> getTransformation(MathTransform transform)
+        {
+            Matrix<double> m = new DenseMatrix(4);
+            m[0, 0] = transform.ArrayData[0];
+            m[0, 1] = transform.ArrayData[1];
+            m[0, 2] = transform.ArrayData[2];
+            m[1, 0] = transform.ArrayData[3];
+            m[1, 1] = transform.ArrayData[4];
+            m[1, 2] = transform.ArrayData[5];
+            m[2, 0] = transform.ArrayData[6];
+            m[2, 1] = transform.ArrayData[7];
+            m[2, 2] = transform.ArrayData[8];
+
+            m[0, 3] = transform.ArrayData[9];
+            m[1, 3] = transform.ArrayData[10];
+            m[2, 3] = transform.ArrayData[11];
+            m[3, 3] = transform.ArrayData[12];
+            return m;
         }
 
             

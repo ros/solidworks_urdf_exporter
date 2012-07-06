@@ -489,12 +489,46 @@ namespace SW2URDF
         public void adjustJointTransforms(link Link, Matrix<double> cumulativeTransform)
         {
             Vector<double> Axis = new DenseVector(new double[4]{Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0});
+            double[] XYZ = OPS.getXYZ(Link.SWComponent.Transform2);
+            Matrix<double> meshTransform = OPS.getTransformation(Link.SWComponent.Transform2);
+            Vector<double> Point = new DenseVector(new double[] { Link.Joint.Origin.X, Link.Joint.Origin.Y, Link.Joint.Origin.Z, 1 });
+            Vector<double> Origin = new DenseVector(new double[]{XYZ[0], XYZ[1], XYZ[2], 1});
             Matrix<double> newTransform = OPS.getTransformation(Link.Joint.Origin.XYZ, Link.Joint.Origin.RPY);
-            Matrix<double> localTransform = cumulativeTransform.Inverse() * newTransform;
+            Matrix<double> localTransform = newTransform * cumulativeTransform.Inverse();
             Axis = newTransform.Inverse() * Axis;
+            Point = cumulativeTransform.Inverse() * Point;
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-            Link.Joint.Origin.XYZ = OPS.getXYZ(localTransform);
-            Link.Joint.Origin.RPY = OPS.getRPY(localTransform);
+            
+            Origin = newTransform.Inverse() * Origin;
+            Link.Joint.Origin.XYZ = new double[] { Point[0], Point[1], Point[2] };
+
+
+
+            double[] xyz_mesh = OPS.getXYZ(meshTransform);
+            double[] rpy_mesh = OPS.getRPY(meshTransform);
+            meshTransform = meshTransform * newTransform.Inverse();
+            double[] xyz_mafter = OPS.getXYZ(meshTransform);
+            double[] rpy_mafter = OPS.getRPY(meshTransform);
+
+            double[] rpy_new = OPS.getRPY(newTransform);
+            double[] rpy_cum = OPS.getRPY(cumulativeTransform);
+            double[] rpy_cum_inv = OPS.getRPY(cumulativeTransform.Inverse());
+            double[] xyz_new = OPS.getXYZ(newTransform);
+            double[] xyz_cum = OPS.getXYZ(cumulativeTransform);
+            double[] xyz_cum_inv = OPS.getXYZ(cumulativeTransform.Inverse());
+            Link.Joint.Origin.RPY = OPS.getRPY(meshTransform);
+
+            double[] data1 = Link.SWComponent.Transform2.ArrayData;
+            Matrix<double> linkTransform = OPS.getTransformation(Link.SWComponent.Transform2);
+            Matrix<double> localLinkTransform = linkTransform * newTransform.Inverse();
+
+
+            Link.Visual.Origin.XYZ = OPS.getXYZ(meshTransform);
+            Link.Visual.Origin.RPY = OPS.getRPY(meshTransform);
+            Link.Inertial.Origin.XYZ = Link.Visual.Origin.XYZ;
+            Link.Inertial.Origin.RPY = Link.Visual.Origin.RPY;
+            Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
+            Link.Collision.Origin.RPY = Link.Visual.Origin.RPY;
 
             foreach (link child in Link.Children)
             {
@@ -585,7 +619,7 @@ namespace SW2URDF
                     Joint.type = "continuous";
                     Joint.Axis.XYZ = RDir1.ArrayData;
                     Joint.Origin.XYZ = RPoint1.ArrayData;
-                    MathTransform transform = child.Transform2;
+                    MathTransform transform = parent.Transform2;
                     Joint.Origin.RPY = OPS.getRPY(transform);
                 }
                 else if (L1Status == 1)
@@ -594,7 +628,7 @@ namespace SW2URDF
                     Joint.Axis.XYZ = LDir1.ArrayData;
                     MathTransform transform = child.Transform2;
                     Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                    Joint.Origin.RPY = OPS.getRPY(transform);
+                    Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
                 }
             }
             else
@@ -602,7 +636,7 @@ namespace SW2URDF
                 Joint.type = "fixed";
                 MathTransform transform = child.Transform2;
                 Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                Joint.Origin.RPY = OPS.getRPY(transform);
+                Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
             }
 
             //[TODO] joint comp here...
@@ -627,7 +661,9 @@ namespace SW2URDF
             setSTLExportPreferences();
 
             //Saving part as STL mesh
+            hideComponents(mRobot.BaseLink);
             string filename = exportFiles(mRobot.BaseLink, package);
+            showComponents(mRobot.BaseLink);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
 
@@ -655,25 +691,51 @@ namespace SW2URDF
                     System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
                 }
             }
-            string meshFileName = package.MeshesDirectory + Link.name + ".STL";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + Link.name + ".STL";
+
+            string linkName = Link.uniqueName.Replace('/', '_');
+            string meshFileName = package.MeshesDirectory + linkName + ".STL";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
             int errors = 0;
             int warnings = 0;
 
             if (!System.IO.File.Exists(windowsMeshFileName))
             {
-                ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
+                Link.SWComponent.Select(false);
+                ActiveSWModel.ShowComponent2();
+                //ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
 
-                iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
-                modeldoc = iSwApp.IActiveDoc2;
+                //iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
+                //modeldoc = iSwApp.IActiveDoc2;
                 int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                modeldoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-                iSwApp.CloseDoc(Link.name + ".sldprt");
+                ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+                //iSwApp.CloseDoc(Link.name + ".sldprt");
+                Link.SWComponent.Select(false);
+                ActiveSWModel.HideComponent2();
 
                 correctSTLMesh(windowsMeshFileName);
             }
             return meshFileName;
+        }
+        public void selectComponents(link Link)
+        {
+            Link.SWComponent.Select(true);
+            foreach (link child in Link.Children)
+            {
+                selectComponents(child);
+            }
+        }
+        public void hideComponents(link Link)
+        {
+            selectComponents(Link);
+            ActiveSWModel.HideComponent2();
+            
+        }
+        public void showComponents(link Link)
+        {
+            selectComponents(Link);
+            ActiveSWModel.ShowComponent2();
+            
         }
 
         public void correctSTLMesh(string filename)
@@ -775,6 +837,7 @@ namespace SW2URDF
         public void setSTLExportPreferences()
         {
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, true);
+            iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive, true);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits, 2);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Coarse);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLShowInfoOnSave, false);
