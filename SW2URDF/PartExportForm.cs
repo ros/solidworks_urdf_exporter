@@ -237,6 +237,8 @@ namespace SW2URDF
             double value;
             Exporter.mPackageName = Path.GetFileName(textBox_save_as.Text);
             Exporter.mSavePath = Path.GetDirectoryName(textBox_save_as.Text);
+            Exporter.mRobot.BaseLink.name = Exporter.mPackageName;
+            Exporter.mRobot.BaseLink.uniqueName = Exporter.mPackageName;
             Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;

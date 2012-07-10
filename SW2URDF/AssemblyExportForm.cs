@@ -86,37 +86,37 @@ namespace SW2URDF
 
         private void button_select_Click(object sender, EventArgs e)
         {
-            foreach (LinkNode node in treeView_linktree.Nodes)
-            {
-                checkNode(node);
-            }
+            //foreach (LinkNode node in treeView_linktree.Nodes)
+            //{
+            //    checkNode(node);
+            //}
         }
 
-        private void checkNode(LinkNode node)
-        {
-            node.Checked = true;
-            foreach (LinkNode child in node.Nodes)
-            {
-                checkNode(child);
-            }
-        }
+        //private void checkNode(LinkNode node)
+        //{
+        //    node.Checked = true;
+        //    foreach (LinkNode child in node.Nodes)
+        //    {
+        //        checkNode(child);
+        //    }
+        //}
 
         private void button_deselect_Click(object sender, EventArgs e)
         {
-            foreach (LinkNode node in treeView_linktree.Nodes)
-            {
-                uncheckNode(node);
-            }
+        //    foreach (LinkNode node in treeView_linktree.Nodes)
+        //    {
+        //        uncheckNode(node);
+        //    }
         }
 
-        private void uncheckNode(LinkNode node)
-        {
-            node.Checked = false;
-            foreach (LinkNode child in node.Nodes)
-            {
-                uncheckNode(child);
-            }
-        }
+        //private void uncheckNode(LinkNode node)
+        //{
+        //    node.Checked = false;
+        //    foreach (LinkNode child in node.Nodes)
+        //    {
+        //        uncheckNode(child);
+        //    }
+        //}
 
         private void treeView_linktree_Delete(object sender, KeyEventArgs e)
         {
@@ -495,10 +495,10 @@ namespace SW2URDF
             baseNode.Name = baseLink.name;
             baseNode.Text = baseLink.name;
             baseNode.Link = baseLink;
-            if (tree == treeView_linktree)
-            {
-                baseNode.Checked = true;
-            }
+            //if (tree == treeView_linktree)
+            //{
+            //    baseNode.Checked = true;
+            //}
             foreach (link child in baseLink.Children)
             {
                 baseNode.Nodes.Add(createLinkNodeFromLink(child, tree == treeView_linktree));
@@ -529,10 +529,10 @@ namespace SW2URDF
                 {
                     AssemblyDoc parentDoc = (AssemblyDoc)parentModel;
                     parentDoc.FixComponent();
-                    if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
-                    {
-                        node.Checked = true;
-                    }
+                    //if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
+                    //{
+                    //    node.Checked = true;
+                    //}
                     parentDoc.UnfixComponent();
                 }
             }
@@ -546,11 +546,11 @@ namespace SW2URDF
             {
                 if (node.Level == 0)
                 {
-                    if (tree != treeView_linktree || node.Checked)
-                    {
+                    //if (tree != treeView_linktree || node.Checked)
+                    //{
                         link BaseLink = createLinkFromLinkNode(node, tree == treeView_linktree);
                         Robot.BaseLink = BaseLink;
-                    }
+                    //}
                 }
             }
             Robot.name = Exporter.mRobot.name;
@@ -563,11 +563,11 @@ namespace SW2URDF
             Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-                if (!checkChecks || child.Checked)
-                {
+                //if (!checkChecks || child.Checked)
+                //{
                     link childLink = createLinkFromLinkNode(child, checkChecks);
                     Link.Children.Add(childLink); // Recreates the children of each embedded link
-                }
+                //}
             }
             return Link;
         }

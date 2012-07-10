@@ -629,6 +629,8 @@ namespace SW2URDF
         { get; set; }
         public safety_controller Safety
         { get; set; }
+        public string CoordinateSystemName
+        { get; set; }
 
         public joint()
         {

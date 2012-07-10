@@ -18,6 +18,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra;
 using System.Numerics;
 
+
 namespace SW2URDF
 {
     public class SW2URDFExporter
@@ -41,6 +42,7 @@ namespace SW2URDF
         { get; set; }
         ModelDoc2 ActiveSWModel;
         MathUtility swMath;
+        private string referenceSketchName;
         #endregion
 
         public SW2URDFExporter(ISldWorks iSldWorksApp)
@@ -479,7 +481,8 @@ namespace SW2URDF
         #region Joint methods
         public void createJoints()
         {
-            mRobot.BaseLink = createChildLinks(mRobot.BaseLink);
+            referenceSketchName = setup3DSketch();
+            mRobot.BaseLink = createChildJoints(mRobot.BaseLink);
             foreach (link child in mRobot.BaseLink.Children)
             {
                 adjustJointTransforms(child, DenseMatrix.Identity(4));
@@ -488,17 +491,17 @@ namespace SW2URDF
 
         public void adjustJointTransforms(link Link, Matrix<double> cumulativeTransform)
         {
-            Vector<double> Axis = new DenseVector(new double[4]{Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0});
+            Vector<double> Axis = new DenseVector(new double[4] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
             double[] XYZ = OPS.getXYZ(Link.SWComponent.Transform2);
             Matrix<double> meshTransform = OPS.getTransformation(Link.SWComponent.Transform2);
             Vector<double> Point = new DenseVector(new double[] { Link.Joint.Origin.X, Link.Joint.Origin.Y, Link.Joint.Origin.Z, 1 });
-            Vector<double> Origin = new DenseVector(new double[]{XYZ[0], XYZ[1], XYZ[2], 1});
+            Vector<double> Origin = new DenseVector(new double[] { XYZ[0], XYZ[1], XYZ[2], 1 });
             Matrix<double> newTransform = OPS.getTransformation(Link.Joint.Origin.XYZ, Link.Joint.Origin.RPY);
             Matrix<double> localTransform = newTransform * cumulativeTransform.Inverse();
             Axis = newTransform.Inverse() * Axis;
             Point = cumulativeTransform.Inverse() * Point;
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-            
+
             Origin = newTransform.Inverse() * Origin;
             Link.Joint.Origin.XYZ = new double[] { Point[0], Point[1], Point[2] };
 
@@ -536,15 +539,15 @@ namespace SW2URDF
             }
 
 
-           // return Link.Joint;
+            // return Link.Joint;
         }
 
-        public link createChildLinks(link parent)
+        public link createChildJoints(link parent)
         {
             foreach (link child in parent.Children)
             {
                 child.Joint = createJointFromLinks(parent, child);
-                createChildLinks(child);
+                createChildJoints(child);
             }
             return parent;
         }
@@ -558,6 +561,9 @@ namespace SW2URDF
             //joint Joint = estimation.estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent, true);
             joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
+            object[] sketchEntities = addSketchGeometry(Joint.Origin);
+            ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], (SketchSegment)sketchEntities[3]);
+
 
             Joint.Parent.name = parent.uniqueName;
             Joint.Child.name = child.uniqueName;
@@ -579,6 +585,34 @@ namespace SW2URDF
             Joint.Safety.k_position = 0;
 
             return Joint;
+        }
+
+        public string setup3DSketch()
+        {
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            ActiveSWModel.SketchManager.CreatePoint(0, 0, 0);
+            IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            sketch.Name = mRobot.name + "_URDF_reference";
+            return sketch.Name;
+        }
+
+        public object[] addSketchGeometry(origin Origin)
+        {
+            ActiveSWModel.SelectByID(referenceSketchName, "SKETCH", 0, 0, 0);
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            Matrix<double> transform = OPS.getRotation(Origin.RPY);
+            Matrix<double> Axes = DenseMatrix.Identity(4);
+            Matrix<double> tA = transform * Axes;
+            object OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, Origin.Y, Origin.Z);
+            SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0]);
+            XAxis.ConstructionGeometry = true;
+            SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1]);
+            YAxis.ConstructionGeometry = true;
+            SketchSegment ZAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 2], Origin.Y + tA[1, 2], Origin.Z + tA[2, 2]);
+            ZAxis.ConstructionGeometry = true;
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            return new object[] { OriginPoint, XAxis, YAxis, ZAxis };
         }
 
         public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child)
@@ -639,9 +673,31 @@ namespace SW2URDF
                 Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
             }
 
-            //[TODO] joint comp here...
+            //Joint.CoordinateSystemName = createReferenceCoordinateSystem(Joint.Origin, Joint.Parent.name, Joint.Child.name);
+
 
             return Joint;
+        }
+
+        public string createReferenceCoordinateSystem(origin Origin, string Parent, string Child)
+        {
+            //This creates the reference coordinate system for each joint
+            IFeatureManager featureMgr = ActiveSWModel.FeatureManager;
+            ActiveSWModel.Extension.SelectByID("Front Plane", "PLANE", 0, 0, 0, false, 0, null);
+            IFeature offsetFront = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.Z, 0, 0, 0, 0);
+            ActiveSWModel.Extension.SelectByID("Right Plane", "PLANE", 0, 0, 0, false, 0, null);
+            IFeature offsetRight = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.X, 0, 0, 0, 0);
+            ActiveSWModel.Extension.SelectByID("Top Plane", "PLANE", 0, 0, 0, false, 0, null);
+            IFeature offsetTop = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.Y, 0, 0, 0, 0);
+
+            ActiveSWModel.Extension.SelectByID(offsetFront.Name, "PLANE", 0, 0, 0, false, 0, null);
+            ActiveSWModel.Extension.SelectByID(offsetRight.Name, "PLANE", 0, 0, 0, false, 0, null);
+            //ActiveSWModel.Extension.SelectByID(offsetTop.Name, "PLANE", 0,0,0, false, 0, null);
+            RefPoint OriginPoint = featureMgr.InsertReferencePoint((int)swRefPointType_e.swRefPointIntersection, 0, 0, 1);
+
+            IFeature refCoordinates = featureMgr.CreateCoordinateSystem(OriginPoint, offsetRight, offsetTop, offsetFront);
+            refCoordinates.Name = "URDF_joint_" + Parent + "_to_" + Child;
+            return refCoordinates.Name;
         }
         #endregion
 
@@ -708,6 +764,14 @@ namespace SW2URDF
                 //iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
                 //modeldoc = iSwApp.IActiveDoc2;
                 int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
+                {
+                    setSTLCoordinateSystem("");
+                }
+                else
+                {
+                    setSTLCoordinateSystem(Link.Joint.CoordinateSystemName);
+                }
                 ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
                 //iSwApp.CloseDoc(Link.name + ".sldprt");
                 Link.SWComponent.Select(false);
@@ -729,13 +793,13 @@ namespace SW2URDF
         {
             selectComponents(Link);
             ActiveSWModel.HideComponent2();
-            
+
         }
         public void showComponents(link Link)
         {
             selectComponents(Link);
             ActiveSWModel.ShowComponent2();
-            
+
         }
 
         public void correctSTLMesh(string filename)
@@ -802,6 +866,7 @@ namespace SW2URDF
             int warnings = 0;
 
             //Saving part as STL mesh
+
             ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = meshFileName;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = meshFileName;
@@ -851,6 +916,11 @@ namespace SW2URDF
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, mSTLQuality);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLShowInfoOnSave, mshowInfo);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLPreview, mSTLPreview);
+        }
+
+        public void setSTLCoordinateSystem(string name)
+        {
+            iSwApp.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, name);
         }
         #endregion
 

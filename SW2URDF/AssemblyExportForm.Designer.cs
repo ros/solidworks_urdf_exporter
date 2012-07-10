@@ -247,7 +247,6 @@
             this.treeView_linktree.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView_linktree.CheckBoxes = true;
             this.treeView_linktree.Location = new System.Drawing.Point(20, 175);
             this.treeView_linktree.Name = "treeView_linktree";
             this.treeView_linktree.Size = new System.Drawing.Size(267, 472);
