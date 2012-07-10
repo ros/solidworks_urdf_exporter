@@ -526,8 +526,10 @@ namespace SW2URDF
             Matrix<double> localLinkTransform = linkTransform * newTransform.Inverse();
 
 
-            Link.Visual.Origin.XYZ = OPS.getXYZ(meshTransform);
-            Link.Visual.Origin.RPY = OPS.getRPY(meshTransform);
+            Link.Visual.Origin.XYZ = new double[] {0,0,0};
+            Link.Visual.Origin.RPY = new double[] { 0, 0, 0 };
+
+            //Inertial needs to be transformed assuming visual is a 0,0,0
             Link.Inertial.Origin.XYZ = Link.Visual.Origin.XYZ;
             Link.Inertial.Origin.RPY = Link.Visual.Origin.RPY;
             Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
@@ -555,15 +557,12 @@ namespace SW2URDF
         public joint createJointFromLinks(link parent, link child)
         {
             object[] mates = parent.SWComponent.GetMates();
-
-
-            //jointEstimation estimation = new jointEstimation(iSwApp);
-            //joint Joint = estimation.estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent, true);
             joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
             object[] sketchEntities = addSketchGeometry(Joint.Origin);
-            ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], (SketchSegment)sketchEntities[3]);
-
+            IFeature coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], (SketchSegment)sketchEntities[3]);
+            coordinates.Name = Joint.name;
+            Joint.CoordinateSystemName = coordinates.Name;
 
             Joint.Parent.name = parent.uniqueName;
             Joint.Child.name = child.uniqueName;
@@ -678,27 +677,6 @@ namespace SW2URDF
 
             return Joint;
         }
-
-        public string createReferenceCoordinateSystem(origin Origin, string Parent, string Child)
-        {
-            //This creates the reference coordinate system for each joint
-            IFeatureManager featureMgr = ActiveSWModel.FeatureManager;
-            ActiveSWModel.Extension.SelectByID("Front Plane", "PLANE", 0, 0, 0, false, 0, null);
-            IFeature offsetFront = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.Z, 0, 0, 0, 0);
-            ActiveSWModel.Extension.SelectByID("Right Plane", "PLANE", 0, 0, 0, false, 0, null);
-            IFeature offsetRight = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.X, 0, 0, 0, 0);
-            ActiveSWModel.Extension.SelectByID("Top Plane", "PLANE", 0, 0, 0, false, 0, null);
-            IFeature offsetTop = featureMgr.InsertRefPlane((int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance, Origin.Y, 0, 0, 0, 0);
-
-            ActiveSWModel.Extension.SelectByID(offsetFront.Name, "PLANE", 0, 0, 0, false, 0, null);
-            ActiveSWModel.Extension.SelectByID(offsetRight.Name, "PLANE", 0, 0, 0, false, 0, null);
-            //ActiveSWModel.Extension.SelectByID(offsetTop.Name, "PLANE", 0,0,0, false, 0, null);
-            RefPoint OriginPoint = featureMgr.InsertReferencePoint((int)swRefPointType_e.swRefPointIntersection, 0, 0, 1);
-
-            IFeature refCoordinates = featureMgr.CreateCoordinateSystem(OriginPoint, offsetRight, offsetTop, offsetFront);
-            refCoordinates.Name = "URDF_joint_" + Parent + "_to_" + Child;
-            return refCoordinates.Name;
-        }
         #endregion
 
         #region Export Methods
@@ -759,10 +737,7 @@ namespace SW2URDF
             {
                 Link.SWComponent.Select(false);
                 ActiveSWModel.ShowComponent2();
-                //ModelDoc2 modeldoc = Link.SWComponent.GetModelDoc2();
 
-                //iSwApp.ActivateDoc3(Link.name + ".sldprt", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
-                //modeldoc = iSwApp.IActiveDoc2;
                 int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                 if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
                 {
