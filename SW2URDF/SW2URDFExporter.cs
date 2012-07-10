@@ -23,32 +23,33 @@ namespace SW2URDF
 {
     public class SW2URDFExporter
     {
-        #region Local variables
+        #region class variables
         ISldWorks iSwApp = null;
         ops OPS;
+        private bool mBinary;
+        private bool mshowInfo;
+        private bool mSTLPreview;
+        private int mSTLUnits;
+        private int mSTLQuality;
+        private string referenceSketchName;
 
+        ModelDoc2 ActiveSWModel;
+        MathUtility swMath;
+        
         public robot mRobot
         { get; set; }
         public string mPackageName
         { get; set; }
         public string mSavePath
         { get; set; }
-        private bool mBinary;
-        private int mSTLUnits;
-        private int mSTLQuality;
-        private bool mshowInfo;
-        private bool mSTLPreview;
         public List<link> mLinks
         { get; set; }
-        ModelDoc2 ActiveSWModel;
-        MathUtility swMath;
-        private string referenceSketchName;
+
         #endregion
 
         public SW2URDFExporter(ISldWorks iSldWorksApp)
         {
             iSwApp = iSldWorksApp;
-            ActiveSWModel = default(ModelDoc2);
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.GetTitle();
@@ -56,35 +57,71 @@ namespace SW2URDF
             OPS = new ops();
         }
 
-        #region SW to Robot methods
+        #region SW to Robot and link methods
         public void createRobotFromActiveModel()
         {
             mRobot = new robot();
             mRobot.name = ActiveSWModel.GetTitle();
 
-            int modelType = ActiveSWModel.GetType();
-            if (modelType == (int)swDocumentTypes_e.swDocASSEMBLY)
-            {
-                mRobot.BaseLink = getBaseLinkFromActiveModel();
-            }
-            else if (modelType == (int)swDocumentTypes_e.swDocPART)
-            {
-                mRobot.BaseLink = getLinkFromActiveModel();
-            }
+            //Each Robot contains a single base link, build this link
+            mRobot.BaseLink = getBaseLinkFromActiveModel();
         }
 
         public link getBaseLinkFromActiveModel()
         {
-            return getBaseLinkFromAssy(ActiveSWModel);
+            if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY) // If the model is an Assembly
+            {
+                return getBaseLinkFromAssy(ActiveSWModel);
+            }
+            else if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
+            {
+                return getLinkFromPartModel(ActiveSWModel);
+            }
+            return null;
+        }
+
+        public link getLinkFromPartModel(ModelDoc2 swModel)
+        {
+            link Link = new link();
+            Link.name = swModel.GetTitle();
+
+
+            //Get link properties from SolidWorks part
+            IMassProperty swMass = swModel.Extension.CreateMassProperty();
+            Link.Inertial.Mass.Value = swMass.Mass;
+
+            Link.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+
+            double[] centerOfMass = swMass.CenterOfMass;
+            Link.Inertial.Origin.XYZ = centerOfMass;
+            Link.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
+            Link.Visual.Origin.XYZ = centerOfMass;
+            Link.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
+
+            Link.Collision.Origin.XYZ = centerOfMass;
+            Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
+
+            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
+            double[] values = swModel.MaterialPropertyValues;
+            Link.Visual.Material.Color.Red = values[0];
+            Link.Visual.Material.Color.Green = values[1];
+            Link.Visual.Material.Color.Blue = values[2];
+            Link.Visual.Material.Color.Alpha = 1.0 - values[7];
+            Link.Visual.Material.name = "material_" + Link.name;
+
+            return Link;
         }
 
         public link getBaseLinkFromAssy(ModelDoc2 swModel)
         {
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
+            // Getting the components (assemblies and parts, contained in this assembly)
             object[] varComp = swAssy.GetComponents(true);
 
             //For building tree through assembly hierachy (more robust)
             link baseLink = new link();
+
+            // Iterate through each component and create a 'sparse branch'
             foreach (IComponent2 comp in varComp)
             {
                 link sparseLink = createSparseBranchFromComponents(comp, 0);
@@ -93,203 +130,49 @@ namespace SW2URDF
                     baseLink.Children.Add(sparseLink);
                 }
             }
-
-            return assignParentLinks(baseLink, 0);
-            //link baseLink = assignParentLinks(sparseLink, 0);
-            ////For building tree through mate linkages (should give better results when it works)
-            //IComponent2 parent = findParent(varComp, 0);
-            //List<IComponent2> list = new List<IComponent2>();
-            //list.Add(parent);
-            //return createBaseComponent(swModel);
+            
+            //From this sparse link, promote the child links to the parent positions
+            return createDenseTree(baseLink, 0);
         }
 
         public link getLinkFromPartComp(object comp, int level)
         {
-            IComponent2 parentComp = (IComponent2)comp;
-            ModelDoc2 parentdoc = parentComp.GetModelDoc();
+            IComponent2 partComp = (IComponent2)comp;
+            ModelDoc2 partDoc = partComp.GetModelDoc();
             link Link;
 
-            if (parentdoc == null)
+            if (partDoc == null)
             {
-                throw new System.InvalidOperationException("Component " + parentComp.Name2 + " is null");
+                throw new System.InvalidOperationException("Component " + partComp.Name2 + " is null");
             }
 
-            Link = getLinkFromPartModel(parentdoc);
-            Link.SWComponent = parentComp;
+            // Build the link from the partdoc
+            Link = getLinkFromPartModel(partDoc);
+            Link.SWComponent = partComp;
             Link.SWComponentLevel = level;
-            Link.uniqueName = parentComp.Name2;
+            Link.uniqueName = partComp.Name2;
             return Link;
         }
-
-        public link createLinkFromAttachedLinks(IComponent2 comp, List<IComponent2> matedComponents, int level)
-        {
-            link Link = getLinkFromPartModel(comp.GetModelDoc2());
-            Link.SWComponent = comp;
-
-            object[] mates = comp.GetMates();
-            if (mates != null)
-            {
-                //Dies at level 1 here
-                foreach (object mate in mates)
-                {
-                    if (mate is Mate2)
-                    {
-                        Mate2 swMate = (Mate2)mate;
-                        int type = swMate.Type;
-                        int entityCount = swMate.GetMateEntityCount();
-                        for (int i = 0; i < entityCount; i++)
-                        {
-                            MateEntity2 entity = swMate.MateEntity(i);
-                            int t = entity.ReferenceType2;
-                            IComponent2 entityComponent = default(IComponent2);
-
-                            if (entity.ReferenceComponent != null)
-                            {
-                                entityComponent = entity.ReferenceComponent;
-                            }
-                            if (entityComponent != null)
-                            {
-                                ModelDoc2 model = entityComponent.GetModelDoc2();
-                                bool alreadyFound = entity.ReferenceComponent == comp || matedComponents.Contains(entity.ReferenceComponent);
-                                if (!alreadyFound)
-                                {
-                                    matedComponents.Add(entity.ReferenceComponent);
-                                    if (model.GetType() == (int)swDocumentTypes_e.swDocPART)
-                                    {
-                                        Link.Children.Add(createLinkFromAttachedLinks(entity.ReferenceComponent, matedComponents, level + 1));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (mate is MateInPlace)
-                    {
-                        int c = 1;
-                    }
-                }
-            }
-
-            return Link;
-        }
-
-        public link createBaseComponent(IComponent2 component, List<IComponent2> matedComponents, int level)
-        {
-            link Link;
-            ModelDoc2 model = component.GetModelDoc2();
-
-            IComponent2 parentComp = findParent(component.GetChildren(), level + 1);
-            Link = getLinkFromPartModel(parentComp.GetModelDoc2());
-            IComponent2 parentAssy = parentComp.GetParent();
-
-            Link.Children.AddRange(createLinksFromMatedComponents(parentComp, model, model, matedComponents, level));
-            return Link;
-        }
-
-        public link createBaseComponent(ModelDoc2 model)
-        {
-            link Link;
-            List<IComponent2> matedComponents = new List<IComponent2>();
-            if (model.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
-            {
-                AssemblyDoc assy = (AssemblyDoc)model;
-                IComponent2 parentComp = findParent(assy.GetComponents(false), 0);
-                Link = getLinkFromPartModel(parentComp.GetModelDoc2());
-                Link.Children.AddRange(createLinksFromMatedComponents(parentComp, model, model, matedComponents, 0));
-            }
-            else
-            {
-                Link = getLinkFromPartModel(model);
-            }
-            IComponent2 comp = Link.SWComponent;
-            int SWComponentLevel = Link.SWComponentLevel;
-            while (SWComponentLevel > 0)
-            {
-                IComponent2 parentComp = comp.GetParent();
-                ModelDoc2 parentDoc = parentComp.GetModelDoc2();
-                Link.Children.AddRange(createLinksFromMatedComponents(comp, parentDoc, model, matedComponents, SWComponentLevel));
-                SWComponentLevel--;
-            }
-            return Link;
-        }
-
-        public List<link> createLinksFromMatedComponents(IComponent2 component, ModelDoc2 parentModel, ModelDoc2 rootModel, List<IComponent2> matedComponents, int level)
-        {
-            List<link> links = new List<link>();
-            AssemblyDoc parentAssy = (AssemblyDoc)parentModel;
-
-            int errors = 0;
-            iSwApp.ActivateDoc3(parentModel.GetTitle() + ".sldasm", false, (int)swRebuildOnActivation_e.swUserDecision, ref errors);
-
-            string[] names = component.Name2.Split('/');
-            string componentName = "";
-            if (names[names.Length - 1] != "")
-            {
-                componentName = names[names.Length - 1];
-            }
-            else
-            {
-                componentName = component.Name2;
-            }
-            IComponent2 componentNew = parentAssy.GetComponentByName(componentName);
-            matedComponents.Add(componentNew);
-            ModelDoc2 model = componentNew.GetModelDoc2();
-
-            if (componentNew != null && model.GetType() == (int)swDocumentTypes_e.swDocPART)
-            {
-                object[] mates = componentNew.GetMates();
-
-                foreach (object mate in mates)
-                {
-                    if (mate is Mate2)
-                    {
-                        Mate2 swMate = (Mate2)mate;
-                        for (int i = 0; i < swMate.GetMateEntityCount(); i++)
-                        {
-                            MateEntity2 entity = swMate.MateEntity(i);
-                            ModelDoc2 entitymodel = entity.ReferenceComponent.GetModelDoc2();
-
-                            if (!(entity.ReferenceComponent == null || matedComponents.Contains(entity.ReferenceComponent) || entity.ReferenceComponent.IsRoot() || entity.ReferenceComponent.IsSuppressed()))
-                            {
-                                IComponent2 entityComp = entity.ReferenceComponent;
-                                matedComponents.Add(entity.ReferenceComponent);
-
-                                link childLink = getLinkFromPartModel(model);
-                                childLink.SWComponent = entity.ReferenceComponent;
-                                IComponent2 parentAssyComponent = entity.ReferenceComponent.GetParent();
-                                ModelDoc2 parentDoc;
-                                if (parentAssyComponent != null)
-                                {
-                                    parentDoc = parentAssyComponent.GetModelDoc2();
-                                }
-                                else
-                                {
-                                    parentDoc = parentModel;
-                                }
-                                List<link> childLinks = createLinksFromMatedComponents(entity.ReferenceComponent, parentDoc, rootModel, matedComponents, level);
-                                childLink.Children.AddRange(childLinks);
-                                links.Add(childLink);
-
-                            }
-
-                        }
-                    }
-                }
-            }
-            return links;
-        }
-
+    
+        // This method creates a 'sparse branch' where for temporary reasons, an assembly as assigned to the parent links
+        // Then each part component is a leaf of the branch, but are not set as parent links yet.
         public link createSparseBranchFromComponents(IComponent2 comp, int level)
         {
             link Link = new link();
+
+            //If the component is hidden or suppressed, it is not included in the tree.
             if (comp.IsHidden(true))
             {
                 return null;
             }
-            if (comp.IGetChildrenCount() == 0)
+
+            //If the component is a part, create the link from the part. Otherwise recur through this method
+            ModelDoc2 modelDoc = comp.GetModelDoc2();
+            if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
                 Link = getLinkFromPartComp(comp, level);
             }
-            else
+            else if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
                 object[] children = comp.GetChildren();
                 foreach (IComponent2 child in children)
@@ -306,41 +189,43 @@ namespace SW2URDF
             return Link;
         }
 
-        public link assignParentLinks(link top, int level)
+        // This method converts a dense tree from a sparse one by assigning leaves to the parent links
+        public link createDenseTree(link sparseTree, int level)
         {
             // For this empty link, find the child link that is the best fit for parenting
-            link parentLink = findParent(top, level + 1);
+            link parentLink = findParent(sparseTree, level + 1);
 
             if (parentLink == null || parentLink.Children.Count == 0)
             {
-                return top;
+                return sparseTree;
             }
-            top = parentLink;
+            sparseTree = parentLink;
             List<link> linksToRemove = new List<link>();
             List<link> linksToAdd = new List<link>();
             // Iterate through children to continue finding the best parents
-            foreach (link child in top.Children)
+            foreach (link child in sparseTree.Children)
             {
                 // Only bother if the component is not hidden and not supressed
                 if (!child.SWComponent.IsHidden(true))
                 {
-                    linksToAdd.Add(assignParentLinks(child, level + 1));
+                    linksToAdd.Add(createDenseTree(child, level + 1));
                     linksToRemove.Add(child);
                 }
             }
             // Remove unorganized links
             foreach (link Link in linksToRemove)
             {
-                top.Children.Remove(Link);
+                sparseTree.Children.Remove(Link);
             }
             // Add organized links
             foreach (link Link in linksToAdd)
             {
-                top.Children.Add(Link);
+                sparseTree.Children.Add(Link);
             }
-            return top;
+            return sparseTree;
         }
 
+        // From a links children, this method finds the 'best' choice as a parent
         public link findParent(link top, int level)
         {
             if (top.Children.Count > 0)
@@ -411,84 +296,28 @@ namespace SW2URDF
             return top;
         }
 
-        public IComponent2 findParent(object[] children, int level)
-        {
-            IComponent2 AssignedParentComponent = default(IComponent2);
-            int priorityLevel = -1;
-            double largestFixedVolume = 0;
-            double largestPartVolume = 0;
-            double largestAssyVolume = 0;
-
-            // Iterate through children to find the 'best' component for parent status. It may be several assemblies down.
-            foreach (IComponent2 child in children)
-            {
-                if (!child.IsHidden(true))
-                {
-                    ModelDoc2 ChildDoc = child.GetModelDoc();
-                    if (ChildDoc == null)
-                    {
-                        throw new System.InvalidOperationException("Component " + child.Name2 + " is null");
-                    }
-                    int ChildType = (int)ChildDoc.GetType();
-
-                    IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
-
-                    double childVolume = childMass.Volume;
-
-                    //Highest priority is the largest fixed component
-                    if (child.IsFixed() && childMass.Volume > largestFixedVolume)
-                    {
-                        priorityLevel = 2;
-                        AssignedParentComponent = child;
-                        largestFixedVolume = childVolume;
-                    }
-                    //Second highest priority is the largest floating part
-                    else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
-                    {
-                        priorityLevel = 1;
-                        AssignedParentComponent = child;
-                        largestPartVolume = childVolume;
-                    }
-                    //Third priority is the 'best' choice from the largest assembly
-                    else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
-                    {
-                        priorityLevel = 0;
-                        AssignedParentComponent = child;
-                        largestAssyVolume = childVolume;
-                    }
-                }
-            }
-
-            ModelDoc2 AssignedParentDoc = AssignedParentComponent.GetModelDoc();
-            int AssignedParentType = AssignedParentDoc.GetType();
-            // If a fixed component was chosen and it is an assembly, iterate through assembly
-            if (priorityLevel == 2 && AssignedParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
-            {
-                return findParent(AssignedParentComponent.GetChildren(), level + 1);
-
-            }
-            // If no parts were found, iterate through the chosen assembly
-            else if (priorityLevel == 0)
-            {
-                return findParent(AssignedParentComponent.GetChildren(), level + 1);
-            }
-
-            return AssignedParentComponent;
-
-        }
         #endregion
 
         #region Joint methods
+        //Iterates through each link to create the joints between the parent and child
         public void createJoints()
         {
+            //Create 3DSketch to position each reference coordinate
             referenceSketchName = setup3DSketch();
+
+            //Creates the joints with origins defined in reference to the assembly coordinate system
             mRobot.BaseLink = createChildJoints(mRobot.BaseLink);
+
+            //Iterate through each child link and change the references in each joint to refer to the parent joint
             foreach (link child in mRobot.BaseLink.Children)
             {
                 adjustJointTransforms(child, DenseMatrix.Identity(4));
             }
         }
 
+        // This takes each joint and changes the origins and axes to refer to the parent joint's reference frame
+        // [TODO] It's probably lazy programming to make the joints and then come through and fix them
+        // [TODO] This doesn't even work correctly
         public void adjustJointTransforms(link Link, Matrix<double> cumulativeTransform)
         {
             Vector<double> Axis = new DenseVector(new double[4] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
@@ -539,11 +368,9 @@ namespace SW2URDF
             {
                 adjustJointTransforms(child, newTransform);
             }
-
-
-            // return Link.Joint;
         }
 
+        // Recursive method to create the joint from a parent link to its child link
         public link createChildJoints(link parent)
         {
             foreach (link child in parent.Children)
@@ -553,7 +380,8 @@ namespace SW2URDF
             }
             return parent;
         }
-
+        
+        // Creates a joint given a parent link and a child link
         public joint createJointFromLinks(link parent, link child)
         {
             object[] mates = parent.SWComponent.GetMates();
@@ -586,6 +414,7 @@ namespace SW2URDF
             return Joint;
         }
 
+        // Inserts a sketch into the main assembly
         public string setup3DSketch()
         {
             ActiveSWModel.SketchManager.Insert3DSketch(true);
@@ -596,6 +425,7 @@ namespace SW2URDF
             return sketch.Name;
         }
 
+        // Adds lines and a point to create the entities for a reference coordinates
         public object[] addSketchGeometry(origin Origin)
         {
             ActiveSWModel.SelectByID(referenceSketchName, "SKETCH", 0, 0, 0);
@@ -614,30 +444,38 @@ namespace SW2URDF
             return new object[] { OriginPoint, XAxis, YAxis, ZAxis };
         }
 
+        // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
+        // the parent assembly
         public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child)
         {
             joint Joint = new joint();
+
             int R1Status, R2Status, L1Status, L2Status;
             int R1DirStatus, R2DirStatus;
             MathPoint RPoint1, RPoint2;
             MathVector RDir1, RDir2;
             MathVector LDir1, LDir2;
 
-
+            // Fix parent component to eliminate its degrees of freedom from this joint
             bool isFixed = parent.IsFixed();
             parent.Select(false);
             assy.FixComponent();
+
+            // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
+            // https://forum.solidworks.com/thread/57414
             int DOFs = child.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
                                               out R2Status, out RPoint2, out R2DirStatus, out RDir2,
                                               out L1Status, out LDir1,
                                               out L2Status, out LDir2);
 
+            // Unfix components (if they weren't fixed beforehand)
             parent.Select(false);
             if (!isFixed)
             {
                 assy.UnfixComponent();
             }
 
+            // Convert the gotten degrees of freedom to a joint type, origin and axis
             if (DOFs == 0 && (R1Status + L1Status > 0))
             {
                 if (R1Status == 1 && L1Status == 1)
@@ -672,9 +510,6 @@ namespace SW2URDF
                 Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
             }
 
-            //Joint.CoordinateSystemName = createReferenceCoordinateSystem(Joint.Origin, Joint.Parent.name, Joint.Child.name);
-
-
             return Joint;
         }
         #endregion
@@ -683,6 +518,7 @@ namespace SW2URDF
 
         //Copy and export textures here
 
+        // Beginning method for exporting the full package
         public void exportRobot()
         {
             //Creating package directories
@@ -710,12 +546,15 @@ namespace SW2URDF
 
         public string exportFiles(link Link, URDFPackage package)
         {
+            // Iterate through each child and export its files
             foreach (link child in Link.Children)
             {
                 string filename = exportFiles(child, package);
                 child.Visual.Geometry.Mesh.filename = filename;
                 child.Collision.Geometry.Mesh.filename = filename;
             }
+
+            // Copy the texture file (if it was specified) to the textures directory
             if (Link.Visual.Material.Texture.wFilename != "")
             {
                 if (!System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
@@ -726,6 +565,7 @@ namespace SW2URDF
                 }
             }
 
+            // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
             string linkName = Link.uniqueName.Replace('/', '_');
             string meshFileName = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
@@ -733,6 +573,7 @@ namespace SW2URDF
             int errors = 0;
             int warnings = 0;
 
+            // Export STL
             if (!System.IO.File.Exists(windowsMeshFileName))
             {
                 Link.SWComponent.Select(false);
@@ -756,74 +597,6 @@ namespace SW2URDF
             }
             return meshFileName;
         }
-        public void selectComponents(link Link)
-        {
-            Link.SWComponent.Select(true);
-            foreach (link child in Link.Children)
-            {
-                selectComponents(child);
-            }
-        }
-        public void hideComponents(link Link)
-        {
-            selectComponents(Link);
-            ActiveSWModel.HideComponent2();
-
-        }
-        public void showComponents(link Link)
-        {
-            selectComponents(Link);
-            ActiveSWModel.ShowComponent2();
-
-        }
-
-        public void correctSTLMesh(string filename)
-        {
-            FileStream fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            byte[] emptyHeader = new byte[80];
-            fileStream.Write(emptyHeader, 0, emptyHeader.Length);
-            fileStream.Close();
-        }
-        #endregion
-
-        #region Part Exporting methods
-        public link getLinkFromPartModel(ModelDoc2 swModel)
-        {
-            link Link = new link();
-            Link.name = swModel.GetTitle();
-
-
-            //Get link properties from SolidWorks part
-            IMassProperty swMass = swModel.Extension.CreateMassProperty();
-            Link.Inertial.Mass.Value = swMass.Mass;
-
-            Link.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
-
-            double[] centerOfMass = swMass.CenterOfMass;
-            Link.Inertial.Origin.XYZ = centerOfMass;
-            Link.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
-            Link.Visual.Origin.XYZ = centerOfMass;
-            Link.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
-
-            Link.Collision.Origin.XYZ = centerOfMass;
-            Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
-
-            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
-            double[] values = swModel.MaterialPropertyValues;
-            Link.Visual.Material.Color.Red = values[0];
-            Link.Visual.Material.Color.Green = values[1];
-            Link.Visual.Material.Color.Blue = values[2];
-            Link.Visual.Material.Color.Alpha = 1.0 - values[7];
-            Link.Visual.Material.name = "material_" + Link.name;
-
-            return Link;
-        }
-
-        public link getLinkFromActiveModel()
-        {
-            return getLinkFromPartModel(ActiveSWModel);
-        }
-
 
         public void exportLink()
         {
@@ -862,6 +635,36 @@ namespace SW2URDF
 
             resetUserPreferences();
         }
+
+        public void selectComponents(link Link)
+        {
+            Link.SWComponent.Select(true);
+            foreach (link child in Link.Children)
+            {
+                selectComponents(child);
+            }
+        }
+        public void hideComponents(link Link)
+        {
+            selectComponents(Link);
+            ActiveSWModel.HideComponent2();
+
+        }
+        public void showComponents(link Link)
+        {
+            selectComponents(Link);
+            ActiveSWModel.ShowComponent2();
+
+        }
+
+        //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
+        public void correctSTLMesh(string filename)
+        {
+            FileStream fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+            byte[] emptyHeader = new byte[80];
+            fileStream.Write(emptyHeader, 0, emptyHeader.Length);
+            fileStream.Close();
+        }
         #endregion
 
         #region STL Preference shuffling
@@ -897,12 +700,6 @@ namespace SW2URDF
         {
             iSwApp.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, name);
         }
-        #endregion
-
-        #region Mates to DOF to Joints types
-
-
-
         #endregion
     }
 }
