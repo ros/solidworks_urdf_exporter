@@ -376,36 +376,32 @@ namespace SW2URDF
         // Creates a joint given a parent link and a child link
         public joint createJointFromLinks(link parent, link child)
         {
-            object[] mates = parent.SWComponent.GetMates();
             joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
+            
+            //Adds a point and two lines so we can define a coordinate system
             object[] sketchEntities = addSketchGeometry(Joint.Origin);
             IFeature coordinates = default(IFeature);
             Joint.CoordinateSystemName = Joint.name;
+
+            //If the coordinate system doesn't already exists, we'll create one. Otherwise we'll use the one that exists
             if (!ActiveSWModel.Extension.SelectByID2(Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
-                SketchPoint point = (SketchPoint)sketchEntities[0];
-                double[] coords = new double[] { point.X, point.Y, point.Z };
-                SketchSegment segment1 = (SketchSegment)sketchEntities[1];
-                Curve axisXcurve = segment1.GetCurve();
-                double[] axisX = axisXcurve.LineParams;
                 SketchPoint origin = (SketchPoint)sketchEntities[0];
                 ActiveSWModel.ClearSelection2(true);
                 SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
-                SelectData data1 = selectionManager.CreateSelectData();
-                data1.Mark = 1;
-                origin.Select4(true, data1);
-                SelectData data2 = selectionManager.CreateSelectData();
-                data2.Mark = 2;
+                SelectData data = selectionManager.CreateSelectData();
                 SketchSegment xaxis = (SketchSegment)sketchEntities[1];
-                xaxis.Select4(true, data2);
                 SketchSegment yaxis = (SketchSegment)sketchEntities[2];
-                SelectData data3 = selectionManager.CreateSelectData();
-                data3.Mark = 4;
-                yaxis.Select4(true, data3);
+
+                data.Mark = 1;
+                origin.Select4(true, data);
+                data.Mark = 2;
+                xaxis.Select4(true, data);
+                data.Mark = 4;
+                yaxis.Select4(true, data);
 
                 coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
-                //coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], null);
                 coordinates.Name = Joint.CoordinateSystemName;
             }
                         
@@ -456,10 +452,8 @@ namespace SW2URDF
             XAxis.ConstructionGeometry = true;
             SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1]);
             YAxis.ConstructionGeometry = true;
-            SketchSegment ZAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 2], Origin.Y + tA[1, 2], Origin.Z + tA[2, 2]);
-            ZAxis.ConstructionGeometry = true;
             ActiveSWModel.SketchManager.Insert3DSketch(true);
-            return new object[] { OriginPoint, XAxis, YAxis, ZAxis };
+            return new object[] { OriginPoint, XAxis, YAxis };
         }
 
         // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
