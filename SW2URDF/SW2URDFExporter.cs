@@ -64,27 +64,26 @@ namespace SW2URDF
             mRobot.name = ActiveSWModel.GetTitle();
 
             //Each Robot contains a single base link, build this link
-            mRobot.BaseLink = getBaseLinkFromActiveModel();
+            mRobot.BaseLink = createBaseLinkFromActiveModel();
         }
 
-        public link getBaseLinkFromActiveModel()
+        public link createBaseLinkFromActiveModel()
         {
             if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY) // If the model is an Assembly
             {
-                return getBaseLinkFromAssy(ActiveSWModel);
+                return createBaseLinkFromAssy(ActiveSWModel);
             }
             else if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
             {
-                return getLinkFromPartModel(ActiveSWModel);
+                return createLinkFromPartModel(ActiveSWModel);
             }
             return null;
         }
 
-        public link getLinkFromPartModel(ModelDoc2 swModel)
+        public link createLinkFromPartModel(ModelDoc2 swModel)
         {
             link Link = new link();
             Link.name = swModel.GetTitle();
-
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
@@ -95,9 +94,10 @@ namespace SW2URDF
             double[] centerOfMass = swMass.CenterOfMass;
             Link.Inertial.Origin.XYZ = centerOfMass;
             Link.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
+
+            //Sure, why not? Be lazy
             Link.Visual.Origin.XYZ = centerOfMass;
             Link.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
-
             Link.Collision.Origin.XYZ = centerOfMass;
             Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
 
@@ -112,7 +112,7 @@ namespace SW2URDF
             return Link;
         }
 
-        public link getBaseLinkFromAssy(ModelDoc2 swModel)
+        public link createBaseLinkFromAssy(ModelDoc2 swModel)
         {
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
             // Getting the components (assemblies and parts, contained in this assembly)
@@ -135,7 +135,7 @@ namespace SW2URDF
             return createDenseTree(baseLink, 0);
         }
 
-        public link getLinkFromPartComp(object comp, int level)
+        public link createLinkFromPartComp(object comp, int level)
         {
             IComponent2 partComp = (IComponent2)comp;
             ModelDoc2 partDoc = partComp.GetModelDoc();
@@ -147,7 +147,7 @@ namespace SW2URDF
             }
 
             // Build the link from the partdoc
-            Link = getLinkFromPartModel(partDoc);
+            Link = createLinkFromPartModel(partDoc);
             Link.SWComponent = partComp;
             Link.SWComponentLevel = level;
             Link.uniqueName = partComp.Name2;
@@ -170,7 +170,7 @@ namespace SW2URDF
             ModelDoc2 modelDoc = comp.GetModelDoc2();
             if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
-                Link = getLinkFromPartComp(comp, level);
+                Link = createLinkFromPartComp(comp, level);
             }
             else if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
@@ -311,62 +311,51 @@ namespace SW2URDF
             //Iterate through each child link and change the references in each joint to refer to the parent joint
             foreach (link child in mRobot.BaseLink.Children)
             {
-                adjustJointTransforms(child, DenseMatrix.Identity(4));
+                localizeJointTransforms(child, DenseMatrix.Identity(4));
             }
         }
 
         // This takes each joint and changes the origins and axes to refer to the parent joint's reference frame
         // [TODO] It's probably lazy programming to make the joints and then come through and fix them
-        // [TODO] This doesn't even work correctly
-        public void adjustJointTransforms(link Link, Matrix<double> cumulativeTransform)
+        public void localizeJointTransforms(link Link, Matrix<double> cumulativeTransform)
         {
-            Vector<double> Axis = new DenseVector(new double[4] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
-            double[] XYZ = OPS.getXYZ(Link.SWComponent.Transform2);
-            Matrix<double> meshTransform = OPS.getTransformation(Link.SWComponent.Transform2);
-            Vector<double> Point = new DenseVector(new double[] { Link.Joint.Origin.X, Link.Joint.Origin.Y, Link.Joint.Origin.Z, 1 });
-            Vector<double> Origin = new DenseVector(new double[] { XYZ[0], XYZ[1], XYZ[2], 1 });
-            Matrix<double> newTransform = OPS.getTransformation(Link.Joint.Origin.XYZ, Link.Joint.Origin.RPY);
-            Matrix<double> localTransform = newTransform * cumulativeTransform.Inverse();
-            Axis = newTransform.Inverse() * Axis;
-            Point = cumulativeTransform.Inverse() * Point;
+            //The axis of rotation/translation relative to the full assembly
+            Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
+            
+            //The transform from the Assembly origin to the components center of mass
+            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
+
+            //The transform from the Assembly origin to the components reference frame
+            Matrix<double> componentTransform = OPS.getTransformation(Link.SWComponent.Transform2);
+            
+            //The transform from the Assembly origin to the joints reference frame
+            Matrix<double> jointTransform = OPS.getTransformation(Link.Joint.Origin.XYZ, Link.Joint.Origin.RPY);
+
+            //The transform from the parent joint's reference frame to this joints reference frame
+            Matrix<double> localJointTransform = jointTransform * cumulativeTransform.Inverse();
+
+            //The transform from the joint's reference frame to the mesh
+            Matrix<double> localLinkTransform = componentTransform * jointTransform.Inverse();
+
+            //The transform from the joint's reference frame to the center of mass
+            Matrix<double> localCoMTransform = linkCoMTransform * jointTransform.Inverse();
+
+            //Transforming the axis of rotation to the joint's reference frame
+            Axis = jointTransform.Inverse() * Axis;
+
+            //Save the data from the transforms
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-
-            Origin = newTransform.Inverse() * Origin;
-            Link.Joint.Origin.XYZ = new double[] { Point[0], Point[1], Point[2] };
-
-
-
-            double[] xyz_mesh = OPS.getXYZ(meshTransform);
-            double[] rpy_mesh = OPS.getRPY(meshTransform);
-            meshTransform = meshTransform * newTransform.Inverse();
-            double[] xyz_mafter = OPS.getXYZ(meshTransform);
-            double[] rpy_mafter = OPS.getRPY(meshTransform);
-
-            double[] rpy_new = OPS.getRPY(newTransform);
-            double[] rpy_cum = OPS.getRPY(cumulativeTransform);
-            double[] rpy_cum_inv = OPS.getRPY(cumulativeTransform.Inverse());
-            double[] xyz_new = OPS.getXYZ(newTransform);
-            double[] xyz_cum = OPS.getXYZ(cumulativeTransform);
-            double[] xyz_cum_inv = OPS.getXYZ(cumulativeTransform.Inverse());
-            Link.Joint.Origin.RPY = OPS.getRPY(meshTransform);
-
-            double[] data1 = Link.SWComponent.Transform2.ArrayData;
-            Matrix<double> linkTransform = OPS.getTransformation(Link.SWComponent.Transform2);
-            Matrix<double> localLinkTransform = linkTransform * newTransform.Inverse();
-
-
-            Link.Visual.Origin.XYZ = new double[] {0,0,0};
-            Link.Visual.Origin.RPY = new double[] { 0, 0, 0 };
-
-            //Inertial needs to be transformed assuming visual is a 0,0,0
-            Link.Inertial.Origin.XYZ = Link.Visual.Origin.XYZ;
-            Link.Inertial.Origin.RPY = Link.Visual.Origin.RPY;
+            Link.Visual.Origin.XYZ = OPS.getXYZ(localLinkTransform);
+            Link.Visual.Origin.RPY = OPS.getRPY(localLinkTransform);
             Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
             Link.Collision.Origin.RPY = Link.Visual.Origin.RPY;
 
+            Link.Inertial.Origin.XYZ = OPS.getXYZ(localCoMTransform);
+            Link.Inertial.Origin.RPY = OPS.getRPY(localCoMTransform);
+
             foreach (link child in Link.Children)
             {
-                adjustJointTransforms(child, newTransform);
+                localizeJointTransforms(child, jointTransform);
             }
         }
 
@@ -388,10 +377,19 @@ namespace SW2URDF
             joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
             object[] sketchEntities = addSketchGeometry(Joint.Origin);
-            IFeature coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], (SketchSegment)sketchEntities[3]);
-            coordinates.Name = Joint.name;
-            Joint.CoordinateSystemName = coordinates.Name;
-
+            IFeature coordinates = default(IFeature);
+            Joint.CoordinateSystemName = Joint.name;
+            if (!ActiveSWModel.Extension.SelectByID2(Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                SketchPoint point = (SketchPoint)sketchEntities[0];
+                double[] coords = new double[] { point.X, point.Y, point.Z };
+                SketchSegment segment1 = (SketchSegment)sketchEntities[1];
+                Curve axisXcurve = segment1.GetCurve();
+                double[] axisX = axisXcurve.LineParams;
+                coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], null);
+                coordinates.Name = Joint.CoordinateSystemName;
+            }
+                        
             Joint.Parent.name = parent.uniqueName;
             Joint.Child.name = child.uniqueName;
 
@@ -417,23 +415,24 @@ namespace SW2URDF
         // Inserts a sketch into the main assembly
         public string setup3DSketch()
         {
+            bool sketchExists = ActiveSWModel.Extension.SelectByID2("URDF_reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             ActiveSWModel.SketchManager.CreatePoint(0, 0, 0);
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
             ActiveSWModel.SketchManager.Insert3DSketch(true);
-            sketch.Name = mRobot.name + "_URDF_reference";
+            sketch.Name = "URDF_reference";
             return sketch.Name;
         }
 
         // Adds lines and a point to create the entities for a reference coordinates
         public object[] addSketchGeometry(origin Origin)
         {
-            ActiveSWModel.SelectByID(referenceSketchName, "SKETCH", 0, 0, 0);
+            bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             Matrix<double> transform = OPS.getRotation(Origin.RPY);
             Matrix<double> Axes = DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
-            object OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, Origin.Y, Origin.Z);
+            SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, Origin.Y, Origin.Z);
             SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0]);
             XAxis.ConstructionGeometry = true;
             SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1]);
@@ -490,8 +489,7 @@ namespace SW2URDF
                     Joint.type = "continuous";
                     Joint.Axis.XYZ = RDir1.ArrayData;
                     Joint.Origin.XYZ = RPoint1.ArrayData;
-                    MathTransform transform = parent.Transform2;
-                    Joint.Origin.RPY = OPS.getRPY(transform);
+                    Joint.Origin.RPY = OPS.getRPY(child.Transform2);
                 }
                 else if (L1Status == 1)
                 {
@@ -499,7 +497,7 @@ namespace SW2URDF
                     Joint.Axis.XYZ = LDir1.ArrayData;
                     MathTransform transform = child.Transform2;
                     Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                    Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
+                    Joint.Origin.RPY = OPS.getRPY(child.Transform2);
                 }
             }
             else
