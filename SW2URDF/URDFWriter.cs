@@ -631,6 +631,8 @@ namespace SW2URDF
         { get; set; }
         public string CoordinateSystemName
         { get; set; }
+        public string AxisName
+        { get; set; }
 
         public joint()
         {

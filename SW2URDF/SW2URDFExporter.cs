@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections;
@@ -29,8 +30,10 @@ namespace SW2URDF
         private bool mBinary;
         private bool mshowInfo;
         private bool mSTLPreview;
+        private bool mTranslateToPositive;
         private int mSTLUnits;
         private int mSTLQuality;
+        private double mHideTransitionSpeed;
         private string referenceSketchName;
 
         ModelDoc2 ActiveSWModel;
@@ -379,18 +382,20 @@ namespace SW2URDF
             joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
             
-            //Adds a point and two lines so we can define a coordinate system
-            object[] sketchEntities = addSketchGeometry(Joint.Origin);
             IFeature coordinates = default(IFeature);
-            Joint.CoordinateSystemName = Joint.name;
+            Joint.CoordinateSystemName = "Origin_" + Joint.name;
+            Joint.AxisName = "Axis_" + Joint.name;
+
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
+            SelectData data = selectionManager.CreateSelectData();
 
             //If the coordinate system doesn't already exists, we'll create one. Otherwise we'll use the one that exists
             if (!ActiveSWModel.Extension.SelectByID2(Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
+                //Adds a point and two lines so we can define a coordinate system
+                object[] sketchEntities = addSketchGeometry(Joint.Origin);
                 SketchPoint origin = (SketchPoint)sketchEntities[0];
-                ActiveSWModel.ClearSelection2(true);
-                SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
-                SelectData data = selectionManager.CreateSelectData();
                 SketchSegment xaxis = (SketchSegment)sketchEntities[1];
                 SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
@@ -403,6 +408,41 @@ namespace SW2URDF
 
                 coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
                 coordinates.Name = Joint.CoordinateSystemName;
+            }
+            else
+            {
+                //[TODO]How does localizing need to happen with this method of doing things
+                MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
+                Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
+                Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
+            }
+
+            //If the axis doesn't already exist, we'll create one. Otherwise we'll use the one that exists
+            ActiveSWModel.ClearSelection2(true);
+            if (!ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
+            {
+                //Adds sketch segment
+                SketchSegment rotaxis = addSketchGeometry(Joint.Axis, Joint.Origin);
+                data.Mark = 1;
+
+                //Use special method to create the axis
+                Feature featAxis = insertAxis(rotaxis);
+                if (featAxis != null)
+                {
+                    featAxis.Name = Joint.AxisName;
+                }
+            }
+            else
+            {
+                //[TODO] How does localizing affect this way of doing things.
+                Feature feat = selectionManager.GetSelectedObject6(1, 0);
+                RefAxis existingAxis = (RefAxis)feat.GetSpecificFeature2();
+                double[] axisParams;
+
+                axisParams = existingAxis.GetRefAxisParams();
+                Joint.Axis.X = axisParams[0] - axisParams[3];
+                Joint.Axis.Y = axisParams[1] - axisParams[4];
+                Joint.Axis.Z = axisParams[2] - axisParams[5];
             }
                         
             Joint.Parent.name = parent.uniqueName;
@@ -427,6 +467,33 @@ namespace SW2URDF
             return Joint;
         }
 
+        public Feature insertAxis(SketchSegment axis)
+        {            
+            SelectData data = ActiveSWModel.SelectionManager.CreateSelectData();
+            axis.Select4(false, data);
+
+            object[] featuresBefore, featuresAfter;
+            featuresBefore = ActiveSWModel.FeatureManager.GetFeatures(true);
+            int countBefore = ActiveSWModel.FeatureManager.GetFeatureCount(true);
+            ActiveSWModel.InsertAxis2(true);
+            featuresAfter = ActiveSWModel.FeatureManager.GetFeatures(true);
+            int countAfter = ActiveSWModel.FeatureManager.GetFeatureCount(true);
+
+            if (featuresBefore.Length < featuresAfter.Length)
+            {
+                foreach (Feature feat in featuresAfter.Reverse())
+                {
+                    if (!featuresBefore.Contains(feat))
+                    {
+                        return feat;
+                    }
+                }
+
+            }
+
+            return null;
+        }
+
         // Inserts a sketch into the main assembly
         public string setup3DSketch()
         {
@@ -447,13 +514,44 @@ namespace SW2URDF
             Matrix<double> transform = OPS.getRotation(Origin.RPY);
             Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
-            SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, Origin.Y, Origin.Z);
-            SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0]);
+            SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, 
+                                                                              Origin.Y, 
+                                                                              Origin.Z);
+
+            SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, 
+                                                                         Origin.Y, 
+                                                                         Origin.Z, 
+                                                                         Origin.X + tA[0, 0], 
+                                                                         Origin.Y + tA[1, 0], 
+                                                                         Origin.Z + tA[2, 0]);
             XAxis.ConstructionGeometry = true;
-            SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1]);
+            SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, 
+                                                                         Origin.Y, 
+                                                                         Origin.Z, 
+                                                                         Origin.X + tA[0, 1], 
+                                                                         Origin.Y + tA[1, 1], 
+                                                                         Origin.Z + tA[2, 1]);
             YAxis.ConstructionGeometry = true;
+
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             return new object[] { OriginPoint, XAxis, YAxis };
+        }
+
+        public SketchSegment addSketchGeometry(axis Axis, origin Origin)
+        {
+            bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            SketchSegment RotAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X - 0.05 * Axis.X,
+                                                               Origin.Y - 0.05 * Axis.Y,
+                                                               Origin.Z - 0.05 * Axis.Z,
+                                                               Origin.X + 0.05 * Axis.X,
+                                                               Origin.Y + 0.05 * Axis.Y,
+                                                               Origin.Z + 0.05 * Axis.Z);
+            RotAxis.ConstructionGeometry = true;
+            RotAxis.Width = 2;
+
+            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            return RotAxis;
         }
 
         // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
@@ -682,10 +780,12 @@ namespace SW2URDF
         public void saveUserPreferences()
         {
             mBinary = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat);
+            mTranslateToPositive = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive);
             mSTLUnits = iSwApp.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits);
             mSTLQuality = iSwApp.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality);
             mshowInfo = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLShowInfoOnSave);
             mSTLPreview = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLPreview);
+            mHideTransitionSpeed = iSwApp.GetUserPreferenceDoubleValue((int)swUserPreferenceDoubleValue_e.swViewTransitionHideShowComponent);
         }
 
         public void setSTLExportPreferences()
@@ -696,15 +796,18 @@ namespace SW2URDF
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Coarse);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLShowInfoOnSave, false);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLPreview, false);
+            iSwApp.SetUserPreferenceDoubleValue((int)swUserPreferenceDoubleValue_e.swViewTransitionHideShowComponent, 0);
         }
 
         public void resetUserPreferences()
         {
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, mBinary);
+            iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive, mTranslateToPositive);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits, mSTLUnits);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, mSTLQuality);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLShowInfoOnSave, mshowInfo);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLPreview, mSTLPreview);
+            iSwApp.SetUserPreferenceDoubleValue((int)swUserPreferenceDoubleValue_e.swViewTransitionHideShowComponent, mHideTransitionSpeed);
         }
 
         public void setSTLCoordinateSystem(string name)
