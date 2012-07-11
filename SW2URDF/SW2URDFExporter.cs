@@ -345,11 +345,14 @@ namespace SW2URDF
 
             //Save the data from the transforms
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-            Link.Visual.Origin.XYZ = OPS.getXYZ(localLinkTransform);
-            Link.Visual.Origin.RPY = OPS.getRPY(localLinkTransform);
+
+            //Meshes are saved with relation to joint coordinate system, so there shouldn't be any transformation right?
+            Link.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
+            Link.Visual.Origin.RPY = new double[] { 0, 0, 0 };
             Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
             Link.Collision.Origin.RPY = Link.Visual.Origin.RPY;
 
+            //Inertial is the transform from the joint origin to the center of mass
             Link.Inertial.Origin.XYZ = OPS.getXYZ(localCoMTransform);
             Link.Inertial.Origin.RPY = OPS.getRPY(localCoMTransform);
 
@@ -386,7 +389,23 @@ namespace SW2URDF
                 SketchSegment segment1 = (SketchSegment)sketchEntities[1];
                 Curve axisXcurve = segment1.GetCurve();
                 double[] axisX = axisXcurve.LineParams;
-                coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], null);
+                SketchPoint origin = (SketchPoint)sketchEntities[0];
+                ActiveSWModel.ClearSelection2(true);
+                SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
+                SelectData data1 = selectionManager.CreateSelectData();
+                data1.Mark = 1;
+                origin.Select4(true, data1);
+                SelectData data2 = selectionManager.CreateSelectData();
+                data2.Mark = 2;
+                SketchSegment xaxis = (SketchSegment)sketchEntities[1];
+                xaxis.Select4(true, data2);
+                SketchSegment yaxis = (SketchSegment)sketchEntities[2];
+                SelectData data3 = selectionManager.CreateSelectData();
+                data3.Mark = 4;
+                yaxis.Select4(true, data3);
+
+                coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+                //coordinates = ActiveSWModel.FeatureManager.CreateCoordinateSystem((SketchPoint)sketchEntities[0], (SketchSegment)sketchEntities[1], (SketchSegment)sketchEntities[2], null);
                 coordinates.Name = Joint.CoordinateSystemName;
             }
                         
@@ -430,7 +449,7 @@ namespace SW2URDF
             bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             Matrix<double> transform = OPS.getRotation(Origin.RPY);
-            Matrix<double> Axes = DenseMatrix.Identity(4);
+            Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
             SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, Origin.Y, Origin.Z);
             SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0]);
