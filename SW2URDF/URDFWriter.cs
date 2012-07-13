@@ -858,4 +858,89 @@ namespace SW2URDF
         {
         }
     }
+
+    public class manifestWriter
+    {
+        public XmlWriter writer;
+        public manifestWriter(string savePath)
+        {
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Encoding = new UTF8Encoding(false);
+            settings.OmitXmlDeclaration = true;
+            settings.Indent = true;
+            settings.NewLineOnAttributes = false;
+            writer = XmlWriter.Create(savePath, settings);
+        }
+    }
+
+    public class manifestElement
+    {
+
+        public manifestElement() {}
+        public void writeElement(){}
+    }
+    public class manifest : manifestElement
+    {
+        public description Description
+        { get; set;}
+        public depend[] Depends
+        { get; set; }
+
+        public manifest(string name) 
+        {
+            Description = new description();
+            Description.brief = name;
+            Description.longDescription = name;
+
+            Depends = new depend[1];
+            Depends[0].package = "gazebo";
+        }
+        public void writeElement(manifestWriter mWriter)
+        {
+            XmlWriter writer = mWriter.writer;
+            writer.WriteStartElement("package");
+
+            Description.writeElement(writer);
+            foreach (depend dep in Depends)
+            {
+                dep.writeElement(writer);
+            }
+           
+            writer.WriteEndElement();
+        }
+    }
+    public class description : manifestElement
+    {
+        public string brief
+        { get; set; }
+        public string longDescription
+        { get; set; }
+        public description() 
+        {
+            brief = "";
+                longDescription = "";
+        }
+        public void writeElement(XmlWriter writer) 
+        {
+            writer.WriteStartElement("description");
+            writer.WriteAttributeString("brief", brief);
+            writer.WriteString(longDescription);
+            writer.WriteEndElement();
+        }
+    }
+    public class depend : manifestElement
+    {
+        public string package
+        { get; set; }
+        public depend() 
+        {
+            package = "";
+        }
+        public void writeElement(XmlWriter writer)
+        {
+            writer.WriteStartElement("depend");
+            writer.WriteAttributeString("package", package);
+            writer.WriteEndElement();
+        }
+    }   
 }

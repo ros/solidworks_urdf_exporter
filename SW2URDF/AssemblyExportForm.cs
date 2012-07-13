@@ -97,6 +97,7 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
+            Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
             Exporter.exportRobot();
             this.Close();
         }

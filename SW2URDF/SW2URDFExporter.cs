@@ -352,6 +352,7 @@ namespace SW2URDF
 
             //Transforming the axis of rotation to the joint's reference frame
             Axis = jointTransform.Inverse() * Axis;
+            Axis = Axis.Normalize(2);
 
             //Save the data from the transforms
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
@@ -450,6 +451,7 @@ namespace SW2URDF
                 Joint.Axis.X = axisParams[0] - axisParams[3];
                 Joint.Axis.Y = axisParams[1] - axisParams[4];
                 Joint.Axis.Z = axisParams[2] - axisParams[5];
+                Joint.Axis.XYZ = OPS.pnorm(Joint.Axis.XYZ, 2);
             }
                         
             Joint.Parent.name = parent.uniqueName;
@@ -641,6 +643,12 @@ namespace SW2URDF
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.BaseLink.name + ".URDF";
+            string windowsManifestFileName = package.WindowsPackageDirectory + mRobot.name + ".XML";
+
+            //Creating manifest file
+            manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
+            manifest Manifest = new manifest(mRobot.name);
+            Manifest.writeElement(manifestWriter);
 
             //Customizing STL preferences to how I want them
             saveUserPreferences();
@@ -721,7 +729,13 @@ namespace SW2URDF
             package.createDirectories();
             string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
-            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.BaseLink.name + ".URDF";
+            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".URDF";
+            string windowsManifestFileName = package.WindowsPackageDirectory + mRobot.name + ".XML";
+
+            //Creating manifest file
+            manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
+            manifest Manifest = new manifest(mRobot.name);
+            Manifest.writeElement(manifestWriter);
 
             //Customizing STL preferences to how I want them
             saveUserPreferences();

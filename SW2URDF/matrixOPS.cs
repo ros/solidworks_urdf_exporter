@@ -521,6 +521,23 @@ namespace SW2URDF
             return m;
         }
 
+        public double[] pnorm(double[] array, double power)
+        {
+            double magnitude = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                magnitude += Math.Pow(array[i], power);
+            }
+            if (magnitude != 0)
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    array[i] /= magnitude;
+                }
+            }
+            return array;
+        }
+
             
     }
 }
