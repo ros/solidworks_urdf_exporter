@@ -123,16 +123,24 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
+            this.panel_link_properties = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
+            this.button_links_finish = new System.Windows.Forms.Button();
+            this.button_links_previous = new System.Windows.Forms.Button();
+            this.button_links_cancel = new System.Windows.Forms.Button();
+            this.treeView_linkProperties = new System.Windows.Forms.TreeView();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.textBox_k_velocity = new System.Windows.Forms.TextBox();
-            this.label77 = new System.Windows.Forms.Label();
+            this.label_kvelocity = new System.Windows.Forms.Label();
             this.textBox_soft_lower = new System.Windows.Forms.TextBox();
-            this.label78 = new System.Windows.Forms.Label();
+            this.label_soft_lower = new System.Windows.Forms.Label();
             this.textBox_soft_upper = new System.Windows.Forms.TextBox();
-            this.label79 = new System.Windows.Forms.Label();
+            this.label_soft_upper = new System.Windows.Forms.Label();
             this.label80 = new System.Windows.Forms.Label();
             this.textBox_k_position = new System.Windows.Forms.TextBox();
-            this.label81 = new System.Windows.Forms.Label();
+            this.label_kposition = new System.Windows.Forms.Label();
             this.textBox_friction = new System.Windows.Forms.TextBox();
             this.label_friction = new System.Windows.Forms.Label();
             this.textBox_damping = new System.Windows.Forms.TextBox();
@@ -144,14 +152,14 @@
             this.label73 = new System.Windows.Forms.Label();
             this.label74 = new System.Windows.Forms.Label();
             this.textBox_limit_velocity = new System.Windows.Forms.TextBox();
-            this.label70 = new System.Windows.Forms.Label();
+            this.label_velocity = new System.Windows.Forms.Label();
             this.textBox_limit_lower = new System.Windows.Forms.TextBox();
-            this.label66 = new System.Windows.Forms.Label();
+            this.label_lower_limit = new System.Windows.Forms.Label();
             this.textBox_limit_upper = new System.Windows.Forms.TextBox();
             this.label_limit_upper = new System.Windows.Forms.Label();
             this.label68 = new System.Windows.Forms.Label();
             this.textBox_limit_effort = new System.Windows.Forms.TextBox();
-            this.label69 = new System.Windows.Forms.Label();
+            this.label_effort = new System.Windows.Forms.Label();
             this.label65 = new System.Windows.Forms.Label();
             this.label64 = new System.Windows.Forms.Label();
             this.label63 = new System.Windows.Forms.Label();
@@ -181,7 +189,7 @@
             this.label_child = new System.Windows.Forms.Label();
             this.label_parent = new System.Windows.Forms.Label();
             this.treeView_jointtree = new System.Windows.Forms.TreeView();
-            this.button_joint_finish = new System.Windows.Forms.Button();
+            this.button_joint_next = new System.Windows.Forms.Button();
             this.button_joint_previous = new System.Windows.Forms.Button();
             this.button_joint_cancel = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -189,6 +197,7 @@
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.panel_joint.SuspendLayout();
+            this.panel_link_properties.SuspendLayout();
             this.SuspendLayout();
             // 
             // button_link_next
@@ -223,22 +232,24 @@
             // 
             // button_select
             // 
-            this.button_select.Location = new System.Drawing.Point(126, 141);
+            this.button_select.Location = new System.Drawing.Point(534, 146);
             this.button_select.Name = "button_select";
             this.button_select.Size = new System.Drawing.Size(75, 23);
             this.button_select.TabIndex = 5;
             this.button_select.Text = "Check All";
             this.button_select.UseVisualStyleBackColor = true;
+            this.button_select.Visible = false;
             this.button_select.Click += new System.EventHandler(this.button_select_Click);
             // 
             // button_deselect
             // 
-            this.button_deselect.Location = new System.Drawing.Point(207, 141);
+            this.button_deselect.Location = new System.Drawing.Point(615, 146);
             this.button_deselect.Name = "button_deselect";
             this.button_deselect.Size = new System.Drawing.Size(75, 23);
             this.button_deselect.TabIndex = 6;
             this.button_deselect.Text = "Uncheck All";
             this.button_deselect.UseVisualStyleBackColor = true;
+            this.button_deselect.Visible = false;
             this.button_deselect.Click += new System.EventHandler(this.button_deselect_Click);
             // 
             // treeView_linktree
@@ -249,7 +260,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.treeView_linktree.Location = new System.Drawing.Point(20, 175);
             this.treeView_linktree.Name = "treeView_linktree";
-            this.treeView_linktree.Size = new System.Drawing.Size(267, 472);
+            this.treeView_linktree.Size = new System.Drawing.Size(669, 472);
             this.treeView_linktree.TabIndex = 8;
             this.treeView_linktree.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.treeView_linktree_ItemDrag);
             this.treeView_linktree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linktree_AfterSelect);
@@ -266,9 +277,9 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.listBox_deleted.FormattingEnabled = true;
-            this.listBox_deleted.Location = new System.Drawing.Point(293, 175);
+            this.listBox_deleted.Location = new System.Drawing.Point(695, 175);
             this.listBox_deleted.Name = "listBox_deleted";
-            this.listBox_deleted.Size = new System.Drawing.Size(186, 472);
+            this.listBox_deleted.Size = new System.Drawing.Size(350, 472);
             this.listBox_deleted.TabIndex = 9;
             this.listBox_deleted.SelectedIndexChanged += new System.EventHandler(this.listBox_deleted_SelectedIndexChanged);
             this.listBox_deleted.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBox_deleted_DragDrop);
@@ -279,7 +290,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(288, 148);
+            this.label8.Location = new System.Drawing.Point(692, 159);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(72, 13);
             this.label8.TabIndex = 10;
@@ -288,7 +299,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(17, 148);
+            this.label9.Location = new System.Drawing.Point(17, 159);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(76, 13);
             this.label9.TabIndex = 11;
@@ -313,7 +324,7 @@
             this.groupBox3.Controls.Add(this.textBox_collision_origin_x);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_y);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_z);
-            this.groupBox3.Location = new System.Drawing.Point(493, 514);
+            this.groupBox3.Location = new System.Drawing.Point(485, 510);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(568, 133);
             this.groupBox3.TabIndex = 73;
@@ -506,7 +517,7 @@
             this.groupBox4.Controls.Add(this.label23);
             this.groupBox4.Controls.Add(this.textBox_visual_origin_y);
             this.groupBox4.Controls.Add(this.label30);
-            this.groupBox4.Location = new System.Drawing.Point(493, 257);
+            this.groupBox4.Location = new System.Drawing.Point(485, 253);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(568, 251);
             this.groupBox4.TabIndex = 72;
@@ -824,7 +835,7 @@
             this.groupBox5.Controls.Add(this.label50);
             this.groupBox5.Controls.Add(this.textBox_mass);
             this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox5.Location = new System.Drawing.Point(493, 91);
+            this.groupBox5.Location = new System.Drawing.Point(485, 87);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(568, 160);
             this.groupBox5.TabIndex = 71;
@@ -1105,7 +1116,6 @@
             this.label2.Size = new System.Drawing.Size(95, 13);
             this.label2.TabIndex = 77;
             this.label2.Text = "Save Package as:";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label4
             // 
@@ -1118,16 +1128,22 @@
             // 
             // panel_joint
             // 
-            this.panel_joint.Controls.Add(this.label5);
+            this.panel_joint.Controls.Add(this.panel_link_properties);
+            this.panel_joint.Controls.Add(this.button_joint_next);
+            this.panel_joint.Controls.Add(this.button_joint_previous);
+            this.panel_joint.Controls.Add(this.button_joint_cancel);
+            this.panel_joint.Controls.Add(this.label7);
+            this.panel_joint.Controls.Add(this.label6);
+            this.panel_joint.Controls.Add(this.label3);
             this.panel_joint.Controls.Add(this.textBox_k_velocity);
-            this.panel_joint.Controls.Add(this.label77);
+            this.panel_joint.Controls.Add(this.label_kvelocity);
             this.panel_joint.Controls.Add(this.textBox_soft_lower);
-            this.panel_joint.Controls.Add(this.label78);
+            this.panel_joint.Controls.Add(this.label_soft_lower);
             this.panel_joint.Controls.Add(this.textBox_soft_upper);
-            this.panel_joint.Controls.Add(this.label79);
+            this.panel_joint.Controls.Add(this.label_soft_upper);
             this.panel_joint.Controls.Add(this.label80);
             this.panel_joint.Controls.Add(this.textBox_k_position);
-            this.panel_joint.Controls.Add(this.label81);
+            this.panel_joint.Controls.Add(this.label_kposition);
             this.panel_joint.Controls.Add(this.textBox_friction);
             this.panel_joint.Controls.Add(this.label_friction);
             this.panel_joint.Controls.Add(this.textBox_damping);
@@ -1139,14 +1155,14 @@
             this.panel_joint.Controls.Add(this.label73);
             this.panel_joint.Controls.Add(this.label74);
             this.panel_joint.Controls.Add(this.textBox_limit_velocity);
-            this.panel_joint.Controls.Add(this.label70);
+            this.panel_joint.Controls.Add(this.label_velocity);
             this.panel_joint.Controls.Add(this.textBox_limit_lower);
-            this.panel_joint.Controls.Add(this.label66);
+            this.panel_joint.Controls.Add(this.label_lower_limit);
             this.panel_joint.Controls.Add(this.textBox_limit_upper);
             this.panel_joint.Controls.Add(this.label_limit_upper);
             this.panel_joint.Controls.Add(this.label68);
             this.panel_joint.Controls.Add(this.textBox_limit_effort);
-            this.panel_joint.Controls.Add(this.label69);
+            this.panel_joint.Controls.Add(this.label_effort);
             this.panel_joint.Controls.Add(this.label65);
             this.panel_joint.Controls.Add(this.label64);
             this.panel_joint.Controls.Add(this.label63);
@@ -1176,9 +1192,6 @@
             this.panel_joint.Controls.Add(this.label_child);
             this.panel_joint.Controls.Add(this.label_parent);
             this.panel_joint.Controls.Add(this.treeView_jointtree);
-            this.panel_joint.Controls.Add(this.button_joint_finish);
-            this.panel_joint.Controls.Add(this.button_joint_previous);
-            this.panel_joint.Controls.Add(this.button_joint_cancel);
             this.panel_joint.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_joint.Location = new System.Drawing.Point(0, 0);
             this.panel_joint.Name = "panel_joint";
@@ -1186,14 +1199,104 @@
             this.panel_joint.TabIndex = 80;
             this.panel_joint.Visible = false;
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(9, 9);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(127, 13);
+            this.label7.TabIndex = 152;
+            this.label7.Text = "Configure Joint Properties";
+            // 
+            // panel_link_properties
+            // 
+            this.panel_link_properties.Controls.Add(this.label5);
+            this.panel_link_properties.Controls.Add(this.button_links_finish);
+            this.panel_link_properties.Controls.Add(this.button_links_previous);
+            this.panel_link_properties.Controls.Add(this.button_links_cancel);
+            this.panel_link_properties.Controls.Add(this.groupBox3);
+            this.panel_link_properties.Controls.Add(this.groupBox5);
+            this.panel_link_properties.Controls.Add(this.groupBox4);
+            this.panel_link_properties.Controls.Add(this.treeView_linkProperties);
+            this.panel_link_properties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel_link_properties.Location = new System.Drawing.Point(0, 0);
+            this.panel_link_properties.Name = "panel_link_properties";
+            this.panel_link_properties.Size = new System.Drawing.Size(1073, 688);
+            this.panel_link_properties.TabIndex = 151;
+            this.panel_link_properties.Visible = false;
+            // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(25, 9);
+            this.label5.Location = new System.Drawing.Point(12, 9);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(127, 13);
-            this.label5.TabIndex = 148;
-            this.label5.Text = "Configure Joint Properties";
+            this.label5.Size = new System.Drawing.Size(125, 13);
+            this.label5.TabIndex = 92;
+            this.label5.Text = "Configure Link Properties";
+            // 
+            // button_links_finish
+            // 
+            this.button_links_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_links_finish.Location = new System.Drawing.Point(986, 655);
+            this.button_links_finish.Name = "button_links_finish";
+            this.button_links_finish.Size = new System.Drawing.Size(75, 23);
+            this.button_links_finish.TabIndex = 91;
+            this.button_links_finish.Text = "Finish";
+            this.button_links_finish.UseVisualStyleBackColor = true;
+            this.button_links_finish.Click += new System.EventHandler(this.button_links_finish_Click);
+            // 
+            // button_links_previous
+            // 
+            this.button_links_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_links_previous.Location = new System.Drawing.Point(905, 655);
+            this.button_links_previous.Name = "button_links_previous";
+            this.button_links_previous.Size = new System.Drawing.Size(75, 23);
+            this.button_links_previous.TabIndex = 90;
+            this.button_links_previous.Text = "Previous";
+            this.button_links_previous.UseVisualStyleBackColor = true;
+            this.button_links_previous.Click += new System.EventHandler(this.button_links_previous_Click);
+            // 
+            // button_links_cancel
+            // 
+            this.button_links_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_links_cancel.Location = new System.Drawing.Point(11, 657);
+            this.button_links_cancel.Name = "button_links_cancel";
+            this.button_links_cancel.Size = new System.Drawing.Size(75, 23);
+            this.button_links_cancel.TabIndex = 89;
+            this.button_links_cancel.Text = "Cancel";
+            this.button_links_cancel.UseVisualStyleBackColor = true;
+            this.button_links_cancel.Click += new System.EventHandler(this.button_links_cancel_Click);
+            // 
+            // treeView_linkProperties
+            // 
+            this.treeView_linkProperties.AllowDrop = true;
+            this.treeView_linkProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.treeView_linkProperties.Location = new System.Drawing.Point(20, 91);
+            this.treeView_linkProperties.Name = "treeView_linkProperties";
+            this.treeView_linkProperties.Size = new System.Drawing.Size(459, 554);
+            this.treeView_linkProperties.TabIndex = 74;
+            this.treeView_linkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linkProperties_AfterSelect);
+            this.treeView_linkProperties.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_linkProperties_NodeMouseClick);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(660, 294);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(82, 13);
+            this.label6.TabIndex = 150;
+            this.label6.Text = "Orientation (rad)";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(555, 294);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(61, 13);
+            this.label3.TabIndex = 149;
+            this.label3.Text = "Position (m)";
             // 
             // textBox_k_velocity
             // 
@@ -1203,14 +1306,14 @@
             this.textBox_k_velocity.TabIndex = 146;
             this.textBox_k_velocity.TextChanged += new System.EventHandler(this.textBox1_k_velocity_TextChanged);
             // 
-            // label77
+            // label_kvelocity
             // 
-            this.label77.AutoSize = true;
-            this.label77.Location = new System.Drawing.Point(902, 575);
-            this.label77.Name = "label77";
-            this.label77.Size = new System.Drawing.Size(52, 13);
-            this.label77.TabIndex = 147;
-            this.label77.Text = "k velocity";
+            this.label_kvelocity.AutoSize = true;
+            this.label_kvelocity.Location = new System.Drawing.Point(902, 575);
+            this.label_kvelocity.Name = "label_kvelocity";
+            this.label_kvelocity.Size = new System.Drawing.Size(52, 13);
+            this.label_kvelocity.TabIndex = 147;
+            this.label_kvelocity.Text = "k velocity";
             // 
             // textBox_soft_lower
             // 
@@ -1220,14 +1323,14 @@
             this.textBox_soft_lower.TabIndex = 139;
             this.textBox_soft_lower.TextChanged += new System.EventHandler(this.textBox_soft_lower_TextChanged);
             // 
-            // label78
+            // label_soft_lower
             // 
-            this.label78.AutoSize = true;
-            this.label78.Location = new System.Drawing.Point(882, 495);
-            this.label78.Name = "label78";
-            this.label78.Size = new System.Drawing.Size(72, 13);
-            this.label78.TabIndex = 142;
-            this.label78.Text = "soft lower limit";
+            this.label_soft_lower.AutoSize = true;
+            this.label_soft_lower.Location = new System.Drawing.Point(858, 495);
+            this.label_soft_lower.Name = "label_soft_lower";
+            this.label_soft_lower.Size = new System.Drawing.Size(96, 13);
+            this.label_soft_lower.TabIndex = 142;
+            this.label_soft_lower.Text = "soft lower limit (rad)";
             // 
             // textBox_soft_upper
             // 
@@ -1237,14 +1340,14 @@
             this.textBox_soft_upper.TabIndex = 140;
             this.textBox_soft_upper.TextChanged += new System.EventHandler(this.textBox_soft_upper_TextChanged);
             // 
-            // label79
+            // label_soft_upper
             // 
-            this.label79.AutoSize = true;
-            this.label79.Location = new System.Drawing.Point(880, 523);
-            this.label79.Name = "label79";
-            this.label79.Size = new System.Drawing.Size(74, 13);
-            this.label79.TabIndex = 143;
-            this.label79.Text = "soft upper limit";
+            this.label_soft_upper.AutoSize = true;
+            this.label_soft_upper.Location = new System.Drawing.Point(856, 523);
+            this.label_soft_upper.Name = "label_soft_upper";
+            this.label_soft_upper.Size = new System.Drawing.Size(98, 13);
+            this.label_soft_upper.TabIndex = 143;
+            this.label_soft_upper.Text = "soft upper limit (rad)";
             // 
             // label80
             // 
@@ -1263,14 +1366,14 @@
             this.textBox_k_position.TabIndex = 141;
             this.textBox_k_position.TextChanged += new System.EventHandler(this.textBox_k_position_TextChanged);
             // 
-            // label81
+            // label_kposition
             // 
-            this.label81.AutoSize = true;
-            this.label81.Location = new System.Drawing.Point(902, 549);
-            this.label81.Name = "label81";
-            this.label81.Size = new System.Drawing.Size(52, 13);
-            this.label81.TabIndex = 144;
-            this.label81.Text = "k position";
+            this.label_kposition.AutoSize = true;
+            this.label_kposition.Location = new System.Drawing.Point(902, 549);
+            this.label_kposition.Name = "label_kposition";
+            this.label_kposition.Size = new System.Drawing.Size(52, 13);
+            this.label_kposition.TabIndex = 144;
+            this.label_kposition.Text = "k position";
             // 
             // textBox_friction
             // 
@@ -1283,7 +1386,7 @@
             // label_friction
             // 
             this.label_friction.AutoSize = true;
-            this.label_friction.Location = new System.Drawing.Point(701, 497);
+            this.label_friction.Location = new System.Drawing.Point(694, 495);
             this.label_friction.Name = "label_friction";
             this.label_friction.Size = new System.Drawing.Size(67, 13);
             this.label_friction.TabIndex = 136;
@@ -1361,41 +1464,41 @@
             // 
             // textBox_limit_velocity
             // 
-            this.textBox_limit_velocity.Location = new System.Drawing.Point(960, 392);
+            this.textBox_limit_velocity.Location = new System.Drawing.Point(960, 388);
             this.textBox_limit_velocity.Name = "textBox_limit_velocity";
             this.textBox_limit_velocity.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_velocity.TabIndex = 125;
             this.textBox_limit_velocity.TextChanged += new System.EventHandler(this.textBox_limit_velocity_TextChanged);
             // 
-            // label70
+            // label_velocity
             // 
-            this.label70.AutoSize = true;
-            this.label70.Location = new System.Drawing.Point(910, 395);
-            this.label70.Name = "label70";
-            this.label70.Size = new System.Drawing.Size(43, 13);
-            this.label70.TabIndex = 126;
-            this.label70.Text = "velocity";
+            this.label_velocity.AutoSize = true;
+            this.label_velocity.Location = new System.Drawing.Point(884, 391);
+            this.label_velocity.Name = "label_velocity";
+            this.label_velocity.Size = new System.Drawing.Size(70, 13);
+            this.label_velocity.TabIndex = 126;
+            this.label_velocity.Text = "velocity (m/s)";
             // 
             // textBox_limit_lower
             // 
-            this.textBox_limit_lower.Location = new System.Drawing.Point(960, 314);
+            this.textBox_limit_lower.Location = new System.Drawing.Point(960, 310);
             this.textBox_limit_lower.Name = "textBox_limit_lower";
             this.textBox_limit_lower.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_lower.TabIndex = 118;
             this.textBox_limit_lower.TextChanged += new System.EventHandler(this.textBox_limit_lower_TextChanged);
             // 
-            // label66
+            // label_lower_limit
             // 
-            this.label66.AutoSize = true;
-            this.label66.Location = new System.Drawing.Point(922, 317);
-            this.label66.Name = "label66";
-            this.label66.Size = new System.Drawing.Size(32, 13);
-            this.label66.TabIndex = 121;
-            this.label66.Text = "lower";
+            this.label_lower_limit.AutoSize = true;
+            this.label_lower_limit.Location = new System.Drawing.Point(898, 313);
+            this.label_lower_limit.Name = "label_lower_limit";
+            this.label_lower_limit.Size = new System.Drawing.Size(56, 13);
+            this.label_lower_limit.TabIndex = 121;
+            this.label_lower_limit.Text = "lower (rad)";
             // 
             // textBox_limit_upper
             // 
-            this.textBox_limit_upper.Location = new System.Drawing.Point(960, 340);
+            this.textBox_limit_upper.Location = new System.Drawing.Point(960, 336);
             this.textBox_limit_upper.Name = "textBox_limit_upper";
             this.textBox_limit_upper.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_upper.TabIndex = 119;
@@ -1404,16 +1507,16 @@
             // label_limit_upper
             // 
             this.label_limit_upper.AutoSize = true;
-            this.label_limit_upper.Location = new System.Drawing.Point(920, 345);
+            this.label_limit_upper.Location = new System.Drawing.Point(896, 340);
             this.label_limit_upper.Name = "label_limit_upper";
-            this.label_limit_upper.Size = new System.Drawing.Size(34, 13);
+            this.label_limit_upper.Size = new System.Drawing.Size(58, 13);
             this.label_limit_upper.TabIndex = 122;
-            this.label_limit_upper.Text = "upper";
+            this.label_limit_upper.Text = "upper (rad)";
             // 
             // label68
             // 
             this.label68.AutoSize = true;
-            this.label68.Location = new System.Drawing.Point(906, 289);
+            this.label68.Location = new System.Drawing.Point(906, 277);
             this.label68.Name = "label68";
             this.label68.Size = new System.Drawing.Size(28, 13);
             this.label68.TabIndex = 124;
@@ -1421,20 +1524,20 @@
             // 
             // textBox_limit_effort
             // 
-            this.textBox_limit_effort.Location = new System.Drawing.Point(960, 366);
+            this.textBox_limit_effort.Location = new System.Drawing.Point(960, 362);
             this.textBox_limit_effort.Name = "textBox_limit_effort";
             this.textBox_limit_effort.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_effort.TabIndex = 120;
             this.textBox_limit_effort.TextChanged += new System.EventHandler(this.textBox_limit_effort_TextChanged);
             // 
-            // label69
+            // label_effort
             // 
-            this.label69.AutoSize = true;
-            this.label69.Location = new System.Drawing.Point(922, 369);
-            this.label69.Name = "label69";
-            this.label69.Size = new System.Drawing.Size(31, 13);
-            this.label69.TabIndex = 123;
-            this.label69.Text = "effort";
+            this.label_effort.AutoSize = true;
+            this.label_effort.Location = new System.Drawing.Point(895, 365);
+            this.label_effort.Name = "label_effort";
+            this.label_effort.Size = new System.Drawing.Size(59, 13);
+            this.label_effort.TabIndex = 123;
+            this.label_effort.Text = "effort (N-m)";
             // 
             // label65
             // 
@@ -1531,7 +1634,7 @@
             // label60
             // 
             this.label60.AutoSize = true;
-            this.label60.Location = new System.Drawing.Point(780, 284);
+            this.label60.Location = new System.Drawing.Point(769, 277);
             this.label60.Name = "label60";
             this.label60.Size = new System.Drawing.Size(26, 13);
             this.label60.TabIndex = 111;
@@ -1624,11 +1727,11 @@
             // label54
             // 
             this.label54.AutoSize = true;
-            this.label54.Location = new System.Drawing.Point(520, 283);
+            this.label54.Location = new System.Drawing.Point(527, 277);
             this.label54.Name = "label54";
-            this.label54.Size = new System.Drawing.Size(51, 13);
+            this.label54.Size = new System.Drawing.Size(34, 13);
             this.label54.TabIndex = 98;
-            this.label54.Text = "Origin (m)";
+            this.label54.Text = "Origin";
             // 
             // label55
             // 
@@ -1689,16 +1792,16 @@
             this.treeView_jointtree.TabIndex = 89;
             this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_jointtree_AfterSelect);
             // 
-            // button_joint_finish
+            // button_joint_next
             // 
-            this.button_joint_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_joint_finish.Location = new System.Drawing.Point(987, 651);
-            this.button_joint_finish.Name = "button_joint_finish";
-            this.button_joint_finish.Size = new System.Drawing.Size(75, 23);
-            this.button_joint_finish.TabIndex = 88;
-            this.button_joint_finish.Text = "Finish";
-            this.button_joint_finish.UseVisualStyleBackColor = true;
-            this.button_joint_finish.Click += new System.EventHandler(this.button_joint_finish_Click);
+            this.button_joint_next.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_joint_next.Location = new System.Drawing.Point(987, 651);
+            this.button_joint_next.Name = "button_joint_next";
+            this.button_joint_next.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_next.TabIndex = 88;
+            this.button_joint_next.Text = "Next";
+            this.button_joint_next.UseVisualStyleBackColor = true;
+            this.button_joint_next.Click += new System.EventHandler(this.button_joint_next_Click);
             // 
             // button_joint_previous
             // 
@@ -1732,9 +1835,6 @@
             this.Controls.Add(this.button_savename_browse);
             this.Controls.Add(this.panel_joint);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.treeView_linktree);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button_link_cancel);
@@ -1755,6 +1855,8 @@
             this.groupBox5.PerformLayout();
             this.panel_joint.ResumeLayout(false);
             this.panel_joint.PerformLayout();
+            this.panel_link_properties.ResumeLayout(false);
+            this.panel_link_properties.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1857,18 +1959,18 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel panel_joint;
         private System.Windows.Forms.TreeView treeView_jointtree;
-        private System.Windows.Forms.Button button_joint_finish;
+        private System.Windows.Forms.Button button_joint_next;
         private System.Windows.Forms.Button button_joint_previous;
         private System.Windows.Forms.Button button_joint_cancel;
         private System.Windows.Forms.TextBox textBox_k_velocity;
-        private System.Windows.Forms.Label label77;
+        private System.Windows.Forms.Label label_kvelocity;
         private System.Windows.Forms.TextBox textBox_soft_lower;
-        private System.Windows.Forms.Label label78;
+        private System.Windows.Forms.Label label_soft_lower;
         private System.Windows.Forms.TextBox textBox_soft_upper;
-        private System.Windows.Forms.Label label79;
+        private System.Windows.Forms.Label label_soft_upper;
         private System.Windows.Forms.Label label80;
         private System.Windows.Forms.TextBox textBox_k_position;
-        private System.Windows.Forms.Label label81;
+        private System.Windows.Forms.Label label_kposition;
         private System.Windows.Forms.TextBox textBox_friction;
         private System.Windows.Forms.Label label_friction;
         private System.Windows.Forms.TextBox textBox_damping;
@@ -1880,14 +1982,14 @@
         private System.Windows.Forms.Label label73;
         private System.Windows.Forms.Label label74;
         private System.Windows.Forms.TextBox textBox_limit_velocity;
-        private System.Windows.Forms.Label label70;
+        private System.Windows.Forms.Label label_velocity;
         private System.Windows.Forms.TextBox textBox_limit_lower;
-        private System.Windows.Forms.Label label66;
+        private System.Windows.Forms.Label label_lower_limit;
         private System.Windows.Forms.TextBox textBox_limit_upper;
         private System.Windows.Forms.Label label_limit_upper;
         private System.Windows.Forms.Label label68;
         private System.Windows.Forms.TextBox textBox_limit_effort;
-        private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label_effort;
         private System.Windows.Forms.Label label65;
         private System.Windows.Forms.Label label64;
         private System.Windows.Forms.Label label63;
@@ -1916,7 +2018,15 @@
         private System.Windows.Forms.Label label57;
         private System.Windows.Forms.Label label_child;
         private System.Windows.Forms.Label label_parent;
-        private System.Windows.Forms.Label label5;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Panel panel_link_properties;
+        private System.Windows.Forms.TreeView treeView_linkProperties;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button button_links_finish;
+        private System.Windows.Forms.Button button_links_previous;
+        private System.Windows.Forms.Button button_links_cancel;
     }
 }

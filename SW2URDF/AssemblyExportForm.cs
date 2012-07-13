@@ -50,6 +50,7 @@ namespace SW2URDF
             Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
             Exporter.createJoints();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            fillJointPropertyBoxes(null);
             panel_joint.Visible = true;
         }
 
@@ -57,7 +58,7 @@ namespace SW2URDF
         {
             this.Close();
         }
-        private void button_joint_finish_Click(object sender, EventArgs e)
+        private void button_joint_next_Click(object sender, EventArgs e)
         {
             LinkNode node = (LinkNode)treeView_jointtree.SelectedNode;
             if (node != null)
@@ -65,8 +66,8 @@ namespace SW2URDF
                 node.Joint = saveJointDataFromPropertyBoxes();
             }
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
-            Exporter.exportRobot();
-            this.Close();
+            fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
+            panel_link_properties.Visible = true;
         }
 
         private void button_joint_previous_Click(object sender, EventArgs e)
@@ -74,11 +75,29 @@ namespace SW2URDF
             treeView_linktree.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            panel_joint.Visible = false;
+            panel_link_properties.Visible = false;
         }
 
         private void button_joint_cancel_Click(object sender, EventArgs e)
         {
+            this.Close();
+        }
+        private void button_links_cancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button_links_previous_Click(object sender, EventArgs e)
+        {
+            treeView_linktree.Nodes.Clear();
+            Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+            fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            panel_joint.Visible = false;
+        }
+
+        private void button_links_finish_Click(object sender, EventArgs e)
+        {
+            Exporter.exportRobot();
             this.Close();
         }
 
@@ -292,6 +311,22 @@ namespace SW2URDF
             }
         }
 
+        private void treeView_linkProperties_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            LinkNode node = (LinkNode)e.Node;
+            fillLinkPropertyBoxes(node.Link);
+            node.Link.SWComponent.Select(false);
+            treeView_linkProperties.Focus();
+        }
+
+        private void treeView_linkProperties_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            LinkNode node = (LinkNode)e.Node;
+            fillLinkPropertyBoxes(node.Link);
+            node.Link.SWComponent.Select(false);
+            treeView_linkProperties.Focus();
+        }
+
         public LinkItem LinkNodeToLinkItem(LinkNode node)
         {
             LinkItem item = new LinkItem();
@@ -326,23 +361,23 @@ namespace SW2URDF
             textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString("G5");
             textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString("G5");
             textBox_collision_origin_z.Text = Link.Collision.Origin.Z.ToString("G5");
-            textBox_collision_origin_roll.Text = "0";
-            textBox_collision_origin_pitch.Text = "0";
-            textBox_collision_origin_yaw.Text = "0";
+            textBox_collision_origin_roll.Text = Link.Collision.Origin.Roll.ToString("G5");
+            textBox_collision_origin_pitch.Text = Link.Collision.Origin.Pitch.ToString("G5");
+            textBox_collision_origin_yaw.Text = Link.Collision.Origin.Yaw.ToString("G5");
 
             textBox_visual_origin_x.Text = Link.Visual.Origin.X.ToString("G5");
             textBox_visual_origin_y.Text = Link.Visual.Origin.Y.ToString("G5");
             textBox_visual_origin_z.Text = Link.Visual.Origin.Z.ToString("G5");
-            textBox_visual_origin_roll.Text = "0";
-            textBox_visual_origin_pitch.Text = "0";
-            textBox_visual_origin_yaw.Text = "0";
+            textBox_visual_origin_roll.Text = Link.Visual.Origin.Roll.ToString("G5");
+            textBox_visual_origin_pitch.Text = Link.Visual.Origin.Pitch.ToString("G5");
+            textBox_visual_origin_yaw.Text = Link.Visual.Origin.Yaw.ToString("G5");
 
             textBox_inertial_origin_x.Text = Link.Inertial.Origin.X.ToString("G5");
             textBox_inertial_origin_y.Text = Link.Inertial.Origin.Y.ToString("G5");
             textBox_inertial_origin_z.Text = Link.Inertial.Origin.Z.ToString("G5");
-            textBox_inertial_origin_roll.Text = "0";
-            textBox_inertial_origin_pitch.Text = "0";
-            textBox_inertial_origin_yaw.Text = "0";
+            textBox_inertial_origin_roll.Text = Link.Inertial.Origin.Roll.ToString("G5");
+            textBox_inertial_origin_pitch.Text = Link.Inertial.Origin.Pitch.ToString("G5");
+            textBox_inertial_origin_yaw.Text = Link.Inertial.Origin.Yaw.ToString("G5");
 
             textBox_mass.Text = Link.Inertial.Mass.Value.ToString("G5");
 
@@ -394,6 +429,17 @@ namespace SW2URDF
                 textBox_soft_upper.Text = "";
                 textBox_k_position.Text = "";
                 textBox_k_velocity.Text = "";
+
+                label_lower_limit.Text = "lower";
+                label_limit_upper.Text = "upper";
+                label_effort.Text = "effort";
+                label_velocity.Text = "velocity";
+                label_friction.Text = "friction";
+                label_damping.Text = "damping";
+                label_soft_lower.Text = "soft lower limit";
+                label_soft_upper.Text = "soft upper limit";
+                label_kposition.Text = "k position";
+                label_kvelocity.Text = "k velocity";
             }
             else
             {
@@ -431,6 +477,46 @@ namespace SW2URDF
                 textBox_soft_upper.Text = Joint.Safety.soft_upper.ToString("G5");
                 textBox_k_position.Text = Joint.Safety.k_position.ToString("G5");
                 textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString("G5");
+
+                if (Joint.type == "revolute")
+                {
+                    label_lower_limit.Text = "lower (rad)";
+                    label_limit_upper.Text = "upper (rad)";
+                    label_effort.Text = "effort (N-m)";
+                    label_velocity.Text = "velocity (rad/s)";
+                    label_friction.Text = "friction (N-m)";
+                    label_damping.Text = "damping (N-m-s/rad)";
+                    label_soft_lower.Text = "soft lower limit (rad)";
+                    label_soft_upper.Text = "soft upper limit (rad)";
+                    label_kposition.Text = "k position";
+                    label_kvelocity.Text = "k velocity";
+                }
+                else if (Joint.type == "prismatic")
+                {
+                    label_lower_limit.Text = "lower (m)";
+                    label_limit_upper.Text = "upper (m)";
+                    label_effort.Text = "effort (N)";
+                    label_velocity.Text = "velocity (m/s)";
+                    label_friction.Text = "friction (N)";
+                    label_damping.Text = "damping (N-s/m)";
+                    label_soft_lower.Text = "soft lower limit (m)";
+                    label_soft_upper.Text = "soft upper limit (m)";
+                    label_kposition.Text = "k position";
+                    label_kvelocity.Text = "k velocity";
+                }
+                else
+                {
+                    label_lower_limit.Text = "lower";
+                    label_limit_upper.Text = "upper";
+                    label_effort.Text = "effort";
+                    label_velocity.Text = "velocity";
+                    label_friction.Text = "friction";
+                    label_damping.Text = "damping";
+                    label_soft_lower.Text = "soft lower limit";
+                    label_soft_upper.Text = "soft upper limit";
+                    label_kposition.Text = "k position";
+                    label_kvelocity.Text = "k velocity";
+                }
             }
         }
         public void saveLinkItemData(int index)
@@ -951,12 +1037,6 @@ namespace SW2URDF
 
         }
         #endregion
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
     }
 
     #region Derived classes

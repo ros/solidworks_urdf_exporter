@@ -97,11 +97,11 @@ namespace SW2URDF
             double[] centerOfMass = swMass.CenterOfMass;
             Link.Inertial.Origin.XYZ = centerOfMass;
             Link.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
-
+            
             //Sure, why not? Be lazy
-            Link.Visual.Origin.XYZ = centerOfMass;
+            Link.Visual.Origin.XYZ = new double[3] { 0, 0, 0 };
             Link.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
-            Link.Collision.Origin.XYZ = centerOfMass;
+            Link.Collision.Origin.XYZ = new double[3] { 0, 0, 0 };
             Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
 
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
@@ -151,6 +151,13 @@ namespace SW2URDF
 
             // Build the link from the partdoc
             Link = createLinkFromPartModel(partDoc);
+            
+            //The part model doesn't actually know where the origin is, but the component does and this is important when exporting from assembly
+            Link.Visual.Origin.XYZ = OPS.getXYZ(partComp.Transform2);
+            Link.Visual.Origin.RPY = OPS.getRPY(partComp.Transform2);
+            Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
+            Link.Collision.Origin.RPY = Link.Visual.Origin.RPY;
+
             Link.SWComponent = partComp;
             Link.SWComponentLevel = level;
             Link.uniqueName = partComp.Name2;
