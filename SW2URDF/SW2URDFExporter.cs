@@ -38,6 +38,7 @@ namespace SW2URDF
 
         ModelDoc2 ActiveSWModel;
         MathUtility swMath;
+        List<IComponent2> hiddenComponents;
         
         public robot mRobot
         { get; set; }
@@ -317,6 +318,7 @@ namespace SW2URDF
 
             //Creates the joints with origins defined in reference to the assembly coordinate system
             mRobot.BaseLink = createChildJoints(mRobot.BaseLink);
+            closeSketch();
 
             //Iterate through each child link and change the references in each joint to refer to the parent joint
             foreach (link child in mRobot.BaseLink.Children)
@@ -342,13 +344,13 @@ namespace SW2URDF
             Matrix<double> jointTransform = OPS.getTransformation(Link.Joint.Origin.XYZ, Link.Joint.Origin.RPY);
 
             //The transform from the parent joint's reference frame to this joints reference frame
-            Matrix<double> localJointTransform = jointTransform * cumulativeTransform.Inverse();
+            Matrix<double> localJointTransform = cumulativeTransform.Inverse() * jointTransform;
 
             //The transform from the joint's reference frame to the mesh
-            Matrix<double> localLinkTransform = componentTransform * jointTransform.Inverse();
+            Matrix<double> localLinkTransform = jointTransform.Inverse() * componentTransform;
 
             //The transform from the joint's reference frame to the center of mass
-            Matrix<double> localCoMTransform = linkCoMTransform * jointTransform.Inverse();
+            Matrix<double> localCoMTransform =  jointTransform.Inverse() * linkCoMTransform;
 
             //Transforming the axis of rotation to the joint's reference frame
             Axis = jointTransform.Inverse() * Axis;
@@ -356,6 +358,9 @@ namespace SW2URDF
 
             //Save the data from the transforms
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
+
+            Link.Joint.Origin.XYZ = OPS.getXYZ(localJointTransform);
+            Link.Joint.Origin.RPY = OPS.getRPY(localJointTransform);
 
             //Meshes are saved with relation to joint coordinate system, so there shouldn't be any transformation right?
             Link.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
@@ -387,7 +392,7 @@ namespace SW2URDF
         // Creates a joint given a parent link and a child link
         public joint createJointFromLinks(link parent, link child)
         {
-            joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent.SWComponent, child.SWComponent);
+            joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
             
             IFeature coordinates = default(IFeature);
@@ -407,15 +412,18 @@ namespace SW2URDF
                 SketchSegment xaxis = (SketchSegment)sketchEntities[1];
                 SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
-                data.Mark = 1;
-                origin.Select4(true, data);
-                data.Mark = 2;
-                xaxis.Select4(true, data);
-                data.Mark = 4;
-                yaxis.Select4(true, data);
+                if (origin != null && xaxis != null && yaxis != null)
+                {
+                    data.Mark = 1;
+                    origin.Select4(true, data);
+                    data.Mark = 2;
+                    xaxis.Select4(true, data);
+                    data.Mark = 4;
+                    yaxis.Select4(true, data);
 
-                coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
-                coordinates.Name = Joint.CoordinateSystemName;
+                    coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+                    coordinates.Name = Joint.CoordinateSystemName;
+                }
             }
             else
             {
@@ -431,13 +439,16 @@ namespace SW2URDF
             {
                 //Adds sketch segment
                 SketchSegment rotaxis = addSketchGeometry(Joint.Axis, Joint.Origin);
-                data.Mark = 1;
-
-                //Use special method to create the axis
-                Feature featAxis = insertAxis(rotaxis);
-                if (featAxis != null)
+                if (rotaxis != null)
                 {
-                    featAxis.Name = Joint.AxisName;
+                    data.Mark = 1;
+
+                    //Use special method to create the axis
+                    Feature featAxis = insertAxis(rotaxis);
+                    if (featAxis != null)
+                    {
+                        featAxis.Name = Joint.AxisName;
+                    }
                 }
             }
             else
@@ -515,17 +526,39 @@ namespace SW2URDF
             return sketch.Name;
         }
 
+        public void closeSketch()
+        {
+            if (ActiveSWModel.SketchManager.ActiveSketch != null)
+            {
+                ActiveSWModel.Extension.SelectByID2("URDF_reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
+                ActiveSWModel.SketchManager.Insert3DSketch(true);
+            }
+        }
+
         // Adds lines and a point to create the entities for a reference coordinates
         public object[] addSketchGeometry(origin Origin)
         {
-            bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
-            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            if (ActiveSWModel.SketchManager.ActiveSketch == null)
+            {
+                bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                ActiveSWModel.SketchManager.Insert3DSketch(true);
+            }
             Matrix<double> transform = OPS.getRotation(Origin.RPY);
             Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
-            SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X, 
-                                                                              Origin.Y, 
-                                                                              Origin.Z);
+
+            SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X,
+                                                                      Origin.Y,
+                                                                      Origin.Z);
+            if (OriginPoint == null)
+            {
+                bool pointSelected = ActiveSWModel.Extension.SelectByID2("", "SKETCHPOINT", Origin.X, Origin.Y, Origin.Z, false, 1, null, 0);
+                if (pointSelected)
+                {
+                    OriginPoint = ActiveSWModel.SelectionManager.GetSelectedObject6(1, -1);
+                }
+            }
+            
 
             SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X, 
                                                                          Origin.Y, 
@@ -556,6 +589,10 @@ namespace SW2URDF
                                                                Origin.X + 0.05 * Axis.X,
                                                                Origin.Y + 0.05 * Axis.Y,
                                                                Origin.Z + 0.05 * Axis.Z);
+            if (RotAxis == null)
+            {
+                return null;
+            }
             RotAxis.ConstructionGeometry = true;
             RotAxis.Width = 2;
 
@@ -565,7 +602,7 @@ namespace SW2URDF
 
         // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
         // the parent assembly
-        public joint estimateJointFromComponents(AssemblyDoc assy, IComponent2 parent, IComponent2 child)
+        public joint estimateJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
             joint Joint = new joint();
 
@@ -576,59 +613,90 @@ namespace SW2URDF
             MathVector LDir1, LDir2;
 
             // Fix parent component to eliminate its degrees of freedom from this joint
-            bool isFixed = parent.IsFixed();
-            parent.Select(false);
+            IComponent2 compToFix = findCompToFix(parent, child);
+            bool isFixed = compToFix.IsFixed();
+            compToFix.Select(false);
             assy.FixComponent();
 
             // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
             // https://forum.solidworks.com/thread/57414
-            int DOFs = child.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
+            int DOFs = child.SWComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
                                               out R2Status, out RPoint2, out R2DirStatus, out RDir2,
                                               out L1Status, out LDir1,
                                               out L2Status, out LDir2);
 
             // Unfix components (if they weren't fixed beforehand)
-            parent.Select(false);
+            compToFix.Select(false);
             if (!isFixed)
             {
                 assy.UnfixComponent();
             }
 
             // Convert the gotten degrees of freedom to a joint type, origin and axis
+            Joint.type = "fixed";
+            Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
+            Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
             if (DOFs == 0 && (R1Status + L1Status > 0))
             {
-                if (R1Status == 1 && L1Status == 1)
-                {
-                    Joint.type = "fixed";
-                    MathTransform transform = child.Transform2;
-                    Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                    Joint.Origin.RPY = OPS.getRPY(transform);
-                }
-                else if (R1Status == 1)
+                if (R1Status == 1)
                 {
                     Joint.type = "continuous";
                     Joint.Axis.XYZ = RDir1.ArrayData;
                     Joint.Origin.XYZ = RPoint1.ArrayData;
-                    Joint.Origin.RPY = OPS.getRPY(child.Transform2);
+                    Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
                 }
                 else if (L1Status == 1)
                 {
                     Joint.type = "prismatic";
                     Joint.Axis.XYZ = LDir1.ArrayData;
-                    MathTransform transform = child.Transform2;
-                    Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                    Joint.Origin.RPY = OPS.getRPY(child.Transform2);
+                    Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
+                    Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
                 }
             }
-            else
-            {
-                Joint.type = "fixed";
-                MathTransform transform = child.Transform2;
-                Joint.Origin.XYZ = new double[] { transform.ArrayData[9], transform.ArrayData[10], transform.ArrayData[11] };
-                Joint.Origin.RPY = OPS.getRPY(parent.Transform2);
-            }
-
             return Joint;
+        }
+
+        public IComponent2 findCommonSWAncestor(link Link1, link Link2)
+        {
+            int levelChange = Math.Abs(Link1.SWComponentLevel - Link2.SWComponentLevel + 1);
+            IComponent2 parent1 = Link1.SWComponent;
+            IComponent2 parent2 = Link2.SWComponent;
+            for (int i = 0; i < Link1.SWComponentLevel - levelChange; i++)
+            {
+                parent1 = parent1.GetParent();
+                if (parent1 == null)
+                {
+                    return null;
+                }
+            }
+            for (int i = 0; i < Link2.SWComponentLevel - levelChange; i++)
+            {
+                parent2 = parent2.GetParent();
+                if (parent2 == null)
+                {
+                    return null;
+                }
+            }
+            while (parent1 != parent2)
+            {
+                parent1 = parent1.GetParent();
+                parent2 = parent2.GetParent();
+                if (parent1 == null || parent2 == null)
+                {
+                    return null;
+                }
+            }
+            return parent1;
+
+        }
+        public IComponent2 findCompToFix(link parent, link child)
+        {
+            IComponent2 compToFix = parent.SWComponent;
+            for (int i = 0; i < parent.SWComponentLevel; i++)
+            {
+                compToFix = compToFix.GetParent();
+            }
+            return compToFix;
         }
         #endregion
 
@@ -643,11 +711,11 @@ namespace SW2URDF
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.BaseLink.name + ".URDF";
-            string windowsManifestFileName = package.WindowsPackageDirectory + mRobot.name + ".XML";
+            string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
 
             //Creating manifest file
             manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
-            manifest Manifest = new manifest(mRobot.name);
+            manifest Manifest = new manifest(mPackageName);
             Manifest.writeElement(manifestWriter);
 
             //Customizing STL preferences to how I want them
@@ -655,12 +723,15 @@ namespace SW2URDF
             setSTLExportPreferences();
 
             //Saving part as STL mesh
-            hideComponents(mRobot.BaseLink);
+            AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
+            hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
+            ActiveSWModel.Extension.SelectAll();
+            ActiveSWModel.HideComponent2();
             string filename = exportFiles(mRobot.BaseLink, package);
             showComponents(mRobot.BaseLink);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
-
+            showComponents(hiddenComponents);
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             mRobot.writeURDF(uWriter.writer);
@@ -713,7 +784,6 @@ namespace SW2URDF
                     setSTLCoordinateSystem(Link.Joint.CoordinateSystemName);
                 }
                 ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-                //iSwApp.CloseDoc(Link.name + ".sldprt");
                 Link.SWComponent.Select(false);
                 ActiveSWModel.HideComponent2();
 
@@ -730,7 +800,7 @@ namespace SW2URDF
             string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".URDF";
-            string windowsManifestFileName = package.WindowsPackageDirectory + mRobot.name + ".XML";
+            string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
 
             //Creating manifest file
             manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
@@ -779,6 +849,39 @@ namespace SW2URDF
             selectComponents(Link);
             ActiveSWModel.HideComponent2();
 
+        }
+        public void hideComponents()
+        {
+            AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
+            IComponent2[] varComp = assyDoc.GetComponents(false);
+            foreach (IComponent2 comp in varComp)
+            {
+                comp.Select(true);
+            }
+            ActiveSWModel.HideComponent2();
+        }
+        public List<IComponent2> findHiddenComponents(object[] varComp)
+        {
+            List<IComponent2> hiddenComp = new List<IComponent2>();
+            foreach (object obj in varComp)
+            {
+                IComponent2 comp = (IComponent2)obj;
+                if (comp.IsHidden(false))
+                {
+                    hiddenComp.Add(comp);
+                }
+            }
+            return hiddenComp;
+        }
+        public void showComponents(List<IComponent2> hiddenComponents)
+        {
+            AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
+            ActiveSWModel.Extension.SelectAll();
+            foreach (IComponent2 comp in hiddenComponents)
+            {
+                comp.DeSelect();
+            }
+            ActiveSWModel.ShowComponent2();
         }
         public void showComponents(link Link)
         {
@@ -833,7 +936,7 @@ namespace SW2URDF
 
         public void setSTLCoordinateSystem(string name)
         {
-            iSwApp.SetUserPreferenceStringValue((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, name);
+            ActiveSWModel.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, name);
         }
         #endregion
     }

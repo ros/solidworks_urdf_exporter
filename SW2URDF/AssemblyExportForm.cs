@@ -97,7 +97,14 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
+            LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+            if (node != null)
+            {
+                saveLinkDataFromPropertyBoxes(node.Link);
+            }
             Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+            Exporter.mSavePath = Path.GetDirectoryName(textBox_save_as.Text);
+            Exporter.mPackageName = Path.GetFileName(textBox_save_as.Text);
             Exporter.exportRobot();
             this.Close();
         }

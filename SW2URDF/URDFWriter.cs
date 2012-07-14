@@ -885,6 +885,10 @@ namespace SW2URDF
         { get; set;}
         public depend[] Depends
         { get; set; }
+        public author Author
+        { get; set; }
+        public license License
+        { get; set; }
 
         public manifest(string name) 
         {
@@ -893,11 +897,20 @@ namespace SW2URDF
             Description.longDescription = name;
 
             Depends = new depend[1];
-            Depends[0].package = "gazebo";
+            depend dep = new depend();
+            dep.package = "gazebo";
+            Depends[0] = dep;
+
+            Author = new author();
+            Author.name = "me";
+
+            License = new license();
+            License.lic = "BSD";
         }
         public void writeElement(manifestWriter mWriter)
         {
             XmlWriter writer = mWriter.writer;
+            writer.WriteStartDocument();
             writer.WriteStartElement("package");
 
             Description.writeElement(writer);
@@ -905,8 +918,13 @@ namespace SW2URDF
             {
                 dep.writeElement(writer);
             }
+
+            Author.writeElement(writer);
+            License.writeElement(writer);
            
             writer.WriteEndElement();
+            writer.WriteEndDocument();
+            writer.Close();
         }
     }
     public class description : manifestElement
@@ -942,5 +960,35 @@ namespace SW2URDF
             writer.WriteAttributeString("package", package);
             writer.WriteEndElement();
         }
-    }   
+    }
+    public class author : manifestElement
+    {
+        public string name
+        { get; set; }
+        public author()
+        {
+            name = "";
+        }
+        public void writeElement(XmlWriter writer)
+        {
+            writer.WriteStartElement("author");
+            writer.WriteString(name);
+            writer.WriteEndElement();
+        }
+    }
+    public class license : manifestElement
+    {
+        public string lic
+        { get; set; }
+        public license()
+        {
+            lic = "";
+        }
+        public void writeElement(XmlWriter writer)
+        {
+            writer.WriteStartElement("license");
+            writer.WriteString(lic);
+            writer.WriteEndElement();
+        }
+    }
 }
