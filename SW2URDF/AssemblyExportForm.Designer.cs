@@ -123,13 +123,16 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
-            this.label7 = new System.Windows.Forms.Label();
             this.panel_link_properties = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
             this.button_links_finish = new System.Windows.Forms.Button();
             this.button_links_previous = new System.Windows.Forms.Button();
             this.button_links_cancel = new System.Windows.Forms.Button();
             this.treeView_linkProperties = new System.Windows.Forms.TreeView();
+            this.button_joint_next = new System.Windows.Forms.Button();
+            this.button_joint_previous = new System.Windows.Forms.Button();
+            this.button_joint_cancel = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.textBox_k_velocity = new System.Windows.Forms.TextBox();
@@ -189,9 +192,6 @@
             this.label_child = new System.Windows.Forms.Label();
             this.label_parent = new System.Windows.Forms.Label();
             this.treeView_jointtree = new System.Windows.Forms.TreeView();
-            this.button_joint_next = new System.Windows.Forms.Button();
-            this.button_joint_previous = new System.Windows.Forms.Button();
-            this.button_joint_cancel = new System.Windows.Forms.Button();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -585,7 +585,7 @@
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(8, 200);
+            this.label34.Location = new System.Drawing.Point(8, 199);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(43, 13);
             this.label34.TabIndex = 60;
@@ -1199,15 +1199,6 @@
             this.panel_joint.TabIndex = 80;
             this.panel_joint.Visible = false;
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(9, 9);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(127, 13);
-            this.label7.TabIndex = 152;
-            this.label7.Text = "Configure Joint Properties";
-            // 
             // panel_link_properties
             // 
             this.panel_link_properties.Controls.Add(this.label5);
@@ -1279,6 +1270,48 @@
             this.treeView_linkProperties.TabIndex = 74;
             this.treeView_linkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linkProperties_AfterSelect);
             this.treeView_linkProperties.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeView_linkProperties_NodeMouseClick);
+            // 
+            // button_joint_next
+            // 
+            this.button_joint_next.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_joint_next.Location = new System.Drawing.Point(987, 651);
+            this.button_joint_next.Name = "button_joint_next";
+            this.button_joint_next.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_next.TabIndex = 88;
+            this.button_joint_next.Text = "Next";
+            this.button_joint_next.UseVisualStyleBackColor = true;
+            this.button_joint_next.Click += new System.EventHandler(this.button_joint_next_Click);
+            // 
+            // button_joint_previous
+            // 
+            this.button_joint_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_joint_previous.Location = new System.Drawing.Point(906, 651);
+            this.button_joint_previous.Name = "button_joint_previous";
+            this.button_joint_previous.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_previous.TabIndex = 87;
+            this.button_joint_previous.Text = "Previous";
+            this.button_joint_previous.UseVisualStyleBackColor = true;
+            this.button_joint_previous.Click += new System.EventHandler(this.button_joint_previous_Click);
+            // 
+            // button_joint_cancel
+            // 
+            this.button_joint_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_joint_cancel.Location = new System.Drawing.Point(12, 653);
+            this.button_joint_cancel.Name = "button_joint_cancel";
+            this.button_joint_cancel.Size = new System.Drawing.Size(75, 23);
+            this.button_joint_cancel.TabIndex = 86;
+            this.button_joint_cancel.Text = "Cancel";
+            this.button_joint_cancel.UseVisualStyleBackColor = true;
+            this.button_joint_cancel.Click += new System.EventHandler(this.button_joint_cancel_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(9, 9);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(127, 13);
+            this.label7.TabIndex = 152;
+            this.label7.Text = "Configure Joint Properties";
             // 
             // label6
             // 
@@ -1587,10 +1620,12 @@
             // 
             this.comboBox_joint_type.FormattingEnabled = true;
             this.comboBox_joint_type.Items.AddRange(new object[] {
-            "Revolute (Rotation)",
-            "Continuous (Revolute)",
-            "Prismatic (Linear)",
-            "Fixed"});
+            "continuous",
+            "fixed",
+            "floating",
+            "planar",
+            "prismatic",
+            "revolute"});
             this.comboBox_joint_type.Location = new System.Drawing.Point(851, 216);
             this.comboBox_joint_type.Name = "comboBox_joint_type";
             this.comboBox_joint_type.Size = new System.Drawing.Size(121, 21);
@@ -1791,39 +1826,6 @@
             this.treeView_jointtree.Size = new System.Drawing.Size(461, 524);
             this.treeView_jointtree.TabIndex = 89;
             this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_jointtree_AfterSelect);
-            // 
-            // button_joint_next
-            // 
-            this.button_joint_next.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_joint_next.Location = new System.Drawing.Point(987, 651);
-            this.button_joint_next.Name = "button_joint_next";
-            this.button_joint_next.Size = new System.Drawing.Size(75, 23);
-            this.button_joint_next.TabIndex = 88;
-            this.button_joint_next.Text = "Next";
-            this.button_joint_next.UseVisualStyleBackColor = true;
-            this.button_joint_next.Click += new System.EventHandler(this.button_joint_next_Click);
-            // 
-            // button_joint_previous
-            // 
-            this.button_joint_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_joint_previous.Location = new System.Drawing.Point(906, 651);
-            this.button_joint_previous.Name = "button_joint_previous";
-            this.button_joint_previous.Size = new System.Drawing.Size(75, 23);
-            this.button_joint_previous.TabIndex = 87;
-            this.button_joint_previous.Text = "Previous";
-            this.button_joint_previous.UseVisualStyleBackColor = true;
-            this.button_joint_previous.Click += new System.EventHandler(this.button_joint_previous_Click);
-            // 
-            // button_joint_cancel
-            // 
-            this.button_joint_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_joint_cancel.Location = new System.Drawing.Point(12, 653);
-            this.button_joint_cancel.Name = "button_joint_cancel";
-            this.button_joint_cancel.Size = new System.Drawing.Size(75, 23);
-            this.button_joint_cancel.TabIndex = 86;
-            this.button_joint_cancel.Text = "Cancel";
-            this.button_joint_cancel.UseVisualStyleBackColor = true;
-            this.button_joint_cancel.Click += new System.EventHandler(this.button_joint_cancel_Click);
             // 
             // AssemblyExportForm
             // 

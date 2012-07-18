@@ -614,6 +614,7 @@ namespace SW2URDF
 
             // Fix parent component to eliminate its degrees of freedom from this joint
             IComponent2 compToFix = findCompToFix(parent, child);
+            List<Mate2> limitMates = suppressLimitMates(child.SWComponent);
             bool isFixed = compToFix.IsFixed();
             compToFix.Select(false);
             assy.FixComponent();
@@ -631,6 +632,7 @@ namespace SW2URDF
             {
                 assy.UnfixComponent();
             }
+            unsuppressLimitMates(limitMates);
 
             // Convert the gotten degrees of freedom to a joint type, origin and axis
             Joint.type = "fixed";
@@ -644,6 +646,7 @@ namespace SW2URDF
                     Joint.Axis.XYZ = RDir1.ArrayData;
                     Joint.Origin.XYZ = RPoint1.ArrayData;
                     Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
+                    
                 }
                 else if (L1Status == 1)
                 {
@@ -653,7 +656,70 @@ namespace SW2URDF
                     Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
                 }
             }
+            if (limitMates.Count > 0)
+            {
+                Joint = addLimits(Joint, limitMates);
+            }
             return Joint;
+        }
+
+
+        public joint addLimits(joint Joint, List<Mate2> limitMates)
+        {
+            // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
+            foreach (Mate2 swMate in limitMates)
+            {
+                // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
+                if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
+                    (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
+                {
+                    Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
+                    Joint.Limit.lower = swMate.MinimumVariation;
+                    if (Joint.type == "continuous")
+                    {
+                        Joint.type = "revolute";
+                    }
+                }
+            }
+            return Joint;
+        }
+
+        public List<Mate2> suppressLimitMates(IComponent2 component)
+        {
+            ModelDoc2 modelDoc = component.GetModelDoc2();
+            List<Mate2> limitMates = new List<Mate2>();
+            if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            {
+                object[] objs = component.GetMates();
+                foreach (object obj in objs)
+                {
+                    if (obj is Mate2)
+                    {
+                        Mate2 swMate = (Mate2)obj;
+                        if (swMate.MinimumVariation != swMate.MaximumVariation)
+                        {
+                            limitMates.Add(swMate);
+                        }
+                    }
+                }
+                foreach (Mate2 swMate in limitMates)
+                {
+                    ModelDoc2 doc = component.GetModelDoc2();
+                    Feature feat = (Feature)swMate;
+                    feat.Select(false);
+                    feat.SetSuppression2((int)swFeatureSuppressionAction_e.swSuppressFeature, (int)swInConfigurationOpts_e.swThisConfiguration, null);
+                }
+            }
+            return limitMates;
+        }
+
+        public void unsuppressLimitMates(List<Mate2> limitMates)
+        {
+            foreach (Mate2 swMate in limitMates)
+            {
+                Feature feat = (Feature)swMate;
+                feat.SetSuppression2((int)swFeatureSuppressionAction_e.swUnSuppressFeature, (int)swInConfigurationOpts_e.swThisConfiguration, null);
+            }
         }
 
         public IComponent2 findCommonSWAncestor(link Link1, link Link2)

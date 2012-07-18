@@ -486,7 +486,7 @@ namespace SW2URDF
                 textBox_k_position.Text = Joint.Safety.k_position.ToString("G5");
                 textBox_k_velocity.Text = Joint.Safety.k_velocity.ToString("G5");
 
-                if (Joint.type == "revolute")
+                if (Joint.type == "revolute" || Joint.type == "continuous")
                 {
                     label_lower_limit.Text = "lower (rad)";
                     label_limit_upper.Text = "upper (rad)";
@@ -927,6 +927,8 @@ namespace SW2URDF
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             LinkNode node = (LinkNode)e.Node;
+            fillLinkPropertyBoxes(node.Link);
+            node.Link.SWComponent.Select(false);
             fillJointPropertyBoxes(node.Link.Joint);
         }
 
