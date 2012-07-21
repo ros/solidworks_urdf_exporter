@@ -320,12 +320,163 @@ namespace SW2URDF
             mRobot.BaseLink = createChildJoints(mRobot.BaseLink);
             closeSketch();
 
-            //Iterate through each child link and change the references in each joint to refer to the parent joint
+            ////Iterate through each child link and change the references in each joint to refer to the parent joint
             foreach (link child in mRobot.BaseLink.Children)
             {
-                localizeJointTransforms(child, DenseMatrix.Identity(4));
+                localizeJointTransforms(child, OPS.getTransformation(mRobot.BaseLink.SWComponent.Transform2));
             }
         }
+
+        public void createJoints2(link Parent)
+        {
+            Matrix<double> ParentJointGlobalTransform;
+            if (Parent.Joint != null)
+            {
+                ParentJointGlobalTransform = OPS.getTransformation(ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Parent.Joint.CoordinateSystemName));
+            }
+            else
+            {
+                ParentJointGlobalTransform = DenseMatrix.Identity(4);
+            }
+            foreach (link Child in Parent.Children)
+            {
+                Child.Joint = new joint();
+                Child.Joint = createJointName(Parent, Child);
+                Child.Joint = createGlobalJoint(Parent, Child);
+                localizeJoint(Child, ParentJointGlobalTransform);
+                createJoints2(Child);
+            }
+        }
+
+        public void createJointNames(link Parent)
+        {
+            foreach (link child in Parent.Children)
+            {
+                child.Joint.name = Parent.uniqueName + "_to_" + child.uniqueName;
+                child.Joint.CoordinateSystemName = "Origin_" + child.Joint.name;
+                child.Joint.AxisName = "Axis_" + child.Joint.name;
+                createJointNames(child);
+            }
+        }
+
+        public joint createJointName(link Parent, link Child)
+        {
+            Child.Joint.name = Parent.uniqueName + "_to_" + Child.uniqueName;
+            Child.Joint.CoordinateSystemName = "Origin_" + Child.Joint.name;
+            Child.Joint.AxisName = "Axis_" + Child.Joint.name;
+            Child.Joint.Parent.name = Parent.uniqueName;
+            Child.Joint.Child.name = Child.uniqueName;
+            return Child.Joint;
+        }
+
+        public void createRefGeometry(joint Joint)
+        {
+            if (!ActiveSWModel.Extension.SelectByID2(Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                createRefOrigin(Joint);
+            }
+            if (!ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                createRefAxis(Joint);
+            }
+        }
+        public void createRefOrigin(joint Joint)
+        {
+            object[] sketchEntities = addSketchGeometry(Joint.Origin);
+            SketchPoint origin = (SketchPoint)sketchEntities[0];
+            SketchSegment xaxis = (SketchSegment)sketchEntities[1];
+            SketchSegment yaxis = (SketchSegment)sketchEntities[2];
+
+            IFeature coordinates = default(IFeature);
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
+            SelectData data = selectionManager.CreateSelectData();
+
+            if (origin != null && xaxis != null && yaxis != null)
+            {
+                data.Mark = 1;
+                origin.Select4(true, data);
+                data.Mark = 2;
+                xaxis.Select4(true, data);
+                data.Mark = 4;
+                yaxis.Select4(true, data);
+
+                coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+                coordinates.Name = Joint.CoordinateSystemName;
+            }
+        }
+        public void createRefAxis(joint Joint)
+        {
+            //Adds sketch segment
+            SketchSegment rotaxis = addSketchGeometry(Joint.Axis, Joint.Origin);
+            if (rotaxis != null)
+            {
+                //Use special method to create the axis
+                Feature featAxis = insertAxis(rotaxis);
+                if (featAxis != null)
+                {
+                    featAxis.Name = Joint.AxisName;
+                }
+            }
+        }
+
+        public joint createGlobalJoint(link parent, link child)
+        {
+            if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
+                !ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                child.Joint = estimateGlobalJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
+                createRefGeometry(child.Joint);
+            }
+            child.Joint = estimateJointFromRefGeometry(ActiveSWModel, child);
+            return child.Joint;
+        }
+
+        public void localizeJoint(link Link, Matrix<double> ParentJointGlobalTransform)
+        {
+            Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName));
+
+            Matrix<double> ChildJointLocalTransform = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
+
+            Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
+            Axis = ChildJointGlobalTransform.Inverse() * Axis;
+            Axis = Axis.Normalize(2);
+
+            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
+            Matrix<double> localLinkCoMTransform = ChildJointGlobalTransform.Inverse() * linkCoMTransform;
+
+            //Save the data from the transforms
+            Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
+
+            Link.Joint.Origin.XYZ = OPS.getXYZ(ChildJointLocalTransform);
+            Link.Joint.Origin.RPY = OPS.getRPY(ChildJointLocalTransform);
+
+            //Meshes are saved with relation to joint coordinate system, so there shouldn't be any transformation right?
+            Link.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
+            Link.Visual.Origin.RPY = new double[] { 0, 0, 0 };
+            Link.Collision.Origin.XYZ = Link.Visual.Origin.XYZ;
+            Link.Collision.Origin.RPY = Link.Visual.Origin.RPY;
+
+            //Inertial is the transform from the joint origin to the center of mass
+            Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
+            Link.Inertial.Origin.RPY = OPS.getRPY(localLinkCoMTransform);
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // This takes each joint and changes the origins and axes to refer to the parent joint's reference frame
         // [TODO] It's probably lazy programming to make the joints and then come through and fix them
@@ -392,7 +543,7 @@ namespace SW2URDF
         // Creates a joint given a parent link and a child link
         public joint createJointFromLinks(link parent, link child)
         {
-            joint Joint = estimateJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
+            joint Joint = estimateGlobalJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
             Joint.name = parent.uniqueName + "_to_" + child.uniqueName;
             
             IFeature coordinates = default(IFeature);
@@ -425,13 +576,12 @@ namespace SW2URDF
                     coordinates.Name = Joint.CoordinateSystemName;
                 }
             }
-            else
-            {
+
                 //[TODO]How does localizing need to happen with this method of doing things
                 MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
                 Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
                 Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
-            }
+            
 
             //If the axis doesn't already exist, we'll create one. Otherwise we'll use the one that exists
             ActiveSWModel.ClearSelection2(true);
@@ -602,9 +752,9 @@ namespace SW2URDF
 
         // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
         // the parent assembly
-        public joint estimateJointFromComponents(AssemblyDoc assy, link parent, link child)
+        public joint estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
-            joint Joint = new joint();
+            joint Joint = child.Joint;
 
             int R1Status, R2Status, L1Status, L2Status;
             int R1DirStatus, R2DirStatus;
@@ -663,6 +813,34 @@ namespace SW2URDF
             return Joint;
         }
 
+
+
+
+        public joint estimateJointFromRefGeometry(ModelDoc2 model, link Link)
+        {
+            joint Joint = Link.Joint;
+                     
+            MathTransform coordsysTransform = model.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
+            Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
+            Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
+
+            ActiveSWModel.ClearSelection2(true);
+            bool selected = ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0);
+            if (selected)
+            {
+                Feature feat = model.SelectionManager.GetSelectedObject6(1, 0);
+                RefAxis existingAxis = (RefAxis)feat.GetSpecificFeature2();
+                double[] axisParams;
+
+                axisParams = existingAxis.GetRefAxisParams();
+                Joint.Axis.X = axisParams[0] - axisParams[3];
+                Joint.Axis.Y = axisParams[1] - axisParams[4];
+                Joint.Axis.Z = axisParams[2] - axisParams[5];
+                Joint.Axis.XYZ = OPS.pnorm(Joint.Axis.XYZ, 2);
+            }
+
+            return Joint;
+        }
 
         public joint addLimits(joint Joint, List<Mate2> limitMates)
         {
@@ -849,6 +1027,7 @@ namespace SW2URDF
                 {
                     setSTLCoordinateSystem(Link.Joint.CoordinateSystemName);
                 }
+                string coordsysname = ActiveSWModel.Extension.GetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified);
                 ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
                 Link.SWComponent.Select(false);
                 ActiveSWModel.HideComponent2();

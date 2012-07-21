@@ -48,7 +48,7 @@ namespace SW2URDF
                 saveLinkDataFromPropertyBoxes(node.Link);
             }
             Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
-            Exporter.createJoints();
+            Exporter.createJoints2(Exporter.mRobot.BaseLink);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             fillJointPropertyBoxes(null);
             panel_joint.Visible = true;
