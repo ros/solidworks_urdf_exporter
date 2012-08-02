@@ -332,18 +332,24 @@ namespace SW2URDF
             Matrix<double> ParentJointGlobalTransform;
             if (Parent.Joint != null)
             {
-                ParentJointGlobalTransform = OPS.getTransformation(ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Parent.Joint.CoordinateSystemName));
+                //If the parent joint exists, it becomes the reference joint. Grab the MathTransform of that coordsys to use for localizing
+                MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Parent.Joint.CoordinateSystemName);
+                ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
             }
             else
             {
+                //If the parent is the base_link then set the reference for the child's joint to the identity
                 ParentJointGlobalTransform = DenseMatrix.Identity(4);
             }
             foreach (link Child in Parent.Children)
             {
                 Child.Joint = new joint();
                 Child.Joint = createJointName(Parent, Child);
+                // First creates a globabl transform, that is from the joint to the origin of the assembly
                 Child.Joint = createGlobalJoint(Parent, Child);
+                // Localize the joint by creating transforms between the child joint and the parent's global transform
                 localizeJoint(Child, ParentJointGlobalTransform);
+                // Iterate through this links children
                 createJoints2(Child);
             }
         }
@@ -402,6 +408,7 @@ namespace SW2URDF
                 yaxis.Select4(true, data);
 
                 coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+
                 coordinates.Name = Joint.CoordinateSystemName;
             }
         }
@@ -422,11 +429,11 @@ namespace SW2URDF
 
         public joint createGlobalJoint(link parent, link child)
         {
+            joint Joint = estimateGlobalJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
             if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
                 !ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
-            {
-                child.Joint = estimateGlobalJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
-                createRefGeometry(child.Joint);
+            {              
+                createRefGeometry(Joint);
             }
             child.Joint = estimateJointFromRefGeometry(ActiveSWModel, child);
             return child.Joint;
@@ -434,12 +441,16 @@ namespace SW2URDF
 
         public void localizeJoint(link Link, Matrix<double> ParentJointGlobalTransform)
         {
-            Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName));
+            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName);
 
+            //Transform from global origin to child joint
+            Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(coordsysTransform);
+            Matrix<double> ChildJointGlobalInverse = ChildJointGlobalTransform.Inverse();
+            Matrix<double> ParentJointGlobalInverse = ParentJointGlobalTransform.Inverse();
             Matrix<double> ChildJointLocalTransform = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
 
             Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
-            Axis = ChildJointGlobalTransform.Inverse() * Axis;
+            Axis = ChildJointGlobalTransform * Axis;
             Axis = Axis.Normalize(2);
 
             Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);

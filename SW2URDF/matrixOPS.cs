@@ -452,9 +452,15 @@ namespace SW2URDF
         public double[] getRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
-            roll = Math.Atan2(m[1, 0], m[0, 0]);
+            roll = Math.Atan2(m[2, 1], m[2, 2]);
             pitch = Math.Atan2(-m[2,0], Math.Sqrt(m[2,1]*m[2,1] + m[2,2]*m[2,2]));
-            yaw = Math.Atan2(m[2,1], m[2,2]);
+            yaw = Math.Atan2(m[1, 0], m[0, 0]);
+
+            if (m[1, 0] > 0.99 || m[1,0] < -0.99)
+            {
+                roll = -Math.Atan2(m[2, 1], m[2, 2]);
+                yaw = -Math.Atan2(m[1, 0], m[0, 0]);
+            }
             return new double[] {roll, pitch, yaw};
         }
         public double[] getRPY(MathTransform transform)
@@ -468,11 +474,11 @@ namespace SW2URDF
             Matrix<double> R2 = DenseMatrix.Identity(4);
             Matrix<double> R3 = DenseMatrix.Identity(4);
 
-            R1[0,0] = Math.Cos(RPY[0]); R1[0,1] = -Math.Sin(RPY[0]); R1[1,0] = Math.Sin(RPY[0]); R1[1,1] = Math.Cos(RPY[0]);
-            R2[0,0] = Math.Cos(RPY[1]); R2[0,2] = Math.Sin(RPY[1]); R2[2,0] = -Math.Sin(RPY[1]); R2[2,2] = Math.Cos(RPY[1]);
-            R3[1,1] = Math.Cos(RPY[2]); R3[1,2] = -Math.Sin(RPY[2]); R3[2,1] = Math.Sin(RPY[2]); R3[2,2] = Math.Cos(RPY[2]);
+            R1[1, 1] = Math.Cos(RPY[0]); R1[1, 2] = -Math.Sin(RPY[0]); R1[2, 1] = Math.Sin(RPY[0]); R1[2, 2] = Math.Cos(RPY[2]);
+            R2[0, 0] = Math.Cos(RPY[1]); R2[0, 2] = Math.Sin(RPY[1]); R2[2, 0] = -Math.Sin(RPY[1]); R2[2, 2] = Math.Cos(RPY[1]);
+            R3[0, 0] = Math.Cos(RPY[2]); R3[0, 1] = -Math.Sin(RPY[2]); R3[1, 0] = Math.Sin(RPY[2]); R3[1, 1] = Math.Cos(RPY[2]);
 
-            return R1 * R2 * R3;
+            return R3 * R2 * R1;
         }
         public Matrix<double> getTranslation(double[] XYZ)
         {
