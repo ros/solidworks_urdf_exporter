@@ -442,7 +442,7 @@ namespace SW2URDF
         public void localizeJoint(link Link, Matrix<double> ParentJointGlobalTransform)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName);
-
+            double[] data = coordsysTransform.ArrayData;
             //Transform from global origin to child joint
             Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(coordsysTransform);
             Matrix<double> ChildJointGlobalInverse = ChildJointGlobalTransform.Inverse();
@@ -450,7 +450,7 @@ namespace SW2URDF
             Matrix<double> ChildJointLocalTransform = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
 
             Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
-            Axis = ChildJointGlobalTransform * Axis;
+            Axis = ChildJointGlobalTransform.Inverse() * Axis;
             Axis = Axis.Normalize(2);
 
             Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);

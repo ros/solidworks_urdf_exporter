@@ -452,15 +452,43 @@ namespace SW2URDF
         public double[] getRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
-            roll = Math.Atan2(m[2, 1], m[2, 2]);
-            pitch = Math.Atan2(-m[2,0], Math.Sqrt(m[2,1]*m[2,1] + m[2,2]*m[2,2]));
-            yaw = Math.Atan2(m[1, 0], m[0, 0]);
-
-            if (m[1, 0] > 0.99 || m[1,0] < -0.99)
+            if (Math.Abs(m[2,0]) >= 1.0)
             {
-                roll = -Math.Atan2(m[2, 1], m[2, 2]);
-                yaw = -Math.Atan2(m[1, 0], m[0, 0]);
+                yaw = 0;
+                double delta = Math.Atan2(-m[1,2], m[2,2]);
+                if (m[0,2] == -1)
+                {
+                    pitch = Math.PI / 2.0;
+                    roll = delta;
+                }
+                else
+                {
+                    pitch = -Math.PI / 2.0;
+                    roll = delta;
+                }
             }
+            else 
+            {
+                pitch = Math.Asin(m[2,0]);
+                roll =  Math.Atan2(-m[1,2] , m[2,2]);
+                yaw =   Math.Atan2(-m[0,1] , m[0,0]);
+            
+            }
+
+
+
+
+
+            //double roll, pitch, yaw;
+            //roll = Math.Atan2(m[2, 1], m[2, 2]);
+            //pitch = Math.Atan2(-m[2,0], Math.Sqrt(m[2,1]*m[2,1] + m[2,2]*m[2,2]));
+            //yaw = Math.Atan2(m[1, 0], m[0, 0]);
+
+            //if (m[1, 0] > 0.99 || m[1,0] < -0.99)
+            //{
+            //    roll = -Math.Atan2(m[2, 1], m[2, 2]);
+            //    yaw = -Math.Atan2(m[1, 0], m[0, 0]);
+            //}
             return new double[] {roll, pitch, yaw};
         }
         public double[] getRPY(MathTransform transform)
@@ -478,7 +506,7 @@ namespace SW2URDF
             R2[0, 0] = Math.Cos(RPY[1]); R2[0, 2] = Math.Sin(RPY[1]); R2[2, 0] = -Math.Sin(RPY[1]); R2[2, 2] = Math.Cos(RPY[1]);
             R3[0, 0] = Math.Cos(RPY[2]); R3[0, 1] = -Math.Sin(RPY[2]); R3[1, 0] = Math.Sin(RPY[2]); R3[1, 1] = Math.Cos(RPY[2]);
 
-            return R3 * R2 * R1;
+            return R1 * R2 * R3;
         }
         public Matrix<double> getTranslation(double[] XYZ)
         {
@@ -510,14 +538,29 @@ namespace SW2URDF
         public Matrix<double> getTransformation(MathTransform transform)
         {
             Matrix<double> m = new DenseMatrix(4);
+            //m[0, 0] = transform.ArrayData[0];
+            //m[0, 1] = transform.ArrayData[1];
+            //m[0, 2] = transform.ArrayData[2];
+            //m[1, 0] = transform.ArrayData[3];
+            //m[1, 1] = transform.ArrayData[4];
+            //m[1, 2] = transform.ArrayData[5];
+            //m[2, 0] = transform.ArrayData[6];
+            //m[2, 1] = transform.ArrayData[7];
+            //m[2, 2] = transform.ArrayData[8];
+
+            //m[0, 3] = transform.ArrayData[9];
+            //m[1, 3] = transform.ArrayData[10];
+            //m[2, 3] = transform.ArrayData[11];
+            //m[3, 3] = transform.ArrayData[12];
+
             m[0, 0] = transform.ArrayData[0];
-            m[0, 1] = transform.ArrayData[1];
-            m[0, 2] = transform.ArrayData[2];
-            m[1, 0] = transform.ArrayData[3];
+            m[1, 0] = transform.ArrayData[1];
+            m[2, 0] = transform.ArrayData[2];
+            m[0, 1] = transform.ArrayData[3];
             m[1, 1] = transform.ArrayData[4];
-            m[1, 2] = transform.ArrayData[5];
-            m[2, 0] = transform.ArrayData[6];
-            m[2, 1] = transform.ArrayData[7];
+            m[2, 1] = transform.ArrayData[5];
+            m[0, 2] = transform.ArrayData[6];
+            m[1, 2] = transform.ArrayData[7];
             m[2, 2] = transform.ArrayData[8];
 
             m[0, 3] = transform.ArrayData[9];
