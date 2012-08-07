@@ -26,6 +26,7 @@ namespace SW2URDF
         // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
         public Matrix str2mat(string S)
         {
+            
             S = S.Trim(new char[] { '[', ']', ' ' });
             string[] rows = S.Split(';');
             int rowCount = rows.Length;
@@ -455,23 +456,25 @@ namespace SW2URDF
             if (Math.Abs(m[2,0]) >= 1.0)
             {
                 yaw = 0;
-                double delta = Math.Atan2(-m[1,2], m[2,2]);
-                if (m[0,2] == -1)
-                {
-                    pitch = Math.PI / 2.0;
-                    roll = delta;
-                }
-                else
-                {
-                    pitch = -Math.PI / 2.0;
-                    roll = delta;
-                }
+                //double delta = Math.Acos(m[2, 0]);
+                pitch = -Math.Asin(m[2, 0]);
+                roll = Math.Acos(m[0, 2]);
+                //if (m[0,2] == 1)
+                //{
+                //    pitch = Math.PI / 2.0;
+                //    roll = delta;
+                //}
+                //else
+                //{
+                //    pitch = -Math.PI / 2.0;
+                //    roll = delta;
+                //}
             }
             else 
             {
-                pitch = Math.Asin(m[2,0]);
-                roll =  Math.Atan2(-m[1,2] , m[2,2]);
-                yaw =   Math.Atan2(-m[0,1] , m[0,0]);
+                pitch = -Math.Asin(m[2,0]);
+                roll =  Math.Atan2(m[2,1] , m[2,2]);
+                yaw =   Math.Atan2(m[1,0] , m[0,0]);
             
             }
 
