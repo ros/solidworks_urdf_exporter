@@ -106,7 +106,7 @@ namespace SW2URDF
             Collision.writeURDF( writer);
 
             writer.WriteEndElement();
-            if (Joint != null)
+            if (Joint != null && Joint.name != "")
             {
                 Joint.writeURDF(writer);
             }

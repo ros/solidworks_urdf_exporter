@@ -20,6 +20,7 @@ namespace SW2URDF
     {
         private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
+        LinkNode previouslySelectedNode;
         public AssemblyExportForm(ISldWorks iSwApp)
         {
             InitializeComponent();
@@ -42,16 +43,14 @@ namespace SW2URDF
         private void button_link_next_Click(object sender, EventArgs e)
         {
             treeView_jointtree.Nodes.Clear();
-            if (treeView_linktree.SelectedNode != null)
-            {
-                LinkNode node = (LinkNode)treeView_linktree.SelectedNode;
-                saveLinkDataFromPropertyBoxes(node.Link);
-            }
+
             Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
             Exporter.createJoints2(Exporter.mRobot.BaseLink);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             fillJointPropertyBoxes(null);
             panel_joint.Visible = true;
+            this.Focus();
+            
         }
 
         private void button_link_cancel_Click(object sender, EventArgs e)
@@ -61,13 +60,15 @@ namespace SW2URDF
         private void button_joint_next_Click(object sender, EventArgs e)
         {
             LinkNode node = (LinkNode)treeView_jointtree.SelectedNode;
-            if (node != null)
+            if (!(node == null || node.Joint == null))
             {
                 node.Joint = saveJointDataFromPropertyBoxes();
             }
+            treeView_linkProperties.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
             panel_link_properties.Visible = true;
+            this.Focus();
         }
 
         private void button_joint_previous_Click(object sender, EventArgs e)
@@ -75,7 +76,7 @@ namespace SW2URDF
             treeView_linktree.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            panel_link_properties.Visible = false;
+            panel_joint.Visible = false;
         }
 
         private void button_joint_cancel_Click(object sender, EventArgs e)
@@ -89,10 +90,15 @@ namespace SW2URDF
 
         private void button_links_previous_Click(object sender, EventArgs e)
         {
-            treeView_linktree.Nodes.Clear();
+            LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+            if (node != null)
+            {
+                saveLinkDataFromPropertyBoxes(node.Link);
+            }
+            treeView_jointtree.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
-            panel_joint.Visible = false;
+            panel_link_properties.Visible = false;
         }
 
         private void button_links_finish_Click(object sender, EventArgs e)
@@ -321,10 +327,15 @@ namespace SW2URDF
 
         private void treeView_linkProperties_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            if (previouslySelectedNode != null)
+            {
+                previouslySelectedNode.Link = saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
+            }
             LinkNode node = (LinkNode)e.Node;
             fillLinkPropertyBoxes(node.Link);
             node.Link.SWComponent.Select(false);
             treeView_linkProperties.Focus();
+            previouslySelectedNode = node;
         }
 
         private void treeView_linkProperties_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
@@ -525,6 +536,17 @@ namespace SW2URDF
                     label_kposition.Text = "k position";
                     label_kvelocity.Text = "k velocity";
                 }
+                comboBox_origin.Items.Clear();
+                string[] originNames = Exporter.findOrigins();
+                comboBox_origin.Items.AddRange(originNames);
+                comboBox_axis.Items.Clear();
+                string[] axesNames = Exporter.findAxes();
+                comboBox_axis.Items.AddRange(axesNames);
+                comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
+                if (Joint.AxisName != "")
+                {
+                    comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
+                }
             }
         }
         public void saveLinkItemData(int index)
@@ -674,6 +696,11 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
             Joint.name = textBox_joint_name.Text;
             Joint.type = comboBox_joint_type.Text;
+            Joint.Parent.name = label_parent.Text;
+            Joint.Child.name = label_child.Text;
+
+            Joint.CoordinateSystemName = comboBox_origin.Text;
+            Joint.AxisName = comboBox_axis.Text;
 
             Joint.Origin.X = (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
             Joint.Origin.Y = (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
@@ -926,10 +953,14 @@ namespace SW2URDF
 
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            if (previouslySelectedNode != null)
+            {
+                previouslySelectedNode.Link.Joint = saveJointDataFromPropertyBoxes();
+            }
             LinkNode node = (LinkNode)e.Node;
-            fillLinkPropertyBoxes(node.Link);
             node.Link.SWComponent.Select(false);
             fillJointPropertyBoxes(node.Link.Joint);
+            previouslySelectedNode = node;
         }
 
         private void textBox_joint_name_TextChanged(object sender, EventArgs e)
@@ -1047,6 +1078,43 @@ namespace SW2URDF
 
         }
         #endregion
+
+        private void label60_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label74_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label76_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label80_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label68_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBox_axis_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
+            {
+                double[] Axis = Exporter.estimateAxis(comboBox_axis.Text);
+                Axis = Exporter.localizeAxis(Axis, comboBox_origin.Text);
+                textBox_axis_x.Text = Axis[0].ToString("G5");
+                textBox_axis_y.Text = Axis[1].ToString("G5");
+                textBox_axis_z.Text = Axis[2].ToString("G5");
+            }
+        }
     }
 
     #region Derived classes

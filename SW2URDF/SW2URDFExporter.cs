@@ -611,9 +611,6 @@ namespace SW2URDF
             return Joint;
         }
 
-
-
-
         public joint estimateJointFromRefGeometry(ModelDoc2 model, link Link)
         {
             joint Joint = Link.Joint;
@@ -622,24 +619,79 @@ namespace SW2URDF
             Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
             Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
 
-            ActiveSWModel.ClearSelection2(true);
-            bool selected = ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0);
-            if (selected)
-            {
-                Feature feat = model.SelectionManager.GetSelectedObject6(1, 0);
-                RefAxis existingAxis = (RefAxis)feat.GetSpecificFeature2();
-                double[] axisParams;
-
-                axisParams = existingAxis.GetRefAxisParams();
-                Joint.Axis.X = axisParams[0] - axisParams[3];
-                Joint.Axis.Y = axisParams[1] - axisParams[4];
-                Joint.Axis.Z = axisParams[2] - axisParams[5];
-                Joint.Axis.XYZ = OPS.pnorm(Joint.Axis.XYZ, 2);
-            }
+            Joint.Axis.XYZ = estimateAxis(Joint.AxisName);
 
             return Joint;
         }
 
+        public double[] estimateAxis(string axisName)
+        {
+            double[] XYZ = new double[3]; ;
+
+            ActiveSWModel.ClearSelection2(true);
+            bool selected = ActiveSWModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
+            if (selected)
+            {
+                Feature feat = ActiveSWModel.SelectionManager.GetSelectedObject6(1, 0);
+                RefAxis axis = (RefAxis)feat.GetSpecificFeature2();
+                double[] axisParams;
+                axisParams = axis.GetRefAxisParams();
+                XYZ[0] = axisParams[0] - axisParams[3];
+                XYZ[1] = axisParams[1] - axisParams[4];
+                XYZ[2] = axisParams[2] - axisParams[5];
+                XYZ = OPS.pnorm(XYZ, 2);
+            }
+
+            return XYZ;
+        }
+
+
+        public double[] localizeAxis(double[] Axis, double[] XYZ, double[] RPY)
+        {
+            Matrix<double> transformation = OPS.getTransformation(XYZ, RPY);
+            Vector<double> vec = new DenseVector(new double[] {Axis[0], Axis[1], Axis[2], 0});
+            vec = transformation.Inverse() * vec;
+            return vec.ToArray();
+        }
+
+        public double[] localizeAxis(double[] Axis, string coordsys)
+        {
+            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
+            Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
+            Matrix<double> transform = OPS.getTransformation(coordsysTransform);
+            vec = transform.Inverse() * vec;
+            return vec.ToArray();
+        }
+
+        public string[] findAxes()
+        {
+            List<string> axesNames = new List<string>();
+            object[] features;
+            features = ActiveSWModel.FeatureManager.GetFeatures(true);
+            foreach (Feature feat in features)
+            {
+                if (feat.GetTypeName2() == "RefAxis")
+                {
+                    axesNames.Add(feat.Name);
+                }
+            }
+            return axesNames.ToArray();
+        }
+
+        public string[] findOrigins()
+        {
+            List<string> originNames = new List<string>();
+            object[] features;
+            features = ActiveSWModel.FeatureManager.GetFeatures(true);
+            foreach (Feature feat in features)
+            {
+                if (feat.GetTypeName2() == "CoordSys")
+                {
+                    originNames.Add(feat.Name);
+                }
+            }
+            return originNames.ToArray();
+        }
         public joint addLimits(joint Joint, List<Mate2> limitMates)
         {
             // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
@@ -811,8 +863,8 @@ namespace SW2URDF
             int warnings = 0;
 
             // Export STL
-            if (!System.IO.File.Exists(windowsMeshFileName))
-            {
+            //if (!System.IO.File.Exists(windowsMeshFileName))
+            //{
                 Link.SWComponent.Select(false);
                 ActiveSWModel.ShowComponent2();
 
@@ -831,7 +883,7 @@ namespace SW2URDF
                 ActiveSWModel.HideComponent2();
 
                 correctSTLMesh(windowsMeshFileName);
-            }
+            //}
             return meshFileName;
         }
 

@@ -87,139 +87,7 @@ namespace SW2URDF
             return vec;
         }
 
-        // Calculates the row reduced echelon form of a matrix. It really sucks that math.net numerics doesn't include this as a builtin function
-        // 6/28. Now I know why... It's difficult to write one that can do it with floating point precision. So this one currently is broken
-
-        //public Matrix rref(Matrix m)
-        //{
-        //    int minDimension = Math.Min(m.ColumnCount, m.RowCount);
-        //    // Swap rows to get prepared for row echelon form
-        //    for (int i = 0; i < minDimension; i++)
-        //    {
-        //        for (int j = i; j < minDimension; j++)
-        //        {
-        //            Vector v = (Vector)m.Row(j);
-        //            if (v[i] > epsilon)
-        //            {
-        //                m.SetRow(j, m.Row(i));
-        //                m.SetRow(i, v);
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                m[j, i] = 0;
-        //            }
-        //        }
-        //    }
-        //    for (int i = 0; i < m.RowCount; i++)
-        //    {
-        //        Vector v1 = (Vector)m.Row(i);
-        //        int index = -1;
-
-        //        //Find the first non-zero entry in row i (will either by the diagonal or to its right)
-        //        for (int j = i; j < m.ColumnCount; j++)
-        //        {
-        //            if (v1[j] > epsilon)
-        //            {
-        //                index = j;
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                m[i, j] = 0;
-        //            }
-        //        }
-
-        //        //If there are no more non-zero entries to be found, the matrix is now in row echelon form (and then some)
-        //        if (index == -1)
-        //        {
-        //            break;
-        //        }
-        //        for (int j = 0; j < m.RowCount; j++)
-        //        {
-        //            if (i != j)
-        //            {
-
-        //                Vector v2 = (Vector)m.Row(j);
-        //                m.SetRow(j, v1 * v2[index] / v1[index] - v2);
-        //            }
-        //        }
-        //    }
-
-        //    //Reduce the left most values to 1
-        //    for (int i = 0; i < m.RowCount; i++)
-        //    {
-        //        Vector v = (Vector)m.Row(i);
-        //        int index = -1;
-        //        //Find the first non-zero entry in this row vector
-        //        for (int j = i; j < m.ColumnCount; j++)
-        //        {
-        //            if (v[j] > epsilon)
-        //            {
-        //                index = j;
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                v[j] = 0;
-        //            }
-        //        }
-        //        //If there are no more non-zero entries to be found, the matrix is now in reduced row echelon form
-        //        if (index == -1)
-        //        {
-        //            break;
-        //        }
-        //        //We are dividing by 0 here. Stop doing it!
-        //        if (v[index] == 0)
-        //        {
-        //            int c = 1; //Whoops!
-        //        }
-        //        m.SetRow(i, v / v[index]);
-        //    }
-        //    return m;
-        //}
-
-        // Calculates the null space of a matrix
-        //public Matrix nullSpace(Matrix m)
-        //{
-        //    m = rref(m); //Null(A) = Null(rref(A))
-        //    Matrix null_m = new DenseMatrix(m.ColumnCount, m.RowCount);
-
-        //    int lead = 0;
-        //    Vector zeros = new DenseVector(m.RowCount);
-        //    Vector column = new DenseVector(m.RowCount);
-        //    for (int i = 0; i < m.ColumnCount; i++)
-        //    {
-        //        // This DOF is constrained
-        //        if (m[i, lead] == 1)
-        //        {
-        //            null_m.SetColumn(i, zeros);
-        //            lead++;
-        //        }
-        //        else
-        //        {
-        //            // Fill column vector with parameters
-        //            for (int j = 0; j < lead; j++)
-        //            {
-        //                int columnIndex = findLeadingOneinVector((DenseVector)m.Row(j), 0, i - 1);
-        //                if (columnIndex != -1)
-        //                {
-        //                    column[columnIndex] = m[j, i];
-        //                }
-        //                //else
-        //                //{
-        //                //    column[columnIndex] = 0;
-        //                //}
-        //            }
-        //            null_m.SetColumn(i, column);
-        //        }
-        //    }
-        //    return null_m;
-        //}
-
         // This set of methods finds the bottom-most one in a column vector from a matrix.
-
-
         public int findLeadingOneinVector(Vector v)
         {
             return findLeadingOneinVector(v, 0, v.Count);
@@ -378,66 +246,6 @@ namespace SW2URDF
             return true;
         }
 
-        public int findDominantDirection(Matrix<double> m, double factor)
-        {
-            if (m.Rank() == 0)
-            {
-                // -2 for completely constrained
-                return -2;
-            }
-            double[] zeros3 = new double[] { 0, 0, 0 };
-            Vector<double> v1 = crossProduct3(m.Row(0)/m.Row(0).Norm(2), m.Row(1)/m.Row(1).Norm(2));
-            if (v1.Norm(2) < 0.1)
-            {
-                m.SetRow(1, zeros3);
-            }
-            Vector<double> v2 = crossProduct3(m.Row(0) / m.Row(0).Norm(2), m.Row(2) / m.Row(2).Norm(2));
-            if (v2.Norm(2) < 0.1)
-            {
-                m.SetRow(2, zeros3);
-            }
-            Vector<double> v3 = crossProduct3(m.Row(1) / m.Row(1).Norm(2), m.Row(2) / m.Row(2).Norm(2));
-            if (v3.Norm(2) < 0.1)
-            {
-                if (m.Row(1).Norm(2) > m.Row(2).Norm(2))
-                {
-                    m.SetRow(2, zeros3);
-                }
-                else
-                {
-                    m.SetRow(1, zeros3);
-                }
-            }
-            
-            double nextMagnitude = 0;
-            double largestMagnitude = 0;
-            int selectedRow = -1;
-            for (int i = 0; i < m.RowCount; i++)
-            {
-                Vector<double> v = m.Row(i);
-                double mag = v.Norm(2);
-                if (mag > largestMagnitude)
-                {
-                    nextMagnitude = largestMagnitude;
-                    largestMagnitude = mag;
-                    selectedRow = i;
-                }
-                else if (mag > nextMagnitude)
-                {
-                    nextMagnitude = mag;
-                }
-            }
-            if (factor * largestMagnitude > nextMagnitude)
-            {
-                return selectedRow;
-            }
-            else
-            {
-                // -1 for underconstrained
-                return -1;
-            }
-        }
-
         public double[] getXYZ(Matrix<double> m)
         {
             double[] XYZ = new double[3];
@@ -455,20 +263,10 @@ namespace SW2URDF
             double roll, pitch, yaw;
             if (Math.Abs(m[2,0]) >= 1.0)
             {
-                yaw = 0;
-                //double delta = Math.Acos(m[2, 0]);
+                // Gimbol Lock
                 pitch = -Math.Asin(m[2, 0]);
                 roll = Math.Acos(m[0, 2]);
-                //if (m[0,2] == 1)
-                //{
-                //    pitch = Math.PI / 2.0;
-                //    roll = delta;
-                //}
-                //else
-                //{
-                //    pitch = -Math.PI / 2.0;
-                //    roll = delta;
-                //}
+                yaw = 0;
             }
             else 
             {
@@ -478,20 +276,6 @@ namespace SW2URDF
             
             }
 
-
-
-
-
-            //double roll, pitch, yaw;
-            //roll = Math.Atan2(m[2, 1], m[2, 2]);
-            //pitch = Math.Atan2(-m[2,0], Math.Sqrt(m[2,1]*m[2,1] + m[2,2]*m[2,2]));
-            //yaw = Math.Atan2(m[1, 0], m[0, 0]);
-
-            //if (m[1, 0] > 0.99 || m[1,0] < -0.99)
-            //{
-            //    roll = -Math.Atan2(m[2, 1], m[2, 2]);
-            //    yaw = -Math.Atan2(m[1, 0], m[0, 0]);
-            //}
             return new double[] {roll, pitch, yaw};
         }
         public double[] getRPY(MathTransform transform)
@@ -501,15 +285,15 @@ namespace SW2URDF
         }
         public Matrix<double> getRotation(double[] RPY)
         {
-            Matrix<double> R1 = DenseMatrix.Identity(4);
-            Matrix<double> R2 = DenseMatrix.Identity(4);
-            Matrix<double> R3 = DenseMatrix.Identity(4);
+            Matrix<double> RX = DenseMatrix.Identity(4);
+            Matrix<double> RY = DenseMatrix.Identity(4);
+            Matrix<double> RZ = DenseMatrix.Identity(4);
 
-            R1[1, 1] = Math.Cos(RPY[0]); R1[1, 2] = -Math.Sin(RPY[0]); R1[2, 1] = Math.Sin(RPY[0]); R1[2, 2] = Math.Cos(RPY[2]);
-            R2[0, 0] = Math.Cos(RPY[1]); R2[0, 2] = Math.Sin(RPY[1]); R2[2, 0] = -Math.Sin(RPY[1]); R2[2, 2] = Math.Cos(RPY[1]);
-            R3[0, 0] = Math.Cos(RPY[2]); R3[0, 1] = -Math.Sin(RPY[2]); R3[1, 0] = Math.Sin(RPY[2]); R3[1, 1] = Math.Cos(RPY[2]);
+            RX[1, 1] = Math.Cos(RPY[0]); RX[1, 2] = -Math.Sin(RPY[0]); RX[2, 1] = Math.Sin(RPY[0]); RX[2, 2] = Math.Cos(RPY[0]);
+            RY[0, 0] = Math.Cos(RPY[1]); RY[0, 2] = Math.Sin(RPY[1]); RY[2, 0] = -Math.Sin(RPY[1]); RY[2, 2] = Math.Cos(RPY[1]);
+            RZ[0, 0] = Math.Cos(RPY[2]); RZ[0, 1] = -Math.Sin(RPY[2]); RZ[1, 0] = Math.Sin(RPY[2]); RZ[1, 1] = Math.Cos(RPY[2]);
 
-            return R1 * R2 * R3;
+            return RZ * RY * RX;
         }
         public Matrix<double> getTranslation(double[] XYZ)
         {
@@ -582,6 +366,7 @@ namespace SW2URDF
             }
             if (magnitude != 0)
             {
+                magnitude = Math.Pow(magnitude, 1 / power);
                 for (int i = 0; i < array.Length; i++)
                 {
                     array[i] /= magnitude;
