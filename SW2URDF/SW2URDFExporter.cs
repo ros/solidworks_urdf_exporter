@@ -454,6 +454,10 @@ namespace SW2URDF
             Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
             Matrix<double> localLinkCoMTransform = ChildJointGlobalTransform.Inverse() * linkCoMTransform;
 
+            Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3,3,Link.Inertial.Inertia.Moment);
+            Matrix<double> ChildJointRotMat = ChildJointGlobalTransform.SubMatrix(0, 3, 0, 3);
+            Matrix<double> linkLocalMomentInertia = ChildJointRotMat.Inverse() * linkGlobalMomentInertia;
+
             //Save the data from the transforms
             Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
 
@@ -462,7 +466,9 @@ namespace SW2URDF
 
             //Inertial is the transform from the joint origin to the center of mass
             Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
-            Link.Inertial.Origin.RPY = OPS.getRPY(localLinkCoMTransform);
+            Link.Inertial.Origin.RPY = new double[] {0,0,0};
+
+            Link.Inertial.Inertia.Moment = linkLocalMomentInertia.ToRowWiseArray();
         }
 
         public void localizeLink(link Link, Matrix<double> GlobalTransform)
@@ -478,7 +484,7 @@ namespace SW2URDF
             Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
 
             Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
-            Link.Inertial.Origin.RPY = OPS.getRPY(localLinkCoMTransform);
+            Link.Inertial.Origin.RPY = new double[] { 0, 0, 0 };
 
             Link.Collision.Origin.XYZ = OPS.getXYZ(localCollisionTransform);
             Link.Collision.Origin.RPY = OPS.getRPY(localCollisionTransform);
@@ -937,7 +943,7 @@ namespace SW2URDF
             MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
             Matrix<double> GlobalTransform = OPS.getTransformation(coordSysTransform);
 
-
+            localizeLink(mRobot.BaseLink, GlobalTransform);
 
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
