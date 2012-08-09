@@ -602,6 +602,8 @@ namespace SW2URDF
             Link.Visual.Material.Color.Blue =   (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
             Link.Visual.Material.Color.Alpha =  (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
 
+            Link.STLQualityFine = radioButton_fine.Checked;
+
             return Link;
         }
         public void fillTreeViewFromRobot(robot robot, TreeView tree)
@@ -975,6 +977,8 @@ namespace SW2URDF
             }
         }
         #endregion
+
+
     }
 
     #region Derived classes

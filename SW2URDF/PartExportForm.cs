@@ -279,7 +279,9 @@ namespace SW2URDF
             Exporter.mRobot.BaseLink.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
             Exporter.mRobot.BaseLink.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
 
-            Exporter.exportLink();
+            Exporter.mRobot.BaseLink.STLQualityFine = radioButton_fine.Checked;
+
+            Exporter.exportLink(checkBox_rotate.Checked);
             this.Close();
         }
 
@@ -330,13 +332,6 @@ namespace SW2URDF
 
         }
         #endregion
-
-        private void label32_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
 
     }
 }

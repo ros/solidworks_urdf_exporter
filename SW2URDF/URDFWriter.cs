@@ -81,6 +81,8 @@ namespace SW2URDF
         { get; set; }
         public joint Joint
         { get; set; }
+        public bool STLQualityFine
+        { get; set; }
 
         // The SW part component object
         public IComponent2 SWComponent

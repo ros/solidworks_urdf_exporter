@@ -465,6 +465,28 @@ namespace SW2URDF
             Link.Inertial.Origin.RPY = OPS.getRPY(localLinkCoMTransform);
         }
 
+        public void localizeLink(link Link, Matrix<double> GlobalTransform)
+        {
+            Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
+            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
+            Matrix<double> localLinkCoMTransform = GlobalTransformInverse * linkCoMTransform;
+
+            Matrix<double> linkVisualTransform = OPS.getTransformation(Link.Visual.Origin.XYZ, Link.Visual.Origin.RPY);
+            Matrix<double> localVisualTransform = GlobalTransformInverse * linkVisualTransform;
+
+            Matrix<double> linkCollisionTransform = OPS.getTransformation(Link.Collision.Origin.XYZ, Link.Collision.Origin.RPY);
+            Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
+
+            Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
+            Link.Inertial.Origin.RPY = OPS.getRPY(localLinkCoMTransform);
+
+            Link.Collision.Origin.XYZ = OPS.getXYZ(localCollisionTransform);
+            Link.Collision.Origin.RPY = OPS.getRPY(localCollisionTransform);
+
+            Link.Visual.Origin.XYZ = OPS.getXYZ(localVisualTransform);
+            Link.Visual.Origin.RPY = OPS.getRPY(localVisualTransform);
+        }
+
         public Feature insertAxis(SketchSegment axis)
         {            
             SelectData data = ActiveSWModel.SelectionManager.CreateSelectData();
@@ -892,11 +914,11 @@ namespace SW2URDF
                 int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                 if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
                 {
-                    setSTLCoordinateSystem("Origin_global");
+                    setLinkSpecificSTLPreferences("Origin_global", Link.STLQualityFine);
                 }
                 else
                 {
-                    setSTLCoordinateSystem(Link.Joint.CoordinateSystemName);
+                    setLinkSpecificSTLPreferences(Link.Joint.CoordinateSystemName, Link.STLQualityFine);
                 }
                 string coordsysname = ActiveSWModel.Extension.GetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified);
                 ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
@@ -908,8 +930,15 @@ namespace SW2URDF
             return meshFileName;
         }
 
-        public void exportLink()
+        public void exportLink(bool zIsUp)
         {
+
+            createBaseRefOrigin(zIsUp);
+            MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
+            Matrix<double> GlobalTransform = OPS.getTransformation(coordSysTransform);
+
+
+
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
@@ -926,6 +955,7 @@ namespace SW2URDF
             //Customizing STL preferences to how I want them
             saveUserPreferences();
             setSTLExportPreferences();
+            setLinkSpecificSTLPreferences("", mRobot.BaseLink.STLQualityFine);
             int errors = 0;
             int warnings = 0;
 
@@ -1035,9 +1065,17 @@ namespace SW2URDF
             iSwApp.SetUserPreferenceDoubleValue((int)swUserPreferenceDoubleValue_e.swViewTransitionHideShowComponent, mHideTransitionSpeed);
         }
 
-        public void setSTLCoordinateSystem(string name)
+        public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine)
         {
-            ActiveSWModel.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, name);
+            ActiveSWModel.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
+            if (qualityFine)
+            {
+                iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Fine);
+            }
+            else
+            {
+                iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Coarse);
+            }
         }
         #endregion
     }

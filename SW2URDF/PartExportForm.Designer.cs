@@ -102,8 +102,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButton_fine = new System.Windows.Forms.RadioButton();
+            this.radioButton_course = new System.Windows.Forms.RadioButton();
             this.label1 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -115,6 +115,7 @@
             this.textBox_save_as = new System.Windows.Forms.TextBox();
             this.button_savename_browse = new System.Windows.Forms.Button();
             this.saveFileDialog_save_as = new System.Windows.Forms.SaveFileDialog();
+            this.checkBox_rotate = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -448,7 +449,6 @@
             this.label32.Size = new System.Drawing.Size(28, 13);
             this.label32.TabIndex = 55;
             this.label32.Text = "Blue";
-            this.label32.Click += new System.EventHandler(this.label32_Click);
             // 
             // textBox_visual_origin_z
             // 
@@ -769,7 +769,7 @@
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Controls.Add(this.textBox_mass);
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(12, 81);
+            this.groupBox1.Location = new System.Drawing.Point(12, 96);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(543, 185);
             this.groupBox1.TabIndex = 34;
@@ -787,8 +787,8 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.radioButton2);
-            this.groupBox2.Controls.Add(this.radioButton1);
+            this.groupBox2.Controls.Add(this.radioButton_fine);
+            this.groupBox2.Controls.Add(this.radioButton_course);
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Controls.Add(this.label19);
             this.groupBox2.Controls.Add(this.textBox_visual_origin_z);
@@ -824,27 +824,27 @@
             this.groupBox2.TabIndex = 62;
             this.groupBox2.TabStop = false;
             // 
-            // radioButton2
+            // radioButton_fine
             // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(256, 94);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(45, 17);
-            this.radioButton2.TabIndex = 68;
-            this.radioButton2.Text = "Fine";
-            this.radioButton2.UseVisualStyleBackColor = true;
+            this.radioButton_fine.AutoSize = true;
+            this.radioButton_fine.Location = new System.Drawing.Point(256, 94);
+            this.radioButton_fine.Name = "radioButton_fine";
+            this.radioButton_fine.Size = new System.Drawing.Size(45, 17);
+            this.radioButton_fine.TabIndex = 68;
+            this.radioButton_fine.Text = "Fine";
+            this.radioButton_fine.UseVisualStyleBackColor = true;
             // 
-            // radioButton1
+            // radioButton_course
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Checked = true;
-            this.radioButton1.Location = new System.Drawing.Point(256, 61);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(58, 17);
-            this.radioButton1.TabIndex = 67;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "Course";
-            this.radioButton1.UseVisualStyleBackColor = true;
+            this.radioButton_course.AutoSize = true;
+            this.radioButton_course.Checked = true;
+            this.radioButton_course.Location = new System.Drawing.Point(256, 61);
+            this.radioButton_course.Name = "radioButton_course";
+            this.radioButton_course.Size = new System.Drawing.Size(58, 17);
+            this.radioButton_course.TabIndex = 67;
+            this.radioButton_course.TabStop = true;
+            this.radioButton_course.Text = "Course";
+            this.radioButton_course.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -899,6 +899,7 @@
             this.radioButton4.TabIndex = 73;
             this.radioButton4.Text = "Fine";
             this.radioButton4.UseVisualStyleBackColor = true;
+            this.radioButton4.Visible = false;
             // 
             // radioButton3
             // 
@@ -911,6 +912,7 @@
             this.radioButton3.TabStop = true;
             this.radioButton3.Text = "Course";
             this.radioButton3.UseVisualStyleBackColor = true;
+            this.radioButton3.Visible = false;
             // 
             // label27
             // 
@@ -920,6 +922,7 @@
             this.label27.Size = new System.Drawing.Size(104, 13);
             this.label27.TabIndex = 71;
             this.label27.Text = "Collision Mesh Detail";
+            this.label27.Visible = false;
             // 
             // label35
             // 
@@ -962,11 +965,24 @@
             // 
             this.saveFileDialog_save_as.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_save_as_FileOk);
             // 
+            // checkBox_rotate
+            // 
+            this.checkBox_rotate.AutoSize = true;
+            this.checkBox_rotate.Checked = true;
+            this.checkBox_rotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_rotate.Location = new System.Drawing.Point(12, 73);
+            this.checkBox_rotate.Name = "checkBox_rotate";
+            this.checkBox_rotate.Size = new System.Drawing.Size(226, 17);
+            this.checkBox_rotate.TabIndex = 74;
+            this.checkBox_rotate.Text = "Rotate global origin to make Z-axis vertical";
+            this.checkBox_rotate.UseVisualStyleBackColor = true;
+            // 
             // PartExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(569, 705);
+            this.Controls.Add(this.checkBox_rotate);
             this.Controls.Add(this.button_savename_browse);
             this.Controls.Add(this.textBox_save_as);
             this.Controls.Add(this.label45);
@@ -1073,11 +1089,12 @@
         private System.Windows.Forms.TextBox textBox_save_as;
         private System.Windows.Forms.Button button_savename_browse;
         private System.Windows.Forms.SaveFileDialog saveFileDialog_save_as;
-        private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButton_fine;
+        private System.Windows.Forms.RadioButton radioButton_course;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.RadioButton radioButton4;
         private System.Windows.Forms.RadioButton radioButton3;
+        private System.Windows.Forms.CheckBox checkBox_rotate;
     }
 }

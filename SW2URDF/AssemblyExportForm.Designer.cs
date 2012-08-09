@@ -56,8 +56,8 @@
             this.textBox_collision_origin_y = new System.Windows.Forms.TextBox();
             this.textBox_collision_origin_z = new System.Windows.Forms.TextBox();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.radioButton_fine = new System.Windows.Forms.RadioButton();
+            this.radioButton_course = new System.Windows.Forms.RadioButton();
             this.label10 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.textBox_visual_origin_z = new System.Windows.Forms.TextBox();
@@ -122,6 +122,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
+            this.label69 = new System.Windows.Forms.Label();
             this.panel_link_properties = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
             this.button_links_finish = new System.Windows.Forms.Button();
@@ -228,9 +229,9 @@
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(17, 87);
+            this.label1.Location = new System.Drawing.Point(19, 81);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(464, 50);
+            this.label1.Size = new System.Drawing.Size(464, 38);
             this.label1.TabIndex = 3;
             this.label1.Text = "Drag and drop links to change the parent links and move links into and out of the" +
                 " deleted links list.";
@@ -344,6 +345,7 @@
             this.radioButton4.TabIndex = 73;
             this.radioButton4.Text = "Fine";
             this.radioButton4.UseVisualStyleBackColor = true;
+            this.radioButton4.Visible = false;
             this.radioButton4.CheckedChanged += new System.EventHandler(this.radioButton4_CheckedChanged);
             // 
             // radioButton3
@@ -357,6 +359,7 @@
             this.radioButton3.TabStop = true;
             this.radioButton3.Text = "Course";
             this.radioButton3.UseVisualStyleBackColor = true;
+            this.radioButton3.Visible = false;
             this.radioButton3.CheckedChanged += new System.EventHandler(this.radioButton3_CheckedChanged);
             // 
             // label27
@@ -367,6 +370,7 @@
             this.label27.Size = new System.Drawing.Size(104, 13);
             this.label27.TabIndex = 71;
             this.label27.Text = "Collision Mesh Detail";
+            this.label27.Visible = false;
             // 
             // label35
             // 
@@ -491,8 +495,8 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.radioButton2);
-            this.groupBox4.Controls.Add(this.radioButton1);
+            this.groupBox4.Controls.Add(this.radioButton_fine);
+            this.groupBox4.Controls.Add(this.radioButton_course);
             this.groupBox4.Controls.Add(this.label10);
             this.groupBox4.Controls.Add(this.label19);
             this.groupBox4.Controls.Add(this.textBox_visual_origin_z);
@@ -528,29 +532,29 @@
             this.groupBox4.TabIndex = 72;
             this.groupBox4.TabStop = false;
             // 
-            // radioButton2
+            // radioButton_fine
             // 
-            this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(242, 94);
-            this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(45, 17);
-            this.radioButton2.TabIndex = 68;
-            this.radioButton2.Text = "Fine";
-            this.radioButton2.UseVisualStyleBackColor = true;
-            this.radioButton2.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
+            this.radioButton_fine.AutoSize = true;
+            this.radioButton_fine.Location = new System.Drawing.Point(242, 94);
+            this.radioButton_fine.Name = "radioButton_fine";
+            this.radioButton_fine.Size = new System.Drawing.Size(45, 17);
+            this.radioButton_fine.TabIndex = 68;
+            this.radioButton_fine.Text = "Fine";
+            this.radioButton_fine.UseVisualStyleBackColor = true;
+            this.radioButton_fine.CheckedChanged += new System.EventHandler(this.radioButton2_CheckedChanged);
             // 
-            // radioButton1
+            // radioButton_course
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Checked = true;
-            this.radioButton1.Location = new System.Drawing.Point(242, 61);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(58, 17);
-            this.radioButton1.TabIndex = 67;
-            this.radioButton1.TabStop = true;
-            this.radioButton1.Text = "Course";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
+            this.radioButton_course.AutoSize = true;
+            this.radioButton_course.Checked = true;
+            this.radioButton_course.Location = new System.Drawing.Point(242, 61);
+            this.radioButton_course.Name = "radioButton_course";
+            this.radioButton_course.Size = new System.Drawing.Size(58, 17);
+            this.radioButton_course.TabIndex = 67;
+            this.radioButton_course.TabStop = true;
+            this.radioButton_course.Text = "Course";
+            this.radioButton_course.UseVisualStyleBackColor = true;
+            this.radioButton_course.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
             // 
             // label10
             // 
@@ -1201,12 +1205,22 @@
             this.panel_joint.Controls.Add(this.comboBox_origin);
             this.panel_joint.Controls.Add(this.label66);
             this.panel_joint.Controls.Add(this.label67);
-            this.panel_joint.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel_joint.Location = new System.Drawing.Point(0, 0);
+            this.panel_joint.Controls.Add(this.label69);
+            this.panel_joint.Location = new System.Drawing.Point(112, 146);
             this.panel_joint.Name = "panel_joint";
             this.panel_joint.Size = new System.Drawing.Size(1073, 688);
             this.panel_joint.TabIndex = 80;
             this.panel_joint.Visible = false;
+            // 
+            // label69
+            // 
+            this.label69.Location = new System.Drawing.Point(19, 81);
+            this.label69.Name = "label69";
+            this.label69.Size = new System.Drawing.Size(464, 37);
+            this.label69.TabIndex = 159;
+            this.label69.Text = "Customize the joint properties. If you want to adjust the coordinate systems and " +
+                "axes in the model, click cancel and restart the export. The tool will recognize " +
+                "your changes on the next run.";
             // 
             // panel_link_properties
             // 
@@ -1218,8 +1232,7 @@
             this.panel_link_properties.Controls.Add(this.groupBox5);
             this.panel_link_properties.Controls.Add(this.groupBox4);
             this.panel_link_properties.Controls.Add(this.treeView_linkProperties);
-            this.panel_link_properties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel_link_properties.Location = new System.Drawing.Point(0, 0);
+            this.panel_link_properties.Location = new System.Drawing.Point(1051, 12);
             this.panel_link_properties.Name = "panel_link_properties";
             this.panel_link_properties.Size = new System.Drawing.Size(1073, 688);
             this.panel_link_properties.TabIndex = 151;
@@ -1865,7 +1878,7 @@
             this.checkBox_rotate.AutoSize = true;
             this.checkBox_rotate.Checked = true;
             this.checkBox_rotate.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_rotate.Location = new System.Drawing.Point(20, 120);
+            this.checkBox_rotate.Location = new System.Drawing.Point(22, 123);
             this.checkBox_rotate.Name = "checkBox_rotate";
             this.checkBox_rotate.Size = new System.Drawing.Size(226, 17);
             this.checkBox_rotate.TabIndex = 81;
@@ -1940,8 +1953,8 @@
         private System.Windows.Forms.TextBox textBox_collision_origin_z;
         private System.Windows.Forms.TextBox textBox_collision_origin_y;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButton_fine;
+        private System.Windows.Forms.RadioButton radioButton_course;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox textBox_visual_origin_z;
@@ -2081,5 +2094,6 @@
         private System.Windows.Forms.Label label66;
         private System.Windows.Forms.Label label67;
         private System.Windows.Forms.CheckBox checkBox_rotate;
+        private System.Windows.Forms.Label label69;
     }
 }
