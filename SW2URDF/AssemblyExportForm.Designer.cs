@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AssemblyExportForm));
             this.button_link_next = new System.Windows.Forms.Button();
             this.button_link_cancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -192,11 +191,12 @@
             this.label_child = new System.Windows.Forms.Label();
             this.label_parent = new System.Windows.Forms.Label();
             this.treeView_jointtree = new System.Windows.Forms.TreeView();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.comboBox_axis = new System.Windows.Forms.ComboBox();
             this.comboBox_origin = new System.Windows.Forms.ComboBox();
             this.label66 = new System.Windows.Forms.Label();
             this.label67 = new System.Windows.Forms.Label();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.checkBox_rotate = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -232,7 +232,8 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(464, 50);
             this.label1.TabIndex = 3;
-            this.label1.Text = resources.GetString("label1.Text");
+            this.label1.Text = "Drag and drop links to change the parent links and move links into and out of the" +
+                " deleted links list.";
             // 
             // button_select
             // 
@@ -1345,7 +1346,6 @@
             this.textBox_k_velocity.Name = "textBox_k_velocity";
             this.textBox_k_velocity.Size = new System.Drawing.Size(65, 20);
             this.textBox_k_velocity.TabIndex = 146;
-            this.textBox_k_velocity.TextChanged += new System.EventHandler(this.textBox1_k_velocity_TextChanged);
             // 
             // label_kvelocity
             // 
@@ -1362,7 +1362,6 @@
             this.textBox_soft_lower.Name = "textBox_soft_lower";
             this.textBox_soft_lower.Size = new System.Drawing.Size(65, 20);
             this.textBox_soft_lower.TabIndex = 139;
-            this.textBox_soft_lower.TextChanged += new System.EventHandler(this.textBox_soft_lower_TextChanged);
             // 
             // label_soft_lower
             // 
@@ -1379,7 +1378,6 @@
             this.textBox_soft_upper.Name = "textBox_soft_upper";
             this.textBox_soft_upper.Size = new System.Drawing.Size(65, 20);
             this.textBox_soft_upper.TabIndex = 140;
-            this.textBox_soft_upper.TextChanged += new System.EventHandler(this.textBox_soft_upper_TextChanged);
             // 
             // label_soft_upper
             // 
@@ -1399,7 +1397,6 @@
             this.label80.Size = new System.Drawing.Size(101, 13);
             this.label80.TabIndex = 145;
             this.label80.Text = "Safety Controller";
-            this.label80.Click += new System.EventHandler(this.label80_Click);
             // 
             // textBox_k_position
             // 
@@ -1407,7 +1404,6 @@
             this.textBox_k_position.Name = "textBox_k_position";
             this.textBox_k_position.Size = new System.Drawing.Size(65, 20);
             this.textBox_k_position.TabIndex = 141;
-            this.textBox_k_position.TextChanged += new System.EventHandler(this.textBox_k_position_TextChanged);
             // 
             // label_kposition
             // 
@@ -1424,7 +1420,6 @@
             this.textBox_friction.Name = "textBox_friction";
             this.textBox_friction.Size = new System.Drawing.Size(65, 20);
             this.textBox_friction.TabIndex = 134;
-            this.textBox_friction.TextChanged += new System.EventHandler(this.textBox_friction_TextChanged);
             // 
             // label_friction
             // 
@@ -1441,7 +1436,6 @@
             this.textBox_damping.Name = "textBox_damping";
             this.textBox_damping.Size = new System.Drawing.Size(65, 20);
             this.textBox_damping.TabIndex = 135;
-            this.textBox_damping.TextChanged += new System.EventHandler(this.textBox_damping_TextChanged);
             // 
             // label_damping
             // 
@@ -1462,7 +1456,6 @@
             this.label76.Size = new System.Drawing.Size(61, 13);
             this.label76.TabIndex = 138;
             this.label76.Text = "Dynamics";
-            this.label76.Click += new System.EventHandler(this.label76_Click);
             // 
             // textBox_calibration_rising
             // 
@@ -1470,7 +1463,6 @@
             this.textBox_calibration_rising.Name = "textBox_calibration_rising";
             this.textBox_calibration_rising.Size = new System.Drawing.Size(65, 20);
             this.textBox_calibration_rising.TabIndex = 127;
-            this.textBox_calibration_rising.TextChanged += new System.EventHandler(this.textBox_calibration_rising_TextChanged);
             // 
             // label7_calibration_rising
             // 
@@ -1487,7 +1479,6 @@
             this.textBox_calibration_falling.Name = "textBox_calibration_falling";
             this.textBox_calibration_falling.Size = new System.Drawing.Size(65, 20);
             this.textBox_calibration_falling.TabIndex = 128;
-            this.textBox_calibration_falling.TextChanged += new System.EventHandler(this.textBox_calibration_falling_TextChanged);
             // 
             // label73
             // 
@@ -1507,7 +1498,6 @@
             this.label74.Size = new System.Drawing.Size(67, 13);
             this.label74.TabIndex = 133;
             this.label74.Text = "Calibration";
-            this.label74.Click += new System.EventHandler(this.label74_Click);
             // 
             // textBox_limit_velocity
             // 
@@ -1515,7 +1505,6 @@
             this.textBox_limit_velocity.Name = "textBox_limit_velocity";
             this.textBox_limit_velocity.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_velocity.TabIndex = 125;
-            this.textBox_limit_velocity.TextChanged += new System.EventHandler(this.textBox_limit_velocity_TextChanged);
             // 
             // label_velocity
             // 
@@ -1532,7 +1521,6 @@
             this.textBox_limit_lower.Name = "textBox_limit_lower";
             this.textBox_limit_lower.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_lower.TabIndex = 118;
-            this.textBox_limit_lower.TextChanged += new System.EventHandler(this.textBox_limit_lower_TextChanged);
             // 
             // label_lower_limit
             // 
@@ -1549,7 +1537,6 @@
             this.textBox_limit_upper.Name = "textBox_limit_upper";
             this.textBox_limit_upper.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_upper.TabIndex = 119;
-            this.textBox_limit_upper.TextChanged += new System.EventHandler(this.textBox_limit_upper_TextChanged);
             // 
             // label_limit_upper
             // 
@@ -1569,7 +1556,6 @@
             this.label68.Size = new System.Drawing.Size(33, 13);
             this.label68.TabIndex = 124;
             this.label68.Text = "Limit";
-            this.label68.Click += new System.EventHandler(this.label68_Click);
             // 
             // textBox_limit_effort
             // 
@@ -1577,7 +1563,6 @@
             this.textBox_limit_effort.Name = "textBox_limit_effort";
             this.textBox_limit_effort.Size = new System.Drawing.Size(65, 20);
             this.textBox_limit_effort.TabIndex = 120;
-            this.textBox_limit_effort.TextChanged += new System.EventHandler(this.textBox_limit_effort_TextChanged);
             // 
             // label_effort
             // 
@@ -1624,7 +1609,6 @@
             this.textBox_joint_name.Name = "textBox_joint_name";
             this.textBox_joint_name.Size = new System.Drawing.Size(295, 20);
             this.textBox_joint_name.TabIndex = 114;
-            this.textBox_joint_name.TextChanged += new System.EventHandler(this.textBox_joint_name_TextChanged);
             // 
             // label62
             // 
@@ -1650,7 +1634,6 @@
             this.comboBox_joint_type.Name = "comboBox_joint_type";
             this.comboBox_joint_type.Size = new System.Drawing.Size(121, 21);
             this.comboBox_joint_type.TabIndex = 112;
-            this.comboBox_joint_type.SelectedIndexChanged += new System.EventHandler(this.comboBox_joint_type_SelectedIndexChanged);
             // 
             // textBox_axis_x
             // 
@@ -1658,7 +1641,6 @@
             this.textBox_axis_x.Name = "textBox_axis_x";
             this.textBox_axis_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_axis_x.TabIndex = 105;
-            this.textBox_axis_x.TextChanged += new System.EventHandler(this.textBox_axis_x_TextChanged);
             // 
             // label58
             // 
@@ -1675,7 +1657,6 @@
             this.textBox_axis_y.Name = "textBox_axis_y";
             this.textBox_axis_y.Size = new System.Drawing.Size(65, 20);
             this.textBox_axis_y.TabIndex = 106;
-            this.textBox_axis_y.TextChanged += new System.EventHandler(this.textBox_axis_y_TextChanged);
             // 
             // label59
             // 
@@ -1695,7 +1676,6 @@
             this.label60.Size = new System.Drawing.Size(30, 13);
             this.label60.TabIndex = 111;
             this.label60.Text = "Axis";
-            this.label60.Click += new System.EventHandler(this.label60_Click);
             // 
             // textBox_axis_z
             // 
@@ -1703,7 +1683,6 @@
             this.textBox_axis_z.Name = "textBox_axis_z";
             this.textBox_axis_z.Size = new System.Drawing.Size(65, 20);
             this.textBox_axis_z.TabIndex = 107;
-            this.textBox_axis_z.TextChanged += new System.EventHandler(this.textBox_axis_z_TextChanged);
             // 
             // label61
             // 
@@ -1720,7 +1699,6 @@
             this.textBox_joint_x.Name = "textBox_joint_x";
             this.textBox_joint_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_x.TabIndex = 92;
-            this.textBox_joint_x.TextChanged += new System.EventHandler(this.textBox_joint_x_TextChanged);
             // 
             // label51
             // 
@@ -1737,7 +1715,6 @@
             this.textBox_joint_yaw.Name = "textBox_joint_yaw";
             this.textBox_joint_yaw.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_yaw.TabIndex = 104;
-            this.textBox_joint_yaw.TextChanged += new System.EventHandler(this.textBox_joint_yaw_TextChanged);
             // 
             // textBox_joint_pitch
             // 
@@ -1745,7 +1722,6 @@
             this.textBox_joint_pitch.Name = "textBox_joint_pitch";
             this.textBox_joint_pitch.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_pitch.TabIndex = 103;
-            this.textBox_joint_pitch.TextChanged += new System.EventHandler(this.textBox_joint_pitch_TextChanged);
             // 
             // label52
             // 
@@ -1762,7 +1738,6 @@
             this.textBox_joint_roll.Name = "textBox_joint_roll";
             this.textBox_joint_roll.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_roll.TabIndex = 102;
-            this.textBox_joint_roll.TextChanged += new System.EventHandler(this.textBox_joint_roll_TextChanged);
             // 
             // textBox_joint_y
             // 
@@ -1770,7 +1745,6 @@
             this.textBox_joint_y.Name = "textBox_joint_y";
             this.textBox_joint_y.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_y.TabIndex = 93;
-            this.textBox_joint_y.TextChanged += new System.EventHandler(this.textBox_joint_y_TextChanged);
             // 
             // label53
             // 
@@ -1815,7 +1789,6 @@
             this.textBox_joint_z.Name = "textBox_joint_z";
             this.textBox_joint_z.Size = new System.Drawing.Size(65, 20);
             this.textBox_joint_z.TabIndex = 94;
-            this.textBox_joint_z.TextChanged += new System.EventHandler(this.textBox_joint_z_TextChanged);
             // 
             // label57
             // 
@@ -1887,6 +1860,18 @@
             this.label67.TabIndex = 158;
             this.label67.Text = "Axis";
             // 
+            // checkBox_rotate
+            // 
+            this.checkBox_rotate.AutoSize = true;
+            this.checkBox_rotate.Checked = true;
+            this.checkBox_rotate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_rotate.Location = new System.Drawing.Point(20, 120);
+            this.checkBox_rotate.Name = "checkBox_rotate";
+            this.checkBox_rotate.Size = new System.Drawing.Size(226, 17);
+            this.checkBox_rotate.TabIndex = 81;
+            this.checkBox_rotate.Text = "Rotate global origin to make Z-axis vertical";
+            this.checkBox_rotate.UseVisualStyleBackColor = true;
+            // 
             // AssemblyExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1906,6 +1891,7 @@
             this.Controls.Add(this.listBox_deleted);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label9);
+            this.Controls.Add(this.checkBox_rotate);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
             this.Load += new System.EventHandler(this.AssemblyExportForm_Load);
@@ -2094,5 +2080,6 @@
         private System.Windows.Forms.ComboBox comboBox_origin;
         private System.Windows.Forms.Label label66;
         private System.Windows.Forms.Label label67;
+        private System.Windows.Forms.CheckBox checkBox_rotate;
     }
 }

@@ -45,7 +45,7 @@ namespace SW2URDF
             treeView_jointtree.Nodes.Clear();
 
             Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
-            Exporter.createJoints2(Exporter.mRobot.BaseLink);
+            Exporter.createJoints(Exporter.mRobot.BaseLink, checkBox_rotate.Checked);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             fillJointPropertyBoxes(null);
             panel_joint.Visible = true;
@@ -59,10 +59,10 @@ namespace SW2URDF
         }
         private void button_joint_next_Click(object sender, EventArgs e)
         {
-            LinkNode node = (LinkNode)treeView_jointtree.SelectedNode;
-            if (!(node == null || node.Joint == null))
+
+            if (!(previouslySelectedNode == null || previouslySelectedNode.Link.Joint == null))
             {
-                node.Joint = saveJointDataFromPropertyBoxes();
+                previouslySelectedNode.Link.Joint = saveJointDataFromPropertyBoxes();
             }
             treeView_linkProperties.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
@@ -564,28 +564,28 @@ namespace SW2URDF
         public link saveLinkDataFromPropertyBoxes(link Link)
         {
             double value;
-            Link.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.X =    (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Y =    (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Z =    (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
             Link.Inertial.Origin.Roll = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Pitch= (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Yaw =  (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+            Link.Visual.Origin.X =      (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Y =      (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Z =      (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Roll =   (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Pitch =  (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Yaw =    (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Z = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Roll = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
+            Link.Collision.Origin.X =       (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Y =       (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Z =       (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Roll =    (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Pitch =   (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Yaw =     (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+            Link.Inertial.Mass.Value =  (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
 
             Link.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
             Link.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
@@ -597,10 +597,10 @@ namespace SW2URDF
             Link.Visual.Material.name = comboBox_materials.Text;
             Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
-            Link.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Red =    (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Green =  (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Blue =   (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Alpha =  (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
 
             return Link;
         }
@@ -702,27 +702,27 @@ namespace SW2URDF
             Joint.CoordinateSystemName = comboBox_origin.Text;
             Joint.AxisName = comboBox_axis.Text;
 
-            Joint.Origin.X = (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
-            Joint.Origin.Y = (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
-            Joint.Origin.Z = (Double.TryParse(textBox_joint_z.Text, out value)) ? value : 0;
+            Joint.Origin.X =    (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
+            Joint.Origin.Y =    (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
+            Joint.Origin.Z =    (Double.TryParse(textBox_joint_z.Text, out value)) ? value : 0;
             Joint.Origin.Roll = (Double.TryParse(textBox_joint_roll.Text, out value)) ? value : 0;
-            Joint.Origin.Pitch = (Double.TryParse(textBox_joint_pitch.Text, out value)) ? value : 0;
-            Joint.Origin.Yaw = (Double.TryParse(textBox_joint_yaw.Text, out value)) ? value : 0;
+            Joint.Origin.Pitch= (Double.TryParse(textBox_joint_pitch.Text, out value)) ? value : 0;
+            Joint.Origin.Yaw =  (Double.TryParse(textBox_joint_yaw.Text, out value)) ? value : 0;
 
             Joint.Axis.X = (Double.TryParse(textBox_axis_x.Text, out value)) ? value : 0;
             Joint.Axis.Y = (Double.TryParse(textBox_axis_y.Text, out value)) ? value : 0;
             Joint.Axis.Z = (Double.TryParse(textBox_axis_z.Text, out value)) ? value : 0;
 
-            Joint.Limit.lower = (Double.TryParse(textBox_limit_lower.Text, out value)) ? value : 0;
-            Joint.Limit.upper = (Double.TryParse(textBox_limit_upper.Text, out value)) ? value : 0;
-            Joint.Limit.effort = (Double.TryParse(textBox_limit_effort.Text, out value)) ? value : 0;
-            Joint.Limit.velocity = (Double.TryParse(textBox_limit_velocity.Text, out value)) ? value : 0;
+            Joint.Limit.lower =     (Double.TryParse(textBox_limit_lower.Text, out value)) ? value : 0;
+            Joint.Limit.upper =     (Double.TryParse(textBox_limit_upper.Text, out value)) ? value : 0;
+            Joint.Limit.effort =    (Double.TryParse(textBox_limit_effort.Text, out value)) ? value : 0;
+            Joint.Limit.velocity =  (Double.TryParse(textBox_limit_velocity.Text, out value)) ? value : 0;
 
-            Joint.Calibration.rising = (Double.TryParse(textBox_calibration_rising.Text, out value)) ? value : 0;
+            Joint.Calibration.rising =  (Double.TryParse(textBox_calibration_rising.Text, out value)) ? value : 0;
             Joint.Calibration.falling = (Double.TryParse(textBox_calibration_falling.Text, out value)) ? value : 0;
 
             Joint.Dynamics.friction = (Double.TryParse(textBox_friction.Text, out value)) ? value : 0;
-            Joint.Dynamics.damping = (Double.TryParse(textBox_damping.Text, out value)) ? value : 0;
+            Joint.Dynamics.damping =  (Double.TryParse(textBox_damping.Text, out value)) ? value : 0;
 
             Joint.Safety.soft_lower = (Double.TryParse(textBox_soft_lower.Text, out value)) ? value : 0;
             Joint.Safety.soft_upper = (Double.TryParse(textBox_soft_upper.Text, out value)) ? value : 0;
@@ -963,147 +963,6 @@ namespace SW2URDF
             previouslySelectedNode = node;
         }
 
-        private void textBox_joint_name_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox_joint_type_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_x_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_roll_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_y_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_z_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_pitch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_joint_yaw_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_axis_x_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_axis_y_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_axis_z_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_limit_lower_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_limit_upper_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_limit_effort_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_limit_velocity_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_calibration_rising_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_calibration_falling_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_friction_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_damping_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_soft_lower_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_soft_upper_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_k_position_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox1_k_velocity_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-        #endregion
-
-        private void label60_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label74_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label76_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label80_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label68_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void comboBox_axis_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
@@ -1115,6 +974,7 @@ namespace SW2URDF
                 textBox_axis_z.Text = Axis[2].ToString("G5");
             }
         }
+        #endregion
     }
 
     #region Derived classes

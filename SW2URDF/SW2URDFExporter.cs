@@ -312,7 +312,7 @@ namespace SW2URDF
         #region Joint methods
         //Iterates through each link to create the joints between the parent and child
 
-        public void createJoints2(link Parent)
+        public void createJoints(link Parent, bool zIsUp)
         {
             Matrix<double> ParentJointGlobalTransform;
             if (Parent.Joint != null)
@@ -323,8 +323,10 @@ namespace SW2URDF
             }
             else
             {
-                //If the parent is the base_link then set the reference for the child's joint to the identity
-                ParentJointGlobalTransform = DenseMatrix.Identity(4);
+                //If the parent is the base_link then set the reference for the child's joint to the global origin
+                createBaseRefOrigin(zIsUp);
+                MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
+                ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
             }
             foreach (link Child in Parent.Children)
             {
@@ -335,7 +337,7 @@ namespace SW2URDF
                 // Localize the joint by creating transforms between the child joint and the parent's global transform
                 localizeJoint(Child, ParentJointGlobalTransform);
                 // Iterate through this links children
-                createJoints2(Child);
+                createJoints(Child, zIsUp);
             }
         }
 
@@ -390,6 +392,25 @@ namespace SW2URDF
                 coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
 
                 coordinates.Name = Joint.CoordinateSystemName;
+            }
+        }
+        public void createBaseRefOrigin(bool zIsUp)
+        {
+            if (!ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                joint Joint = new joint();
+                Joint.Origin = new origin();
+                if (zIsUp)
+                {
+                    Joint.Origin.RPY = new double[] { -Math.PI / 2, 0, 0 };
+                }
+                else
+                {
+                    Joint.Origin.RPY = new double[] { 0, 0, 0 };
+                }
+                Joint.Origin.XYZ = new double[] { 0, 0, 0 };
+                Joint.CoordinateSystemName = "Origin_global";
+                createRefOrigin(Joint);
             }
         }
         public void createRefAxis(joint Joint)
@@ -871,7 +892,7 @@ namespace SW2URDF
                 int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                 if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
                 {
-                    setSTLCoordinateSystem("");
+                    setSTLCoordinateSystem("Origin_global");
                 }
                 else
                 {
