@@ -122,7 +122,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.panel_joint = new System.Windows.Forms.Panel();
-            this.label69 = new System.Windows.Forms.Label();
             this.panel_link_properties = new System.Windows.Forms.Panel();
             this.label5 = new System.Windows.Forms.Label();
             this.button_links_finish = new System.Windows.Forms.Button();
@@ -196,6 +195,7 @@
             this.comboBox_origin = new System.Windows.Forms.ComboBox();
             this.label66 = new System.Windows.Forms.Label();
             this.label67 = new System.Windows.Forms.Label();
+            this.label69 = new System.Windows.Forms.Label();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.checkBox_rotate = new System.Windows.Forms.CheckBox();
             this.groupBox3.SuspendLayout();
@@ -1206,21 +1206,12 @@
             this.panel_joint.Controls.Add(this.label66);
             this.panel_joint.Controls.Add(this.label67);
             this.panel_joint.Controls.Add(this.label69);
-            this.panel_joint.Location = new System.Drawing.Point(112, 146);
+            this.panel_joint.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel_joint.Location = new System.Drawing.Point(0, 0);
             this.panel_joint.Name = "panel_joint";
             this.panel_joint.Size = new System.Drawing.Size(1073, 688);
             this.panel_joint.TabIndex = 80;
             this.panel_joint.Visible = false;
-            // 
-            // label69
-            // 
-            this.label69.Location = new System.Drawing.Point(19, 81);
-            this.label69.Name = "label69";
-            this.label69.Size = new System.Drawing.Size(464, 37);
-            this.label69.TabIndex = 159;
-            this.label69.Text = "Customize the joint properties. If you want to adjust the coordinate systems and " +
-                "axes in the model, click cancel and restart the export. The tool will recognize " +
-                "your changes on the next run.";
             // 
             // panel_link_properties
             // 
@@ -1232,7 +1223,8 @@
             this.panel_link_properties.Controls.Add(this.groupBox5);
             this.panel_link_properties.Controls.Add(this.groupBox4);
             this.panel_link_properties.Controls.Add(this.treeView_linkProperties);
-            this.panel_link_properties.Location = new System.Drawing.Point(1051, 12);
+            this.panel_link_properties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel_link_properties.Location = new System.Drawing.Point(0, 0);
             this.panel_link_properties.Name = "panel_link_properties";
             this.panel_link_properties.Size = new System.Drawing.Size(1073, 688);
             this.panel_link_properties.TabIndex = 151;
@@ -1872,6 +1864,16 @@
             this.label67.Size = new System.Drawing.Size(26, 13);
             this.label67.TabIndex = 158;
             this.label67.Text = "Axis";
+            // 
+            // label69
+            // 
+            this.label69.Location = new System.Drawing.Point(19, 81);
+            this.label69.Name = "label69";
+            this.label69.Size = new System.Drawing.Size(464, 37);
+            this.label69.TabIndex = 159;
+            this.label69.Text = "Customize the joint properties. If you want to adjust the coordinate systems and " +
+                "axes in the model, click cancel and restart the export. The tool will recognize " +
+                "your changes on the next run.";
             // 
             // checkBox_rotate
             // 

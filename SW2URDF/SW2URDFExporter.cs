@@ -454,6 +454,9 @@ namespace SW2URDF
             Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
             Matrix<double> localLinkCoMTransform = ChildJointGlobalTransform.Inverse() * linkCoMTransform;
 
+            // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
+            // It's a rotation matrix, so this shouldn't matter. If it does, just transpose linkGlobalMomentInertia
+            // These three matrices are 3x3 as opposed to the 4x4 transformation matrices above. You're welcome for the confusion.
             Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3,3,Link.Inertial.Inertia.Moment);
             Matrix<double> ChildJointRotMat = ChildJointGlobalTransform.SubMatrix(0, 3, 0, 3);
             Matrix<double> linkLocalMomentInertia = ChildJointRotMat.Inverse() * linkGlobalMomentInertia;
@@ -483,8 +486,20 @@ namespace SW2URDF
             Matrix<double> linkCollisionTransform = OPS.getTransformation(Link.Collision.Origin.XYZ, Link.Collision.Origin.RPY);
             Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
 
+            // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
+            // It's a rotation matrix, so this shouldn't matter. If it does, just transpose linkGlobalMomentInertia
+            // These three matrices are 3x3 as opposed to the 4x4 transformation matrices above. You're welcome for the confusion.
+            Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3, 3, Link.Inertial.Inertia.Moment);
+            Matrix<double> GlobalRotMat = GlobalTransform.SubMatrix(0, 3, 0, 3);
+            Matrix<double> linkLocalMomentInertia = GlobalRotMat.Inverse() * linkGlobalMomentInertia;
+
             Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
             Link.Inertial.Origin.RPY = new double[] { 0, 0, 0 };
+
+            // Wait are you saying that even though the matrix was trasposed from column major order, you are writing it in row-major order here.
+            // Yes, yes I am.
+            Link.Inertial.Inertia.Moment = linkLocalMomentInertia.ToRowWiseArray();
+
 
             Link.Collision.Origin.XYZ = OPS.getXYZ(localCollisionTransform);
             Link.Collision.Origin.RPY = OPS.getRPY(localCollisionTransform);
