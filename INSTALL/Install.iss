@@ -22,11 +22,11 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 CreateAppDir=yes
 OutputBaseFilename=sw2urdfSetup
-Compression=lzma
-DefaultDirName={reg:HKLM\SOFTWARE\SolidWorks\SolidWorks 2012\Setup, SolidWorks Folder}\SW2URDF
+Compression=lzma                                                        
+DefaultDirName="""C:\Program Files\SolidWorks Corp\SolidWorks\SW2URDF"""
 SolidCompression=yes
 PrivilegesRequired=admin
-OutputDir={SourceDir}
+OutputDir=..\..\..\INSTALL\OUTPUT
 SourceDir=..\SW2URDF\bin\Debug
 
 
