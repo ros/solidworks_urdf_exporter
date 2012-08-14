@@ -27,7 +27,7 @@ DefaultDirName="""C:\Program Files\SolidWorks Corp\SolidWorks\SW2URDF"""
 SolidCompression=yes
 PrivilegesRequired=admin
 OutputDir=..\..\..\INSTALL\OUTPUT
-SourceDir=..\SW2URDF\bin\Debug
+SourceDir=..\SW2URDF\bin\x86\Debug
 
 
 [Languages]
