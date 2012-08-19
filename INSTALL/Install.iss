@@ -23,40 +23,30 @@ AppUpdatesURL={#MyAppURL}
 CreateAppDir=yes
 OutputBaseFilename=sw2urdfSetup
 Compression=lzma                                                        
-DefaultDirName="C:\Program Files\SolidWorks Corp\SolidWorks\SW2URDF"
+DefaultDirName="C:\Program Files\SolidWorks Corp\SolidWorks\URDFExporter"
 SolidCompression=no
 PrivilegesRequired=admin
 OutputDir=..\..\..\INSTALL\OUTPUT
-SourceDir=..\SW2URDF\bin\Debug
-
+SourceDir=..\SW2URDF\bin\x64\Debug
+ArchitecturesAllowed=x64
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: SolidWorksTools.dll;  DestDir: {app}; Flags: ignoreversion
-Source: MathNet.Numerics.dll; DestDir: {app}; Flags: ignoreversion  regserver
-Source: MathNet.Numerics.pdb; DestDir: {app}; Flags: ignoreversion
-Source: MathNet.Numerics.xml; DestDir: {app}; Flags: ignoreversion
-Source: SW2URDF.dll;          DestDir: {app}; Flags: ignoreversion
-Source: SW2URDF.bmp;          DestDir: {app}; Flags: ignoreversion
-Source: SW2URDF.pdb;          DestDir: {app}; Flags: ignoreversion
-Source: SW2URDF.tlb;          DestDir: {app}; Flags: ignoreversion
-Source: zlib.net.dll;         DestDir: {app}; Flags: ignoreversion
+;Source: * DestDir: {app}; Flags: ignoreversion
+Source: *;  DestDir: {app}; Flags: ignoreversion
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Run]                                                        
-
-Filename: "{reg:HKLM\SOFTWARE\Microsoft\.NETFramework,InstallRoot}\v4.0.30319\RegAsm.exe";   Parameters: """{app}\SW2URDF.dll"" ""/codebase"""; StatusMsg: Registering controls ...; Check: Not IsWin64; Languages:
 Filename: "{reg:HKLM64\SOFTWARE\Microsoft\.NETFramework,InstallRoot}\v4.0.30319\RegAsm.exe"; Parameters: """{app}\SW2URDF.dll"" ""/codebase"""; StatusMsg: Registering controls ...; Check: IsWin64; Languages:
 
 [Registry]
-Root: HKLM;   Subkey: "SOFTWARE\SolidWorks\Addins\65c9fc17-6a74-45a3-8f84-55185900275d";        ValueType: none; ValueName: ""; Flags: dontcreatekey deletekey uninsdeletevalue
-Root: HKCU;   Subkey: "Software\SolidWorks\AddInsStartup\65c9fc17-6a74-45a3-8f84-55185900275d"; ValueType: none; ValueName: ""; Flags: dontcreatekey deletekey uninsdeletevalue
 Root: HKLM64; Subkey: "SOFTWARE\SolidWorks\Addins\65c9fc17-6a74-45a3-8f84-55185900275d";        ValueType: none; ValueName: ""; Flags: dontcreatekey deletekey uninsdeletevalue
 Root: HKCU64; Subkey: "Software\SolidWorks\AddInsStartup\65c9fc17-6a74-45a3-8f84-55185900275d"; ValueType: none; ValueName: ""; Flags: dontcreatekey deletekey uninsdeletevalue
 
 [UninstallRun]
 
-Filename: "{reg:HKLM\SOFTWARE\Microsoft\.NETFramework,InstallRoot}\v4.0.30319\RegAsm.exe";   Parameters:  """{app}\SW2URDF.dll"" ""/unregister"""; StatusMsg: Registering controls ...; Check: Not IsWin64; Languages:
-Filename: "{reg:HKLM64\SOFTWARE\Microsoft\.NETFramework,InstallRoot}\v4.0.30319\RegAsm.exe"; Parameters:  """{app}\SW2URDF.dll"" ""/unregister"""; StatusMsg: Registering controls ...; Check: IsWin64; Languages:
+Filename: "{reg:HKLM64\SOFTWARE\Microsoft\.NETFramework,InstallRoot}\v4.0.30319\RegAsm.exe"; Parameters:  """{app}\SW2URDF.dll"" ""/unregister"""; StatusMsg: Unregistering controls ...; Check: IsWin64; Languages:
