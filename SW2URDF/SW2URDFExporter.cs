@@ -119,6 +119,8 @@ namespace SW2URDF
         public link createBaseLinkFromAssy(ModelDoc2 swModel)
         {
             AssemblyDoc swAssy = (AssemblyDoc)swModel;
+
+            swAssy.ResolveAllLightWeightComponents(true);
             // Getting the components (assemblies and parts, contained in this assembly)
             object[] varComp = swAssy.GetComponents(true);
 
@@ -210,7 +212,7 @@ namespace SW2URDF
             {
                 return sparseTree;
             }
-            sparseTree = parentLink;
+            //sparseTree = parentLink;
             List<link> linksToRemove = new List<link>();
             List<link> linksToAdd = new List<link>();
             // Iterate through children to continue finding the best parents
@@ -231,9 +233,9 @@ namespace SW2URDF
             // Add organized links
             foreach (link Link in linksToAdd)
             {
-                sparseTree.Children.Add(Link);
+                parentLink.Children.Add(Link);
             }
-            return sparseTree;
+            return parentLink;
         }
 
         // From a links children, this method finds the 'best' choice as a parent
@@ -243,9 +245,9 @@ namespace SW2URDF
             {
                 link AssignedParentLink = new link();
                 int priorityLevel = -1;
-                double largestFixedVolume = 0;
-                double largestPartVolume = 0;
-                double largestAssyVolume = 0;
+                double largestFixedMass = -1;
+                double largestPartMass = -1;
+                double largestAssyMass = 0;
 
                 // Iterate through children to find the 'best' component for parent status. It may be several assemblies down.
                 foreach (link child in top.Children)
@@ -261,28 +263,28 @@ namespace SW2URDF
 
                         IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
 
-                        double childVolume = childMass.Volume;
+                        double mass = childMass.Mass;
 
                         //Highest priority is the largest fixed component
-                        if (child.SWComponent.IsFixed() && childMass.Volume > largestFixedVolume)
+                        if (child.SWComponent.IsFixed() && mass > largestFixedMass)
                         {
                             priorityLevel = 2;
                             AssignedParentLink = child;
-                            largestFixedVolume = childVolume;
+                            largestFixedMass = mass;
                         }
                         //Second highest priority is the largest floating part
-                        else if (childMass.Volume > largestPartVolume && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
+                        else if (mass > largestPartMass && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
                         {
                             priorityLevel = 1;
                             AssignedParentLink = child;
-                            largestPartVolume = childVolume;
+                            largestPartMass = mass;
                         }
                         //Third priority is the 'best' choice from the largest assembly
-                        else if (childMass.Volume > largestAssyVolume && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
+                        else if (mass > largestAssyMass && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
                         {
                             priorityLevel = 0;
                             AssignedParentLink = child;
-                            largestAssyVolume = childVolume;
+                            largestAssyMass = mass;
                         }
                     }
                 }
@@ -330,14 +332,25 @@ namespace SW2URDF
             }
             foreach (link Child in Parent.Children)
             {
+                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
                 Child.Joint = new joint();
                 Child.Joint = createJointName(Parent, Child);
+
+                // Fix parent component to eliminate its degrees of freedom from this joint
+                IComponent2 compToFix = findCompToFix(Parent, Child);
+                bool isFixed = compToFix.IsFixed();
+                compToFix.Select(false);
+                assy.FixComponent();
+
+
                 // First creates a globabl transform, that is from the joint to the origin of the assembly
                 Child.Joint = createGlobalJoint(Parent, Child);
                 // Localize the joint by creating transforms between the child joint and the parent's global transform
                 localizeJoint(Child, ParentJointGlobalTransform);
                 // Iterate through this links children
                 createJoints(Child, zIsUp);
+
+                unFixComponents(assy, compToFix, isFixed);
             }
         }
 
@@ -410,6 +423,10 @@ namespace SW2URDF
                 }
                 Joint.Origin.XYZ = new double[] { 0, 0, 0 };
                 Joint.CoordinateSystemName = "Origin_global";
+                if (referenceSketchName == null)
+                {
+                    referenceSketchName = setup3DSketch();
+                }
                 createRefOrigin(Joint);
             }
         }
@@ -588,6 +605,10 @@ namespace SW2URDF
             YAxis.ConstructionGeometry = true;
 
             ActiveSWModel.SketchManager.Insert3DSketch(true);
+            if (ActiveSWModel.SketchManager.ActiveSketch != null)
+            {
+                int c = 1 + 1;
+            }
             return new object[] { OriginPoint, XAxis, YAxis };
         }
 
@@ -624,12 +645,8 @@ namespace SW2URDF
             MathVector RDir1, RDir2;
             MathVector LDir1, LDir2;
 
-            // Fix parent component to eliminate its degrees of freedom from this joint
-            IComponent2 compToFix = findCompToFix(parent, child);
+            // Surpress Limit Mates to properly find degrees of freedom
             List<Mate2> limitMates = suppressLimitMates(child.SWComponent);
-            bool isFixed = compToFix.IsFixed();
-            compToFix.Select(false);
-            assy.FixComponent();
 
             // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
             // https://forum.solidworks.com/thread/57414
@@ -638,13 +655,6 @@ namespace SW2URDF
                                               out L1Status, out LDir1,
                                               out L2Status, out LDir2);
 
-            // Unfix components (if they weren't fixed beforehand)
-            compToFix.Select(false);
-            if (!isFixed)
-            {
-                assy.UnfixComponent();
-            }
-            unsuppressLimitMates(limitMates);
 
             // Convert the gotten degrees of freedom to a joint type, origin and axis
             Joint.type = "fixed";
@@ -668,6 +678,7 @@ namespace SW2URDF
                     Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
                 }
             }
+            unsuppressLimitMates(limitMates);
             if (limitMates.Count > 0)
             {
                 Joint = addLimits(Joint, limitMates);
@@ -855,6 +866,15 @@ namespace SW2URDF
                 compToFix = compToFix.GetParent();
             }
             return compToFix;
+        }
+        public void unFixComponents(AssemblyDoc assy, IComponent2 comp, bool isFixed)
+        {
+            // Unfix components (if they weren't fixed beforehand)
+            comp.Select(false);
+            if (!isFixed)
+            {
+                assy.UnfixComponent();
+            }
         }
         #endregion
 
