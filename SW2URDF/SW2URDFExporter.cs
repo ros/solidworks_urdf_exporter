@@ -192,7 +192,7 @@ namespace SW2URDF
                 {
                     link childLink = createSparseBranchFromComponents(child, level + 1);
                     if (childLink != null)
-                    {
+                    {   
                         Link.Children.Add(childLink);
                     }
                 }
@@ -212,11 +212,22 @@ namespace SW2URDF
             {
                 return sparseTree;
             }
+
+
+            //foreach (link child in parentLink.Children)
+            //{
+            //    ModelDoc doc = child.SWComponent.GetModelDoc2();
+            //    if (doc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            //    {
+            //        parentLink.Children.Remove(child);
+            //        parentLink.Children.Add(createDenseTree(child, level + 1));
+            //    }
+            //}
             //sparseTree = parentLink;
             List<link> linksToRemove = new List<link>();
             List<link> linksToAdd = new List<link>();
             // Iterate through children to continue finding the best parents
-            foreach (link child in sparseTree.Children)
+            foreach (link child in parentLink.Children)
             {
                 // Only bother if the component is not hidden and not supressed
                 if (!child.SWComponent.IsHidden(true))
@@ -228,7 +239,7 @@ namespace SW2URDF
             // Remove unorganized links
             foreach (link Link in linksToRemove)
             {
-                sparseTree.Children.Remove(Link);
+                parentLink.Children.Remove(Link);
             }
             // Add organized links
             foreach (link Link in linksToAdd)
@@ -291,18 +302,18 @@ namespace SW2URDF
 
                 ModelDoc2 AssignedParentDoc = AssignedParentLink.SWComponent.GetModelDoc();
                 int AssignedParentType = AssignedParentDoc.GetType();
+                top.Children.Remove(AssignedParentLink);
                 // If a fixed component was chosen and it is an assembly, iterate through assembly
                 if (priorityLevel == 2 && AssignedParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
                 {
-                    return findParent(AssignedParentLink, level + 1);
+                    AssignedParentLink = findParent(AssignedParentLink, level + 1);
 
                 }
                 // If no parts were found, iterate through the chosen assembly
                 else if (priorityLevel == 0)
                 {
-                    return findParent(AssignedParentLink, level + 1);
+                    AssignedParentLink = findParent(AssignedParentLink, level + 1);
                 }
-                top.Children.Remove(AssignedParentLink);
                 AssignedParentLink.Children.AddRange(top.Children);
                 return AssignedParentLink;
             }
@@ -605,10 +616,7 @@ namespace SW2URDF
             YAxis.ConstructionGeometry = true;
 
             ActiveSWModel.SketchManager.Insert3DSketch(true);
-            if (ActiveSWModel.SketchManager.ActiveSketch != null)
-            {
-                int c = 1 + 1;
-            }
+
             return new object[] { OriginPoint, XAxis, YAxis };
         }
 
