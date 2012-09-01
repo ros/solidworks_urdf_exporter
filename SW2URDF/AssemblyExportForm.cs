@@ -20,9 +20,11 @@ namespace SW2URDF
     {
         private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
+        private bool treeWasModified;
         LinkNode previouslySelectedNode;
         public AssemblyExportForm(ISldWorks iSwApp)
         {
+            treeWasModified = false;
             InitializeComponent();
             Exporter = new SW2URDFExporter(iSwApp);
         }
@@ -32,7 +34,6 @@ namespace SW2URDF
         {           
             Exporter.createRobotFromActiveModel();
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
             //foreach (LinkNode node in treeView_linktree.Nodes)
             //{
@@ -42,14 +43,17 @@ namespace SW2URDF
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
-            treeView_jointtree.Nodes.Clear();
+            if (treeWasModified || MessageBox.Show("The link tree has not been modified and may be incorrect. Continue anyway?", "The Tree may not be properly organized", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                treeView_jointtree.Nodes.Clear();
 
-            Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
-            Exporter.createJoints(Exporter.mRobot.BaseLink, checkBox_rotate.Checked);
-            fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
-            fillJointPropertyBoxes(null);
-            panel_joint.Visible = true;
-            this.Focus();
+                Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
+                Exporter.createJoints(Exporter.mRobot.BaseLink, checkBox_rotate.Checked);
+                fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+                fillJointPropertyBoxes(null);
+                panel_joint.Visible = true;
+                this.Focus();
+            }
             
         }
 
@@ -70,6 +74,7 @@ namespace SW2URDF
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
             panel_link_properties.Visible = true;
             this.Focus();
+
         }
 
         private void button_joint_previous_Click(object sender, EventArgs e)
@@ -104,14 +109,23 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
+
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.InitialDirectory = Exporter.mSavePath;
+            saveFileDialog1.FileName = Exporter.mPackageName;
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Exporter.mSavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
+                Exporter.mPackageName = Path.GetFileName(saveFileDialog1.FileName);
+            }
             LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
             if (node != null)
             {
                 saveLinkDataFromPropertyBoxes(node.Link);
             }
             Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
-            Exporter.mSavePath = Path.GetDirectoryName(textBox_save_as.Text);
-            Exporter.mPackageName = Path.GetFileName(textBox_save_as.Text);
+
             Exporter.exportRobot();
             this.Close();
         }
@@ -191,6 +205,7 @@ namespace SW2URDF
         }
         private void treeView_linktree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
+            treeWasModified = true;
             // Retrieve the client coordinates of the drop location.
             Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
 
@@ -877,7 +892,6 @@ namespace SW2URDF
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.RestoreDirectory = true;
-            openFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 textBox_texture.Text = openFileDialog1.FileName;
@@ -936,14 +950,7 @@ namespace SW2URDF
 
         private void button_savename_browse_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.InitialDirectory = Path.GetDirectoryName(textBox_save_as.Text);
-            saveFileDialog1.FileName = Path.GetFileName(textBox_save_as.Text);
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                textBox_save_as.Text = saveFileDialog1.FileName;
-            }
+
         }
 
         #endregion

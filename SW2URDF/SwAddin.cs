@@ -236,7 +236,7 @@ namespace SW2URDF
 
         public void assemblyURDFExporter()
         {
-            if (MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show("The SW to URDF exporter requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 ModelDoc2 modeldoc = iSwApp.ActiveDoc;
                 int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
