@@ -199,6 +199,12 @@ namespace SW2URDF
             }
             Link.SWComponent = comp;
             Link.SWComponentLevel = level;
+            // If for some reason all of the children were null and this one is an assembly, then it doesn't make sense to add it to the tree.
+            // Return null instead.
+            if (Link.Children.Count == 0 && modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                Link = null;
+            }
             return Link;
         }
 
@@ -208,22 +214,15 @@ namespace SW2URDF
             // For this empty link, find the child link that is the best fit for parenting
             link parentLink = findParent(sparseTree, level + 1);
 
-            if (parentLink == null || parentLink.Children.Count == 0)
+            if (parentLink == null)
             {
                 return sparseTree;
             }
+            if (parentLink.Children.Count == 0)
+            {
+                return parentLink;
+            }
 
-
-            //foreach (link child in parentLink.Children)
-            //{
-            //    ModelDoc doc = child.SWComponent.GetModelDoc2();
-            //    if (doc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
-            //    {
-            //        parentLink.Children.Remove(child);
-            //        parentLink.Children.Add(createDenseTree(child, level + 1));
-            //    }
-            //}
-            //sparseTree = parentLink;
             List<link> linksToRemove = new List<link>();
             List<link> linksToAdd = new List<link>();
             // Iterate through children to continue finding the best parents
