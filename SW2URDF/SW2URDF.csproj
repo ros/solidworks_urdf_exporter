@@ -130,7 +130,7 @@
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <FileAlignment>4096</FileAlignment>
-    <RegisterForComInterop>true</RegisterForComInterop>
+    <RegisterForComInterop>false</RegisterForComInterop>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -198,7 +198,14 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="clsPropMgr.cs" />
     <Compile Include="dof.cs" />
+    <Compile Include="PMLinkTree.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PMLinkTree.Designer.cs">
+      <DependentUpon>PMLinkTree.cs</DependentUpon>
+    </Compile>
     <Compile Include="matrixOPS.cs" />
     <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="URDFPackage.cs" />
@@ -215,6 +222,9 @@
     <Compile Include="URDFWriter.cs" />
     <EmbeddedResource Include="AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PMLinkTree.resx">
+      <DependentUpon>PMLinkTree.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PartExportForm.resx">
       <DependentUpon>PartExportForm.cs</DependentUpon>

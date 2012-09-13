@@ -18,6 +18,8 @@ namespace SW2URDF
 
     public partial class AssemblyExportForm : Form
     {
+        ISldWorks swApp;
+        ModelDoc2 ActiveSWModel;
         private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
         private bool treeWasModified;
@@ -26,14 +28,19 @@ namespace SW2URDF
         {
             treeWasModified = false;
             InitializeComponent();
+            swApp = iSwApp;
+            ActiveSWModel = swApp.ActiveDoc;
             Exporter = new SW2URDFExporter(iSwApp);
         }
 
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
-        {           
-            Exporter.createRobotFromActiveModel();
-            fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
+        {
+
+
+            //Exporter.createRobotFromActiveModel();
+            //fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
+            
 
             //foreach (LinkNode node in treeView_linktree.Nodes)
             //{
@@ -43,17 +50,19 @@ namespace SW2URDF
 
         private void button_link_next_Click(object sender, EventArgs e)
         {
-            if (treeWasModified || MessageBox.Show("The link tree has not been modified and may be incorrect. Continue anyway?", "The Tree may not be properly organized", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
+  
+                if (listBox_deleted.Items.Count > 0)
+                {
+                    Exporter.configureDisplayState(listBox_deleted);
+                }    
                 treeView_jointtree.Nodes.Clear();
 
                 Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
-                Exporter.createJoints(Exporter.mRobot.BaseLink, checkBox_rotate.Checked);
                 fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
                 fillJointPropertyBoxes(null);
                 panel_joint.Visible = true;
                 this.Focus();
-            }
+
             
         }
 
@@ -118,16 +127,17 @@ namespace SW2URDF
             {
                 Exporter.mSavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
                 Exporter.mPackageName = Path.GetFileName(saveFileDialog1.FileName);
-            }
-            LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
-            if (node != null)
-            {
-                saveLinkDataFromPropertyBoxes(node.Link);
-            }
-            Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+                LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+                if (node != null)
+                {
+                    saveLinkDataFromPropertyBoxes(node.Link);
+                }
+                Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
 
-            Exporter.exportRobot();
-            this.Close();
+                Exporter.exportRobot();
+                this.Close();
+            }
+            
         }
 
         //Joint form configuration controls
@@ -319,17 +329,28 @@ namespace SW2URDF
         private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             LinkNode node = (LinkNode)e.Node;
-            fillLinkPropertyBoxes(node.Link);
-            node.Link.SWComponent.Select(false);
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+
+            SelectData data = manager.CreateSelectData();
+            data.Mark = -1;
+            if (node.Link.SWComponent != null)
+            {
+                node.Link.SWComponent.Select4(false, data, false);
+            }
+            else
+            {
+                foreach (Component2 component in node.Link.SWcomponents)
+                {
+                    component.Select4(true, data, false);
+                }
+            }
             treeView_linktree.Focus();
         }
 
         private void treeView_linktree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            LinkNode node = (LinkNode)e.Node;
-            fillLinkPropertyBoxes(node.Link);
-            node.Link.SWComponent.Select(false);
-            treeView_linktree.Focus();
+
         }
 
         private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
@@ -348,18 +369,30 @@ namespace SW2URDF
                 previouslySelectedNode.Link = saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
             LinkNode node = (LinkNode)e.Node;
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+
+            SelectData data = manager.CreateSelectData();
+            data.Mark = -1;
+            if (node.Link.SWComponent != null)
+            {
+                node.Link.SWComponent.Select4(false, data, false);
+            }
+            else
+            {
+                foreach (Component2 component in node.Link.SWcomponents)
+                {
+                    component.Select4(true, data, false);
+                }
+            }
             fillLinkPropertyBoxes(node.Link);
-            node.Link.SWComponent.Select(false);
             treeView_linkProperties.Focus();
             previouslySelectedNode = node;
         }
 
         private void treeView_linkProperties_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            LinkNode node = (LinkNode)e.Node;
-            fillLinkPropertyBoxes(node.Link);
-            node.Link.SWComponent.Select(false);
-            treeView_linkProperties.Focus();
+
         }
 
         public LinkItem LinkNodeToLinkItem(LinkNode node)
@@ -371,7 +404,7 @@ namespace SW2URDF
             item.Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-                item.Link.Children.Add(createLinkFromLinkNode(child, false));
+                item.Link.Children.Add(createLinkFromLinkNode(child));
             }
             return item;
         }
@@ -383,7 +416,7 @@ namespace SW2URDF
             node.Text = item.Text;
             foreach (link child in item.Link.Children)
             {
-                node.Nodes.Add(createLinkNodeFromLink(child, true));
+                node.Nodes.Add(createLinkNodeFromLink(child));
             }
             return node;
         }
@@ -622,26 +655,28 @@ namespace SW2URDF
 
             return Link;
         }
-        public void fillTreeViewFromRobot(robot robot, TreeView tree)
+        public void fillTreeViewFromRobot(robot Robot, TreeView tree)
         {
             LinkNode baseNode = new LinkNode();
-            link baseLink = robot.BaseLink;
+            link baseLink = Robot.BaseLink;
             baseNode.Name = baseLink.name;
             baseNode.Text = baseLink.name;
             baseNode.Link = baseLink;
-            //if (tree == treeView_linktree)
-            //{
-            //    baseNode.Checked = true;
-            //}
+
             foreach (link child in baseLink.Children)
             {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child, tree == treeView_linktree));
+                baseNode.Nodes.Add(createLinkNodeFromLink(child));
             }
             tree.Nodes.Add(baseNode);
             tree.ExpandAll();
         }
 
-        public LinkNode createLinkNodeFromLink(link Link, bool checkChecks)
+        public void fillLinkTreeFromRobot(robot Robot)
+        {
+            fillTreeViewFromRobot(Robot, treeView_linktree);
+        }
+
+        public LinkNode createLinkNodeFromLink(link Link)
         {
             LinkNode node = new LinkNode();
             node.Name = Link.name;
@@ -650,26 +685,11 @@ namespace SW2URDF
 
             foreach (link child in Link.Children)
             {
-                node.Nodes.Add(createLinkNodeFromLink(child, checkChecks));
+                node.Nodes.Add(createLinkNodeFromLink(child));
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
-            Link.SWComponent.Select(false);
 
-            IComponent2 parent = Link.SWComponent.GetParent();
-            if (parent != null)
-            {
-                ModelDoc2 parentModel = parent.GetModelDoc2();
-                if (parentModel.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
-                {
-                    AssemblyDoc parentDoc = (AssemblyDoc)parentModel;
-                    parentDoc.FixComponent();
-                    //if (Link.SWComponent.GetConstrainedStatus() == (int)swConstrainedStatus_e.swUnderConstrained && checkChecks)
-                    //{
-                    //    node.Checked = true;
-                    //}
-                    parentDoc.UnfixComponent();
-                }
-            }
+
             return node;
         }
         public robot createRobotFromTreeView(TreeView tree)
@@ -680,28 +700,25 @@ namespace SW2URDF
             {
                 if (node.Level == 0)
                 {
-                    //if (tree != treeView_linktree || node.Checked)
-                    //{
-                        link BaseLink = createLinkFromLinkNode(node, tree == treeView_linktree);
+
+                        link BaseLink = createLinkFromLinkNode(node);
                         Robot.BaseLink = BaseLink;
-                    //}
                 }
             }
             Robot.name = Exporter.mRobot.name;
             return Robot;
         }
 
-        public link createLinkFromLinkNode(LinkNode node, bool checkChecks)
+        public link createLinkFromLinkNode(LinkNode node)
         {
             link Link = node.Link;
             Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-                //if (!checkChecks || child.Checked)
-                //{
-                    link childLink = createLinkFromLinkNode(child, checkChecks);
+
+                    link childLink = createLinkFromLinkNode(child);
                     Link.Children.Add(childLink); // Recreates the children of each embedded link
-                //}
+
             }
             return Link;
         }
@@ -968,7 +985,22 @@ namespace SW2URDF
                 previouslySelectedNode.Link.Joint = saveJointDataFromPropertyBoxes();
             }
             LinkNode node = (LinkNode)e.Node;
-            node.Link.SWComponent.Select(false);
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+
+            SelectData data = manager.CreateSelectData();
+            data.Mark = -1;
+            if (node.Link.SWComponent != null)
+            {
+                node.Link.SWComponent.Select4(false, data, false);
+            }
+            else
+            {
+                foreach (Component2 component in node.Link.SWcomponents)
+                {
+                    component.Select4(true, data, false);
+                }
+            }
             fillJointPropertyBoxes(node.Link.Joint);
             previouslySelectedNode = node;
         }
@@ -993,8 +1025,6 @@ namespace SW2URDF
     public class LinkNode : TreeNode
     {
         public link Link
-        { get; set; }
-        public joint Joint
         { get; set; }
     }
     public class LinkItem : ListViewItem

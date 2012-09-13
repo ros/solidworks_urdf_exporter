@@ -241,9 +241,19 @@ namespace SW2URDF
                 ModelDoc2 modeldoc = iSwApp.ActiveDoc;
                 int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                 modeldoc.Save3(options, 0, 0);
-                AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
-                exportForm.Show();
+                //AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
+                //exportForm.Show();
+
+                setupPropertyManager();
+
+
             }
+        }
+
+        public void setupPropertyManager()
+        {
+            clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
+            pm.Show();
         }
         public void partURDFExporter()
         {

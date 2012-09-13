@@ -87,6 +87,10 @@ namespace SW2URDF
         // The SW part component object
         public IComponent2 SWComponent
         { get; set; }
+        public IComponent2 SWMainComponent
+        { get; set; }
+        public List<IComponent2> SWcomponents
+        { get; set; }
 
         // The distance from the SW root assembly
         public int SWComponentLevel
@@ -97,6 +101,7 @@ namespace SW2URDF
             Inertial = new inertial();
             Visual = new visual();
             Collision = new collision();
+            SWcomponents = new List<IComponent2>();
         }
         new public void writeURDF(XmlWriter writer)
         {

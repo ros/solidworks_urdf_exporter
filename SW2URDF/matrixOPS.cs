@@ -325,20 +325,6 @@ namespace SW2URDF
         public Matrix<double> getTransformation(MathTransform transform)
         {
             Matrix<double> m = new DenseMatrix(4);
-            //m[0, 0] = transform.ArrayData[0];
-            //m[0, 1] = transform.ArrayData[1];
-            //m[0, 2] = transform.ArrayData[2];
-            //m[1, 0] = transform.ArrayData[3];
-            //m[1, 1] = transform.ArrayData[4];
-            //m[1, 2] = transform.ArrayData[5];
-            //m[2, 0] = transform.ArrayData[6];
-            //m[2, 1] = transform.ArrayData[7];
-            //m[2, 2] = transform.ArrayData[8];
-
-            //m[0, 3] = transform.ArrayData[9];
-            //m[1, 3] = transform.ArrayData[10];
-            //m[2, 3] = transform.ArrayData[11];
-            //m[3, 3] = transform.ArrayData[12];
 
             m[0, 0] = transform.ArrayData[0];
             m[1, 0] = transform.ArrayData[1];
