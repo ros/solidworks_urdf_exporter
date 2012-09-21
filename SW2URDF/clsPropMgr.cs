@@ -36,7 +36,8 @@ namespace SW2URDF
         PropertyManagerPageGroup pm_Group;
 
         PropertyManagerPageSelectionbox pm_Selection;
-        PropertyManagerPageButton pm_Button;
+        PropertyManagerPageButton pm_Button_save;
+        PropertyManagerPageButton pm_Button_export;
         PropertyManagerPageTextbox pm_TextBox_LinkName;
         PropertyManagerPageTextbox pm_TextBox_JointName;
         PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
@@ -59,7 +60,7 @@ namespace SW2URDF
         const int SelectionID = 3;
         const int ComboID = 4;
         const int ListID = 5;
-        const int ButtonID = 6;
+        const int Button_save_ID = 6;
         const int NumBox_ChildCount_ID = 7;
         const int Label_LinkName_ID = 8;
         const int Label_Selection_ID = 9;
@@ -69,6 +70,7 @@ namespace SW2URDF
         const int TextBox_JointNameID = 13;
         const int Label_JointName_ID = 14;
         const int dotNet_tree = 16;
+        const int Button_export_ID = 17;
 
         public void Show()
         {
@@ -210,7 +212,8 @@ namespace SW2URDF
                 pm_NumberBox_ChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
                 pm_NumberBox_ChildCount.Value = 0;
                 
-                pm_Button = pm_Group.AddControl(ButtonID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Create Link", 0, (int)options, "");
+                pm_Button_save = pm_Group.AddControl(Button_save_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Save Link", 0, (int)options, "");
+                pm_Button_export = pm_Group.AddControl(Button_export_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Export...", 0, (int)options, "");
 
 
                 controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
@@ -233,6 +236,8 @@ namespace SW2URDF
                 node.Link.uniqueName = "base_link";
                 node.Text = node.Link.name;
                 node.Name = node.Link.name;
+                node.needsBuilding = true;
+                node.Link.needsBuilding = true;
 
                 
                 ToolStripMenuItem addChild = new ToolStripMenuItem();
@@ -251,6 +256,8 @@ namespace SW2URDF
                 tree.Nodes.Add(node);
                 tree.SelectedNode = tree.Nodes[0];
                 pm_Selection.SetSelectionFocus();
+                updateNodeNames(tree);
+                
 
                 
                 //
@@ -270,7 +277,8 @@ namespace SW2URDF
         }
         void removeChild_Click(object sender, EventArgs e)
         {
-            createNewLinks(rightClickedNode, -1);
+            LinkNode parent = (LinkNode)rightClickedNode.Parent;
+            parent.Nodes.Remove(rightClickedNode);
         }
 
         void renameChild_Click(object sender, EventArgs e)
@@ -295,30 +303,14 @@ namespace SW2URDF
         }
         void IPropertyManagerPage2Handler9.AfterActivation()
         {
-
+            pm_Selection.SetSelectionFocus();
             //throw new Exception("The method or operation is not implemented.");
 
         }
 
         void IPropertyManagerPage2Handler9.AfterClose()
         {
-            Exporter.saveExporter();
-            StringWriter stringWriter;
-            XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
-            stringWriter = new StringWriter();
-            serializer.Serialize(stringWriter, Exporter);
-            stringWriter.Flush();
-            stringWriter.Close();
 
-            int Options = 0;
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = Exporter.saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
-            Parameter param = saveExporterAttribute.GetParameter("data");
-            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("name");
-            param.SetStringValue2("config1", ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("date");
-            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
         }
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
@@ -331,20 +323,35 @@ namespace SW2URDF
         void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
 
         {
-            if (Id == ButtonID)
+            if (Id == Button_save_ID)
             {
-                if (pm_Selection.ItemCount > 0 ||
-                    MessageBox.Show("No components have been selected, do you want to create an empty link?", "Create empty link?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                LinkNode CurrentlySelectedNode = (LinkNode)tree.SelectedNode;
+                LinkNode parentNode = (LinkNode)CurrentlySelectedNode.Parent;
+                if (pm_Selection.ItemCount == 0)
+                {
+                    MessageBox.Show("Components must be selected before the link can be built");
+                }
+                else if (parentNode != null && parentNode.Link.needsBuilding)
+                {
+                    MessageBox.Show("You must build the parent link " + parentNode.Name + "before building this link");
+                }
+                else
                 {
                     setGeneralFilters();
-                    createNewLinks(buildNode());
+                    buildNode();
                     updatePM();
                 }
             }
-            if (Id == NumBox_ChildCount_ID)
+            else if (Id == Button_export_ID)
             {
-                int c = 1;
+                Exporter.mRobot = createRobotFromTreeView();
+                AssemblyExportForm export = new AssemblyExportForm(swApp);
+                export.Exporter = Exporter;
+                export.fillLinkTreeFromRobot(Exporter.mRobot);
+                export.Show();
+                pm_Page.Close(true);
             }
+
         }
 
         private void updatePM()
@@ -356,17 +363,28 @@ namespace SW2URDF
                 ActiveSWModel.ClearSelection2(true);
                 setComponentFilters();
             }
-            else
+
+        }
+
+        private void updateNodeNames(TreeView tree)
+        {
+            foreach (LinkNode node in tree.Nodes)
             {
-                Exporter.mRobot = createRobotFromTreeView();
-                AssemblyExportForm export = new AssemblyExportForm(swApp);
-                export.Exporter = Exporter;
-                export.fillLinkTreeFromRobot(Exporter.mRobot);
-                export.Show();
-                pm_Page.Close(true);
+                updateNodeNames(node);
             }
         }
 
+        private void updateNodeNames(LinkNode node)
+        {
+            if (node.Link.needsBuilding)
+            {
+                node.Text = node.Link.name + "*";
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                updateNodeNames(child);
+            }
+        }
         private void createNewLinks(LinkNode CurrentlySelectedNode)
         {
             int linksToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
@@ -382,8 +400,9 @@ namespace SW2URDF
             }
             for (int i = 0; i < -number; i++)
             {
-                currentNode.Link.Children.RemoveAt(currentNode.Link.Children.Count - 1);
+                currentNode.Nodes.RemoveAt( currentNode.Nodes.Count - 1);
             }
+            currentNode.ExpandAll();
         }
 
         private LinkNode buildNode()
@@ -416,48 +435,63 @@ namespace SW2URDF
             }
             CurrentlySelectedNode.Text = CurrentlySelectedNode.Link.name;
             CurrentlySelectedNode.Name = CurrentlySelectedNode.Link.name;
+            CurrentlySelectedNode.Link.needsBuilding = false;
             return CurrentlySelectedNode;
         }
 
         public void switchActiveLinks(LinkNode node)
         {
+            node.Link.needsBuilding = doesLinkNeedRebuildingFromComponents(node.Link);
             saveActiveLink();
             fillPropertyManager(node);
             automaticallySwitched = true;
             tree.SelectedNode = node;
             previouslySelectedLink = node.Link;
+            updateNodeNames(tree);
         }
 
         public LinkNode findNextLinkToVisit(System.Windows.Forms.TreeView tree)
         {
+            // First check if SelectedNode has any nodes to visit
             if (tree.SelectedNode != null)
             {
-                foreach (LinkNode node in tree.SelectedNode.Nodes)
+                LinkNode nodeToReturn = findNextLinkToVisit((LinkNode)tree.SelectedNode);
+                if (nodeToReturn != null)
                 {
-                    if (!isLinkComplete(node))
-                    {
-                        return node;
-                    }
+                    return nodeToReturn;
                 }
             }
-            return findNextLinkToVisit((LinkNode)tree.Nodes[0]);
+
+            // Now run through tree to see if any other nodes need to be visited
+            foreach (LinkNode nodeToCheck in tree.Nodes)
+            {
+                LinkNode nodeToReturn = findNextLinkToVisit(nodeToCheck);
+                if (nodeToReturn != null)
+                {
+                    return nodeToReturn;
+                }
+            }
+
+            //Otherwise we're done
+            return null;
+            
         }
         public LinkNode findNextLinkToVisit(LinkNode nodeToCheck)
         {
-            if (!isLinkComplete(nodeToCheck))
+            if (nodeToCheck.Link.needsBuilding)
             {
                 return nodeToCheck;
             }
             foreach (LinkNode node in nodeToCheck.Nodes)
             {
-                findNextLinkToVisit(node);
+                return findNextLinkToVisit(node);
             }
             return null;
         }
 
         public bool isLinkComplete(LinkNode node)
         {
-            return !(node.Link.Equals("Empty_Link") || node.Link.SWcomponents.Count == 0 || (node.Link.Joint != null && node.Link.Joint.Equals("")));
+            return !(node.Link.Equals("Empty_Link") || node.Link.SWcomponents.Count == 0 || (node.Link.Joint != null && node.Link.Joint.name.Equals("")));
         }
         public void saveActiveLink()
         {
@@ -497,6 +531,7 @@ namespace SW2URDF
             node.Name = Link.name;
             node.Text = Link.name;
             node.Link = Link;
+            node.Link.needsBuilding = true;
 
             node.ContextMenuStrip = docMenu;
             return node;
@@ -588,9 +623,23 @@ namespace SW2URDF
 
             else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
             {
+                Exporter.saveExporter();
+                StringWriter stringWriter;
+                XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+                stringWriter = new StringWriter();
+                serializer.Serialize(stringWriter, Exporter);
+                stringWriter.Flush();
+                stringWriter.Close();
 
-                //Do something else when the OK button is clicked
-
+                int Options = 0;
+                int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+                SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = Exporter.saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+                Parameter param = saveExporterAttribute.GetParameter("data");
+                param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                param = saveExporterAttribute.GetParameter("name");
+                param.SetStringValue2("config1", ConfigurationOptions, "");
+                param = saveExporterAttribute.GetParameter("date");
+                param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
             }
 
         }
@@ -675,9 +724,12 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnNumberboxChanged(int Id, double Value)
         {
-            LinkNode node = (LinkNode)tree.SelectedNode;
-            createNewLinks(node);
-            
+            if (Id == NumBox_ChildCount_ID)
+            {
+                LinkNode node = (LinkNode)tree.SelectedNode;
+                createNewLinks(node);
+                updateNodeNames((LinkNode)tree.Nodes[0]);
+            }
         }
 
         void IPropertyManagerPage2Handler9.OnOptionCheck(int Id)
@@ -754,6 +806,8 @@ namespace SW2URDF
 
         }
 
+
+
         void IPropertyManagerPage2Handler9.OnSliderPositionChanged(int Id, double Value)
         {
 
@@ -786,7 +840,19 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnTextboxChanged(int Id, string Text)
         {
-
+            if (Id == TextBox_LinkNameID || Id == TextBox_JointNameID)
+            {
+                LinkNode node = (LinkNode)tree.SelectedNode;
+                node.Link.needsBuilding = true;
+                updateNodeNames((LinkNode)tree.Nodes[0]);
+            }
+            if (Id == TextBox_LinkNameID)
+            {
+                LinkNode node = (LinkNode)tree.SelectedNode;
+                node.Text = pm_TextBox_LinkName.Text;
+                node.Link.name = pm_TextBox_LinkName.Text;
+                node.Name = pm_TextBox_LinkName.Text;
+            }
             //throw new Exception("The method or operation is not implemented.");
 
         }
@@ -829,6 +895,7 @@ namespace SW2URDF
             baseNode.Name = baseLink.name;
             baseNode.Text = baseLink.name;
             baseNode.Link = baseLink;
+            baseNode.ContextMenuStrip = docMenu;
 
             foreach (link child in baseLink.Children)
             {
@@ -844,6 +911,7 @@ namespace SW2URDF
             node.Name = Link.name;
             node.Text = Link.name;
             node.Link = Link;
+            node.ContextMenuStrip = docMenu;
 
             foreach (link child in Link.Children)
             {
@@ -895,6 +963,36 @@ namespace SW2URDF
         private void tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             rightClickedNode = (LinkNode)e.Node;
+        }
+
+        private bool doesLinkNeedRebuildingFromComponents(link Link)
+        {
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+            int count = manager.GetSelectedObjectCount2(pm_Selection.Mark);
+            List<Component2> components = new List<Component2>();
+            for (int i = 0; i < count; i++)
+            {
+                object obj = manager.GetSelectedObject6(i + 1, pm_Selection.Mark);
+                Component2 comp = (Component2)obj;
+                if (comp != null)
+                {
+                    components.Add(comp);
+                }
+            }
+
+            foreach (Component2 comp in components)
+            {
+                if (!Link.SWcomponents.Contains(comp))
+                {
+                    return true;
+                }
+                 
+            }
+            if (Link.SWcomponents.Count == 0)
+            {
+                return true;
+            }
+            return false;
         }
 
 

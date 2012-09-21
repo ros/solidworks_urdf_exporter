@@ -128,6 +128,8 @@ namespace SW2URDF
         { get; set; }
         public bool STLQualityFine
         { get; set; }
+        public bool needsBuilding
+        { get; set; }
 
         // The SW part component object
 

@@ -88,6 +88,17 @@ namespace SW2URDF
             saveConfigurationAttributeDef.Register();
         }
 
+        public void loadExporter(ISldWorks iSldWorksApp)
+        {
+            constructExporter(iSldWorksApp);
+            loadSWComponents(mRobot.BaseLink);
+        }
+
+        public void saveExporter()
+        {
+            saveSWComponents(mRobot.BaseLink);
+        }
+
         #region SW to Robot and link methods
         public void createRobotFromActiveModel()
         {
@@ -109,11 +120,7 @@ namespace SW2URDF
 
         public link createBaseLinkFromActiveModel()
         {
-            if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY) // If the model is an Assembly
-            {
-                return createBaseLinkFromAssy(ActiveSWModel);
-            }
-            else if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
+            if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
             {
                 return createLinkFromPartModel(ActiveSWModel);
             }
@@ -152,31 +159,6 @@ namespace SW2URDF
             return Link;
         }
 
-        public link createBaseLinkFromAssy(ModelDoc2 swModel)
-        {
-            AssemblyDoc swAssy = (AssemblyDoc)swModel;
-
-            swAssy.ResolveAllLightWeightComponents(true);
-            // Getting the components (assemblies and parts, contained in this assembly)
-            object[] varComp = swAssy.GetComponents(true);
-
-            //For building tree through assembly hierachy (more robust)
-            link baseLink = new link();
-
-            // Iterate through each component and create a 'sparse branch'
-            foreach (IComponent2 comp in varComp)
-            {
-                link sparseLink = createSparseBranchFromComponents(comp, 0);
-                if (sparseLink != null)
-                {
-                    baseLink.Children.Add(sparseLink);
-                }
-            }
-
-            //From this sparse link, promote the child links to the parent positions
-            return createDenseTree(baseLink, 0);
-        }
-
         public link createLinkFromPartComp(object comp, int level)
         {
             IComponent2 partComp = (IComponent2)comp;
@@ -203,219 +185,38 @@ namespace SW2URDF
             return Link;
         }
 
-        // This method creates a 'sparse branch' where for temporary reasons, an assembly as assigned to the parent links
-        // Then each part component is a leaf of the branch, but are not set as parent links yet.
-        public link createSparseBranchFromComponents(IComponent2 comp, int level)
+        public void loadSWComponents(link Link)
         {
-            link Link = new link();
-
-            //If the component is hidden or suppressed, it is not included in the tree.
-            if (comp.IsHidden(true))
+            int Errors = 0;
+            if (Link.SWMainComponentPID != null)
             {
-                return null;
+                Link.SWMainComponent = (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(Link.SWMainComponentPID, out Errors);
             }
-
-            //If the component is a part, create the link from the part. Otherwise recur through this method
-            ModelDoc2 modelDoc = comp.GetModelDoc2();
-            if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            if (Link.SWComponentPIDs != null)
             {
-                Link = createLinkFromPartComp(comp, level);
-            }
-            else if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
-            {
-                object[] children = comp.GetChildren();
-                foreach (IComponent2 child in children)
+                Link.SWcomponents = new List<IComponent2>();
+                foreach (Object PID in Link.SWComponentPIDs)
                 {
-                    link childLink = createSparseBranchFromComponents(child, level + 1);
-                    if (childLink != null)
-                    {
-                        Link.Children.Add(childLink);
-                    }
+                    IComponent2 comp = (IComponent2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
+                    Link.SWcomponents.Add(comp);
                 }
             }
-            Link.SWComponent = comp;
-            Link.SWComponentLevel = level;
-            // If for some reason all of the children were null and this one is an assembly, then it doesn't make sense to add it to the tree.
-            // Return null instead.
-            if (Link.Children.Count == 0 && modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            foreach (link Child in Link.Children)
             {
-                Link = null;
+                loadSWComponents(Child);
             }
-            return Link;
         }
 
-        // This method converts a dense tree from a sparse one by assigning leaves to the parent links
-        public link createDenseTree(link sparseTree, int level)
-        {
-            // For this empty link, find the child link that is the best fit for parenting
-            link parentLink = findParent(sparseTree, level + 1);
-
-            if (parentLink == null)
-            {
-                return sparseTree;
-            }
-            if (parentLink.Children.Count == 0)
-            {
-                return parentLink;
-            }
-
-            List<link> linksToRemove = new List<link>();
-            List<link> linksToAdd = new List<link>();
-            // Iterate through children to continue finding the best parents
-            foreach (link child in parentLink.Children)
-            {
-                // Only bother if the component is not hidden and not supressed
-                if (!child.SWComponent.IsHidden(true))
-                {
-                    linksToAdd.Add(createDenseTree(child, level + 1));
-                    linksToRemove.Add(child);
-                }
-            }
-            // Remove unorganized links
-            foreach (link Link in linksToRemove)
-            {
-                parentLink.Children.Remove(Link);
-            }
-            // Add organized links
-            foreach (link Link in linksToAdd)
-            {
-                parentLink.Children.Add(Link);
-            }
-            return parentLink;
-        }
-
-        // From a links children, this method finds the 'best' choice as a parent
-        public link findParent(link top, int level)
-        {
-            if (top.Children.Count > 0)
-            {
-                link AssignedParentLink = new link();
-                int priorityLevel = -1;
-                double largestFixedMass = -1;
-                double largestPartMass = -1;
-                double largestAssyMass = 0;
-
-                // Iterate through children to find the 'best' component for parent status. It may be several assemblies down.
-                foreach (link child in top.Children)
-                {
-                    if (!child.SWComponent.IsHidden(true))
-                    {
-                        ModelDoc2 ChildDoc = child.SWComponent.GetModelDoc();
-                        if (ChildDoc == null)
-                        {
-                            throw new System.InvalidOperationException("Component " + child.SWComponent.Name2 + " is null");
-                        }
-                        int ChildType = (int)ChildDoc.GetType();
-
-                        IMassProperty childMass = ChildDoc.Extension.CreateMassProperty();
-
-                        double mass = childMass.Mass;
-
-                        //Highest priority is the largest fixed component
-                        if (child.SWComponent.IsFixed() && mass > largestFixedMass)
-                        {
-                            priorityLevel = 2;
-                            AssignedParentLink = child;
-                            largestFixedMass = mass;
-                        }
-                        //Second highest priority is the largest floating part
-                        else if (mass > largestPartMass && ChildType == (int)swDocumentTypes_e.swDocPART && priorityLevel < 2)
-                        {
-                            priorityLevel = 1;
-                            AssignedParentLink = child;
-                            largestPartMass = mass;
-                        }
-                        //Third priority is the 'best' choice from the largest assembly
-                        else if (mass > largestAssyMass && ChildType == (int)swDocumentTypes_e.swDocASSEMBLY && priorityLevel < 1)
-                        {
-                            priorityLevel = 0;
-                            AssignedParentLink = child;
-                            largestAssyMass = mass;
-                        }
-                    }
-                }
-
-                ModelDoc2 AssignedParentDoc = AssignedParentLink.SWComponent.GetModelDoc();
-                int AssignedParentType = AssignedParentDoc.GetType();
-                top.Children.Remove(AssignedParentLink);
-                // If a fixed component was chosen and it is an assembly, iterate through assembly
-                if (priorityLevel == 2 && AssignedParentType == (int)swDocumentTypes_e.swDocASSEMBLY)
-                {
-                    AssignedParentLink = findParent(AssignedParentLink, level + 1);
-
-                }
-                // If no parts were found, iterate through the chosen assembly
-                else if (priorityLevel == 0)
-                {
-                    AssignedParentLink = findParent(AssignedParentLink, level + 1);
-                }
-                AssignedParentLink.Children.AddRange(top.Children);
-                return AssignedParentLink;
-            }
-            return top;
-        }
-
-        #endregion
+       #endregion
 
         #region Joint methods
-        //Iterates through each link to create the joints between the parent and child
 
-        public void createJoints(link Parent, bool zIsUp)
-        {
-            Matrix<double> ParentJointGlobalTransform;
-            if (Parent.Joint != null)
-            {
-                //If the parent joint exists, it becomes the reference joint. Grab the MathTransform of that coordsys to use for localizing
-                MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Parent.Joint.CoordinateSystemName);
-                ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
-            }
-            else
-            {
-                //If the parent is the base_link then set the reference for the child's joint to the global origin
-                createBaseRefOrigin(zIsUp);
-                MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
-                ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
-            }
-            foreach (link Child in Parent.Children)
-            {
-                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-                Child.Joint = new joint();
-                Child.Joint = createJointName(Parent, Child);
-
-                // Fix parent component to eliminate its degrees of freedom from this joint
-                IComponent2 compToFix = findCompToFix(Parent, Child);
-                bool isFixed = compToFix.IsFixed();
-                compToFix.Select(false);
-                assy.FixComponent();
-
-
-                // First creates a globabl transform, that is from the joint to the origin of the assembly
-                Child.Joint = createGlobalJoint(Parent, Child);
-                // Localize the joint by creating transforms between the child joint and the parent's global transform
-                localizeJoint(Child, ParentJointGlobalTransform);
-                // Iterate through this links children
-                createJoints(Child, zIsUp);
-
-                unFixComponents(assy, compToFix, isFixed);
-            }
-        }
-
-
-        public joint createJointName(link Parent, link Child)
-        {
-            Child.Joint.name = Parent.uniqueName + "_to_" + Child.uniqueName;
-            Child.Joint.CoordinateSystemName = "Origin_" + Child.Joint.name;
-            Child.Joint.AxisName = "Axis_" + Child.Joint.name;
-            Child.Joint.Parent.name = Parent.uniqueName;
-            Child.Joint.Child.name = Child.uniqueName;
-            return Child.Joint;
-        }
-        public void createJointName2(link Parent, link Child)
+        public void createJointName(link Parent, link Child)
         {
             string jointName = Parent.uniqueName + "_to_" + Child.uniqueName;
-            createJointName2(Parent, Child, jointName);
+            createJointName(Parent, Child, jointName);
         }
-        public void createJointName2(link Parent, link Child, string jointName)
+        public void createJointName(link Parent, link Child, string jointName)
         {
             Child.Joint.name = jointName;
             Child.Joint.CoordinateSystemName = "Origin_" + Child.Joint.name;
@@ -423,7 +224,6 @@ namespace SW2URDF
             Child.Joint.Parent.name = Parent.uniqueName;
             Child.Joint.Child.name = Child.uniqueName;
         }
-
 
         public void createRefGeometry(joint Joint)
         {
@@ -512,53 +312,7 @@ namespace SW2URDF
             }
         }
 
-        public joint createGlobalJoint(link parent, link child)
-        {
-            joint Joint = estimateGlobalJointFromComponents((AssemblyDoc)ActiveSWModel, parent, child);
-            if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
-                !ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
-            {
-                createRefGeometry(Joint);
-            }
-            //child.Joint = estimateJointFromRefGeometry(ActiveSWModel, child);
-            return child.Joint;
-        }
-
         public void localizeJoint(link Link, Matrix<double> ParentJointGlobalTransform)
-        {
-            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName);
-            //Transform from global origin to child joint
-            Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(coordsysTransform);
-            Matrix<double> ChildJointLocalTransform = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
-
-            Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
-            Axis = ChildJointGlobalTransform.Inverse() * Axis;
-            Axis = Axis.Normalize(2);
-
-            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
-            Matrix<double> localLinkCoMTransform = ChildJointGlobalTransform.Inverse() * linkCoMTransform;
-
-            // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
-            // It's a rotation matrix, so this shouldn't matter. If it does, just transpose linkGlobalMomentInertia
-            // These three matrices are 3x3 as opposed to the 4x4 transformation matrices above. You're welcome for the confusion.
-            Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3, 3, Link.Inertial.Inertia.Moment);
-            Matrix<double> ChildJointRotMat = ChildJointGlobalTransform.SubMatrix(0, 3, 0, 3);
-            Matrix<double> linkLocalMomentInertia = ChildJointRotMat.Inverse() * linkGlobalMomentInertia;
-
-            //Save the data from the transforms
-            Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-
-            Link.Joint.Origin.XYZ = OPS.getXYZ(ChildJointLocalTransform);
-            Link.Joint.Origin.RPY = OPS.getRPY(ChildJointLocalTransform);
-
-            //Inertial is the transform from the joint origin to the center of mass
-            Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
-            Link.Inertial.Origin.RPY = new double[] { 0, 0, 0 };
-
-            Link.Inertial.Inertia.Moment = linkLocalMomentInertia.ToRowWiseArray();
-        }
-
-        public void localizeJoint2(link Link, Matrix<double> ParentJointGlobalTransform)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName);
             //Transform from global origin to child joint
@@ -735,107 +489,7 @@ namespace SW2URDF
             hideComponents(list);
         }
 
-        // This estimates the origin and the axes given two components in an assembly. The geometries are all in reference to
-        // the parent assembly
-        public joint estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
-        {
-            joint Joint = child.Joint;
-
-            int R1Status, R2Status, L1Status, L2Status;
-            int R1DirStatus, R2DirStatus;
-            int DOFs;
-            MathPoint RPoint1, RPoint2;
-            MathVector RDir1, RDir2;
-            MathVector LDir1, LDir2;
-            // Surpress Limit Mates to properly find degrees of freedom
-            List<Mate2> limitMates = new List<Mate2>();
-            if (child.SWMainComponent != null)
-            {
-
-                // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
-                // https://forum.solidworks.com/thread/57414
-                int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
-                                                  out R2Status, out RPoint2, out R2DirStatus, out RDir2,
-                                                  out L1Status, out LDir1,
-                                                  out L2Status, out LDir2);
-                DOFs = remainingDOFs;
-
-
-                // Convert the gotten degrees of freedom to a joint type, origin and axis
-                Joint.type = "fixed";
-                Joint.Origin.XYZ = OPS.getXYZ(child.SWMainComponent.Transform2);
-                Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
-                if (DOFs == 0 && (R1Status + L1Status > 0))
-                {
-                    if (R1Status == 1)
-                    {
-                        Joint.type = "continuous";
-                        Joint.Axis.XYZ = RDir1.ArrayData;
-                        Joint.Origin.XYZ = RPoint1.ArrayData;
-                        Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
-
-                    }
-                    else if (L1Status == 1)
-                    {
-                        Joint.type = "prismatic";
-                        Joint.Axis.XYZ = LDir1.ArrayData;
-                        Joint.Origin.XYZ = OPS.getXYZ(child.SWMainComponent.Transform2);
-                        Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
-                    }
-                }
-                unsuppressLimitMates(limitMates);
-                if (limitMates.Count > 0)
-                {
-                    Joint = addLimits(Joint, limitMates);
-                }
-                return Joint;
-            }
-            else
-            {
-
-                limitMates = suppressLimitMates(child.SWComponent);
-                // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
-                // https://forum.solidworks.com/thread/57414
-                int remainingDOFs = child.SWComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
-                                                  out R2Status, out RPoint2, out R2DirStatus, out RDir2,
-                                                  out L1Status, out LDir1,
-                                                  out L2Status, out LDir2);
-                DOFs = remainingDOFs;
-
-
-                // Convert the gotten degrees of freedom to a joint type, origin and axis
-                Joint.type = "fixed";
-                Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
-                Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-                if (DOFs == 0 && (R1Status + L1Status > 0))
-                {
-                    if (R1Status == 1)
-                    {
-                        Joint.type = "continuous";
-                        Joint.Axis.XYZ = RDir1.ArrayData;
-                        Joint.Origin.XYZ = RPoint1.ArrayData;
-                        Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-
-                    }
-                    else if (L1Status == 1)
-                    {
-                        Joint.type = "prismatic";
-                        Joint.Axis.XYZ = LDir1.ArrayData;
-                        Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
-                        Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-                    }
-                }
-                unsuppressLimitMates(limitMates);
-                if (limitMates.Count > 0)
-                {
-                    Joint = addLimits(Joint, limitMates);
-                }
-                return Joint;
-            }
-
-        }
-
-        public void estimateGlobalJointFromComponents2(AssemblyDoc assy, link parent, link child)
+        public void estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
             int R1Status, R2Status, L1Status, L2Status;
             int R1DirStatus, R2DirStatus;
@@ -928,18 +582,6 @@ namespace SW2URDF
             }
 
         }
-        public joint estimateJointFromRefGeometry(ModelDoc2 model, link Link)
-        {
-            joint Joint = Link.Joint;
-
-            MathTransform coordsysTransform = model.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
-            Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
-            Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
-
-            Joint.Axis.XYZ = estimateAxis(Joint.AxisName);
-
-            return Joint;
-        }
 
         public double[] estimateAxis(string axisName)
         {
@@ -960,15 +602,6 @@ namespace SW2URDF
             }
 
             return XYZ;
-        }
-
-
-        public double[] localizeAxis(double[] Axis, double[] XYZ, double[] RPY)
-        {
-            Matrix<double> transformation = OPS.getTransformation(XYZ, RPY);
-            Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
-            vec = transformation.Inverse() * vec;
-            return vec.ToArray();
         }
 
         public double[] localizeAxis(double[] Axis, string coordsys)
@@ -1085,57 +718,6 @@ namespace SW2URDF
             }
         }
 
-        public IComponent2 findCommonSWAncestor(link Link1, link Link2)
-        {
-            int levelChange = Math.Abs(Link1.SWComponentLevel - Link2.SWComponentLevel + 1);
-            IComponent2 parent1 = Link1.SWComponent;
-            IComponent2 parent2 = Link2.SWComponent;
-            for (int i = 0; i < Link1.SWComponentLevel - levelChange; i++)
-            {
-                parent1 = parent1.GetParent();
-                if (parent1 == null)
-                {
-                    return null;
-                }
-            }
-            for (int i = 0; i < Link2.SWComponentLevel - levelChange; i++)
-            {
-                parent2 = parent2.GetParent();
-                if (parent2 == null)
-                {
-                    return null;
-                }
-            }
-            while (parent1 != parent2)
-            {
-                parent1 = parent1.GetParent();
-                parent2 = parent2.GetParent();
-                if (parent1 == null || parent2 == null)
-                {
-                    return null;
-                }
-            }
-            return parent1;
-
-        }
-        public IComponent2 findCompToFix(link parent, link child)
-        {
-            IComponent2 compToFix = parent.SWComponent;
-            for (int i = 0; i < parent.SWComponentLevel; i++)
-            {
-                compToFix = compToFix.GetParent();
-            }
-            return compToFix;
-        }
-        public void unFixComponents(AssemblyDoc assy, IComponent2 comp, bool isFixed)
-        {
-            // Unfix components (if they weren't fixed beforehand)
-            comp.Select(false);
-            if (!isFixed)
-            {
-                assy.UnfixComponent();
-            }
-        }
         public void unFixComponents(List<IComponent2> components)
         {
             selectComponents(components, true);
@@ -1441,38 +1023,11 @@ namespace SW2URDF
         #endregion
 
         #region Testing new export method
-        public void loadExporter(ISldWorks iSldWorksApp)
-        {
-            constructExporter(iSldWorksApp);
-            loadSWComponents(mRobot.BaseLink);
-        }
 
-        public void loadSWComponents(link Link)
-        {
-            int Errors = 0;
-            if (Link.SWMainComponentPID != null)
-            {
-                Link.SWMainComponent = (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(Link.SWMainComponentPID, out Errors);
-            }
-            if (Link.SWComponentPIDs != null)
-            {
-                Link.SWcomponents = new List<IComponent2>();
-                foreach (Object PID in Link.SWComponentPIDs)
-                {
-                    IComponent2 comp = (IComponent2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
-                    Link.SWcomponents.Add(comp);
-                }
-            }
-            foreach (link Child in Link.Children)
-            {
-                loadSWComponents(Child);
-            }
-        }
 
-        public void saveExporter()
-        {
-            saveSWComponents(mRobot.BaseLink);
-        }
+
+
+
 
         public void saveSWComponents(link Link)
         {
@@ -1579,8 +1134,8 @@ namespace SW2URDF
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             child.Joint = new joint();
-            createJointName2(parent, child, jointName);
-            estimateGlobalJointFromComponents2(assy, parent, child);
+            createJointName(parent, child, jointName);
+            estimateGlobalJointFromComponents(assy, parent, child);
             if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
                 !ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
@@ -1600,7 +1155,7 @@ namespace SW2URDF
             ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
 
             unFixComponents(componentsToFix);
-            localizeJoint2(child, ParentJointGlobalTransform);
+            localizeJoint(child, ParentJointGlobalTransform);
         }
 
         private List<IComponent2> fixComponents(link parent)

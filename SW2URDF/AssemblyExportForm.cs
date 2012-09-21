@@ -1026,6 +1026,8 @@ namespace SW2URDF
     {
         public link Link
         { get; set; }
+        public bool needsBuilding
+        { get; set; }
     }
     public class LinkItem : ListViewItem
     {

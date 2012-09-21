@@ -253,7 +253,7 @@ namespace SW2URDF
                 //exportForm.Show();
 
                 setupPropertyManager();
-
+                //AddContextMenu()
 
 
             }
