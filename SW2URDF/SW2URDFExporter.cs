@@ -13,7 +13,8 @@ using SolidWorksTools.File;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
-
+using System.Xml;
+using System.Xml.Serialization;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra;
@@ -22,11 +23,12 @@ using System.Numerics;
 
 namespace SW2URDF
 {
+    [Serializable]
     public class SW2URDFExporter
     {
         #region class variables
-        ISldWorks iSwApp = null;
-        ops OPS;
+        [XmlIgnore] public ISldWorks iSwApp = null;
+        [XmlIgnore] ops OPS;
         private bool mBinary;
         private bool mshowInfo;
         private bool mSTLPreview;
@@ -37,9 +39,14 @@ namespace SW2URDF
         private double mHideTransitionSpeed;
         private string referenceSketchName;
 
-        ModelDoc2 ActiveSWModel;
-        MathUtility swMath;
-        List<IComponent2> hiddenComponents;
+
+        [XmlIgnore] public ModelDoc2 ActiveSWModel;
+        [XmlIgnore] public MathUtility swMath;
+        [XmlIgnore]
+        public AttributeDef saveConfigurationAttributeDef
+        { get; set; }
+        public Object swMathPID
+        { get; set; }
 
         public robot mRobot
         { get; set; }
@@ -51,15 +58,34 @@ namespace SW2URDF
         { get; set; }
 
         #endregion
-
+        private SW2URDFExporter()
+        {
+            OPS = new ops();
+        }
         public SW2URDFExporter(ISldWorks iSldWorksApp)
+        {
+            constructExporter(iSldWorksApp);
+
+            mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            mPackageName = ActiveSWModel.GetTitle();
+        }
+
+        private void constructExporter(ISldWorks iSldWorksApp)
         {
             iSwApp = iSldWorksApp;
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
-            mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
-            mPackageName = ActiveSWModel.GetTitle();
+
             swMath = iSwApp.GetMathUtility();
             OPS = new ops();
+
+            saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
+            int Options = 0;
+
+            saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+            saveConfigurationAttributeDef.Register();
         }
 
         #region SW to Robot and link methods
@@ -412,8 +438,13 @@ namespace SW2URDF
         }
         public void createRefOrigin(joint Joint)
         {
-            object[] sketchEntities = addSketchGeometry(Joint.Origin);
-            SketchPoint Origin = (SketchPoint)sketchEntities[0];
+            createRefOrigin(Joint.Origin, Joint.CoordinateSystemName);
+        }
+
+        public void createRefOrigin(origin Origin, string CoordinateSystemName)
+        {
+            object[] sketchEntities = addSketchGeometry(Origin);
+            SketchPoint OriginPoint = (SketchPoint)sketchEntities[0];
             SketchSegment xaxis = (SketchSegment)sketchEntities[1];
             SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
@@ -435,29 +466,12 @@ namespace SW2URDF
 
             if (xaxis != null && yaxis != null)
             {
-                //ActiveSWModel.ClearSelection2(true);
-                //if (Origin == null)
-                //{
-                //    
-                //}
-                //else
-                //{
-                //    data.Mark = 1;
-                //    bool SelectedOrigin = Origin.Select4(true, data);
-                //}
-
-
-                //data.Mark = 2;
-                //bool SelectedXAxis = xaxis.Select4(true, data);
-                //data.Mark = 4;
-                //bool SelectedYAxis = yaxis.Select4(true, data);
-
                 bool SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", X, Y, Z, true, 1, null, 0);
                 bool SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xX, xY, xZ, true, 2, null, 0);
                 bool SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yX, yY, yZ, true, 4, null, 0);
 
                 coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
-                coordinates.Name = Joint.CoordinateSystemName;
+                coordinates.Name = CoordinateSystemName;
             }
         }
         public void createBaseRefOrigin(bool zIsUp)
@@ -1154,7 +1168,7 @@ namespace SW2URDF
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
+            List<IComponent2> hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
             string filename = exportFiles(mRobot.BaseLink, package);
@@ -1427,7 +1441,63 @@ namespace SW2URDF
         #endregion
 
         #region Testing new export method
+        public void loadExporter(ISldWorks iSldWorksApp)
+        {
+            constructExporter(iSldWorksApp);
+            loadSWComponents(mRobot.BaseLink);
+        }
 
+        public void loadSWComponents(link Link)
+        {
+            int Errors = 0;
+            if (Link.SWMainComponentPID != null)
+            {
+                Link.SWMainComponent = (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(Link.SWMainComponentPID, out Errors);
+            }
+            if (Link.SWComponentPIDs != null)
+            {
+                Link.SWcomponents = new List<IComponent2>();
+                foreach (Object PID in Link.SWComponentPIDs)
+                {
+                    IComponent2 comp = (IComponent2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
+                    Link.SWcomponents.Add(comp);
+                }
+            }
+            foreach (link Child in Link.Children)
+            {
+                loadSWComponents(Child);
+            }
+        }
+
+        public void saveExporter()
+        {
+            saveSWComponents(mRobot.BaseLink);
+        }
+
+        public void saveSWComponents(link Link)
+        {
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+            SelectData data = manager.CreateSelectData();
+            data.Mark = 1;
+            if (Link.SWMainComponent != null)
+            {
+                Link.SWMainComponentPID = ActiveSWModel.Extension.GetPersistReference3(Link.SWMainComponent);
+            }
+            if (Link.SWcomponents != null)
+            {
+                Link.SWComponentPIDs = new List<byte[]>();
+                foreach (IComponent2 comp in Link.SWcomponents)
+                {
+                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
+                    Link.SWComponentPIDs.Add(PID);
+                }
+            }
+            foreach (link Child in Link.Children)
+            {
+                saveSWComponents(Child);
+            }
+        }
         public void createBaseLinkFromComponents(List<Component2> components, string linkName)
         {
             // Build the link from the partdoc
@@ -1471,12 +1541,14 @@ namespace SW2URDF
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
             swMass.SetCoordinateSystem(jointTransform);
             child.Inertial.Mass.Value = swMass.Mass;
-
+            
             child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
             double[] centerOfMass = swMass.CenterOfMass;
             child.Inertial.Origin.XYZ = centerOfMass;
             child.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
+
+            createRefOrigin(child.Inertial.Origin, "CoM_" + child.name);
 
             // Will this ever not be zeros?
             child.Visual.Origin.XYZ = new double[3] { 0, 0, 0 };

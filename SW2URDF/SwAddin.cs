@@ -11,7 +11,12 @@ using SolidWorksTools;
 using SolidWorksTools.File;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Xml;
+using System.Xml.Serialization;
 
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SW2URDF
 {
@@ -39,7 +44,7 @@ namespace SW2URDF
         public const int mainItemID2 = 1;
         public const int mainItemID3 = 2;
         public const int flyoutGroupID = 91;
-      
+
         #region Event Handler Variables
         Hashtable openDocs = new Hashtable();
         SolidWorks.Interop.sldworks.SldWorks SwEventPtr = null;
@@ -236,15 +241,19 @@ namespace SW2URDF
 
         public void assemblyURDFExporter()
         {
-            if (MessageBox.Show("The SW to URDF exporter requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || MessageBox.Show("The SW to URDF exporter requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                modeldoc.Save3(options, 0, 0);
+                if (modeldoc.Extension.NeedsRebuild2 != 0)
+                {
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                    modeldoc.Save3(options, 0, 0);
+                }
                 //AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
                 //exportForm.Show();
 
                 setupPropertyManager();
+
 
 
             }
@@ -252,19 +261,72 @@ namespace SW2URDF
 
         public void setupPropertyManager()
         {
+            SW2URDFExporter exporter = loadConfigFile();
+
             clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
+            if (exporter != null)
+            {
+                exporter.loadExporter(iSwApp);
+                pm.Exporter = exporter;
+                pm.fillTreeViewFromRobot(pm.Exporter.mRobot);
+            }
+
             pm.Show();
         }
         public void partURDFExporter()
         {
-            if (MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+            if ((modeldoc.Extension.NeedsRebuild2 == 0) || MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                modeldoc.Save3(options, 0, 0);
+                if (modeldoc.Extension.NeedsRebuild2 != 0)
+                {
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                    modeldoc.Save3(options, 0, 0);
+                }
                 PartExportForm exportForm = new PartExportForm(iSwApp);
                 exportForm.Show();
             }
+        }
+
+        private void saveConfigToFile(object obj)
+        {
+
+        }
+
+        private SW2URDFExporter loadConfigFile()
+        {
+            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+
+
+            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
+            string data="";
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        Parameter param = att.GetParameter("data");
+                        data = param.GetStringValue();
+                    }
+                }
+              
+            }
+            if (!data.Equals(""))
+            {
+                SW2URDFExporter Exporter;
+
+                XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                Exporter = (SW2URDFExporter)serializer.Deserialize(textReader);
+                textReader.Close();
+
+                return Exporter;
+            }
+            return null;
         }
 
         public void FlyoutCallback()
@@ -464,7 +526,7 @@ namespace SW2URDF
 
         #endregion
 
-       
+
     }
 
 }

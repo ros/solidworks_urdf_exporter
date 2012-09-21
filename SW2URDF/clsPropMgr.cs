@@ -7,13 +7,18 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SW2URDF
 {
 
     [ComVisibleAttribute(true)]
 
+    [Serializable]
     public class clsPropMgr : PropertyManagerPage2Handler9
     {
         public SldWorks swApp;
@@ -22,7 +27,8 @@ namespace SW2URDF
         public SW2URDFExporter Exporter;
         public link previouslySelectedLink;
         public List<link> linksToVisit;
-
+        public LinkNode rightClickedNode;
+        private ContextMenuStrip docMenu;
         //General objects required for the PropertyManager page
 
         PropertyManagerPage2 pm_Page;
@@ -54,7 +60,7 @@ namespace SW2URDF
         const int ComboID = 4;
         const int ListID = 5;
         const int ButtonID = 6;
-        const int NumBox_ChildCount = 7;
+        const int NumBox_ChildCount_ID = 7;
         const int Label_LinkName_ID = 8;
         const int Label_Selection_ID = 9;
         const int Label_ChildCount_ID = 10;
@@ -83,6 +89,7 @@ namespace SW2URDF
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
 
             linksToVisit = new List<link>();
+            docMenu = new ContextMenuStrip();
 
             string PageTitle = null;
             string caption = null;
@@ -92,6 +99,10 @@ namespace SW2URDF
             int controlType = 0;
             int alignment = 0;
             string[] listItems = new string[4];
+
+            ActiveSWModel.ShowConfiguration2("URDF Export");
+
+
 
             //Set the variables for the page
             PageTitle = "Comps";
@@ -195,9 +206,10 @@ namespace SW2URDF
                 alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
                 tip = "Enter the number of child links that will be created";
                 options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-                pm_NumberBox_ChildCount = pm_Group.AddControl(NumBox_ChildCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+                pm_NumberBox_ChildCount = pm_Group.AddControl(NumBox_ChildCount_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
                 pm_NumberBox_ChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
                 pm_NumberBox_ChildCount.Value = 0;
+                
                 pm_Button = pm_Group.AddControl(ButtonID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Create Link", 0, (int)options, "");
 
 
@@ -211,6 +223,8 @@ namespace SW2URDF
                 tree.Height = 600;
                 tree.Visible = true;
                 tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(tree_AfterSelect);
+                tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(tree_NodeMouseClick);
+                tree.KeyDown += new System.Windows.Forms.KeyEventHandler(tree_KeyDown);
                 pm_tree.SetWindowHandlex64(tree.Handle.ToInt64());
 
                 LinkNode node = new LinkNode();
@@ -219,9 +233,25 @@ namespace SW2URDF
                 node.Link.uniqueName = "base_link";
                 node.Text = node.Link.name;
                 node.Name = node.Link.name;
+
+                
+                ToolStripMenuItem addChild = new ToolStripMenuItem();
+                ToolStripMenuItem removeChild = new ToolStripMenuItem();
+                ToolStripMenuItem renameChild = new ToolStripMenuItem();
+                addChild.Text = "Add Child Link";
+                addChild.Click += new System.EventHandler(this.addChild_Click);
+                
+                removeChild.Text = "Remove";
+                removeChild.Click += new System.EventHandler(this.removeChild_Click);
+                renameChild.Text = "Rename";
+                renameChild.Click += new System.EventHandler(this.renameChild_Click);
+                docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
+                node.ContextMenuStrip = docMenu;
+                
                 tree.Nodes.Add(node);
                 tree.SelectedNode = tree.Nodes[0];
                 pm_Selection.SetSelectionFocus();
+
                 
                 //
             }
@@ -234,7 +264,35 @@ namespace SW2URDF
         }
 
         #region IPropertyManagerPage2Handler9 Members
+        void addChild_Click(object sender, EventArgs e)
+        {
+            createNewLinks(rightClickedNode, 1);
+        }
+        void removeChild_Click(object sender, EventArgs e)
+        {
+            createNewLinks(rightClickedNode, -1);
+        }
 
+        void renameChild_Click(object sender, EventArgs e)
+        {
+            rightClickedNode.BeginEdit();
+        }
+
+        void tree_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (rightClickedNode.IsEditing)
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    rightClickedNode.EndEdit(false);
+                }
+                else if (e.KeyCode == Keys.Escape)
+                {
+                    rightClickedNode.EndEdit(true);
+                }
+            }
+
+        }
         void IPropertyManagerPage2Handler9.AfterActivation()
         {
 
@@ -244,9 +302,23 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.AfterClose()
         {
+            Exporter.saveExporter();
+            StringWriter stringWriter;
+            XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+            stringWriter = new StringWriter();
+            serializer.Serialize(stringWriter, Exporter);
+            stringWriter.Flush();
+            stringWriter.Close();
 
-            //throw new Exception("The method or operation is not implemented.");
-
+            int Options = 0;
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = Exporter.saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            Parameter param = saveExporterAttribute.GetParameter("data");
+            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("name");
+            param.SetStringValue2("config1", ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("date");
+            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
         }
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
@@ -268,6 +340,10 @@ namespace SW2URDF
                     createNewLinks(buildNode());
                     updatePM();
                 }
+            }
+            if (Id == NumBox_ChildCount_ID)
+            {
+                int c = 1;
             }
         }
 
@@ -294,14 +370,19 @@ namespace SW2URDF
         private void createNewLinks(LinkNode CurrentlySelectedNode)
         {
             int linksToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
-            for (int i = 0; i < linksToBuild; i++)
+            createNewLinks(CurrentlySelectedNode, linksToBuild);
+        }
+
+        private void createNewLinks(LinkNode currentNode, int number)
+        {
+            for (int i = 0; i < number; i++)
             {
-                LinkNode node = createEmptyNode(CurrentlySelectedNode.Link);
-                CurrentlySelectedNode.Nodes.Add(node);
+                LinkNode node = createEmptyNode(currentNode.Link);
+                currentNode.Nodes.Add(node);
             }
-            for (int i = 0; i < -linksToBuild; i++)
+            for (int i = 0; i < -number; i++)
             {
-                CurrentlySelectedNode.Link.Children.RemoveAt(CurrentlySelectedNode.Link.Children.Count - 1);
+                currentNode.Link.Children.RemoveAt(currentNode.Link.Children.Count - 1);
             }
         }
 
@@ -417,6 +498,7 @@ namespace SW2URDF
             node.Text = Link.name;
             node.Link = Link;
 
+            node.ContextMenuStrip = docMenu;
             return node;
         }
 
@@ -527,6 +609,8 @@ namespace SW2URDF
 
         }
 
+        
+
         void IPropertyManagerPage2Handler9.OnGainedFocus(int Id)
         {
 
@@ -591,9 +675,9 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnNumberboxChanged(int Id, double Value)
         {
-
-            //throw new Exception("The method or operation is not implemented.");
-
+            LinkNode node = (LinkNode)tree.SelectedNode;
+            createNewLinks(node);
+            
         }
 
         void IPropertyManagerPage2Handler9.OnOptionCheck(int Id)
@@ -766,10 +850,6 @@ namespace SW2URDF
                 node.Nodes.Add(createLinkNodeFromLink(child));
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
-            Link.SWComponent.Select(false);
-
-            IComponent2 parent = Link.SWComponent.GetParent();
-
             return node;
         }
         public robot createRobotFromTreeView()
@@ -812,8 +892,15 @@ namespace SW2URDF
             automaticallySwitched = false;
         }
 
+        private void tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            rightClickedNode = (LinkNode)e.Node;
+        }
+
 
         #endregion
+
+
 
     }
 
