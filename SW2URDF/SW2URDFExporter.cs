@@ -97,6 +97,64 @@ namespace SW2URDF
         public void saveExporter()
         {
             saveSWComponents(mRobot.BaseLink);
+            StringWriter stringWriter;
+            XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+            stringWriter = new StringWriter();
+            serializer.Serialize(stringWriter, this);
+            stringWriter.Flush();
+            stringWriter.Close();
+
+            int Options = 0;
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            Parameter param = saveExporterAttribute.GetParameter("data");
+            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("name");
+            param.SetStringValue2("config1", ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("date");
+            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+
+
+        }
+
+        public nodeSerial convertLinkNodeToNodeSerial(LinkNode node)
+        {
+            nodeSerial sNode = new nodeSerial();
+            sNode.linkName = node.linkName;
+            sNode.jointName = node.jointName;
+            sNode.axisName = node.axisName;
+            sNode.coordsysName = node.coordsysName;
+            sNode.componentPIDs = node.componentPIDs;
+            sNode.jointType = node.jointType;
+            sNode.isBaseNode = node.isBaseNode;
+            sNode.isIncomplete = node.isIncomplete;
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                sNode.Nodes.Add(convertLinkNodeToNodeSerial(child));
+            }
+
+            return sNode;
+        }
+
+        public LinkNode convertSerialNodeToLinkNode(nodeSerial node)
+        {
+            LinkNode lNode = new LinkNode();
+            lNode.linkName = node.linkName;
+            lNode.jointName = node.jointName;
+            lNode.axisName = node.axisName;
+            lNode.coordsysName = node.coordsysName;
+            lNode.componentPIDs = node.componentPIDs;
+            lNode.jointType = node.jointType;
+            lNode.isBaseNode = node.isBaseNode;
+            lNode.isIncomplete = node.isIncomplete;
+
+            foreach (nodeSerial child in node.Nodes)
+            {
+                lNode.Nodes.Add(convertSerialNodeToLinkNode(child));
+            }
+
+            return lNode;
         }
 
         #region SW to Robot and link methods
@@ -218,11 +276,11 @@ namespace SW2URDF
         }
         public void createJointName(link Parent, link Child, string jointName)
         {
-            Child.Joint.name = jointName;
-            Child.Joint.CoordinateSystemName = "Origin_" + Child.Joint.name;
-            Child.Joint.AxisName = "Axis_" + Child.Joint.name;
-            Child.Joint.Parent.name = Parent.uniqueName;
-            Child.Joint.Child.name = Child.uniqueName;
+            Child.Joint.name = (Child.Joint.name == "") ? jointName : Child.Joint.name;
+            Child.Joint.CoordinateSystemName = (Child.Joint.CoordinateSystemName == "") ? "Origin_" + Child.Joint.name : Child.Joint.CoordinateSystemName;
+            Child.Joint.AxisName = (Child.Joint.AxisName == "") ? "Axis_" + Child.Joint.name : Child.Joint.AxisName;
+            Child.Joint.Parent.name = (Child.Joint.Parent.name == "") ? Parent.uniqueName : (Child.Joint.Parent.name);
+            Child.Joint.Child.name = (Child.Joint.Child.name == "") ? Child.uniqueName : Child.Joint.Child.name;
         }
 
         public void createRefGeometry(joint Joint)
@@ -1053,16 +1111,81 @@ namespace SW2URDF
                 saveSWComponents(Child);
             }
         }
+
+        public void retrieveSWComponentPIDs(LinkNode node)
+        {
+            ActiveSWModel.ClearSelection2(true);
+            SelectionMgr manager = ActiveSWModel.SelectionManager;
+            SelectData data = manager.CreateSelectData();
+            data.Mark = 1;
+
+            if (node.components != null)
+            {
+                node.componentPIDs = new List<byte[]>();
+                foreach (IComponent2 comp in node.components)
+                {
+                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
+                    node.componentPIDs.Add(PID);
+                }
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                retrieveSWComponentPIDs(child);
+            }
+        }
+
+        public void retrieveSWComponentPIDs(TreeView tree)
+        {
+            foreach (LinkNode node in tree.Nodes)
+            {
+                retrieveSWComponentPIDs(node);
+            }
+        }
         public void createBaseLinkFromComponents(List<Component2> components, string linkName)
         {
             // Build the link from the partdoc
-            link Link = createLinkFromComponents(null, components, linkName, "");
+            link Link = createLinkFromComponents(null, components, linkName, "", "", "");
             createBaseRefOrigin(true);
 
             mRobot.BaseLink = Link;
         }
+        public link createLink(LinkNode node)
+        {
+            link Link;
+            if (node.isBaseNode)
+            {
+                createBaseLinkFromComponents(node.components, node.linkName);
+                Link = mRobot.BaseLink;
+            }
+            else
+            {
+                LinkNode parentNode = (LinkNode)node.Parent;
+                Link = createLinkFromComponents(parentNode.Link, node.components, node.linkName, node.jointName, node.coordsysName, node.axisName);
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                link childLink = createLink(child);
+                Link.Children.Add(childLink);
+            }
+            return Link;
+        }
 
-        public link createLinkFromComponents(link parent, List<Component2> components, string linkName, string jointName)
+        public void createRobotFromTreeView(TreeView tree)
+        {
+            mRobot = new robot();
+
+            foreach (LinkNode node in tree.Nodes)
+            {
+                if (node.Level == 0)
+                {
+
+                    link BaseLink = createLink(node);
+                    mRobot.BaseLink = BaseLink;
+                }
+            }
+        }
+
+        public link createLinkFromComponents(link parent, List<Component2> components, string linkName, string jointName, string coordsysName, string axisName)
         {
             link child = new link();
             child.name = linkName;
@@ -1074,7 +1197,7 @@ namespace SW2URDF
 
             if (parent != null)
             {
-                createJoint(parent, child, jointName);
+                createJoint(parent, child, jointName, coordsysName, axisName);
             }
 
             ActiveSWModel.ClearSelection2(true);
@@ -1128,12 +1251,14 @@ namespace SW2URDF
             return child;
         }
 
-        public void createJoint(link parent, link child, string jointName)
+        public void createJoint(link parent, link child, string jointName, string coordSysName, string axisName)
         {
             List<IComponent2> componentsToFix = fixComponents(parent);
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             child.Joint = new joint();
+            child.Joint.CoordinateSystemName = coordSysName;
+            child.Joint.AxisName = axisName;
             createJointName(parent, child, jointName);
             estimateGlobalJointFromComponents(assy, parent, child);
             if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
@@ -1148,10 +1273,10 @@ namespace SW2URDF
             child.Joint.Axis.XYZ = estimateAxis(child.Joint.AxisName);
 
             Matrix<double> ParentJointGlobalTransform;
-            string coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+            coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
 
             //If the parent joint exists, it becomes the reference joint, otherwise use the Origin_global. Grab the MathTransform of that coordsys to use for localizing
-            MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
+            MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordSysName);
             ParentJointGlobalTransform = OPS.getTransformation(coordSysTransform);
 
             unFixComponents(componentsToFix);

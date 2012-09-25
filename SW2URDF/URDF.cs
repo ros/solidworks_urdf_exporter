@@ -128,7 +128,7 @@ namespace SW2URDF
         { get; set; }
         public bool STLQualityFine
         { get; set; }
-        public bool needsBuilding
+        public bool isIncomplete
         { get; set; }
 
         // The SW part component object
@@ -180,6 +180,29 @@ namespace SW2URDF
             }
         }
     }
+
+    public class nodeSerial
+    {
+        public string linkName
+        { get; set; }
+        public string jointName
+        { get; set; }
+        public string axisName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public List<byte[]> componentPIDs
+        { get; set; }
+        public string jointType
+        { get; set; }
+        public bool isBaseNode
+        { get; set; }
+        public bool isIncomplete
+        { get; set; }
+        public List<nodeSerial> Nodes
+        { get; set; }
+    }
+
 
     [Serializable]
     public class inertial : URDFElement

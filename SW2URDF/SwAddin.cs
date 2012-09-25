@@ -261,16 +261,10 @@ namespace SW2URDF
 
         public void setupPropertyManager()
         {
-            SW2URDFExporter exporter = loadConfigFile();
+            //SW2URDFExporter exporter = loadConfigFile();
 
             clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
-            if (exporter != null)
-            {
-                exporter.loadExporter(iSwApp);
-                pm.Exporter = exporter;
-                pm.fillTreeViewFromRobot(pm.Exporter.mRobot);
-            }
-
+            pm.loadConfigTree();
             pm.Show();
         }
         public void partURDFExporter()
@@ -286,11 +280,6 @@ namespace SW2URDF
                 PartExportForm exportForm = new PartExportForm(iSwApp);
                 exportForm.Show();
             }
-        }
-
-        private void saveConfigToFile(object obj)
-        {
-
         }
 
         private SW2URDFExporter loadConfigFile()

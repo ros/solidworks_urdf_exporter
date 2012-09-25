@@ -12,6 +12,8 @@ using SolidWorks.Interop.swpublished;
 using SolidWorks.Interop.swconst;
 using SolidWorksTools;
 using SolidWorksTools.File;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace SW2URDF
 {
@@ -22,11 +24,9 @@ namespace SW2URDF
         ModelDoc2 ActiveSWModel;
         private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
-        private bool treeWasModified;
         LinkNode previouslySelectedNode;
         public AssemblyExportForm(ISldWorks iSwApp)
         {
-            treeWasModified = false;
             InitializeComponent();
             swApp = iSwApp;
             ActiveSWModel = swApp.ActiveDoc;
@@ -215,7 +215,6 @@ namespace SW2URDF
         }
         private void treeView_linktree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
-            treeWasModified = true;
             // Retrieve the client coordinates of the drop location.
             Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
 
@@ -1022,11 +1021,28 @@ namespace SW2URDF
     }
 
     #region Derived classes
+
     public class LinkNode : TreeNode
     {
         public link Link
         { get; set; }
-        public bool needsBuilding
+        public string linkName
+        { get; set; }
+        public string jointName
+        { get; set; }
+        public string axisName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public List<Component2> components
+        { get; set; }
+        public List<byte[]> componentPIDs
+        { get; set; }
+        public string jointType
+        { get; set; }
+        public bool isBaseNode
+        { get; set; }
+        public bool isIncomplete
         { get; set; }
     }
     public class LinkItem : ListViewItem
