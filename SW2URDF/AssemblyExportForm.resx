@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Before clicking next, organize the tree by clicking and dragging links onto each other. A part that is dragged on to another part will create a parent-child relationship between their associated links. They should be organized so that a part is the child of only the part it directly mates to. There should only be one degree of freedom between the child part and the parent part. Drag parent parts onto child parts to switch the parent-child relationship.</value>
-  </data>
   <metadata name="saveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>

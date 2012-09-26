@@ -27,8 +27,10 @@ namespace SW2URDF
     public class SW2URDFExporter
     {
         #region class variables
-        [XmlIgnore] public ISldWorks iSwApp = null;
-        [XmlIgnore] ops OPS;
+        [XmlIgnore]
+        public ISldWorks iSwApp = null;
+        [XmlIgnore]
+        ops OPS;
         private bool mBinary;
         private bool mshowInfo;
         private bool mSTLPreview;
@@ -40,8 +42,10 @@ namespace SW2URDF
         private string referenceSketchName;
 
 
-        [XmlIgnore] public ModelDoc2 ActiveSWModel;
-        [XmlIgnore] public MathUtility swMath;
+        [XmlIgnore]
+        public ModelDoc2 ActiveSWModel;
+        [XmlIgnore]
+        public MathUtility swMath;
         [XmlIgnore]
         public AttributeDef saveConfigurationAttributeDef
         { get; set; }
@@ -88,46 +92,44 @@ namespace SW2URDF
             saveConfigurationAttributeDef.Register();
         }
 
-        public void loadExporter(ISldWorks iSldWorksApp)
+        public SerialNode convertLinkNodeToNodeSerial(LinkNode node)
         {
-            constructExporter(iSldWorksApp);
-            loadSWComponents(mRobot.BaseLink);
-        }
+            SerialNode sNode = new SerialNode();
 
-        public void saveExporter()
-        {
-            saveSWComponents(mRobot.BaseLink);
-            StringWriter stringWriter;
-            XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
-            stringWriter = new StringWriter();
-            serializer.Serialize(stringWriter, this);
-            stringWriter.Flush();
-            stringWriter.Close();
+            if (node.Link == null)
+            {
+                sNode.linkName = node.linkName;
+                sNode.jointName = node.jointName;
+                sNode.axisName = node.axisName;
+                sNode.coordsysName = node.coordsysName;
+                sNode.componentPIDs = saveSWComponents(node.components);
+                sNode.jointType = node.jointType;
+                sNode.isBaseNode = node.isBaseNode;
+                sNode.isIncomplete = node.isIncomplete;
+            }
+            else
+            {
+                sNode.linkName = node.Link.name;
 
-            int Options = 0;
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
-            Parameter param = saveExporterAttribute.GetParameter("data");
-            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("name");
-            param.SetStringValue2("config1", ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("date");
-            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                if (node.Link.Joint != null)
+                {
+                    sNode.jointName = node.Link.Joint.name;
 
-
-        }
-
-        public nodeSerial convertLinkNodeToNodeSerial(LinkNode node)
-        {
-            nodeSerial sNode = new nodeSerial();
-            sNode.linkName = node.linkName;
-            sNode.jointName = node.jointName;
-            sNode.axisName = node.axisName;
-            sNode.coordsysName = node.coordsysName;
-            sNode.componentPIDs = node.componentPIDs;
-            sNode.jointType = node.jointType;
-            sNode.isBaseNode = node.isBaseNode;
-            sNode.isIncomplete = node.isIncomplete;
+                    if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
+                    {
+                        sNode.axisName = "None";
+                    }
+                    else
+                    {
+                        sNode.axisName = node.Link.Joint.AxisName;
+                    }
+                        sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
+                    sNode.jointType = node.Link.Joint.type;
+                }
+                sNode.componentPIDs = saveSWComponents(node.Link.SWcomponents);
+                sNode.isBaseNode = node.isBaseNode;
+                sNode.isIncomplete = node.isIncomplete;
+            }
 
             foreach (LinkNode child in node.Nodes)
             {
@@ -137,7 +139,7 @@ namespace SW2URDF
             return sNode;
         }
 
-        public LinkNode convertSerialNodeToLinkNode(nodeSerial node)
+        public LinkNode convertSerialNodeToLinkNode(SerialNode node)
         {
             LinkNode lNode = new LinkNode();
             lNode.linkName = node.linkName;
@@ -149,7 +151,11 @@ namespace SW2URDF
             lNode.isBaseNode = node.isBaseNode;
             lNode.isIncomplete = node.isIncomplete;
 
-            foreach (nodeSerial child in node.Nodes)
+            lNode.components = loadSWComponents(lNode.componentPIDs);
+            lNode.Name = lNode.linkName;
+            lNode.Text = lNode.linkName;
+
+            foreach (SerialNode child in node.Nodes)
             {
                 lNode.Nodes.Add(convertSerialNodeToLinkNode(child));
             }
@@ -219,7 +225,7 @@ namespace SW2URDF
 
         public link createLinkFromPartComp(object comp, int level)
         {
-            IComponent2 partComp = (IComponent2)comp;
+            Component2 partComp = (Component2)comp;
             ModelDoc2 partDoc = partComp.GetModelDoc();
             link Link;
 
@@ -245,27 +251,35 @@ namespace SW2URDF
 
         public void loadSWComponents(link Link)
         {
-            int Errors = 0;
-            if (Link.SWMainComponentPID != null)
-            {
-                Link.SWMainComponent = (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(Link.SWMainComponentPID, out Errors);
-            }
-            if (Link.SWComponentPIDs != null)
-            {
-                Link.SWcomponents = new List<IComponent2>();
-                foreach (Object PID in Link.SWComponentPIDs)
-                {
-                    IComponent2 comp = (IComponent2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
-                    Link.SWcomponents.Add(comp);
-                }
-            }
+            Link.SWMainComponent = loadSWComponent(Link.SWMainComponentPID);
+            Link.SWcomponents = loadSWComponents(Link.SWComponentPIDs);
             foreach (link Child in Link.Children)
             {
                 loadSWComponents(Child);
             }
         }
 
-       #endregion
+        public List<Component2> loadSWComponents(List<byte[]> PIDs)
+        {
+            List<Component2> components = new List<Component2>();
+            foreach (byte[] PID in PIDs)
+            {
+                components.Add(loadSWComponent(PID));
+            }
+            return components;
+        }
+
+        public Component2 loadSWComponent(byte[] PID)
+        {
+            int Errors = 0;
+            if (PID != null)
+            {
+                return (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
+            }
+            return null;
+        }
+
+        #endregion
 
         #region Joint methods
 
@@ -289,7 +303,7 @@ namespace SW2URDF
             {
                 createRefOrigin(Joint);
             }
-            if (!ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            if (!ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
             {
                 createRefAxis(Joint);
             }
@@ -303,7 +317,9 @@ namespace SW2URDF
         {
             object[] sketchEntities = addSketchGeometry(Origin);
             SketchPoint OriginPoint = (SketchPoint)sketchEntities[0];
+
             SketchSegment xaxis = (SketchSegment)sketchEntities[1];
+
             SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
             double X = (double)sketchEntities[3];
@@ -322,13 +338,39 @@ namespace SW2URDF
             SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
             SelectData data = selectionManager.CreateSelectData();
 
-            if (xaxis != null && yaxis != null)
+            bool SelectedOrigin = false; bool SelectedXAxis = false; bool SelectedYAxis = false;
+            if (OriginPoint != null)
             {
-                bool SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", X, Y, Z, true, 1, null, 0);
-                bool SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xX, xY, xZ, true, 2, null, 0);
-                bool SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yX, yY, yZ, true, 4, null, 0);
+                data.Mark = 1;
+                SelectedOrigin = OriginPoint.Select4(true, data);
+            }
+            if (!SelectedOrigin)
+            {
+                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", X, Y, Z, true, 1, null, 0);
+            }
 
-                coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+            if (xaxis != null)
+            {
+                data.Mark = 2;
+                SelectedXAxis = xaxis.Select4(true, data);
+            }
+            if (!SelectedXAxis)
+            {
+                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xX, xY, xZ, true, 2, null, 0);
+            }
+            if (yaxis != null)
+            {
+                data.Mark = 4;
+                SelectedYAxis = yaxis.Select4(true, data);
+            }
+            if (!SelectedYAxis)
+            {
+                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yX, yY, yZ, true, 4, null, 0);
+            }
+
+            coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+            if (coordinates != null)
+            {
                 coordinates.Name = CoordinateSystemName;
             }
         }
@@ -452,14 +494,14 @@ namespace SW2URDF
         // Inserts a sketch into the main assembly
         public string setup3DSketch()
         {
-            bool sketchExists = ActiveSWModel.Extension.SelectByID2("URDF_reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
+            bool sketchExists = ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             ActiveSWModel.SketchManager.CreatePoint(0, 0, 0);
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             if (!sketchExists)
             {
-                sketch.Name = "URDF_reference";
+                sketch.Name = "URDF Reference";
             }
             return sketch.Name;
         }
@@ -501,7 +543,7 @@ namespace SW2URDF
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
 
             }
-            sketch.Name = "URDF_reference";
+            sketch.Name = "URDF Reference";
             return new object[] { OriginPoint, XAxis, YAxis, Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0], Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
         }
 
@@ -557,6 +599,7 @@ namespace SW2URDF
             MathVector LDir1, LDir2;
             // Surpress Limit Mates to properly find degrees of freedom
             List<Mate2> limitMates = new List<Mate2>();
+            limitMates = suppressLimitMates(child.SWMainComponent);
             if (child.SWMainComponent != null)
             {
 
@@ -643,7 +686,7 @@ namespace SW2URDF
 
         public double[] estimateAxis(string axisName)
         {
-            double[] XYZ = new double[3]; ;
+            double[] XYZ = new double[3];
 
             ActiveSWModel.ClearSelection2(true);
             bool selected = ActiveSWModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
@@ -776,7 +819,7 @@ namespace SW2URDF
             }
         }
 
-        public void unFixComponents(List<IComponent2> components)
+        public void unFixComponents(List<Component2> components)
         {
             selectComponents(components, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -808,7 +851,7 @@ namespace SW2URDF
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            List<IComponent2> hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
+            List<Component2> hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
             string filename = exportFiles(mRobot.BaseLink, package);
@@ -947,7 +990,7 @@ namespace SW2URDF
                 selectComponents(child, false, mark);
             }
         }
-        public void selectComponents(List<IComponent2> components, bool clearSelection, int mark = -1)
+        public void selectComponents(List<Component2> components, bool clearSelection, int mark = -1)
         {
             if (clearSelection)
             {
@@ -964,12 +1007,12 @@ namespace SW2URDF
         }
 
 
-        public List<IComponent2> findHiddenComponents(object[] varComp)
+        public List<Component2> findHiddenComponents(object[] varComp)
         {
-            List<IComponent2> hiddenComp = new List<IComponent2>();
+            List<Component2> hiddenComp = new List<Component2>();
             foreach (object obj in varComp)
             {
-                IComponent2 comp = (IComponent2)obj;
+                Component2 comp = (Component2)obj;
                 if (comp.IsHidden(false))
                 {
                     hiddenComp.Add(comp);
@@ -977,7 +1020,7 @@ namespace SW2URDF
             }
             return hiddenComp;
         }
-        public void showAllComponents(List<IComponent2> hiddenComponents)
+        public void showAllComponents(List<Component2> hiddenComponents)
         {
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
             ActiveSWModel.Extension.SelectAll();
@@ -987,7 +1030,7 @@ namespace SW2URDF
             }
             ActiveSWModel.ShowComponent2();
         }
-        public void showComponents(List<IComponent2> components)
+        public void showComponents(List<Component2> components)
         {
             selectComponents(components, true);
             ActiveSWModel.ShowComponent2();
@@ -1013,7 +1056,7 @@ namespace SW2URDF
             }
             ActiveSWModel.HideComponent2();
         }
-        public void hideComponents(List<IComponent2> components)
+        public void hideComponents(List<Component2> components)
         {
             selectComponents(components, true);
             ActiveSWModel.HideComponent2();
@@ -1082,34 +1125,43 @@ namespace SW2URDF
 
         #region Testing new export method
 
-
-
-
-
-
         public void saveSWComponents(link Link)
         {
             ActiveSWModel.ClearSelection2(true);
-            SelectionMgr manager = ActiveSWModel.SelectionManager;
-            SelectData data = manager.CreateSelectData();
-            data.Mark = 1;
-            if (Link.SWMainComponent != null)
+            byte[] PID = saveSWComponent(Link.SWMainComponent);
+            if (PID != null)
             {
-                Link.SWMainComponentPID = ActiveSWModel.Extension.GetPersistReference3(Link.SWMainComponent);
+                Link.SWMainComponentPID = PID;
             }
-            if (Link.SWcomponents != null)
-            {
-                Link.SWComponentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in Link.SWcomponents)
-                {
-                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
-                    Link.SWComponentPIDs.Add(PID);
-                }
-            }
+            Link.SWComponentPIDs = saveSWComponents(Link.SWcomponents);
+
             foreach (link Child in Link.Children)
             {
                 saveSWComponents(Child);
             }
+        }
+
+        public List<byte[]> saveSWComponents(List<Component2> components)
+        {
+            List<byte[]> PIDs = new List<byte[]>();
+            foreach (Component2 component in components)
+            {
+                byte[] PID = saveSWComponent(component);
+                if (PID != null)
+                {
+                    PIDs.Add(PID);
+                }
+            }
+            return PIDs;
+        }
+
+        public byte[] saveSWComponent(Component2 component)
+        {
+            if (component != null)
+            {
+                return ActiveSWModel.Extension.GetPersistReference3(component);
+            }
+            return null;
         }
 
         public void retrieveSWComponentPIDs(LinkNode node)
@@ -1141,10 +1193,10 @@ namespace SW2URDF
                 retrieveSWComponentPIDs(node);
             }
         }
-        public void createBaseLinkFromComponents(List<Component2> components, string linkName)
+        public void createBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
-            link Link = createLinkFromComponents(null, components, linkName, "", "", "");
+            link Link = createLinkFromComponents(null, node.components, node);
             createBaseRefOrigin(true);
 
             mRobot.BaseLink = Link;
@@ -1154,14 +1206,15 @@ namespace SW2URDF
             link Link;
             if (node.isBaseNode)
             {
-                createBaseLinkFromComponents(node.components, node.linkName);
+                createBaseLinkFromComponents(node);
                 Link = mRobot.BaseLink;
             }
             else
             {
                 LinkNode parentNode = (LinkNode)node.Parent;
-                Link = createLinkFromComponents(parentNode.Link, node.components, node.linkName, node.jointName, node.coordsysName, node.axisName);
+                Link = createLinkFromComponents(parentNode.Link, node.components, node);
             }
+            node.Link = Link;
             foreach (LinkNode child in node.Nodes)
             {
                 link childLink = createLink(child);
@@ -1181,15 +1234,16 @@ namespace SW2URDF
 
                     link BaseLink = createLink(node);
                     mRobot.BaseLink = BaseLink;
+                    node.Link = BaseLink;
                 }
             }
         }
 
-        public link createLinkFromComponents(link parent, List<Component2> components, string linkName, string jointName, string coordsysName, string axisName)
+        public link createLinkFromComponents(link parent, List<Component2> components, LinkNode node )
         {
             link child = new link();
-            child.name = linkName;
-            child.uniqueName = linkName;
+            child.name = node.linkName;
+            child.uniqueName = node.linkName;
 
             child.SWMainComponent = components[0];
             child.SWcomponents.AddRange(components);
@@ -1197,7 +1251,7 @@ namespace SW2URDF
 
             if (parent != null)
             {
-                createJoint(parent, child, jointName, coordsysName, axisName);
+                createJoint(parent, child, node);
             }
 
             ActiveSWModel.ClearSelection2(true);
@@ -1219,14 +1273,12 @@ namespace SW2URDF
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
             swMass.SetCoordinateSystem(jointTransform);
             child.Inertial.Mass.Value = swMass.Mass;
-            
+
             child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
             double[] centerOfMass = swMass.CenterOfMass;
             child.Inertial.Origin.XYZ = centerOfMass;
             child.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
-
-            createRefOrigin(child.Inertial.Origin, "CoM_" + child.name);
 
             // Will this ever not be zeros?
             child.Visual.Origin.XYZ = new double[3] { 0, 0, 0 };
@@ -1251,20 +1303,67 @@ namespace SW2URDF
             return child;
         }
 
-        public void createJoint(link parent, link child, string jointName, string coordSysName, string axisName)
+        public void createJoint(link parent, link child, LinkNode node)
         {
-            List<IComponent2> componentsToFix = fixComponents(parent);
+            string jointName = node.jointName;
+            string coordSysName = node.coordsysName;
+            string axisName = node.axisName;
+            string jointType = node.jointType;
+            List<Component2> componentsToFix = fixComponents(parent);
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             child.Joint = new joint();
-            child.Joint.CoordinateSystemName = coordSysName;
-            child.Joint.AxisName = axisName;
-            createJointName(parent, child, jointName);
-            estimateGlobalJointFromComponents(assy, parent, child);
-            if (!ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0) &&
-                !ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+
+
+            child.Joint.name = jointName;
+
+
+            child.Joint.Parent.name = parent.uniqueName;
+            child.Joint.Child.name = child.uniqueName;
+
+            // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
+            if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
             {
-                createRefGeometry(child.Joint);
+                estimateGlobalJointFromComponents(assy, parent, child);
+            }
+
+            if (coordSysName == "Automatically Generate")
+            {
+                child.Joint.CoordinateSystemName = "Origin_" + child.Joint.name;
+                ActiveSWModel.ClearSelection2(true);
+                int i = 2;
+                while (ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+                {
+                    ActiveSWModel.ClearSelection2(true);
+                    child.Joint.CoordinateSystemName = "Origin_" + child.Joint.name + i.ToString();
+                    i++;
+                }
+                createRefOrigin(child.Joint);
+            }
+            else
+            {
+                child.Joint.CoordinateSystemName = coordSysName;
+            }
+            if (axisName == "Automatically Generate")
+            {
+                child.Joint.AxisName = "Axis_" + child.Joint.name;
+                ActiveSWModel.ClearSelection2(true);
+                int i = 2;
+                while (ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
+                {
+                    ActiveSWModel.ClearSelection2(true);
+                    child.Joint.AxisName = "Axis_" + child.Joint.name + i.ToString();
+                    i++;
+                }
+                createRefAxis(child.Joint);
+            }
+            else
+            {
+                child.Joint.AxisName = axisName;
+            }
+            if (jointType != "Automatically Detect")
+            {
+                child.Joint.type = jointType;
             }
 
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName);
@@ -1283,9 +1382,9 @@ namespace SW2URDF
             localizeJoint(child, ParentJointGlobalTransform);
         }
 
-        private List<IComponent2> fixComponents(link parent)
+        private List<Component2> fixComponents(link parent)
         {
-            List<IComponent2> componentsToUnfix = new List<IComponent2>();
+            List<Component2> componentsToUnfix = new List<Component2>();
             foreach (Component2 comp in parent.SWcomponents)
             {
                 if (!comp.IsFixed())
@@ -1299,7 +1398,259 @@ namespace SW2URDF
             return componentsToUnfix;
         }
 
+        public void saveConfigTree(TreeView tree)
+        {
+            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
+            retrieveSWComponentPIDs(tree);
+            SerialNode sNode = convertLinkNodeToNodeSerial((LinkNode)tree.Nodes[0]);
+            StringWriter stringWriter;
+            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+            stringWriter = new StringWriter();
+            serializer.Serialize(stringWriter, sNode);
+            stringWriter.Flush();
+            stringWriter.Close();
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
+            Parameter param = saveExporterAttribute.GetParameter("data");
+            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("name");
+            param.SetStringValue2("config1", ConfigurationOptions, "");
+            param = saveExporterAttribute.GetParameter("date");
+            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+        }
 
+        private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(string name)
+        {
+            int Options = 0;
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
+            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == name)
+                    {
+                        return att;
+                    }
+                }
+
+            }
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            return saveExporterAttribute;
+        }
+
+        public LinkNode loadConfigTree()
+        {
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            string data = "";
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        Parameter param = att.GetParameter("data");
+                        data = param.GetStringValue();
+                    }
+                }
+
+            }
+            LinkNode lNode = null;
+            if (!data.Equals(""))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                lNode = convertSerialNodeToLinkNode(node);
+                textReader.Close();
+            }
+            return lNode;
+        }
+
+        public void moveComponentsToFolder(LinkNode node)
+        {
+            bool needToCreateFolder = true;
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                if (feat.Name == "URDF Export Items")
+                {
+                    needToCreateFolder = false;
+                }
+            }
+            ActiveSWModel.ClearSelection2(true);
+            ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, true, 0, null, 0);
+            if (needToCreateFolder)
+            {
+                Feature folderFeature = ActiveSWModel.FeatureManager.InsertFeatureTreeFolder2((int)swFeatureTreeFolderType_e.swFeatureTreeFolder_Containing);
+                folderFeature.Name =  "URDF Export Items";
+            }
+            ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.FeatureManager.MoveToFolder( "URDF Export Items", "", false);
+            ActiveSWModel.Extension.SelectByID2("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.FeatureManager.MoveToFolder( "URDF Export Items", "", false);
+            selectFeatures(node);
+            ActiveSWModel.FeatureManager.MoveToFolder( "URDF Export Items", "", false);
+
+        }
+
+        public void selectFeatures(LinkNode node)
+        {
+            ActiveSWModel.Extension.SelectByID2(node.coordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
+            if (node.axisName != "None")
+            {
+                ActiveSWModel.Extension.SelectByID2(node.axisName, "AXIS", 0, 0, 0, true, -1, null, 0);
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                selectFeatures(child);
+            }
+        }
+
+        public void checkIfLinkNamesAreUnique(LinkNode node, string linkName, List<string> conflict)
+        {
+            if (node.linkName == linkName)
+            {
+                conflict.Add(node.linkName);
+            }
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                checkIfLinkNamesAreUnique(child, linkName, conflict);
+            }
+        }
+
+        public void checkIfJointNamesAreUnique(LinkNode node, string jointName, List<string> conflict)
+        {
+            if (node.jointName == jointName)
+            {
+                conflict.Add(node.linkName);
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                checkIfLinkNamesAreUnique(child, jointName, conflict);
+            }
+
+        }
+
+        public bool checkIfNamesAreUnique(LinkNode node)
+        {
+            List<List<string>> linkConflicts = new List<List<string>>();
+            List<List<string>> jointConflicts = new List<List<string>>();
+            checkIfLinkNamesAreUnique(node, node, linkConflicts);
+            checkIfJointNamesAreUnique(node, node, jointConflicts);
+
+            string message = "\r\nPlease fix these errors before proceeding.";
+            string specificErrors = "";
+            bool displayInitialMessage = true;
+            bool linkNamesInConflict = false;
+            foreach (List<string> conflict in linkConflicts)
+            {
+                if (conflict.Count > 1)
+                {
+                    linkNamesInConflict = true;
+                    if (displayInitialMessage)
+                    {
+                        specificErrors += "The following links have LINK names that conflict:\r\n\r\n";
+                        displayInitialMessage = false;
+                    }
+                    bool isFirst = true;
+                    foreach (string linkName in conflict)
+                    {
+                        specificErrors += (isFirst) ? "     " + linkName : ", " + linkName;
+                        isFirst = false;
+                    }
+                    specificErrors += "\r\n";
+                
+                }
+
+            }
+            displayInitialMessage = true;
+            foreach (List<string> conflict in jointConflicts)
+            {
+                if (conflict.Count > 1)
+                {
+                    linkNamesInConflict = true;
+                    if (displayInitialMessage)
+                    {
+                        specificErrors += "The following links have JOINT names that conflict:\r\n\r\n";
+                        displayInitialMessage = false;
+                    }
+                    bool isFirst = true;
+                    foreach (string linkName in conflict)
+                    {
+                        specificErrors += (isFirst) ? "     " + linkName : ", " + linkName;
+                        isFirst = false;
+                    }
+                    specificErrors += "\r\n";
+                }
+            }
+            if (linkNamesInConflict)
+            {
+                MessageBox.Show(specificErrors + message);
+                return false;
+            }
+            return true;
+        }
+
+        public void checkIfLinkNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        {
+            List<string> conflict = new List<string>();
+
+            //Finds the conflicts of the currentNode with all the other nodes
+            checkIfLinkNamesAreUnique(basenode, currentNode.linkName, conflict);
+            bool alreadyExists = false;
+            foreach (List<string> existingConflict in conflicts)
+            {
+                if (existingConflict.Contains(conflict[0]))
+                {
+                    alreadyExists = true;
+                }
+            }
+            if (!alreadyExists)
+            {
+                conflicts.Add(conflict);
+            }
+            foreach (LinkNode child in currentNode.Nodes)
+            {
+                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
+                checkIfLinkNamesAreUnique(basenode, child, conflicts);
+            }
+        }
+
+        public void checkIfJointNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        {
+            List<string> conflict = new List<string>();
+            
+            //Finds the conflicts of the currentNode with all the other nodes
+            checkIfJointNamesAreUnique(basenode, currentNode.jointName, conflict);
+            bool alreadyExists = false;
+            foreach (List<string> existingConflict in conflicts)
+            {
+                if (conflict.Count > 0 && existingConflict.Contains(conflict[0]))
+                {
+                    alreadyExists = true;
+                }
+            }
+
+            if (!alreadyExists)
+            {
+                conflicts.Add(conflict);
+            }
+            foreach (LinkNode child in currentNode.Nodes)
+            {
+                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
+                checkIfJointNamesAreUnique(basenode, child, conflicts);
+            }
+        }
         #endregion
 
 

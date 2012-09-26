@@ -134,13 +134,13 @@ namespace SW2URDF
         // The SW part component object
 
         [XmlIgnore]
-        public IComponent2 SWComponent
+        public Component2 SWComponent
         { get; set; }
         [XmlIgnore]
-        public IComponent2 SWMainComponent
+        public Component2 SWMainComponent
         { get; set; }
         [XmlIgnore]
-        public List<IComponent2> SWcomponents
+        public List<Component2> SWcomponents
         { get; set; }
         public List<byte[]> SWComponentPIDs
         { get; set; }
@@ -157,7 +157,7 @@ namespace SW2URDF
             Inertial = new inertial();
             Visual = new visual();
             Collision = new collision();
-            SWcomponents = new List<IComponent2>();
+            SWcomponents = new List<Component2>();
         }
         new public void writeURDF(XmlWriter writer)
         {
@@ -181,7 +181,8 @@ namespace SW2URDF
         }
     }
 
-    public class nodeSerial
+    [Serializable]
+    public class SerialNode
     {
         public string linkName
         { get; set; }
@@ -199,8 +200,13 @@ namespace SW2URDF
         { get; set; }
         public bool isIncomplete
         { get; set; }
-        public List<nodeSerial> Nodes
+        public List<SerialNode> Nodes
         { get; set; }
+
+        public SerialNode()
+        {
+            Nodes = new List<SerialNode>();
+        }
     }
 
 

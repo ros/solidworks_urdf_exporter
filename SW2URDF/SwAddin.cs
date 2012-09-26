@@ -264,6 +264,7 @@ namespace SW2URDF
             //SW2URDFExporter exporter = loadConfigFile();
 
             clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
+
             pm.loadConfigTree();
             pm.Show();
         }
