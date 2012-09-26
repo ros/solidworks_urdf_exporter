@@ -259,7 +259,7 @@ namespace SW2URDF
                 //Create the number box label
                 //Create the link name text box label
                 controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-                caption = "Number of child links to create";
+                caption = "Number of child links";
                 alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
                 options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
                 pm_Label_ChildCount = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, "");
