@@ -382,11 +382,16 @@ namespace SW2URDF
                 if (Exporter.checkIfNamesAreUnique((LinkNode)tree.Nodes[0]))
                 {
                     pm_Page.Close(true); //It saves automatically when sending Okay as true;
-                    Exporter.createRobotFromTreeView(tree);
-                    AssemblyExportForm exportForm = new AssemblyExportForm(swApp);
-                    exportForm.Exporter = Exporter;
-                    exportForm.fillLinkTreeFromRobot(Exporter.mRobot);
-                    exportForm.Show();
+                    AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+                    int result = assy.ResolveAllLightWeightComponents(true);
+                    if (result == (int)swComponentResolveStatus_e.swResolveOk)
+                    {
+                        Exporter.createRobotFromTreeView(tree);
+                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp);
+                        exportForm.Exporter = Exporter;
+                        exportForm.fillLinkTreeFromRobot(Exporter.mRobot);
+                        exportForm.Show();
+                    }
                 }
             }
 

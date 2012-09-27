@@ -261,11 +261,14 @@ namespace SW2URDF
         public double[] getRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
+            double x, y;
+            x = Math.Min(1.0, Math.Abs(m[2, 0])) * Math.Sign(m[2, 0]);
+            y = Math.Min(1.0, Math.Abs(m[0, 2])) * Math.Sign(m[0, 2]);
             if (Math.Abs(m[2,0]) >= 1.0)
             {
                 // Gimbol Lock
-                pitch = -Math.Asin(m[2, 0]);
-                roll = Math.Acos(m[0, 2]);
+                pitch = -Math.Asin(x);
+                roll = Math.Acos(y);
                 yaw = 0;
             }
             else 

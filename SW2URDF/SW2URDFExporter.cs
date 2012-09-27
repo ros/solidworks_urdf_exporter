@@ -785,8 +785,7 @@ namespace SW2URDF
         {
             ModelDoc2 modelDoc = component.GetModelDoc2();
             List<Mate2> limitMates = new List<Mate2>();
-            if (modelDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
-            {
+
                 object[] objs = component.GetMates();
                 foreach (object obj in objs)
                 {
@@ -806,7 +805,7 @@ namespace SW2URDF
                     feat.Select(false);
                     feat.SetSuppression2((int)swFeatureSuppressionAction_e.swSuppressFeature, (int)swInConfigurationOpts_e.swThisConfiguration, null);
                 }
-            }
+
             return limitMates;
         }
 
@@ -990,7 +989,7 @@ namespace SW2URDF
                 selectComponents(child, false, mark);
             }
         }
-        public void selectComponents(List<Component2> components, bool clearSelection, int mark = -1)
+        public void selectComponents(List<Component2> components, bool clearSelection = true, int mark = -1)
         {
             if (clearSelection)
             {
@@ -1300,6 +1299,8 @@ namespace SW2URDF
             child.Collision.Origin.XYZ = new double[] { 0, 0, 0 };
             child.Collision.Origin.RPY = new double[] { 0, 0, 0 };
 
+            
+            selectComponents(components, true);
             return child;
         }
 
