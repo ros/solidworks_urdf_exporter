@@ -514,12 +514,18 @@ namespace SW2URDF
         {
             LinkNode basenode = Exporter.loadConfigTree();
             addDocMenu(basenode);
+
             if (basenode != null)
             {
                 tree.Nodes.Clear();
                 tree.Nodes.Add(basenode);
                 tree.ExpandAll();
                 tree.SelectedNode = tree.Nodes[0];
+            }
+            else
+            {
+                basenode = createEmptyNode(null);
+                tree.Nodes.Add(basenode);
             }
         }
         #endregion
