@@ -40,7 +40,7 @@ namespace SW2URDF
 
             //Exporter.createRobotFromActiveModel();
             //fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-            
+
 
             //foreach (LinkNode node in treeView_linktree.Nodes)
             //{
@@ -50,7 +50,7 @@ namespace SW2URDF
 
         //private void button_link_next_Click(object sender, EventArgs e)
         //{
-  
+
         //        if (listBox_deleted.Items.Count > 0)
         //        {
         //            Exporter.configureDisplayState(listBox_deleted);
@@ -74,7 +74,7 @@ namespace SW2URDF
 
             if (!(previouslySelectedNode == null || previouslySelectedNode.Link.Joint == null))
             {
-                previouslySelectedNode.Link.Joint = saveJointDataFromPropertyBoxes();
+                 saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             treeView_linkProperties.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
@@ -94,18 +94,20 @@ namespace SW2URDF
 
         private void button_joint_cancel_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Would you like to save your export configuration?", "Save Export Configuration?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (previouslySelectedNode != null)
             {
-                Exporter.saveConfigTree(treeView_jointtree);
+                saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
+            Exporter.saveConfigTree(treeView_jointtree, true);
             this.Close();
         }
         private void button_links_cancel_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Would you like to save your export configuration?", "Save Export Configuration?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (previouslySelectedNode != null)
             {
-                Exporter.saveConfigTree(treeView_linkProperties);
+                saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
+            Exporter.saveConfigTree(treeView_linkProperties, true);
             this.Close();
         }
 
@@ -143,7 +145,7 @@ namespace SW2URDF
                 Exporter.exportRobot();
                 this.Close();
             }
-            
+
         }
 
         //Joint form configuration controls
@@ -167,10 +169,10 @@ namespace SW2URDF
 
         private void button_deselect_Click(object sender, EventArgs e)
         {
-        //    foreach (LinkNode node in treeView_linktree.Nodes)
-        //    {
-        //        uncheckNode(node);
-        //    }
+            //    foreach (LinkNode node in treeView_linktree.Nodes)
+            //    {
+            //        uncheckNode(node);
+            //    }
         }
 
         //private void uncheckNode(LinkNode node)
@@ -371,7 +373,7 @@ namespace SW2URDF
         {
             if (previouslySelectedNode != null)
             {
-                previouslySelectedNode.Link = saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
+                saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
             LinkNode node = (LinkNode)e.Node;
             ActiveSWModel.ClearSelection2(true);
@@ -610,31 +612,31 @@ namespace SW2URDF
         //    node.Link = saveLinkDataFromPropertyBoxes(node.Link);
         //    treeView_linktree.Nodes[index] = node;
         //}
-        public link saveLinkDataFromPropertyBoxes(link Link)
+        public void saveLinkDataFromPropertyBoxes(link Link)
         {
             double value;
-            Link.Inertial.Origin.X =    (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Y =    (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Z =    (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
             Link.Inertial.Origin.Roll = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Pitch= (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
-            Link.Inertial.Origin.Yaw =  (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
+            Link.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Visual.Origin.X =      (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Y =      (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Z =      (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Roll =   (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Pitch =  (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
-            Link.Visual.Origin.Yaw =    (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+            Link.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
+            Link.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Collision.Origin.X =       (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Y =       (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Z =       (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Roll =    (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Pitch =   (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
-            Link.Collision.Origin.Yaw =     (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
+            Link.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Z = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Roll = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
+            Link.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
 
-            Link.Inertial.Mass.Value =  (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+            Link.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
 
             Link.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
             Link.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
@@ -646,14 +648,12 @@ namespace SW2URDF
             Link.Visual.Material.name = comboBox_materials.Text;
             Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
-            Link.Visual.Material.Color.Red =    (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Green =  (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Blue =   (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            Link.Visual.Material.Color.Alpha =  (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
+            Link.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
 
             Link.STLQualityFine = radioButton_fine.Checked;
-
-            return Link;
         }
         public void fillTreeViewFromRobot(robot Robot, TreeView tree)
         {
@@ -664,10 +664,10 @@ namespace SW2URDF
             baseNode.Link = baseLink;
             baseNode.isBaseNode = true;
             baseNode.linkName = baseLink.name;
-            baseNode.components = baseLink.SWcomponents;
+            baseNode.Components = baseLink.SWcomponents;
             baseNode.coordsysName = "Origin_global";
             baseNode.isIncomplete = false;
-            
+
             foreach (link child in baseLink.Children)
             {
                 baseNode.Nodes.Add(createLinkNodeFromLink(child));
@@ -690,7 +690,7 @@ namespace SW2URDF
             node.isBaseNode = false;
             node.linkName = Link.name;
             node.jointName = Link.Joint.name;
-            node.components = Link.SWcomponents;
+            node.Components = Link.SWcomponents;
             node.coordsysName = Link.Joint.CoordinateSystemName;
             node.axisName = Link.Joint.AxisName;
             node.jointType = Link.Joint.type;
@@ -708,16 +708,7 @@ namespace SW2URDF
         public robot createRobotFromTreeView(TreeView tree)
         {
             robot Robot = new robot();
-
-            foreach (LinkNode node in tree.Nodes)
-            {
-                if (node.Level == 0)
-                {
-
-                        link BaseLink = createLinkFromLinkNode(node);
-                        Robot.BaseLink = BaseLink;
-                }
-            }
+            Robot.BaseLink = createLinkFromLinkNode((LinkNode)tree.Nodes[0]);
             Robot.name = Exporter.mRobot.name;
             return Robot;
         }
@@ -729,16 +720,15 @@ namespace SW2URDF
             foreach (LinkNode child in node.Nodes)
             {
 
-                    link childLink = createLinkFromLinkNode(child);
-                    Link.Children.Add(childLink); // Recreates the children of each embedded link
+                link childLink = createLinkFromLinkNode(child);
+                Link.Children.Add(childLink); // Recreates the children of each embedded link
 
             }
             return Link;
         }
 
-        public joint saveJointDataFromPropertyBoxes()
+        public void saveJointDataFromPropertyBoxes(joint Joint)
         {
-            joint Joint = new joint();
             double value = 0;
 
             Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
@@ -750,34 +740,32 @@ namespace SW2URDF
             Joint.CoordinateSystemName = comboBox_origin.Text;
             Joint.AxisName = comboBox_axis.Text;
 
-            Joint.Origin.X =    (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
-            Joint.Origin.Y =    (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
-            Joint.Origin.Z =    (Double.TryParse(textBox_joint_z.Text, out value)) ? value : 0;
+            Joint.Origin.X = (Double.TryParse(textBox_joint_x.Text, out value)) ? value : 0;
+            Joint.Origin.Y = (Double.TryParse(textBox_joint_y.Text, out value)) ? value : 0;
+            Joint.Origin.Z = (Double.TryParse(textBox_joint_z.Text, out value)) ? value : 0;
             Joint.Origin.Roll = (Double.TryParse(textBox_joint_roll.Text, out value)) ? value : 0;
-            Joint.Origin.Pitch= (Double.TryParse(textBox_joint_pitch.Text, out value)) ? value : 0;
-            Joint.Origin.Yaw =  (Double.TryParse(textBox_joint_yaw.Text, out value)) ? value : 0;
+            Joint.Origin.Pitch = (Double.TryParse(textBox_joint_pitch.Text, out value)) ? value : 0;
+            Joint.Origin.Yaw = (Double.TryParse(textBox_joint_yaw.Text, out value)) ? value : 0;
 
             Joint.Axis.X = (Double.TryParse(textBox_axis_x.Text, out value)) ? value : 0;
             Joint.Axis.Y = (Double.TryParse(textBox_axis_y.Text, out value)) ? value : 0;
             Joint.Axis.Z = (Double.TryParse(textBox_axis_z.Text, out value)) ? value : 0;
 
-            Joint.Limit.lower =     (Double.TryParse(textBox_limit_lower.Text, out value)) ? value : 0;
-            Joint.Limit.upper =     (Double.TryParse(textBox_limit_upper.Text, out value)) ? value : 0;
-            Joint.Limit.effort =    (Double.TryParse(textBox_limit_effort.Text, out value)) ? value : 0;
-            Joint.Limit.velocity =  (Double.TryParse(textBox_limit_velocity.Text, out value)) ? value : 0;
+            Joint.Limit.lower = (Double.TryParse(textBox_limit_lower.Text, out value)) ? value : 0;
+            Joint.Limit.upper = (Double.TryParse(textBox_limit_upper.Text, out value)) ? value : 0;
+            Joint.Limit.effort = (Double.TryParse(textBox_limit_effort.Text, out value)) ? value : 0;
+            Joint.Limit.velocity = (Double.TryParse(textBox_limit_velocity.Text, out value)) ? value : 0;
 
-            Joint.Calibration.rising =  (Double.TryParse(textBox_calibration_rising.Text, out value)) ? value : 0;
+            Joint.Calibration.rising = (Double.TryParse(textBox_calibration_rising.Text, out value)) ? value : 0;
             Joint.Calibration.falling = (Double.TryParse(textBox_calibration_falling.Text, out value)) ? value : 0;
 
             Joint.Dynamics.friction = (Double.TryParse(textBox_friction.Text, out value)) ? value : 0;
-            Joint.Dynamics.damping =  (Double.TryParse(textBox_damping.Text, out value)) ? value : 0;
+            Joint.Dynamics.damping = (Double.TryParse(textBox_damping.Text, out value)) ? value : 0;
 
             Joint.Safety.soft_lower = (Double.TryParse(textBox_soft_lower.Text, out value)) ? value : 0;
             Joint.Safety.soft_upper = (Double.TryParse(textBox_soft_upper.Text, out value)) ? value : 0;
             Joint.Safety.k_position = (Double.TryParse(textBox_k_position.Text, out value)) ? value : 0;
             Joint.Safety.k_velocity = (Double.TryParse(textBox_k_velocity.Text, out value)) ? value : 0;
-
-            return Joint;
         }
         #endregion
 
@@ -993,9 +981,9 @@ namespace SW2URDF
 
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (previouslySelectedNode != null)
+            if (previouslySelectedNode != null && !previouslySelectedNode.isBaseNode)
             {
-                previouslySelectedNode.Link.Joint = saveJointDataFromPropertyBoxes();
+                saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             LinkNode node = (LinkNode)e.Node;
             ActiveSWModel.ClearSelection2(true);
@@ -1046,9 +1034,9 @@ namespace SW2URDF
         { get; set; }
         public string coordsysName
         { get; set; }
-        public List<Component2> components
+        public List<Component2> Components
         { get; set; }
-        public List<byte[]> componentPIDs
+        public List<byte[]> ComponentPIDs
         { get; set; }
         public string jointType
         { get; set; }
@@ -1056,6 +1044,9 @@ namespace SW2URDF
         { get; set; }
         public bool isIncomplete
         { get; set; }
+        public bool needsSaving
+        { get; set; }
+
     }
     public class LinkItem : ListViewItem
     {

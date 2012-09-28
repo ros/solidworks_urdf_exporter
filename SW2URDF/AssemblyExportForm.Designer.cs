@@ -210,7 +210,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(22, 39);
+            this.label2.Location = new System.Drawing.Point(22, 34);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(282, 13);
             this.label2.TabIndex = 93;
@@ -229,7 +229,7 @@
             // button_links_finish
             // 
             this.button_links_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_links_finish.Location = new System.Drawing.Point(986, 655);
+            this.button_links_finish.Location = new System.Drawing.Point(986, 653);
             this.button_links_finish.Name = "button_links_finish";
             this.button_links_finish.Size = new System.Drawing.Size(75, 23);
             this.button_links_finish.TabIndex = 91;
@@ -240,7 +240,7 @@
             // button_links_previous
             // 
             this.button_links_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_links_previous.Location = new System.Drawing.Point(905, 655);
+            this.button_links_previous.Location = new System.Drawing.Point(905, 653);
             this.button_links_previous.Name = "button_links_previous";
             this.button_links_previous.Size = new System.Drawing.Size(75, 23);
             this.button_links_previous.TabIndex = 90;
@@ -251,7 +251,7 @@
             // button_links_cancel
             // 
             this.button_links_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_links_cancel.Location = new System.Drawing.Point(11, 657);
+            this.button_links_cancel.Location = new System.Drawing.Point(12, 653);
             this.button_links_cancel.Name = "button_links_cancel";
             this.button_links_cancel.Size = new System.Drawing.Size(75, 23);
             this.button_links_cancel.TabIndex = 89;
@@ -278,7 +278,7 @@
             this.groupBox3.Controls.Add(this.textBox_collision_origin_x);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_y);
             this.groupBox3.Controls.Add(this.textBox_collision_origin_z);
-            this.groupBox3.Location = new System.Drawing.Point(485, 510);
+            this.groupBox3.Location = new System.Drawing.Point(493, 510);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(568, 133);
             this.groupBox3.TabIndex = 73;
@@ -465,7 +465,7 @@
             this.groupBox5.Controls.Add(this.label50);
             this.groupBox5.Controls.Add(this.textBox_mass);
             this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox5.Location = new System.Drawing.Point(485, 87);
+            this.groupBox5.Location = new System.Drawing.Point(493, 87);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(568, 160);
             this.groupBox5.TabIndex = 71;
@@ -740,7 +740,7 @@
             this.groupBox4.Controls.Add(this.label23);
             this.groupBox4.Controls.Add(this.textBox_visual_origin_y);
             this.groupBox4.Controls.Add(this.label30);
-            this.groupBox4.Location = new System.Drawing.Point(485, 253);
+            this.groupBox4.Location = new System.Drawing.Point(493, 253);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(568, 251);
             this.groupBox4.TabIndex = 72;
@@ -1018,27 +1018,27 @@
             this.treeView_linkProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView_linkProperties.Location = new System.Drawing.Point(20, 87);
+            this.treeView_linkProperties.Location = new System.Drawing.Point(12, 79);
             this.treeView_linkProperties.Name = "treeView_linkProperties";
-            this.treeView_linkProperties.Size = new System.Drawing.Size(459, 558);
+            this.treeView_linkProperties.Size = new System.Drawing.Size(467, 568);
             this.treeView_linkProperties.TabIndex = 74;
             this.treeView_linkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linkProperties_AfterSelect);
             // 
             // button_joint_next
             // 
             this.button_joint_next.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_joint_next.Location = new System.Drawing.Point(990, 651);
+            this.button_joint_next.Location = new System.Drawing.Point(986, 653);
             this.button_joint_next.Name = "button_joint_next";
             this.button_joint_next.Size = new System.Drawing.Size(75, 23);
             this.button_joint_next.TabIndex = 162;
             this.button_joint_next.Text = "Next";
             this.button_joint_next.UseVisualStyleBackColor = true;
             this.button_joint_next.Click += new System.EventHandler(this.button_joint_next_Click);
-            //
+            // 
             // button_joint_cancel
             // 
             this.button_joint_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button_joint_cancel.Location = new System.Drawing.Point(15, 653);
+            this.button_joint_cancel.Location = new System.Drawing.Point(12, 653);
             this.button_joint_cancel.Name = "button_joint_cancel";
             this.button_joint_cancel.Size = new System.Drawing.Size(75, 23);
             this.button_joint_cancel.TabIndex = 160;
@@ -1550,9 +1550,9 @@
             // 
             // treeView_jointtree
             // 
-            this.treeView_jointtree.Location = new System.Drawing.Point(25, 70);
+            this.treeView_jointtree.Location = new System.Drawing.Point(12, 79);
             this.treeView_jointtree.Name = "treeView_jointtree";
-            this.treeView_jointtree.Size = new System.Drawing.Size(461, 575);
+            this.treeView_jointtree.Size = new System.Drawing.Size(461, 568);
             this.treeView_jointtree.TabIndex = 163;
             this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_jointtree_AfterSelect);
             // 
@@ -1595,9 +1595,9 @@
             // 
             // label69
             // 
-            this.label69.Location = new System.Drawing.Point(22, 39);
+            this.label69.Location = new System.Drawing.Point(22, 34);
             this.label69.Name = "label69";
-            this.label69.Size = new System.Drawing.Size(464, 37);
+            this.label69.Size = new System.Drawing.Size(451, 53);
             this.label69.TabIndex = 228;
             this.label69.Text = "Customize the joint properties. If you want to adjust the coordinate systems and " +
                 "axes in the model, click cancel and restart the export. The tool will recognize " +

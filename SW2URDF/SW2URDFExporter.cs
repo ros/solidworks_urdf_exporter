@@ -41,7 +41,6 @@ namespace SW2URDF
         private double mHideTransitionSpeed;
         private string referenceSketchName;
 
-
         [XmlIgnore]
         public ModelDoc2 ActiveSWModel;
         [XmlIgnore]
@@ -72,6 +71,7 @@ namespace SW2URDF
 
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.GetTitle();
+            
         }
 
         private void constructExporter(ISldWorks iSldWorksApp)
@@ -90,6 +90,7 @@ namespace SW2URDF
             saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
             saveConfigurationAttributeDef.Register();
+
         }
 
         public SerialNode convertLinkNodeToNodeSerial(LinkNode node)
@@ -102,7 +103,7 @@ namespace SW2URDF
                 sNode.jointName = node.jointName;
                 sNode.axisName = node.axisName;
                 sNode.coordsysName = node.coordsysName;
-                sNode.componentPIDs = saveSWComponents(node.components);
+                sNode.componentPIDs = saveSWComponents(node.Components);
                 sNode.jointType = node.jointType;
                 sNode.isBaseNode = node.isBaseNode;
                 sNode.isIncomplete = node.isIncomplete;
@@ -146,12 +147,12 @@ namespace SW2URDF
             lNode.jointName = node.jointName;
             lNode.axisName = node.axisName;
             lNode.coordsysName = node.coordsysName;
-            lNode.componentPIDs = node.componentPIDs;
+            lNode.ComponentPIDs = node.componentPIDs;
             lNode.jointType = node.jointType;
             lNode.isBaseNode = node.isBaseNode;
             lNode.isIncomplete = node.isIncomplete;
 
-            lNode.components = loadSWComponents(lNode.componentPIDs);
+            lNode.Components = loadSWComponents(lNode.ComponentPIDs);
             lNode.Name = lNode.linkName;
             lNode.Text = lNode.linkName;
 
@@ -1165,18 +1166,13 @@ namespace SW2URDF
 
         public void retrieveSWComponentPIDs(LinkNode node)
         {
-            ActiveSWModel.ClearSelection2(true);
-            SelectionMgr manager = ActiveSWModel.SelectionManager;
-            SelectData data = manager.CreateSelectData();
-            data.Mark = 1;
-
-            if (node.components != null)
+            if (node.Components != null)
             {
-                node.componentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in node.components)
+                node.ComponentPIDs = new List<byte[]>();
+                foreach (IComponent2 comp in node.Components)
                 {
                     byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
-                    node.componentPIDs.Add(PID);
+                    node.ComponentPIDs.Add(PID);
                 }
             }
             foreach (LinkNode child in node.Nodes)
@@ -1195,7 +1191,7 @@ namespace SW2URDF
         public void createBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
-            link Link = createLinkFromComponents(null, node.components, node);
+            link Link = createLinkFromComponents(null, node.Components, node);
             createBaseRefOrigin(true);
 
             mRobot.BaseLink = Link;
@@ -1211,7 +1207,7 @@ namespace SW2URDF
             else
             {
                 LinkNode parentNode = (LinkNode)node.Parent;
-                Link = createLinkFromComponents(parentNode.Link, node.components, node);
+                Link = createLinkFromComponents(parentNode.Link, node.Components, node);
             }
             node.Link = Link;
             foreach (LinkNode child in node.Nodes)
@@ -1399,8 +1395,28 @@ namespace SW2URDF
             return componentsToUnfix;
         }
 
-        public void saveConfigTree(TreeView tree)
+        public void saveConfigTree(TreeView tree, bool warnUser)
         {
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            string oldData = "";
+            Parameter param;
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        param = att.GetParameter("data");
+                        oldData = param.GetStringValue();
+                    }
+                }
+
+            }
+
+
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
             retrieveSWComponentPIDs(tree);
             SerialNode sNode = convertLinkNodeToNodeSerial((LinkNode)tree.Nodes[0]);
@@ -1410,14 +1426,22 @@ namespace SW2URDF
             serializer.Serialize(stringWriter, sNode);
             stringWriter.Flush();
             stringWriter.Close();
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
-            Parameter param = saveExporterAttribute.GetParameter("data");
-            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("name");
-            param.SetStringValue2("config1", ConfigurationOptions, "");
-            param = saveExporterAttribute.GetParameter("date");
-            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+
+            string newData = stringWriter.ToString();
+            if (oldData != newData)
+            {
+                if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+                {
+                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
+                    param = saveExporterAttribute.GetParameter("data");
+                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("name");
+                    param.SetStringValue2("config1", ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("date");
+                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                }
+            }
         }
 
         private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(string name)
