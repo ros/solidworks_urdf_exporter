@@ -1082,7 +1082,7 @@ namespace SW2URDF
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
         {
-            //throw new Exception("The method or operation is not implemented.");
+            throw new Exception("The method or operation is not implemented.");
         }
         #endregion
 
