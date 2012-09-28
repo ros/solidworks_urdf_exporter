@@ -23,7 +23,9 @@ using System.Numerics;
 
 namespace SW2URDF
 {
-    [Serializable]
+    // This class contains a long list of methods that are used throughout the export process. Methods for building links and joints are contained in here.
+    // Many of the methods are overloaded, but seek to reduce repeated code as much as possible (i.e. the overloaded methods call eachother).
+    // These methods are used by the PartExportForm, the AssemblyExportForm and the PropertyManager Page
     public class SW2URDFExporter
     {
         #region class variables
@@ -61,10 +63,8 @@ namespace SW2URDF
         { get; set; }
 
         #endregion
-        private SW2URDFExporter()
-        {
-            OPS = new ops();
-        }
+
+        // Constructor for SW2URDF Exporter class
         public SW2URDFExporter(ISldWorks iSldWorksApp)
         {
             constructExporter(iSldWorksApp);
@@ -93,7 +93,8 @@ namespace SW2URDF
 
         }
 
-        public SerialNode convertLinkNodeToNodeSerial(LinkNode node)
+        // Converts a LinkNode to a SerialNode for Serialization and saving purposes
+        public SerialNode convertLinkNodeToSerialNode(LinkNode node)
         {
             SerialNode sNode = new SerialNode();
 
@@ -103,7 +104,11 @@ namespace SW2URDF
                 sNode.jointName = node.jointName;
                 sNode.axisName = node.axisName;
                 sNode.coordsysName = node.coordsysName;
+
+                // The SWComponents associated with a node are converted to persisted IDs so that they can be referenced when SolidWorks is opened later
+                // or on a different machine.
                 sNode.componentPIDs = saveSWComponents(node.Components);
+
                 sNode.jointType = node.jointType;
                 sNode.isBaseNode = node.isBaseNode;
                 sNode.isIncomplete = node.isIncomplete;
@@ -131,15 +136,16 @@ namespace SW2URDF
                 sNode.isBaseNode = node.isBaseNode;
                 sNode.isIncomplete = node.isIncomplete;
             }
-
+            //Proceed recursively through the nodes
             foreach (LinkNode child in node.Nodes)
             {
-                sNode.Nodes.Add(convertLinkNodeToNodeSerial(child));
+                sNode.Nodes.Add(convertLinkNodeToSerialNode(child));
             }
 
             return sNode;
         }
 
+        // Converts a SerialNode to LinkNode used when loading a configuration
         public LinkNode convertSerialNodeToLinkNode(SerialNode node)
         {
             LinkNode lNode = new LinkNode();
@@ -152,6 +158,7 @@ namespace SW2URDF
             lNode.isBaseNode = node.isBaseNode;
             lNode.isIncomplete = node.isIncomplete;
 
+            //Converts the Component PIDs to actual Component references
             lNode.Components = loadSWComponents(lNode.ComponentPIDs);
             lNode.Name = lNode.linkName;
             lNode.Text = lNode.linkName;
@@ -165,6 +172,8 @@ namespace SW2URDF
         }
 
         #region SW to Robot and link methods
+
+        //Used right now only by the Part Exporter, but this starts the building of the robot
         public void createRobotFromActiveModel()
         {
             mRobot = new robot();
@@ -183,6 +192,7 @@ namespace SW2URDF
             mRobot.BaseLink = createBaseLinkFromActiveModel();
         }
 
+        // This method now only works for the part exporter
         public link createBaseLinkFromActiveModel()
         {
             if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
@@ -192,6 +202,7 @@ namespace SW2URDF
             return null;
         }
 
+        // This creates a Link from a Part ModelDoc. It basically just extracts the material properties and saves them to the appropriate fields.
         public link createLinkFromPartModel(ModelDoc2 swModel)
         {
             link Link = new link();
@@ -224,32 +235,7 @@ namespace SW2URDF
             return Link;
         }
 
-        public link createLinkFromPartComp(object comp, int level)
-        {
-            Component2 partComp = (Component2)comp;
-            ModelDoc2 partDoc = partComp.GetModelDoc();
-            link Link;
-
-            if (partDoc == null)
-            {
-                throw new System.InvalidOperationException("Component " + partComp.Name2 + " is null");
-            }
-
-            // Build the link from the partdoc
-            Link = createLinkFromPartModel(partDoc);
-
-            //The part model doesn't actually know where the origin is, but the component does and this is important when exporting from assembly
-            Link.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
-            Link.Visual.Origin.RPY = new double[] { 0, 0, 0 };
-            Link.Collision.Origin.XYZ = new double[] { 0, 0, 0 };
-            Link.Collision.Origin.RPY = new double[] { 0, 0, 0 };
-
-            Link.SWComponent = partComp;
-            Link.SWComponentLevel = level;
-            Link.uniqueName = partComp.Name2;
-            return Link;
-        }
-
+        // Converts the PIDs to actual references to the components and proceeds recursively through the child links
         public void loadSWComponents(link Link)
         {
             Link.SWMainComponent = loadSWComponent(Link.SWMainComponentPID);
@@ -260,6 +246,7 @@ namespace SW2URDF
             }
         }
 
+        // Converts the PIDs to actual references to the components
         public List<Component2> loadSWComponents(List<byte[]> PIDs)
         {
             List<Component2> components = new List<Component2>();
@@ -270,6 +257,7 @@ namespace SW2URDF
             return components;
         }
 
+        // Converts a single PID to a Component2 object
         public Component2 loadSWComponent(byte[] PID)
         {
             int Errors = 0;
@@ -284,61 +272,40 @@ namespace SW2URDF
 
         #region Joint methods
 
-        public void createJointName(link Parent, link Child)
-        {
-            string jointName = Parent.uniqueName + "_to_" + Child.uniqueName;
-            createJointName(Parent, Child, jointName);
-        }
-        public void createJointName(link Parent, link Child, string jointName)
-        {
-            Child.Joint.name = (Child.Joint.name == "") ? jointName : Child.Joint.name;
-            Child.Joint.CoordinateSystemName = (Child.Joint.CoordinateSystemName == "") ? "Origin_" + Child.Joint.name : Child.Joint.CoordinateSystemName;
-            Child.Joint.AxisName = (Child.Joint.AxisName == "") ? "Axis_" + Child.Joint.name : Child.Joint.AxisName;
-            Child.Joint.Parent.name = (Child.Joint.Parent.name == "") ? Parent.uniqueName : (Child.Joint.Parent.name);
-            Child.Joint.Child.name = (Child.Joint.Child.name == "") ? Child.uniqueName : Child.Joint.Child.name;
-        }
-
-        public void createRefGeometry(joint Joint)
-        {
-            if (!ActiveSWModel.Extension.SelectByID2(Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
-            {
-                createRefOrigin(Joint);
-            }
-            if (!ActiveSWModel.Extension.SelectByID2(Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
-            {
-                createRefAxis(Joint);
-            }
-        }
+        // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
         public void createRefOrigin(joint Joint)
         {
             createRefOrigin(Joint.Origin, Joint.CoordinateSystemName);
         }
 
+        // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
         public void createRefOrigin(origin Origin, string CoordinateSystemName)
         {
+            // Adds the sketch segments and point to the 3D sketch. The sketchEnties are the actual items created (and their locations)
             object[] sketchEntities = addSketchGeometry(Origin);
+
             SketchPoint OriginPoint = (SketchPoint)sketchEntities[0];
-
             SketchSegment xaxis = (SketchSegment)sketchEntities[1];
-
             SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
-            double X = (double)sketchEntities[3];
-            double Y = (double)sketchEntities[4];
-            double Z = (double)sketchEntities[5];
+            double origin_X = (double)sketchEntities[3]; //OriginPoint X
+            double origin_Y = (double)sketchEntities[4];
+            double origin_Z = (double)sketchEntities[5];
 
-            double xX = (double)sketchEntities[6];
-            double xY = (double)sketchEntities[7];
-            double xZ = (double)sketchEntities[8];
+            double xAxis_X = (double)sketchEntities[6];
+            double xAxis_Y = (double)sketchEntities[7];
+            double xAxis_Z = (double)sketchEntities[8];
 
-            double yX = (double)sketchEntities[9];
-            double yY = (double)sketchEntities[10];
-            double yZ = (double)sketchEntities[11];
+            double yAxis_X = (double)sketchEntities[9];
+            double yAxis_Y = (double)sketchEntities[10];
+            double yAxis_Z = (double)sketchEntities[11];
+
             IFeature coordinates = default(IFeature);
             ActiveSWModel.ClearSelection2(true);
             SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
             SelectData data = selectionManager.CreateSelectData();
 
+            // First select the origin
             bool SelectedOrigin = false; bool SelectedXAxis = false; bool SelectedYAxis = false;
             if (OriginPoint != null)
             {
@@ -347,9 +314,10 @@ namespace SW2URDF
             }
             if (!SelectedOrigin)
             {
-                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", X, Y, Z, true, 1, null, 0);
+                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", origin_X, origin_Y, origin_Z, true, 1, null, 0);
             }
 
+            // Second, select the xaxis
             if (xaxis != null)
             {
                 data.Mark = 2;
@@ -357,8 +325,10 @@ namespace SW2URDF
             }
             if (!SelectedXAxis)
             {
-                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xX, xY, xZ, true, 2, null, 0);
+                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xAxis_X, xAxis_Y, xAxis_Z, true, 2, null, 0);
             }
+
+            // Third, select the yaxis
             if (yaxis != null)
             {
                 data.Mark = 4;
@@ -366,15 +336,18 @@ namespace SW2URDF
             }
             if (!SelectedYAxis)
             {
-                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yX, yY, yZ, true, 4, null, 0);
+                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yAxis_X, yAxis_Y, yAxis_Z, true, 4, null, 0);
             }
 
+            //From the selected items, insert a coordinate system.
             coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
             if (coordinates != null)
             {
                 coordinates.Name = CoordinateSystemName;
             }
         }
+
+        //Creates the Origin_global coordinate system
         public void createBaseRefOrigin(bool zIsUp)
         {
             if (!ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
@@ -398,6 +371,8 @@ namespace SW2URDF
                 createRefOrigin(Joint);
             }
         }
+
+        // Creates a Reference Axis to be used to calculate the joint axis
         public void createRefAxis(joint Joint)
         {
             //Adds sketch segment
@@ -413,6 +388,8 @@ namespace SW2URDF
             }
         }
 
+        // Takes a links joint and calculates the local transform from the global transforms of the parent and child. It also converts the
+        // axis to local values
         public void localizeJoint(link Link, Matrix<double> ParentJointGlobalTransform)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Link.Joint.CoordinateSystemName);
@@ -431,6 +408,7 @@ namespace SW2URDF
             Link.Joint.Origin.RPY = OPS.getRPY(ChildJointOrigin);
         }
 
+        //This is only used by the Part Exporter, but it localizes the link to the Origin_global coordinate system
         public void localizeLink(link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
@@ -465,34 +443,42 @@ namespace SW2URDF
             Link.Visual.Origin.RPY = OPS.getRPY(localVisualTransform);
         }
 
+        // Funny method I created that inserts a RefAxis and then finds the reference to it.
         public Feature insertAxis(SketchSegment axis)
         {
+            //First select the axis
             SelectData data = ActiveSWModel.SelectionManager.CreateSelectData();
             axis.Select4(false, data);
 
+            //Get the features before the axis is created
             object[] featuresBefore, featuresAfter;
             featuresBefore = ActiveSWModel.FeatureManager.GetFeatures(true);
             int countBefore = ActiveSWModel.FeatureManager.GetFeatureCount(true);
+
+            //Create the axis
             ActiveSWModel.InsertAxis2(true);
+
+            //Get the features after the axis is created
             featuresAfter = ActiveSWModel.FeatureManager.GetFeatures(true);
             int countAfter = ActiveSWModel.FeatureManager.GetFeatureCount(true);
 
+            // If it was created, try to find it
             if (featuresBefore.Length < featuresAfter.Length)
             {
+                //It was probably added at the end (hence .Reverse())
                 foreach (Feature feat in featuresAfter.Reverse())
                 {
+                    //If the feature in featuresAfter is not in features before, its gotta be the axis we inserted
                     if (!featuresBefore.Contains(feat))
                     {
                         return feat;
                     }
                 }
-
             }
-
             return null;
         }
 
-        // Inserts a sketch into the main assembly
+        // Inserts a sketch into the main assembly and name it
         public string setup3DSketch()
         {
             bool sketchExists = ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
@@ -510,20 +496,25 @@ namespace SW2URDF
         // Adds lines and a point to create the entities for a reference coordinates
         public object[] addSketchGeometry(origin Origin)
         {
+            //Find if the sketch exists first
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
             {
                 bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
+            
+            //Calculate the lines that need to be drawn
             Matrix<double> transform = OPS.getRotation(Origin.RPY);
             Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
 
+            // origin at X, Y, Z
             SketchPoint OriginPoint = ActiveSWModel.SketchManager.CreatePoint(Origin.X,
                                                                       Origin.Y,
                                                                       Origin.Z);
 
+            // xAxis is a 1cm line from the origin in the direction of the xaxis of the coordinate system
             SketchSegment XAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X,
                                                                          Origin.Y,
                                                                          Origin.Z,
@@ -531,6 +522,8 @@ namespace SW2URDF
                                                                          Origin.Y + tA[1, 0],
                                                                          Origin.Z + tA[2, 0]);
             XAxis.ConstructionGeometry = true;
+
+            //yAxis is a 1cm line from the origin in the direction of the yaxis of the coordinate system
             SketchSegment YAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X,
                                                                          Origin.Y,
                                                                          Origin.Z,
@@ -539,19 +532,26 @@ namespace SW2URDF
                                                                          Origin.Z + tA[2, 1]);
             YAxis.ConstructionGeometry = true;
 
+            //Close the sketch
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
 
             }
-            sketch.Name = "URDF Reference";
+            // Return an array of objects representing the sketch items that were just inserted, as well as the actual locations of those objecs (aids selection).
             return new object[] { OriginPoint, XAxis, YAxis, Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0], Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
         }
 
+        //Inserts a sketch segment for use when creating a Reference Axis
         public SketchSegment addSketchGeometry(axis Axis, origin Origin)
         {
-            bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
-            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            if (ActiveSWModel.SketchManager.ActiveSketch == null)
+            {
+                bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                ActiveSWModel.SketchManager.Insert3DSketch(true);
+            }
+            
+            //Insert sketch segment 0.1m long centered on the origin.
             SketchSegment RotAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X - 0.05 * Axis.X,
                                                                Origin.Y - 0.05 * Axis.Y,
                                                                Origin.Z - 0.05 * Axis.Z,
@@ -565,10 +565,16 @@ namespace SW2URDF
             RotAxis.ConstructionGeometry = true;
             RotAxis.Width = 2;
 
-            ActiveSWModel.SketchManager.Insert3DSketch(true);
+            //Close sketch
+            if (ActiveSWModel.SketchManager.ActiveSketch != null)
+            {
+                ActiveSWModel.SketchManager.Insert3DSketch(true);
+
+            }
             return RotAxis;
         }
 
+        //Might create a new display state, which allows some components to be hidden
         public void configureDisplayState(ListBox list)
         {
 
@@ -590,17 +596,18 @@ namespace SW2URDF
             hideComponents(list);
         }
 
+        //Calculates the free degree of freedom (if exists), and then determines the location of the joint, the axis of rotation/translation, and the type of joint
         public void estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
-            int R1Status, R2Status, L1Status, L2Status;
-            int R1DirStatus, R2DirStatus;
-            int DOFs;
+            //Create the ref objects
+            int R1Status, R2Status, L1Status, L2Status, R1DirStatus, R2DirStatus, DOFs;
             MathPoint RPoint1, RPoint2;
-            MathVector RDir1, RDir2;
-            MathVector LDir1, LDir2;
-            // Surpress Limit Mates to properly find degrees of freedom
+            MathVector RDir1, RDir2, LDir1, LDir2;
+
+            // Surpress Limit Mates to properly find degrees of freedom. They don't work with the API call
             List<Mate2> limitMates = new List<Mate2>();
             limitMates = suppressLimitMates(child.SWMainComponent);
+
             if (child.SWMainComponent != null)
             {
 
@@ -638,64 +645,28 @@ namespace SW2URDF
                 unsuppressLimitMates(limitMates);
                 if (limitMates.Count > 0)
                 {
-                    addLimits2(child.Joint, limitMates);
-                }
-            }
-            else
-            {
-
-                limitMates = suppressLimitMates(child.SWComponent);
-                // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
-                // https://forum.solidworks.com/thread/57414
-                int remainingDOFs = child.SWComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
-                                                  out R2Status, out RPoint2, out R2DirStatus, out RDir2,
-                                                  out L1Status, out LDir1,
-                                                  out L2Status, out LDir2);
-                DOFs = remainingDOFs;
-
-
-                // Convert the gotten degrees of freedom to a joint type, origin and axis
-                child.Joint.type = "fixed";
-                child.Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
-                child.Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-                if (DOFs == 0 && (R1Status + L1Status > 0))
-                {
-                    if (R1Status == 1)
-                    {
-                        child.Joint.type = "continuous";
-                        child.Joint.Axis.XYZ = RDir1.ArrayData;
-                        child.Joint.Origin.XYZ = RPoint1.ArrayData;
-                        child.Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-
-                    }
-                    else if (L1Status == 1)
-                    {
-                        child.Joint.type = "prismatic";
-                        child.Joint.Axis.XYZ = LDir1.ArrayData;
-                        child.Joint.Origin.XYZ = OPS.getXYZ(child.SWComponent.Transform2);
-                        child.Joint.Origin.RPY = OPS.getRPY(child.SWComponent.Transform2);
-                    }
-                }
-                unsuppressLimitMates(limitMates);
-                if (limitMates.Count > 0)
-                {
                     addLimits(child.Joint, limitMates);
                 }
             }
-
         }
 
+        // Calculates the axis from a Reference Axis in the model
         public double[] estimateAxis(string axisName)
         {
             double[] XYZ = new double[3];
 
+            //Select the axis
             ActiveSWModel.ClearSelection2(true);
             bool selected = ActiveSWModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
             {
+                //Get the axis feature
                 Feature feat = ActiveSWModel.SelectionManager.GetSelectedObject6(1, 0);
                 RefAxis axis = (RefAxis)feat.GetSpecificFeature2();
+                
+                //Calculate!
                 double[] axisParams;
+
                 axisParams = axis.GetRefAxisParams();
                 XYZ[0] = axisParams[0] - axisParams[3];
                 XYZ[1] = axisParams[1] - axisParams[4];
@@ -706,6 +677,7 @@ namespace SW2URDF
             return XYZ;
         }
 
+        //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
         public double[] localizeAxis(double[] Axis, string coordsys)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
@@ -715,6 +687,7 @@ namespace SW2URDF
             return vec.ToArray();
         }
 
+        // Used to fill Combo Boxes
         public string[] findAxes()
         {
             List<string> axesNames = new List<string>();
@@ -730,6 +703,7 @@ namespace SW2URDF
             return axesNames.ToArray();
         }
 
+        //Used the fill combo boxes in the AssemblyExportForm
         public string[] findOrigins()
         {
             List<string> originNames = new List<string>();
@@ -744,26 +718,9 @@ namespace SW2URDF
             }
             return originNames.ToArray();
         }
-        public joint addLimits(joint Joint, List<Mate2> limitMates)
-        {
-            // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
-            foreach (Mate2 swMate in limitMates)
-            {
-                // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
-                if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
-                    (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
-                {
-                    Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
-                    Joint.Limit.lower = swMate.MinimumVariation;
-                    if (Joint.type == "continuous")
-                    {
-                        Joint.type = "revolute";
-                    }
-                }
-            }
-            return Joint;
-        }
-        public void addLimits2(joint Joint, List<Mate2> limitMates)
+
+        //This method adds in the limits from a limit mate, to make a joint a revolute joint. It really needs to checked for correctness.
+        public void addLimits(joint Joint, List<Mate2> limitMates)
         {
             // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
             foreach (Mate2 swMate in limitMates)
@@ -782,6 +739,7 @@ namespace SW2URDF
             }
         }
 
+        // Suppresses limit mates to make it easier to find the free degree of freedom in a joint
         public List<Mate2> suppressLimitMates(IComponent2 component)
         {
             ModelDoc2 modelDoc = component.GetModelDoc2();
@@ -810,6 +768,7 @@ namespace SW2URDF
             return limitMates;
         }
 
+        // Unsuppresses limit mates that were suppressed before
         public void unsuppressLimitMates(List<Mate2> limitMates)
         {
             foreach (Mate2 swMate in limitMates)
@@ -819,6 +778,7 @@ namespace SW2URDF
             }
         }
 
+        //Unfixes components that were fixed to find the free degree of freedom
         public void unFixComponents(List<Component2> components)
         {
             selectComponents(components, true);
@@ -866,6 +826,7 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
+        //Recursive method for exporting each link (and writing it to the URDF)
         public string exportFiles(link Link, URDFPackage package)
         {
             // Iterate through each child and export its files
@@ -916,6 +877,7 @@ namespace SW2URDF
             return meshFileName;
         }
 
+        // Used only by the part exporter
         public void exportLink(bool zIsUp)
         {
 
@@ -968,6 +930,7 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
+        //Selects the components of a link. Helps highlight when the associated node is selected from the tree
         public void selectComponents(link Link, bool clearSelection, int mark = -1)
         {
             if (clearSelection)
@@ -990,6 +953,8 @@ namespace SW2URDF
                 selectComponents(child, false, mark);
             }
         }
+
+        //Selects components from a list.
         public void selectComponents(List<Component2> components, bool clearSelection = true, int mark = -1)
         {
             if (clearSelection)
@@ -1003,10 +968,27 @@ namespace SW2URDF
             {
                 component.Select4(true, data, false);
             }
-
         }
 
+        //Finds the selected components and returns them, used when pulling the items from the selection box because it would be too hard
+        // for SolidWorks to allow you to access the selectionbox components directly.
+        public void getSelectedComponents(List<Component2> Components, int Mark=-1)
+        {
+            SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
+            Components.Clear();
+            for (int i = 0; i < selectionManager.GetSelectedObjectCount2(Mark); i++)
+            {
+                object obj = selectionManager.GetSelectedObject6(i + 1, Mark);
+                Component2 comp = (Component2)obj;
+                if (comp != null)
+                {
+                    Components.Add(comp);
+                }
+            }
+        }
 
+        //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
+        //remain hidden
         public List<Component2> findHiddenComponents(object[] varComp)
         {
             List<Component2> hiddenComp = new List<Component2>();
@@ -1020,6 +1002,8 @@ namespace SW2URDF
             }
             return hiddenComp;
         }
+
+        //Except for an exclusionary list, this shows all the components
         public void showAllComponents(List<Component2> hiddenComponents)
         {
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
@@ -1030,22 +1014,30 @@ namespace SW2URDF
             }
             ActiveSWModel.ShowComponent2();
         }
+
+        //Shows the components in the list. Useful  for exporting STLs
         public void showComponents(List<Component2> components)
         {
             selectComponents(components, true);
             ActiveSWModel.ShowComponent2();
         }
+
+        //Shows the components in the link
         public void showComponents(link Link)
         {
             selectComponents(Link, true);
             ActiveSWModel.ShowComponent2();
 
         }
+
+        //Hides the components from a link
         public void hideComponents(link Link)
         {
             selectComponents(Link, true);
             ActiveSWModel.HideComponent2();
         }
+
+        //Hides the components from a list
         public void hideComponents(ListBox list)
         {
             ActiveSWModel.ClearSelection2(true);
@@ -1056,6 +1048,8 @@ namespace SW2URDF
             }
             ActiveSWModel.HideComponent2();
         }
+
+        //Hides the components from a list
         public void hideComponents(List<Component2> components)
         {
             selectComponents(components, true);
@@ -1073,6 +1067,8 @@ namespace SW2URDF
         #endregion
 
         #region STL Preference shuffling
+
+        //Saves the preferences that the user had setup so that I can change them and revert back to their configuration
         public void saveUserPreferences()
         {
             mBinary = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat);
@@ -1085,6 +1081,7 @@ namespace SW2URDF
             mSaveComponentsIntoOneFile = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLComponentsIntoOneFile);
         }
 
+        //This is how the STL export preferences need to be to properly export
         public void setSTLExportPreferences()
         {
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, true);
@@ -1097,6 +1094,7 @@ namespace SW2URDF
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLComponentsIntoOneFile, true);
         }
 
+        //This resets the user preferences back to what they were.
         public void resetUserPreferences()
         {
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, mBinary);
@@ -1109,6 +1107,7 @@ namespace SW2URDF
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLComponentsIntoOneFile, mSaveComponentsIntoOneFile);
         }
 
+        //If the user selected something specific for a particular link, that is handled here.
         public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine)
         {
             ActiveSWModel.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
@@ -1125,6 +1124,7 @@ namespace SW2URDF
 
         #region Testing new export method
 
+        //Converts the SW component references to PIDs
         public void saveSWComponents(link Link)
         {
             ActiveSWModel.ClearSelection2(true);
@@ -1141,6 +1141,7 @@ namespace SW2URDF
             }
         }
 
+        //Converts SW component references to PIDs
         public List<byte[]> saveSWComponents(List<Component2> components)
         {
             List<byte[]> PIDs = new List<byte[]>();
@@ -1419,7 +1420,7 @@ namespace SW2URDF
 
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
             retrieveSWComponentPIDs(tree);
-            SerialNode sNode = convertLinkNodeToNodeSerial((LinkNode)tree.Nodes[0]);
+            SerialNode sNode = convertLinkNodeToSerialNode((LinkNode)tree.Nodes[0]);
             StringWriter stringWriter;
             XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
             stringWriter = new StringWriter();

@@ -676,7 +676,7 @@ namespace SW2URDF
             tree.ExpandAll();
         }
 
-        public void fillLinkTreeFromRobot(robot Robot)
+        public void fillJointTreeFromRobot(robot Robot)
         {
             fillTreeViewFromRobot(Robot, treeView_jointtree);
         }
