@@ -36,33 +36,7 @@ namespace SW2URDF
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
-
-
-            //Exporter.createRobotFromActiveModel();
-            //fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-
-
-            //foreach (LinkNode node in treeView_linktree.Nodes)
-            //{
-            //    checkNode(node);
-            //}
         }
-
-        //private void button_link_next_Click(object sender, EventArgs e)
-        //{
-
-        //        if (listBox_deleted.Items.Count > 0)
-        //        {
-        //            Exporter.configureDisplayState(listBox_deleted);
-        //        }    
-        //        treeView_jointtree.Nodes.Clear();
-
-        //        Exporter.mRobot = createRobotFromTreeView(treeView_linktree);
-        //        fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
-        //        fillJointPropertyBoxes(null);
-        //        panel_joint.Visible = true;
-        //        this.Focus();       
-        //}
 
         private void button_link_cancel_Click(object sender, EventArgs e)
         {
@@ -83,14 +57,6 @@ namespace SW2URDF
             this.Focus();
 
         }
-
-        //private void button_joint_previous_Click(object sender, EventArgs e)
-        //{
-        //    treeView_linktree.Nodes.Clear();
-        //    Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
-        //    fillTreeViewFromRobot(Exporter.mRobot, treeView_linktree);
-        //    panel_joint.Visible = false;
-        //}
 
         private void button_joint_cancel_Click(object sender, EventArgs e)
         {
@@ -147,55 +113,6 @@ namespace SW2URDF
             }
 
         }
-
-        //Joint form configuration controls
-
-        private void button_select_Click(object sender, EventArgs e)
-        {
-            //foreach (LinkNode node in treeView_linktree.Nodes)
-            //{
-            //    checkNode(node);
-            //}
-        }
-
-        //private void checkNode(LinkNode node)
-        //{
-        //    node.Checked = true;
-        //    foreach (LinkNode child in node.Nodes)
-        //    {
-        //        checkNode(child);
-        //    }
-        //}
-
-        private void button_deselect_Click(object sender, EventArgs e)
-        {
-            //    foreach (LinkNode node in treeView_linktree.Nodes)
-            //    {
-            //        uncheckNode(node);
-            //    }
-        }
-
-        //private void uncheckNode(LinkNode node)
-        //{
-        //    node.Checked = false;
-        //    foreach (LinkNode child in node.Nodes)
-        //    {
-        //        uncheckNode(child);
-        //    }
-        //}
-
-        //private void treeView_linktree_Delete(object sender, KeyEventArgs e)
-        //{
-        //    if (e.KeyCode == Keys.Back)
-        //    {
-        //        LinkNode deletedNode = (LinkNode)treeView_linktree.SelectedNode;
-        //        if (deletedNode != null)
-        //        {
-        //            deletedNode.Remove();
-        //            listBox_deleted.Items.Add(LinkNodeToLinkItem(deletedNode));
-        //        }
-        //    }
-        //}
 
         #region Dragging and Dropping Links
         //private void treeView_linktree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
@@ -426,6 +343,7 @@ namespace SW2URDF
 
         #region Robot<->Tree
 
+        //From the link, this method fills the property boxes on the Link Properties page
         public void fillLinkPropertyBoxes(link Link)
         {
             textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString("G5");
@@ -463,9 +381,11 @@ namespace SW2URDF
             domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString("G5");
             domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString("G5");
         }
+
+        //Fills the property boxes on the joint properties page
         public void fillJointPropertyBoxes(joint Joint)
         {
-            if (Joint == null)
+            if (Joint == null) //For the base_link or if none is selected
             {
                 textBox_joint_name.Text = "";
                 comboBox_joint_type.Text = "";
@@ -519,7 +439,7 @@ namespace SW2URDF
                 label_parent.Text = Joint.Parent.name;
                 label_child.Text = Joint.Child.name;
 
-                //Maximum decimal places to use (not counting exponential notation) is 5
+                //G5: Maximum decimal places to use (not counting exponential notation) is 5
 
                 textBox_joint_x.Text = Joint.Origin.X.ToString("G5");
                 textBox_joint_y.Text = Joint.Origin.Y.ToString("G5");
@@ -600,18 +520,8 @@ namespace SW2URDF
                 }
             }
         }
-        //public void saveLinkItemData(int index)
-        //{
-        //    LinkItem item = (LinkItem)listBox_deleted.Items[index];
-        //    item.Link = saveLinkDataFromPropertyBoxes(item.Link);
-        //    listBox_deleted.Items[index] = item;
-        //}
-        //public void saveLinkNodeData(int index)
-        //{
-        //    LinkNode node = (LinkNode)treeView_linktree.Nodes[index];
-        //    node.Link = saveLinkDataFromPropertyBoxes(node.Link);
-        //    treeView_linktree.Nodes[index] = node;
-        //}
+
+        //Converts the text boxes back into values for the link
         public void saveLinkDataFromPropertyBoxes(link Link)
         {
             double value;
@@ -655,78 +565,8 @@ namespace SW2URDF
 
             Link.STLQualityFine = radioButton_fine.Checked;
         }
-        public void fillTreeViewFromRobot(robot Robot, TreeView tree)
-        {
-            LinkNode baseNode = new LinkNode();
-            link baseLink = Robot.BaseLink;
-            baseNode.Name = baseLink.name;
-            baseNode.Text = baseLink.name;
-            baseNode.Link = baseLink;
-            baseNode.isBaseNode = true;
-            baseNode.linkName = baseLink.name;
-            baseNode.Components = baseLink.SWcomponents;
-            baseNode.coordsysName = "Origin_global";
-            baseNode.isIncomplete = false;
 
-            foreach (link child in baseLink.Children)
-            {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child));
-            }
-            tree.Nodes.Add(baseNode);
-            tree.ExpandAll();
-        }
-
-        public void fillJointTreeFromRobot(robot Robot)
-        {
-            fillTreeViewFromRobot(Robot, treeView_jointtree);
-        }
-
-        public LinkNode createLinkNodeFromLink(link Link)
-        {
-            LinkNode node = new LinkNode();
-            node.Name = Link.name;
-            node.Text = Link.name;
-            node.Link = Link;
-            node.isBaseNode = false;
-            node.linkName = Link.name;
-            node.jointName = Link.Joint.name;
-            node.Components = Link.SWcomponents;
-            node.coordsysName = Link.Joint.CoordinateSystemName;
-            node.axisName = Link.Joint.AxisName;
-            node.jointType = Link.Joint.type;
-            node.isIncomplete = false;
-
-            foreach (link child in Link.Children)
-            {
-                node.Nodes.Add(createLinkNodeFromLink(child));
-            }
-            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
-
-
-            return node;
-        }
-        public robot createRobotFromTreeView(TreeView tree)
-        {
-            robot Robot = new robot();
-            Robot.BaseLink = createLinkFromLinkNode((LinkNode)tree.Nodes[0]);
-            Robot.name = Exporter.mRobot.name;
-            return Robot;
-        }
-
-        public link createLinkFromLinkNode(LinkNode node)
-        {
-            link Link = node.Link;
-            Link.Children.Clear();
-            foreach (LinkNode child in node.Nodes)
-            {
-
-                link childLink = createLinkFromLinkNode(child);
-                Link.Children.Add(childLink); // Recreates the children of each embedded link
-
-            }
-            return Link;
-        }
-
+        //Saves data from text boxes back into a joint
         public void saveJointDataFromPropertyBoxes(joint Joint)
         {
             double value = 0;
@@ -767,9 +607,89 @@ namespace SW2URDF
             Joint.Safety.k_position = (Double.TryParse(textBox_k_position.Text, out value)) ? value : 0;
             Joint.Safety.k_velocity = (Double.TryParse(textBox_k_velocity.Text, out value)) ? value : 0;
         }
+
+        //Fills either TreeView from the URDF robot
+        public void fillTreeViewFromRobot(robot Robot, TreeView tree)
+        {
+            LinkNode baseNode = new LinkNode();
+            link baseLink = Robot.BaseLink;
+            baseNode.Name = baseLink.name;
+            baseNode.Text = baseLink.name;
+            baseNode.Link = baseLink;
+            baseNode.isBaseNode = true;
+            baseNode.linkName = baseLink.name;
+            baseNode.Components = baseLink.SWcomponents;
+            baseNode.coordsysName = "Origin_global";
+            baseNode.isIncomplete = false;
+
+            foreach (link child in baseLink.Children)
+            {
+                baseNode.Nodes.Add(createLinkNodeFromLink(child));
+            }
+            tree.Nodes.Add(baseNode);
+            tree.ExpandAll();
+        }
+
+        //Fills specifically the joint TreeView. This is used by the Property Manager Page because it does not have access to the tree directly
+        public void fillJointTreeFromRobot(robot Robot)
+        {
+            fillTreeViewFromRobot(Robot, treeView_jointtree);
+        }
+
+        //Converts a Link to a LinkNode
+        public LinkNode createLinkNodeFromLink(link Link)
+        {
+            LinkNode node = new LinkNode();
+            node.Name = Link.name;
+            node.Text = Link.name;
+            node.Link = Link;
+            node.isBaseNode = false;
+            node.linkName = Link.name;
+            node.jointName = Link.Joint.name;
+            node.Components = Link.SWcomponents;
+            node.coordsysName = Link.Joint.CoordinateSystemName;
+            node.axisName = Link.Joint.AxisName;
+            node.jointType = Link.Joint.type;
+            node.isIncomplete = false;
+
+            foreach (link child in Link.Children)
+            {
+                node.Nodes.Add(createLinkNodeFromLink(child));
+            }
+            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
+
+
+            return node;
+        }
+
+        //Converts a TreeView back into a robot
+        public robot createRobotFromTreeView(TreeView tree)
+        {
+            robot Robot = new robot();
+            Robot.BaseLink = createLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Robot.name = Exporter.mRobot.name;
+            return Robot;
+        }
+
+        //Converts a LinkNode into a Link
+        public link createLinkFromLinkNode(LinkNode node)
+        {
+            link Link = node.Link;
+            Link.Children.Clear();
+            foreach (LinkNode child in node.Nodes)
+            {
+
+                link childLink = createLinkFromLinkNode(child);
+                Link.Children.Add(childLink); // Recreates the children of each embedded link
+
+            }
+            return Link;
+        }
+
+
         #endregion
 
-        #region Link Properties Controls
+        #region Link Properties Controls Handlers
 
         private void textBox_inertial_origin_x_TextChanged(object sender, EventArgs e)
         {
@@ -973,7 +893,7 @@ namespace SW2URDF
 
         #endregion
 
-        #region joint property controls
+        #region Joint Properties Controls Handlers
         private void label_damping_Click(object sender, EventArgs e)
         {
 
@@ -1020,38 +940,4 @@ namespace SW2URDF
         #endregion
     }
 
-    #region Derived classes
-
-    public class LinkNode : TreeNode
-    {
-        public link Link
-        { get; set; }
-        public string linkName
-        { get; set; }
-        public string jointName
-        { get; set; }
-        public string axisName
-        { get; set; }
-        public string coordsysName
-        { get; set; }
-        public List<Component2> Components
-        { get; set; }
-        public List<byte[]> ComponentPIDs
-        { get; set; }
-        public string jointType
-        { get; set; }
-        public bool isBaseNode
-        { get; set; }
-        public bool isIncomplete
-        { get; set; }
-        public bool needsSaving
-        { get; set; }
-
-    }
-    public class LinkItem : ListViewItem
-    {
-        public link Link
-        { get; set; }
-    }
-    #endregion
 }

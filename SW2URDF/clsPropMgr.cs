@@ -34,7 +34,6 @@ namespace SW2URDF
         //General objects required for the PropertyManager page
 
         PropertyManagerPage2 pm_Page;
-        PropertyManagerPageControl pm_Control;
         PropertyManagerPageGroup pm_Group;
 
         PropertyManagerPageSelectionbox pm_Selection;
@@ -513,20 +512,18 @@ namespace SW2URDF
         public void loadConfigTree()
         {
             LinkNode basenode = Exporter.loadConfigTree();
-            addDocMenu(basenode);
-
-            if (basenode != null)
-            {
-                tree.Nodes.Clear();
-                tree.Nodes.Add(basenode);
-                tree.ExpandAll();
-                tree.SelectedNode = tree.Nodes[0];
-            }
-            else
+            if (basenode == null)
             {
                 basenode = createEmptyNode(null);
-                tree.Nodes.Add(basenode);
             }
+            addDocMenu(basenode);
+
+            tree.Nodes.Clear();
+            tree.Nodes.Add(basenode);
+            tree.ExpandAll();
+            tree.SelectedNode = tree.Nodes[0];
+
+
         }
         #endregion
 
@@ -622,7 +619,6 @@ namespace SW2URDF
                 createNewNodes(node);
                 updateNodeNames((LinkNode)tree.Nodes[0]);
             }
-            throw new Exception("The method or operation is not implemented.");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxFocusChanged(int Id)

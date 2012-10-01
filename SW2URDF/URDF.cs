@@ -18,6 +18,7 @@ using System.Text;
 
 namespace SW2URDF
 {
+    //Initiates the XMLWriter and its necessary settings
     public class URDFWriter
     {
         public XmlWriter writer;
@@ -33,21 +34,7 @@ namespace SW2URDF
         }
     }
 
-    public class URDFStringWriter
-    {
-        public XmlWriter XMLWriter;
-        public StringWriter writer;
-        public URDFStringWriter()
-        {
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Encoding = new UTF8Encoding(false);
-            settings.OmitXmlDeclaration = true;
-            settings.Indent = false;
-            XMLWriter = XmlWriter.Create(writer, settings);
-
-        }
-    }
-    [Serializable]
+    //Not sure why I have a class that everything else inherits from that is empty. But maybe we'll want to add things to it
     public class URDFElement
     {
         public URDFElement() { }
@@ -55,7 +42,8 @@ namespace SW2URDF
         {
         }
     }
-    [Serializable]
+
+    //The base URDF element, a robot
     public class robot : URDFElement
     {
         public link BaseLink
@@ -79,78 +67,29 @@ namespace SW2URDF
             writer.WriteEndDocument();
             writer.Close();
         }
-
-        public void saveElementToString(XmlWriter writer)
-        {
-
-            writer.WriteStartDocument();
-            writer.WriteStartElement("robot");
-            writer.WriteAttributeString("name", name);
-
-            BaseLink.writeURDF(writer);
-
-            writer.WriteEndElement();
-            writer.WriteEndDocument();
-            writer.Close();
-        }
-
-        public robot loadElement(XmlElement element)
-        {
-            robot Robot = new robot();
-            XmlElement xRobot = element;
-            Robot.name = xRobot.GetAttribute("name");
-            foreach (XmlNode node in element.ChildNodes)
-            {
-
-            }
-            return Robot;
-        }
     }
 
-    [Serializable]
+    //The link class, it contains many other elements not found in the URDF.
     public class link : URDFElement
     {
-        public List<link> Children
-        { get; set; }
-        public string name
-        { get; set; }
-        public string uniqueName
-        { get; set; }
-        public inertial Inertial
-        { get; set; }
-        public visual Visual
-        { get; set; }
-        public collision Collision
-        { get; set; }
-        public gazebo Gazebo
-        { get; set; }
-        public joint Joint
-        { get; set; }
-        public bool STLQualityFine
-        { get; set; }
-        public bool isIncomplete
-        { get; set; }
+        public List<link> Children;
+        public string name;
+        public string uniqueName;
+        public inertial Inertial;
+        public visual Visual;
+        public collision Collision;
+        public gazebo Gazebo;
+        public joint Joint;
+        public bool STLQualityFine;
+        public bool isIncomplete;
 
         // The SW part component object
+        public Component2 SWComponent;
+        public Component2 SWMainComponent;
+        public List<Component2> SWcomponents;
+        public List<byte[]> SWComponentPIDs;
+        public byte[] SWMainComponentPID;
 
-        [XmlIgnore]
-        public Component2 SWComponent
-        { get; set; }
-        [XmlIgnore]
-        public Component2 SWMainComponent
-        { get; set; }
-        [XmlIgnore]
-        public List<Component2> SWcomponents
-        { get; set; }
-        public List<byte[]> SWComponentPIDs
-        { get; set; }
-        public byte[] SWMainComponentPID
-        { get; set; }
-
-
-        // The distance from the SW root assembly
-        public int SWComponentLevel
-        { get; set; }
         public link()
         {
             Children = new List<link>();
@@ -181,27 +120,18 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The serial node class, it is used only for saving the configuration.
     public class SerialNode
     {
-        public string linkName
-        { get; set; }
-        public string jointName
-        { get; set; }
-        public string axisName
-        { get; set; }
-        public string coordsysName
-        { get; set; }
-        public List<byte[]> componentPIDs
-        { get; set; }
-        public string jointType
-        { get; set; }
-        public bool isBaseNode
-        { get; set; }
-        public bool isIncomplete
-        { get; set; }
-        public List<SerialNode> Nodes
-        { get; set; }
+        public string linkName;
+        public string jointName;
+        public string axisName;
+        public string coordsysName;
+        public List<byte[]> componentPIDs;
+        public string jointType;
+        public bool isBaseNode;
+        public bool isIncomplete;
+        public List<SerialNode> Nodes;
 
         public SerialNode()
         {
@@ -210,15 +140,12 @@ namespace SW2URDF
     }
 
 
-    [Serializable]
+    //The inertial element of a link
     public class inertial : URDFElement
     {
-        public origin Origin
-        { get; set; }
-        public mass Mass
-        { get; set; }
-        public inertia Inertia
-        { get; set; }
+        public origin Origin;
+        public mass Mass;
+        public inertia Inertia;
 
         public inertial()
         {
@@ -238,7 +165,7 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The Origin element, used in several other elements
     public class origin : URDFElement
     {
         private double[] xyz;
@@ -346,11 +273,10 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //mass element, belongs to the inertial element
     public class mass : URDFElement
     {
-        public double Value
-        { get; set; }
+        public double Value;
         public mass()
         {
             Value = 0;
@@ -363,7 +289,7 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //Inertia element, which means moment of inertia. In the inertial element
     public class inertia : URDFElement
     {
         private double[] moment;
@@ -494,15 +420,12 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The visual element of a link
     public class visual : URDFElement
     {
-        public origin Origin
-        { get; set; }
-        public geometry Geometry
-        { get; set; }
-        public material Material
-        { get; set; }
+        public origin Origin;
+        public geometry Geometry;
+        public material Material;
         public visual()
         {
             Origin = new origin();
@@ -521,11 +444,10 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The geometry element the visual element
     public class geometry : URDFElement
     {
-        public mesh Mesh
-        { get; set; }
+        public mesh Mesh;
         public geometry()
         {
             Mesh = new mesh();
@@ -540,11 +462,10 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The mesh element of the geometry element. This contains only a filename location of the mesh.
     public class mesh : URDFElement
     {
-        public string filename
-        { get; set; }
+        public string filename;
         public mesh()
         {
         }
@@ -556,24 +477,12 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
-    public class resolution : URDFElement
-    {
-        public resolution()
-        {
-        }
-        new public void writeURDF(XmlWriter writer) { }
-    }
-
-    [Serializable]
+    //The material element of the visual element. 
     public class material : URDFElement
     {
-        public color Color
-        { get; set; }
-        public texture Texture
-        { get; set; }
-        public string name
-        { get; set; }
+        public color Color;
+        public texture Texture;
+        public string name;
         public material()
         {
             Color = new color();
@@ -591,8 +500,7 @@ namespace SW2URDF
         }
     }
 
-
-    [Serializable]
+    //The color element of the material element. Contains a single RGBA.
     public class color : URDFElement
     {
         private double[] rgba;
@@ -663,13 +571,11 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The texture element of the material element. 
     public class texture : URDFElement
     {
-        public string filename
-        { get; set; }
-        public string wFilename
-        { get; set; }
+        public string filename;
+        public string wFilename;
         public texture()
         {
             wFilename = "";
@@ -686,7 +592,7 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The collision element of a link.
     public class collision : URDFElement
     {
         public origin Origin
@@ -709,35 +615,21 @@ namespace SW2URDF
         }
     }
 
-
-
-    [Serializable]
+    //The joint class. There is one for every link but the base link
     public class joint : URDFElement
     {
-        public string name
-        { get; set; }
-        public string type
-        { get; set; }
-        public origin Origin
-        { get; set; }
-        public parent_link Parent
-        { get; set; }
-        public child_link Child
-        { get; set; }
-        public axis Axis
-        { get; set; }
-        public limit Limit
-        { get; set; }
-        public calibration Calibration
-        { get; set; }
-        public dynamics Dynamics
-        { get; set; }
-        public safety_controller Safety
-        { get; set; }
-        public string CoordinateSystemName
-        { get; set; }
-        public string AxisName
-        { get; set; }
+        public string name;
+        public string type;
+        public origin Origin;
+        public parent_link Parent;
+        public child_link Child;
+        public axis Axis;
+        public limit Limit;
+        public calibration Calibration;
+        public dynamics Dynamics;
+        public safety_controller Safety;
+        public string CoordinateSystemName;
+        public string AxisName;
 
         public joint()
         {
@@ -769,11 +661,10 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //parent_link element of a joint. 
     public class parent_link : URDFElement
     {
-        public string name
-        { get; set; }
+        public string name;
         public parent_link()
         {
             name = "";
@@ -787,7 +678,7 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The child link element
     public class child_link : URDFElement
     {
         public string name
@@ -804,7 +695,7 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The axis element of a joint.
     public class axis : URDFElement
     {
         private double[] xyz;
@@ -864,17 +755,13 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The limit element of a joint.
     public class limit : URDFElement
     {
-        public double lower
-        { get; set; }
-        public double upper
-        { get; set; }
-        public double effort
-        { get; set; }
-        public double velocity
-        { get; set; }
+        public double lower;
+        public double upper;
+        public double effort;
+        public double velocity;
         public limit()
         {
             lower = 0; upper = 0; effort = 0; velocity = 0;
@@ -890,13 +777,11 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The calibration element of a joint.
     public class calibration : URDFElement
     {
-        public double rising
-        { get; set; }
-        public double falling
-        { get; set; }
+        public double rising;
+        public double falling;
 
         public calibration()
         {
@@ -911,13 +796,11 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The dynamics element of a joint.
     public class dynamics : URDFElement
     {
-        public double damping
-        { get; set; }
-        public double friction
-        { get; set; }
+        public double damping;
+        public double friction;
 
         public dynamics()
         {
@@ -932,17 +815,13 @@ namespace SW2URDF
         }
     }
 
-    [Serializable]
+    //The safety_controller element of a joint.
     public class safety_controller : URDFElement
     {
-        public double soft_lower
-        { get; set; }
-        public double soft_upper
-        { get; set; }
-        public double k_position
-        { get; set; }
-        public double k_velocity
-        { get; set; }
+        public double soft_lower;
+        public double soft_upper;
+        public double k_position;
+        public double k_velocity;
         public safety_controller()
         {
             soft_lower = 0; soft_upper = 0; k_position = 0; k_velocity = 0;
@@ -957,21 +836,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
     }
-
-    [Serializable]
-    public class gazebo : URDFElement
-    {
-        public string reference
-        { get; set; }
-        public gazebo()
-        {
-        }
-        new public void writeURDF(XmlWriter writer)
-        {
-        }
-    }
-
-
+    
+    //A class that just writes the bare minimum of the manifest file necessary for ROS packages.
     public class manifestWriter
     {
         public XmlWriter writer;
@@ -986,23 +852,20 @@ namespace SW2URDF
         }
     }
 
-
+    //The base class for manifest elements. Again, I guess I like having empty base classes
     public class manifestElement
     {
-
         public manifestElement() { }
         public void writeElement() { }
     }
+
+    //Top level class for the manifest file.
     public class manifest : manifestElement
     {
-        public description Description
-        { get; set; }
-        public depend[] Depends
-        { get; set; }
-        public author Author
-        { get; set; }
-        public license License
-        { get; set; }
+        public description Description;
+        public depend[] Depends;
+        public author Author;
+        public license License;
 
         public manifest(string name)
         {
@@ -1041,12 +904,12 @@ namespace SW2URDF
             writer.Close();
         }
     }
+
+    //description element of the manifest file
     public class description : manifestElement
     {
-        public string brief
-        { get; set; }
-        public string longDescription
-        { get; set; }
+        public string brief;
+        public string longDescription;
         public description()
         {
             brief = "";
@@ -1060,10 +923,11 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
     }
+
+    //The depend element of the manifest file
     public class depend : manifestElement
     {
-        public string package
-        { get; set; }
+        public string package;
         public depend()
         {
             package = "";
@@ -1075,10 +939,11 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
     }
+
+    //The author element of the manifest file
     public class author : manifestElement
     {
-        public string name
-        { get; set; }
+        public string name;
         public author()
         {
             name = "";
@@ -1090,10 +955,11 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
     }
+
+    //The license element of the manifest file
     public class license : manifestElement
     {
-        public string lic
-        { get; set; }
+        public string lic;
         public license()
         {
             lic = "";
@@ -1105,4 +971,37 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
     }
+
+
+    #region Windows Forms Derived classes
+
+    //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so that information can be passed around
+    //from the TreeView itself.
+    public class LinkNode : TreeNode
+    {
+        public link Link
+        { get; set; }
+        public string linkName
+        { get; set; }
+        public string jointName
+        { get; set; }
+        public string axisName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public List<Component2> Components
+        { get; set; }
+        public List<byte[]> ComponentPIDs
+        { get; set; }
+        public string jointType
+        { get; set; }
+        public bool isBaseNode
+        { get; set; }
+        public bool isIncomplete
+        { get; set; }
+        public bool needsSaving
+        { get; set; }
+
+    }
+    #endregion
 }
