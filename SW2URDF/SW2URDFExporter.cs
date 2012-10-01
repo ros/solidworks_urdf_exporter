@@ -574,28 +574,6 @@ namespace SW2URDF
             return RotAxis;
         }
 
-        //Might create a new display state, which allows some components to be hidden
-        public void configureDisplayState(ListBox list)
-        {
-
-            Configuration config = ActiveSWModel.ConfigurationManager.ActiveConfiguration;
-            bool createNew = true;
-            foreach (string state in config.GetDisplayStates())
-            {
-                if (state.Equals("URDF Export"))
-                {
-                    config.ApplyDisplayState("URDF Export");
-                    createNew = false;
-                }
-            }
-            if (createNew)
-            {
-                config.CreateDisplayState("URDF Export");
-            }
-
-            hideComponents(list);
-        }
-
         //Calculates the free degree of freedom (if exists), and then determines the location of the joint, the axis of rotation/translation, and the type of joint
         public void estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
@@ -1038,18 +1016,6 @@ namespace SW2URDF
         }
 
         //Hides the components from a list
-        public void hideComponents(ListBox list)
-        {
-            ActiveSWModel.ClearSelection2(true);
-
-            foreach (LinkItem item in list.Items)
-            {
-                selectComponents(item.Link, true);
-            }
-            ActiveSWModel.HideComponent2();
-        }
-
-        //Hides the components from a list
         public void hideComponents(List<Component2> components)
         {
             selectComponents(components, true);
@@ -1256,7 +1222,10 @@ namespace SW2URDF
                 comp.Select(true);
             }
             IMassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-
+            if (swMass == null)
+            {
+                throw new Exception("Create Mass Property failed, return null MassProperty");
+            }
             string childCoordSysName = "";
             if (child.Joint == null)
             {

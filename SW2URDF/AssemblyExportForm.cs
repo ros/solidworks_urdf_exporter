@@ -288,11 +288,16 @@ namespace SW2URDF
 
         private void treeView_linkProperties_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
+            Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null)
             {
                 saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
+                previouslySelectedNode.NodeFont = fontRegular;
             }
             LinkNode node = (LinkNode)e.Node;
+            node.NodeFont = fontBold;
+            node.Text = node.Text;
             ActiveSWModel.ClearSelection2(true);
             SelectionMgr manager = ActiveSWModel.SelectionManager;
 
@@ -314,31 +319,6 @@ namespace SW2URDF
             previouslySelectedNode = node;
         }
 
-        public LinkItem LinkNodeToLinkItem(LinkNode node)
-        {
-            LinkItem item = new LinkItem();
-            item.Name = node.Name;
-            item.Link = node.Link;
-            item.Text = node.Text;
-            item.Link.Children.Clear();
-            foreach (LinkNode child in node.Nodes)
-            {
-                item.Link.Children.Add(createLinkFromLinkNode(child));
-            }
-            return item;
-        }
-        public LinkNode LinkItemToLinkNode(LinkItem item)
-        {
-            LinkNode node = new LinkNode();
-            node.Name = item.Name;
-            node.Link = item.Link;
-            node.Text = item.Text;
-            foreach (link child in item.Link.Children)
-            {
-                node.Nodes.Add(createLinkNodeFromLink(child));
-            }
-            return node;
-        }
         #endregion
 
         #region Robot<->Tree
@@ -901,9 +881,15 @@ namespace SW2URDF
 
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
+            Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null && !previouslySelectedNode.isBaseNode)
             {
                 saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
+            }
+            if (previouslySelectedNode != null)
+            {
+                previouslySelectedNode.NodeFont = fontRegular;
             }
             LinkNode node = (LinkNode)e.Node;
             ActiveSWModel.ClearSelection2(true);
@@ -922,6 +908,8 @@ namespace SW2URDF
                     component.Select4(true, data, false);
                 }
             }
+            node.NodeFont = fontBold;
+            node.Text = node.Text;
             fillJointPropertyBoxes(node.Link.Joint);
             previouslySelectedNode = node;
         }

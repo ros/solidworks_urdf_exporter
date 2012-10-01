@@ -78,7 +78,6 @@ namespace SW2URDF
         public inertial Inertial;
         public visual Visual;
         public collision Collision;
-        public gazebo Gazebo;
         public joint Joint;
         public bool STLQualityFine;
         public bool isIncomplete;

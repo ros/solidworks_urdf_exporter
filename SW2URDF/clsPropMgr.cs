@@ -4,6 +4,7 @@ using SolidWorks.Interop.swpublished;
 using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
 using System.Collections;
 using System.Collections.Generic;
@@ -249,6 +250,13 @@ namespace SW2URDF
         public void switchActiveNodes(LinkNode node)
         {
             saveActiveNode();
+
+            Font fontRegular = new Font(tree.Font, FontStyle.Regular);
+            Font fontBold = new Font(tree.Font, FontStyle.Bold);
+            if (previouslySelectedNode != null)
+            {
+                previouslySelectedNode.NodeFont = fontRegular;
+            }
             fillPropertyManager(node);
 
             //If this flag is set to true, it prevents this method from getting called again when changing the selected node
@@ -256,9 +264,11 @@ namespace SW2URDF
 
             //Change the selected node to the argument node. This highlights the newly activated node
             tree.SelectedNode = node;
+
+            node.NodeFont = fontBold;
+            node.Text = node.Text;
             previouslySelectedNode = node;
             checkNodeComplete(node);
-            //updateNodeNames(tree);
         }
 
         // This method runs through first the child nodes of the selected node to see if there are more to visit
@@ -617,7 +627,7 @@ namespace SW2URDF
             {
                 LinkNode node = (LinkNode)tree.SelectedNode;
                 createNewNodes(node);
-                updateNodeNames((LinkNode)tree.Nodes[0]);
+                //updateNodeNames((LinkNode)tree.Nodes[0]);
             }
         }
 
@@ -644,6 +654,7 @@ namespace SW2URDF
             {
                 LinkNode node = (LinkNode)tree.SelectedNode;
                 node.Text = pm_TextBox_LinkName.Text;
+                node.Name = pm_TextBox_LinkName.Text;
             }
         }
 
@@ -720,6 +731,114 @@ namespace SW2URDF
             tree.LabelEdit = true;
             rightClickedNode.BeginEdit();
             pm_Page.SetFocus(dotNet_tree);
+        }
+
+        private void tree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
+        {
+            tree.DoDragDrop(e.Item, DragDropEffects.Move);
+
+        }
+        private void tree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the mouse position.
+            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+
+            // Select the node at the mouse position.
+            tree.SelectedNode = tree.GetNodeAt(targetPoint);
+            e.Effect = DragDropEffects.Move;
+        }
+        private void tree_DragEnter(object sender, DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the mouse position.
+            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+
+            // Select the node at the mouse position.
+            tree.SelectedNode = tree.GetNodeAt(targetPoint);
+            e.Effect = DragDropEffects.Move;
+        }
+        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            // Retrieve the client coordinates of the drop location.
+            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+
+            // Retrieve the node at the drop location.
+            LinkNode targetNode = (LinkNode)tree.GetNodeAt(targetPoint);
+
+            LinkNode draggedNode;
+            // Retrieve the node that was dragged.
+
+            //Retrieve the node/item that was dragged
+            if ((LinkNode)e.Data.GetData(typeof(LinkNode)) != null)
+            {
+                draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
+            }
+            else
+            {
+                return;
+            }
+
+            // If the node is picked up and dragged back on to itself, please don't crash
+            if (draggedNode == targetNode)
+            {
+                return;
+            }
+
+            // If the it was dropped into the box itself, but not onto an actual node
+            if (targetNode == null)
+            {
+                // If for some reason the tree is empty
+                if (tree.Nodes.Count == 0)
+                {
+                    draggedNode.Remove();
+                    tree.Nodes.Add(draggedNode);
+                    tree.ExpandAll();
+                    return;
+                }
+                else
+                {
+                    targetNode = (LinkNode)tree.TopNode;
+                    draggedNode.Remove();
+                    targetNode.Nodes.Add(draggedNode);
+                    targetNode.ExpandAll();
+                    return;
+                }
+            }
+            else
+            {
+                // If dragging a node closer onto its ancestor do parent swapping kungfu
+                if (draggedNode.Level < targetNode.Level)
+                {
+                    int level_diff = targetNode.Level - draggedNode.Level;
+                    LinkNode ancestor_node = targetNode;
+                    for (int i = 0; i < level_diff; i++)
+                    {
+                        //Ascend up the target's node (new parent) parent tree the level difference to get the ancestoral node that is at the same level
+                        //as the dragged node (the new child)
+                        ancestor_node = (LinkNode)ancestor_node.Parent;
+                    }
+                    // If the dragged node is in the same line as the target node, then the real kungfu begins
+                    if (ancestor_node == draggedNode)
+                    {
+                        LinkNode newParent = targetNode;
+                        LinkNode newChild = draggedNode;
+                        LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
+                        newParent.Remove(); // Remove the target node from the tree
+                        newChild.Remove();  // Remove the dragged node from the tree
+                        newParent.Nodes.Add(newChild); // 
+                        if (sameGrandparent == null)
+                        {
+                            tree.Nodes.Add(newParent);
+                        }
+                        else
+                        {
+                            sameGrandparent.Nodes.Add(newParent);
+                        }
+                    }
+                }
+                draggedNode.Remove();
+                targetNode.Nodes.Add(draggedNode);
+                targetNode.ExpandAll();
+            }
         }
         #endregion
 
@@ -897,6 +1016,11 @@ namespace SW2URDF
             tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(tree_AfterSelect);
             tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(tree_NodeMouseClick);
             tree.KeyDown += new System.Windows.Forms.KeyEventHandler(tree_KeyDown);
+            tree.DragDrop += new DragEventHandler(tree_DragDrop);
+            tree.DragOver += new DragEventHandler(tree_DragOver);
+            tree.DragEnter += new DragEventHandler(tree_DragEnter);
+            tree.ItemDrag += new ItemDragEventHandler(tree_ItemDrag);
+            tree.AllowDrop = true;
             pm_tree.SetWindowHandlex64(tree.Handle.ToInt64());
 
 
@@ -904,16 +1028,16 @@ namespace SW2URDF
 
             ToolStripMenuItem addChild = new ToolStripMenuItem();
             ToolStripMenuItem removeChild = new ToolStripMenuItem();
-            ToolStripMenuItem renameChild = new ToolStripMenuItem();
+            //ToolStripMenuItem renameChild = new ToolStripMenuItem();
             addChild.Text = "Add Child Link";
             addChild.Click += new System.EventHandler(this.addChild_Click);
 
             removeChild.Text = "Remove";
             removeChild.Click += new System.EventHandler(this.removeChild_Click);
-            renameChild.Text = "Rename";
-            renameChild.Click += new System.EventHandler(this.renameChild_Click);
-            docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
-            //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild});
+            //renameChild.Text = "Rename";
+            //renameChild.Click += new System.EventHandler(this.renameChild_Click);
+           //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
+            docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild});
             LinkNode node = createEmptyNode(null);
             node.ContextMenuStrip = docMenu;
             tree.Nodes.Add(node);
@@ -1075,7 +1199,7 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnNumberBoxTrackingCompleted(int Id, double Value)
         {
-            throw new Exception("The method or operation is not implemented.");
+            //throw new Exception("The method or operation is not implemented.");
         }
         void IPropertyManagerPage2Handler9.AfterClose()
         {
