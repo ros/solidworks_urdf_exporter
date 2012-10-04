@@ -50,6 +50,7 @@ namespace SW2URDF
             {
                  saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
+            previouslySelectedNode = null; // Need to clear this for the link properties page
             treeView_linkProperties.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
@@ -84,6 +85,7 @@ namespace SW2URDF
             {
                 saveLinkDataFromPropertyBoxes(node.Link);
             }
+            previouslySelectedNode = null;
             treeView_jointtree.Nodes.Clear();
             Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
             fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
@@ -92,7 +94,7 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
-
+            Exporter.saveConfigTree(treeView_linkProperties, false);
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.RestoreDirectory = true;
             saveFileDialog1.InitialDirectory = Exporter.mSavePath;
@@ -111,181 +113,8 @@ namespace SW2URDF
                 Exporter.exportRobot();
                 this.Close();
             }
-
         }
-
-        #region Dragging and Dropping Links
-        //private void treeView_linktree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
-        //{
-        //    DoDragDrop(e.Item, DragDropEffects.Move);
-
-        //}
-        //private void treeView_linktree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
-        //{
-        //    // Retrieve the client coordinates of the mouse position.
-        //    Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
-
-        //    // Select the node at the mouse position.
-        //    treeView_linktree.SelectedNode = treeView_linktree.GetNodeAt(targetPoint);
-        //    e.Effect = DragDropEffects.Move;
-        //}
-        //private void treeView_linktree_DragEnter(object sender, DragEventArgs e)
-        //{
-        //    // Retrieve the client coordinates of the mouse position.
-        //    Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
-
-        //    // Select the node at the mouse position.
-        //    treeView_linktree.SelectedNode = treeView_linktree.GetNodeAt(targetPoint);
-        //    e.Effect = DragDropEffects.Move;
-        //}
-        //private void treeView_linktree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
-        //{
-        //    // Retrieve the client coordinates of the drop location.
-        //    Point targetPoint = treeView_linktree.PointToClient(new Point(e.X, e.Y));
-
-        //    // Retrieve the node at the drop location.
-        //    LinkNode targetNode = (LinkNode)treeView_linktree.GetNodeAt(targetPoint);
-
-        //    LinkNode draggedNode;
-        //    // Retrieve the node that was dragged.
-
-        //    //Retrieve the node/item that was dragged
-        //    if ((LinkNode)e.Data.GetData(typeof(LinkNode)) != null)
-        //    {
-        //        draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
-        //    }
-        //    else if ((LinkItem)e.Data.GetData(typeof(LinkItem)) != null)
-        //    {
-        //        LinkItem item = (LinkItem)e.Data.GetData(typeof(LinkItem));
-        //        draggedNode = LinkItemToLinkNode(item);
-        //        listBox_deleted.Items.Remove(item);
-        //    }
-        //    else
-        //    {
-        //        return;
-        //    }
-
-        //    // If the node is picked up and dragged back on to itself, please don't crash
-        //    if (draggedNode == targetNode)
-        //    {
-        //        return;
-        //    }
-
-        //    // If the it was dropped into the box itself, but not onto an actual node
-        //    if (targetNode == null)
-        //    {
-        //        // If for some reason the tree is empty
-        //        if (treeView_linktree.Nodes.Count == 0)
-        //        {
-        //            draggedNode.Remove();
-        //            treeView_linktree.Nodes.Add(draggedNode);
-        //            treeView_linktree.ExpandAll();
-        //            return;
-        //        }
-        //        else
-        //        {
-        //            targetNode = (LinkNode)treeView_linktree.TopNode;
-        //            draggedNode.Remove();
-        //            targetNode.Nodes.Add(draggedNode);
-        //            targetNode.ExpandAll();
-        //            return;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // If dragging a node closer onto its ancestor do parent swapping kungfu
-        //        if (draggedNode.Level < targetNode.Level)
-        //        {
-        //            int level_diff = targetNode.Level - draggedNode.Level;
-        //            LinkNode ancestor_node = targetNode;
-        //            for (int i = 0; i < level_diff; i++)
-        //            {
-        //                //Ascend up the target's node (new parent) parent tree the level difference to get the ancestoral node that is at the same level
-        //                //as the dragged node (the new child)
-        //                ancestor_node = (LinkNode)ancestor_node.Parent;
-        //            }
-        //            // If the dragged node is in the same line as the target node, then the real kungfu begins
-        //            if (ancestor_node == draggedNode)
-        //            {
-        //                LinkNode newParent = targetNode;
-        //                LinkNode newChild = draggedNode;
-        //                LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
-        //                newParent.Remove(); // Remove the target node from the tree
-        //                newChild.Remove();  // Remove the dragged node from the tree
-        //                newParent.Nodes.Add(newChild); // 
-        //                if (sameGrandparent == null)
-        //                {
-        //                    treeView_linktree.Nodes.Add(newParent);
-        //                }
-        //                else
-        //                {
-        //                    sameGrandparent.Nodes.Add(newParent);
-        //                }
-        //            }
-        //        }
-        //        draggedNode.Remove();
-        //        targetNode.Nodes.Add(draggedNode);
-        //        targetNode.ExpandAll();
-        //    }
-        //}
-        //private void listBox_deleted_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
-        //{
-        //    e.Effect = DragDropEffects.Move;
-        //}
-        //private void listBox_deleted_DragEnter(object sender, DragEventArgs e)
-        //{
-        //    e.Effect = DragDropEffects.Move;
-        //}
-        //private void listBox_deleted_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
-        //{
-        //    LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
-        //    if (draggedNode != null)
-        //    {
-        //        draggedNode.Remove();
-        //        listBox_deleted.Items.Add(LinkNodeToLinkItem(draggedNode));
-        //    }
-        //}
-        //private void listBox_deleted_MouseDown(object sender, MouseEventArgs e)
-        //{
-        //    this.listBox_deleted.DoDragDrop(this.listBox_deleted.SelectedItem, DragDropEffects.Move);
-        //}
-
-        //private void treeView_linktree_AfterSelect(object sender, TreeViewEventArgs e)
-        //{
-        //    LinkNode node = (LinkNode)e.Node;
-        //    ActiveSWModel.ClearSelection2(true);
-        //    SelectionMgr manager = ActiveSWModel.SelectionManager;
-
-        //    SelectData data = manager.CreateSelectData();
-        //    data.Mark = -1;
-        //    if (node.Link.SWComponent != null)
-        //    {
-        //        node.Link.SWComponent.Select4(false, data, false);
-        //    }
-        //    else
-        //    {
-        //        foreach (Component2 component in node.Link.SWcomponents)
-        //        {
-        //            component.Select4(true, data, false);
-        //        }
-        //    }
-        //    treeView_linktree.Focus();
-        //}
-
-        //private void treeView_linktree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
-        //{
-
-        //}
-
-        //private void listBox_deleted_SelectedIndexChanged(object sender, EventArgs e)
-        //{
-        //    LinkItem item = (LinkItem)listBox_deleted.SelectedItem;
-        //    if (item != null)
-        //    {
-        //        fillLinkPropertyBoxes(item.Link);
-        //    }
-        //}
-
+        
         private void treeView_linkProperties_AfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
@@ -319,13 +148,12 @@ namespace SW2URDF
             previouslySelectedNode = node;
         }
 
-        #endregion
-
         #region Robot<->Tree
 
         //From the link, this method fills the property boxes on the Link Properties page
         public void fillLinkPropertyBoxes(link Link)
         {
+
             textBox_collision_origin_x.Text = Link.Collision.Origin.X.ToString("G5");
             textBox_collision_origin_y.Text = Link.Collision.Origin.Y.ToString("G5");
             textBox_collision_origin_z.Text = Link.Collision.Origin.Z.ToString("G5");
@@ -360,6 +188,17 @@ namespace SW2URDF
             domainUpDown_green.Text = Link.Visual.Material.Color.Green.ToString("G5");
             domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString("G5");
             domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString("G5");
+
+            if (Link.Inertial.Mass.Value == 0)
+            {
+                int c = 1;
+            }
+            double value;
+            double.TryParse(textBox_mass.Text, out value);
+            if (value == 0)
+            {
+                int c = 1;
+            }
         }
 
         //Fills the property boxes on the joint properties page

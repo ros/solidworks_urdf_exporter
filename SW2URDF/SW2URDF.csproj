@@ -258,7 +258,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\DataSources\SwAddin.datasource" />
+    <None Include="Properties\DataSources\SwAddin.datasource">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

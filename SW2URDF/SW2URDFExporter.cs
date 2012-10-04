@@ -793,9 +793,9 @@ namespace SW2URDF
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
             string filename = exportFiles(mRobot.BaseLink, package);
-            showComponents(mRobot.BaseLink);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
+            
             showAllComponents(hiddenComponents);
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
@@ -835,7 +835,7 @@ namespace SW2URDF
             int warnings = 0;
 
             // Export STL
-            showComponents(Link);
+            showComponents(Link.SWcomponents);
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
@@ -848,7 +848,7 @@ namespace SW2URDF
             }
             string coordsysname = ActiveSWModel.Extension.GetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified);
             ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            hideComponents(Link);
+            hideComponents(Link.SWcomponents);
 
             correctSTLMesh(windowsMeshFileName);
 
@@ -985,12 +985,16 @@ namespace SW2URDF
         public void showAllComponents(List<Component2> hiddenComponents)
         {
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            ActiveSWModel.Extension.SelectAll();
-            foreach (IComponent2 comp in hiddenComponents)
+            List<Component2> componentsToShow = new List<Component2>();
+            object[] varComps = assyDoc.GetComponents(false);
+            foreach (Component2 comp in varComps)
             {
-                comp.DeSelect();
+                if (!hiddenComponents.Contains(comp))
+                {
+                    componentsToShow.Add(comp);
+                }
             }
-            ActiveSWModel.ShowComponent2();
+            showComponents(componentsToShow);
         }
 
         //Shows the components in the list. Useful  for exporting STLs
@@ -1237,7 +1241,14 @@ namespace SW2URDF
             }
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
             swMass.SetCoordinateSystem(jointTransform);
+
+            if (swMass == null || swMass.Mass == 0)
+            {
+                int c = 1;
+            }
             child.Inertial.Mass.Value = swMass.Mass;
+
+            
 
             child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
@@ -1252,7 +1263,8 @@ namespace SW2URDF
             child.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
 
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
-            double[] values = ActiveSWModel.MaterialPropertyValues;
+            ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
+            double[] values = mainCompdoc.MaterialPropertyValues;
             child.Visual.Material.Color.Red = values[0];
             child.Visual.Material.Color.Green = values[1];
             child.Visual.Material.Color.Blue = values[2];

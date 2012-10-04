@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SolidWorks To URDF"
-#define MyAppVersion "1.0.4657"
+#define MyAppVersion "1.0.4659.42046"
 #define MyAppPublisher "Stephen Brawner"
 #define MyAppURL "http://kforge.ros.org/robotmodel/viewvc/sw_urdf_exporter/"
 
@@ -27,7 +27,7 @@ DefaultDirName="C:\Program Files\SolidWorks Corp\SolidWorks\URDFExporter"
 SolidCompression=no
 PrivilegesRequired=admin
 OutputDir=..\..\..\..\INSTALL\OUTPUT
-SourceDir=..\SW2URDF\bin\x64\Debug
+SourceDir=..\SW2URDF\bin\
 ArchitecturesAllowed=x64 x86
 ArchitecturesInstallIn64BitMode=x64
 
@@ -35,8 +35,8 @@ ArchitecturesInstallIn64BitMode=x64
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: *;  DestDir: {app}; Flags: ignoreversion; Check: IsWin64;
-Source: ..\..\x86\Debug\*;  DestDir: {app}; Flags: regserver ignoreversion; Check: not IsWin64
+Source: x64\Debug\*;  DestDir: {app}; Flags: ignoreversion; Check: IsWin64;
+Source: x86\Debug\*;  DestDir: {app}; Flags: regserver ignoreversion; Check: not IsWin64
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
