@@ -26,9 +26,9 @@ Compression=lzma
 DefaultDirName="C:\Program Files\SolidWorks Corp\SolidWorks\URDFExporter"
 SolidCompression=no
 PrivilegesRequired=admin
-OutputDir=..\..\..\..\INSTALL\OUTPUT
+OutputDir=..\..\INSTALL\OUTPUT
 SourceDir=..\SW2URDF\bin\
-ArchitecturesAllowed=x64 x86
+ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
@@ -36,7 +36,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: x64\Debug\*;  DestDir: {app}; Flags: ignoreversion; Check: IsWin64;
-Source: x86\Debug\*;  DestDir: {app}; Flags: regserver ignoreversion; Check: not IsWin64
+;Source: x86\Debug\*;  DestDir: {app}; Flags: regserver ignoreversion; Check: not IsWin64
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
