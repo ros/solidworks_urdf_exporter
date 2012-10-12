@@ -55,8 +55,10 @@ namespace SW2URDF
             //treeView_linkProperties.Nodes.Clear();
             //Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
             //fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
-            foreach (LinkNode node in treeView_jointtree.Nodes)
+
+            while (treeView_jointtree.Nodes.Count > 0)
             {
+                LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
@@ -465,12 +467,14 @@ namespace SW2URDF
             tree.ExpandAll();
         }
 
-        //Fills specifically the joint TreeView. This is used by the Property Manager Page because it does not have access to the tree directly
+        //Fills specifically the joint TreeView
         public void fillJointTree()
         {
             treeView_jointtree.Nodes.Clear();
-            foreach(LinkNode node in BaseNode.Nodes)
+
+            while (BaseNode.Nodes.Count > 0)
             {
+                LinkNode node = (LinkNode)BaseNode.FirstNode;
                 BaseNode.Nodes.Remove(node);
                 treeView_jointtree.Nodes.Add(node);
                 updateNodeText(node, true);
