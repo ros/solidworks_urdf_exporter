@@ -74,8 +74,9 @@ namespace SW2URDF
             {
                 saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
-            foreach(LinkNode node in treeView_jointtree.Nodes)
+            while (treeView_jointtree.Nodes.Count > 0)
             {
+                LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }

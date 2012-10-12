@@ -1409,12 +1409,13 @@ namespace SW2URDF
             List<Component2> componentsToUnfix = new List<Component2>();
             foreach (Component2 comp in parent.SWcomponents)
             {
+                bool isFixed = comp.IsFixed();
                 if (!comp.IsFixed())
                 {
                     componentsToUnfix.Add(comp);
                 }
             }
-            selectComponents(parent, true);
+            selectComponents(parent.SWcomponents, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.FixComponent();
             return componentsToUnfix;
