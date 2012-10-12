@@ -397,15 +397,14 @@ namespace SW2URDF
             Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
 
-            Vector<double> Axis = new DenseVector(new double[] { Link.Joint.Axis.X, Link.Joint.Axis.Y, Link.Joint.Axis.Z, 0 });
-            Axis = ChildJointGlobalTransform.Inverse() * Axis;
-            Axis = Axis.Normalize(2);
+            //Localize the axis to the Link's coordinate system.
+            localizeAxis(Link.Joint.Axis.XYZ, Link.Joint.CoordinateSystemName);
 
-            //Save the data from the transforms
-            Link.Joint.Axis.XYZ = new double[] { Axis[0], Axis[1], Axis[2] };
-
+            // Get the array values and threshold them so small values are set to 0.
             Link.Joint.Origin.XYZ = OPS.getXYZ(ChildJointOrigin);
+            OPS.threshold(Link.Joint.Origin.XYZ, 0.00001);
             Link.Joint.Origin.RPY = OPS.getRPY(ChildJointOrigin);
+            OPS.threshold(Link.Joint.Origin.XYZ, 0.00001);
         }
 
         //This is only used by the Part Exporter, but it localizes the link to the Origin_global coordinate system
@@ -602,6 +601,7 @@ namespace SW2URDF
                 child.Joint.type = "fixed";
                 child.Joint.Origin.XYZ = OPS.getXYZ(child.SWMainComponent.Transform2);
                 child.Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
+
                 if (DOFs == 0 && (R1Status + L1Status > 0))
                 {
                     if (R1Status == 1)
@@ -620,6 +620,8 @@ namespace SW2URDF
                         child.Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
                     }
                 }
+                OPS.threshold(child.Joint.Origin.XYZ, 0.00001);
+                OPS.threshold(child.Joint.Origin.RPY, 0.00001);
                 unsuppressLimitMates(limitMates);
                 if (limitMates.Count > 0)
                 {
@@ -656,13 +658,15 @@ namespace SW2URDF
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
-        public double[] localizeAxis(double[] Axis, string coordsys)
+        public void localizeAxis(double[] Axis, string coordsys)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
             Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
             Matrix<double> transform = OPS.getTransformation(coordsysTransform);
             vec = transform.Inverse() * vec;
-            return vec.ToArray();
+            Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+            OPS.threshold(Axis, 0.00001);
+            
         }
 
         // Used to fill Combo Boxes
@@ -818,7 +822,7 @@ namespace SW2URDF
             // Copy the texture file (if it was specified) to the textures directory
             if (Link.Visual.Material.Texture.wFilename != "")
             {
-                if (!System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
+                if (System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
                 {
                     Link.Visual.Material.Texture.filename = package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
                     string textureSavePath = package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
@@ -1269,7 +1273,7 @@ namespace SW2URDF
             child.Visual.Material.Color.Green = values[1];
             child.Visual.Material.Color.Blue = values[2];
             child.Visual.Material.Color.Alpha = 1.0 - values[7];
-            child.Visual.Material.name = "material_" + child.name;
+            //child.Visual.Material.name = "material_" + child.name;
 
             //The part model doesn't actually know where the origin is, but the component does and this is important when exporting from assembly
             child.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
@@ -1284,6 +1288,7 @@ namespace SW2URDF
 
         public void createJoint(link parent, link child, LinkNode node)
         {
+            checkRefGeometryExists(node);
             string jointName = node.jointName;
             string coordSysName = node.coordsysName;
             string axisName = node.axisName;
@@ -1299,6 +1304,8 @@ namespace SW2URDF
 
             child.Joint.Parent.name = parent.uniqueName;
             child.Joint.Child.name = child.uniqueName;
+
+
 
             // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
             if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
@@ -1361,6 +1368,42 @@ namespace SW2URDF
             localizeJoint(child, ParentJointGlobalTransform);
         }
 
+        public void checkRefGeometryExists(joint Joint)
+        {
+            if (!checkRefCoordsysExists(Joint.CoordinateSystemName))
+            {
+                Joint.CoordinateSystemName = "Automatically Generate";
+            }
+            if (!checkRefAxisExists(Joint.AxisName))
+            {
+                Joint.AxisName = "Automatically Generate";
+            }
+        }
+
+        public void checkRefGeometryExists(LinkNode node)
+        {
+            if (!checkRefCoordsysExists(node.coordsysName))
+            {
+                node.coordsysName = "Automatically Generate";
+            }
+            if (!checkRefAxisExists(node.axisName))
+            {
+                node.axisName = "Automatically Generate";
+            }
+        }
+
+        public bool checkRefCoordsysExists(string OriginName)
+        {
+            string[] Origins = findOrigins();
+            return Origins.Contains(OriginName);
+        }
+
+        public bool checkRefAxisExists(string AxisName)
+        {
+            string[] Axes = findAxes();
+            return Axes.Contains(AxisName);
+        }
+
         private List<Component2> fixComponents(link parent)
         {
             List<Component2> componentsToUnfix = new List<Component2>();
@@ -1377,7 +1420,7 @@ namespace SW2URDF
             return componentsToUnfix;
         }
 
-        public void saveConfigTree(TreeView tree, bool warnUser)
+        public void saveConfigTree(LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
             string oldData = "";
@@ -1400,8 +1443,8 @@ namespace SW2URDF
 
 
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
-            retrieveSWComponentPIDs(tree);
-            SerialNode sNode = convertLinkNodeToSerialNode((LinkNode)tree.Nodes[0]);
+            retrieveSWComponentPIDs(BaseNode);
+            SerialNode sNode = convertLinkNodeToSerialNode(BaseNode);
             StringWriter stringWriter;
             XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
             stringWriter = new StringWriter();

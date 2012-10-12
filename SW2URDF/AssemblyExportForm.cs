@@ -25,38 +25,45 @@ namespace SW2URDF
         private StringBuilder NewNodeMap = new StringBuilder(128);
         public SW2URDFExporter Exporter;
         LinkNode previouslySelectedNode;
-        public AssemblyExportForm(ISldWorks iSwApp)
+        public bool AutoUpdatingForm;
+
+        LinkNode BaseNode;
+
+        public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
             InitializeComponent();
             swApp = iSwApp;
+            BaseNode = node;
             ActiveSWModel = swApp.ActiveDoc;
             Exporter = new SW2URDFExporter(iSwApp);
+            AutoUpdatingForm = false;
         }
 
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
+            fillJointTree();
         }
 
-        private void button_link_cancel_Click(object sender, EventArgs e)
-        {
-
-            this.Close();
-        }
         private void button_joint_next_Click(object sender, EventArgs e)
         {
-
             if (!(previouslySelectedNode == null || previouslySelectedNode.Link.Joint == null))
             {
                  saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             previouslySelectedNode = null; // Need to clear this for the link properties page
-            treeView_linkProperties.Nodes.Clear();
-            Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
-            fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
+            //treeView_linkProperties.Nodes.Clear();
+            //Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
+            //fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
+            foreach (LinkNode node in treeView_jointtree.Nodes)
+            {
+                treeView_jointtree.Nodes.Remove(node);
+                BaseNode.Nodes.Add(node);
+            }
+            changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            fillLinkTree();
             panel_link_properties.Visible = true;
             this.Focus();
-
         }
 
         private void button_joint_cancel_Click(object sender, EventArgs e)
@@ -65,7 +72,12 @@ namespace SW2URDF
             {
                 saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
-            Exporter.saveConfigTree(treeView_jointtree, true);
+            foreach(LinkNode node in treeView_jointtree.Nodes)
+            {
+                treeView_jointtree.Nodes.Remove(node);
+                BaseNode.Nodes.Add(node);
+            }
+            Exporter.saveConfigTree(BaseNode, true);
             this.Close();
         }
         private void button_links_cancel_Click(object sender, EventArgs e)
@@ -74,7 +86,7 @@ namespace SW2URDF
             {
                 saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
-            Exporter.saveConfigTree(treeView_linkProperties, true);
+            Exporter.saveConfigTree(BaseNode, true);
             this.Close();
         }
 
@@ -86,15 +98,17 @@ namespace SW2URDF
                 saveLinkDataFromPropertyBoxes(node.Link);
             }
             previouslySelectedNode = null;
-            treeView_jointtree.Nodes.Clear();
-            Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
-            fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            //treeView_jointtree.Nodes.Clear();
+            //Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+            //fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
+            changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            fillJointTree();
             panel_link_properties.Visible = false;
         }
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
-            Exporter.saveConfigTree(treeView_linkProperties, false);
+            Exporter.saveConfigTree(BaseNode, false);
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.RestoreDirectory = true;
             saveFileDialog1.InitialDirectory = Exporter.mSavePath;
@@ -127,8 +141,11 @@ namespace SW2URDF
             LinkNode node = (LinkNode)e.Node;
             node.NodeFont = fontBold;
             node.Text = node.Text;
-            ActiveSWModel.ClearSelection2(true);
+            ActiveSWModel.ClearSelection2(true);    
             SelectionMgr manager = ActiveSWModel.SelectionManager;
+
+
+
 
             SelectData data = manager.CreateSelectData();
             data.Mark = -1;
@@ -184,26 +201,22 @@ namespace SW2URDF
             textBox_iyz.Text = Link.Inertial.Inertia.Iyz.ToString("G5");
             textBox_izz.Text = Link.Inertial.Inertia.Izz.ToString("G5");
 
+            comboBox_materials.Text = Link.Visual.Material.name;
+            textBox_texture.Text = Link.Visual.Material.Texture.wFilename;
+
             domainUpDown_red.Text = Link.Visual.Material.Color.Red.ToString("G5");
             domainUpDown_green.Text = Link.Visual.Material.Color.Green.ToString("G5");
             domainUpDown_blue.Text = Link.Visual.Material.Color.Blue.ToString("G5");
             domainUpDown_alpha.Text = Link.Visual.Material.Color.Alpha.ToString("G5");
 
-            if (Link.Inertial.Mass.Value == 0)
-            {
-                int c = 1;
-            }
-            double value;
-            double.TryParse(textBox_mass.Text, out value);
-            if (value == 0)
-            {
-                int c = 1;
-            }
+            radioButton_fine.Checked = Link.STLQualityFine;
+            radioButton_course.Checked = !Link.STLQualityFine;
         }
 
         //Fills the property boxes on the joint properties page
         public void fillJointPropertyBoxes(joint Joint)
         {
+            AutoUpdatingForm = true;
             if (Joint == null) //For the base_link or if none is selected
             {
                 textBox_joint_name.Text = "";
@@ -260,6 +273,7 @@ namespace SW2URDF
 
                 //G5: Maximum decimal places to use (not counting exponential notation) is 5
 
+                
                 textBox_joint_x.Text = Joint.Origin.X.ToString("G5");
                 textBox_joint_y.Text = Joint.Origin.Y.ToString("G5");
                 textBox_joint_z.Text = Joint.Origin.Z.ToString("G5");
@@ -337,6 +351,7 @@ namespace SW2URDF
                 {
                     comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
                 }
+                AutoUpdatingForm = false;
             }
         }
 
@@ -430,6 +445,7 @@ namespace SW2URDF
         //Fills either TreeView from the URDF robot
         public void fillTreeViewFromRobot(robot Robot, TreeView tree)
         {
+            
             LinkNode baseNode = new LinkNode();
             link baseLink = Robot.BaseLink;
             baseNode.Name = baseLink.name;
@@ -440,7 +456,7 @@ namespace SW2URDF
             baseNode.Components = baseLink.SWcomponents;
             baseNode.coordsysName = "Origin_global";
             baseNode.isIncomplete = false;
-
+            
             foreach (link child in baseLink.Children)
             {
                 baseNode.Nodes.Add(createLinkNodeFromLink(child));
@@ -450,9 +466,40 @@ namespace SW2URDF
         }
 
         //Fills specifically the joint TreeView. This is used by the Property Manager Page because it does not have access to the tree directly
-        public void fillJointTreeFromRobot(robot Robot)
+        public void fillJointTree()
         {
-            fillTreeViewFromRobot(Robot, treeView_jointtree);
+            treeView_jointtree.Nodes.Clear();
+            foreach(LinkNode node in BaseNode.Nodes)
+            {
+                BaseNode.Nodes.Remove(node);
+                treeView_jointtree.Nodes.Add(node);
+                updateNodeText(node, true);
+            }
+            treeView_jointtree.ExpandAll();
+        }
+
+        public void fillLinkTree()
+        {
+            treeView_linkProperties.Nodes.Clear();
+            treeView_linkProperties.Nodes.Add(BaseNode);
+            updateNodeText(BaseNode, false);
+            treeView_linkProperties.ExpandAll();
+        }
+
+        public void updateNodeText(LinkNode node, bool useJointName)
+        {
+            if (useJointName)
+            {
+                node.Text = node.Link.Joint.name;
+            }
+            else
+            {
+                node.Text = node.Link.name;
+            }
+            foreach(LinkNode child in node.Nodes)
+            {
+                updateNodeText(child, useJointName);
+            }
         }
 
         //Converts a Link to a LinkNode
@@ -484,7 +531,8 @@ namespace SW2URDF
         //Converts a TreeView back into a robot
         public robot createRobotFromTreeView(TreeView tree)
         {
-            robot Robot = new robot();
+            //TODO: This needs to properly handle the new differences between the trees.
+            robot Robot = Exporter.mRobot;
             Robot.BaseLink = createLinkFromLinkNode((LinkNode)tree.Nodes[0]);
             Robot.name = Exporter.mRobot.name;
             return Robot;
@@ -718,6 +766,15 @@ namespace SW2URDF
 
         }
 
+        public void changeAllNodeFont(LinkNode node, Font font)
+        {
+            node.NodeFont = font;
+            foreach (LinkNode child in node.Nodes)
+            {
+                changeAllNodeFont(child, font);
+            }
+        }
+
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
@@ -755,13 +812,16 @@ namespace SW2URDF
 
         private void comboBox_axis_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
+            if (!AutoUpdatingForm)
             {
-                double[] Axis = Exporter.estimateAxis(comboBox_axis.Text);
-                Axis = Exporter.localizeAxis(Axis, comboBox_origin.Text);
-                textBox_axis_x.Text = Axis[0].ToString("G5");
-                textBox_axis_y.Text = Axis[1].ToString("G5");
-                textBox_axis_z.Text = Axis[2].ToString("G5");
+                if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
+                {
+                    double[] Axis = Exporter.estimateAxis(comboBox_axis.Text);
+                    Exporter.localizeAxis(Axis, comboBox_origin.Text);
+                    textBox_axis_x.Text = Axis[0].ToString("G5");
+                    textBox_axis_y.Text = Axis[1].ToString("G5");
+                    textBox_axis_z.Text = Axis[2].ToString("G5");
+                }
             }
         }
         #endregion

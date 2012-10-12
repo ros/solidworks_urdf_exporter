@@ -258,8 +258,11 @@ namespace SW2URDF
                 rpy[2] = value;
             }
         }
+
+        public bool isCustomized;
         public origin()
         {
+            isCustomized = false;
             xyz = new double[3] { 0, 0, 0 };
             rpy = new double[3] { 0, 0, 0 };
         }

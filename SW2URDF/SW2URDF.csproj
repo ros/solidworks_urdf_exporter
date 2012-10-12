@@ -206,7 +206,7 @@
     <Compile Include="PMLinkTree.Designer.cs">
       <DependentUpon>PMLinkTree.cs</DependentUpon>
     </Compile>
-    <Compile Include="matrixOPS.cs" />
+    <Compile Include="MathOPS.cs" />
     <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="URDFPackage.cs" />
     <Compile Include="EventHandling.cs" />

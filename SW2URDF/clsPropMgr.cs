@@ -564,10 +564,10 @@ namespace SW2URDF
                     {
                         // Builds the links and joints from the PMPage configuration
                         Exporter.createRobotFromTreeView(tree);
-                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp);
+                        LinkNode BaseNode = (LinkNode)tree.Nodes[0];
+                        tree.Nodes.Remove(BaseNode);
+                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
                         exportForm.Exporter = Exporter;
-                        // Fills the TreeView on the joints page of the exporter
-                        exportForm.fillJointTreeFromRobot(Exporter.mRobot);
                         exportForm.Show();
                     }
                     else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
@@ -593,7 +593,7 @@ namespace SW2URDF
             else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
             {
                 saveActiveNode();
-                Exporter.saveConfigTree(tree, false);
+                Exporter.saveConfigTree((LinkNode)tree.Nodes[0], false);
             }
         }
 
@@ -1068,7 +1068,7 @@ namespace SW2URDF
         void IPropertyManagerPage2Handler9.OnComboboxSelectionChanged(int Id, int Item)
         {
 
-            throw new Exception("The method or operation is not implemented.");
+            //throw new Exception("The method or operation is not implemented.");
 
         }
 
