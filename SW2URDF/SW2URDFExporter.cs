@@ -1246,14 +1246,7 @@ namespace SW2URDF
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
             swMass.SetCoordinateSystem(jointTransform);
 
-            if (swMass == null || swMass.Mass == 0)
-            {
-                int c = 1;
-            }
             child.Inertial.Mass.Value = swMass.Mass;
-
-            
-
             child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
             double[] centerOfMass = swMass.CenterOfMass;

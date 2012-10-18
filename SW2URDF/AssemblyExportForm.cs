@@ -291,7 +291,7 @@ namespace SW2URDF
                 textBox_limit_lower.Text = Joint.Limit.lower.ToString("G5");
                 textBox_limit_upper.Text = Joint.Limit.upper.ToString("G5");
                 textBox_limit_effort.Text = Joint.Limit.effort.ToString("G5");
-                textBox_limit_velocity.Text = Joint.Limit.effort.ToString("G5");
+                textBox_limit_velocity.Text = Joint.Limit.velocity.ToString("G5");
 
                 textBox_calibration_rising.Text = Joint.Calibration.rising.ToString("G5");
                 textBox_calibration_falling.Text = Joint.Calibration.falling.ToString("G5");
