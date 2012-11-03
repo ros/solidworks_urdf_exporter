@@ -115,11 +115,11 @@ namespace SW2URDF
             }
             else
             {
-                sNode.linkName = node.Link.name;
+                sNode.linkName = (string)node.Link.name;
 
                 if (node.Link.Joint != null)
                 {
-                    sNode.jointName = node.Link.Joint.name;
+                    sNode.jointName = (string)node.Link.Joint.name;
 
                     if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
                     {
@@ -130,7 +130,7 @@ namespace SW2URDF
                         sNode.axisName = node.Link.Joint.AxisName;
                     }
                         sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
-                    sNode.jointType = node.Link.Joint.type;
+                    sNode.jointType = (string)node.Link.Joint.type;
                 }
                 sNode.componentPIDs = saveSWComponents(node.Link.SWcomponents);
                 sNode.isBaseNode = node.isBaseNode;
@@ -210,19 +210,19 @@ namespace SW2URDF
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
-            Link.Inertial.Mass.Value = swMass.Mass;
+            Link.Inertial.Mass.value = swMass.Mass;
 
             Link.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
             double[] centerOfMass = swMass.CenterOfMass;
-            Link.Inertial.Origin.XYZ = centerOfMass;
-            Link.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
+            Link.Inertial.Origin.xyz = centerOfMass;
+            Link.Inertial.Origin.rpy = new double[3] { 0, 0, 0 };
 
             // Will this ever not be zeros?
-            Link.Visual.Origin.XYZ = new double[3] { 0, 0, 0 };
-            Link.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
-            Link.Collision.Origin.XYZ = new double[3] { 0, 0, 0 };
-            Link.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
+            Link.Visual.Origin.xyz = new double[3] { 0, 0, 0 };
+            Link.Visual.Origin.rpy = new double[3] { 0, 0, 0 };
+            Link.Collision.Origin.xyz = new double[3] { 0, 0, 0 };
+            Link.Collision.Origin.rpy = new double[3] { 0, 0, 0 };
 
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
             double[] values = swModel.MaterialPropertyValues;
@@ -356,13 +356,13 @@ namespace SW2URDF
                 Joint.Origin = new origin();
                 if (zIsUp)
                 {
-                    Joint.Origin.RPY = new double[] { -Math.PI / 2, 0, 0 };
+                    Joint.Origin.rpy = new double[] { -Math.PI / 2, 0, 0 };
                 }
                 else
                 {
-                    Joint.Origin.RPY = new double[] { 0, 0, 0 };
+                    Joint.Origin.rpy = new double[] { 0, 0, 0 };
                 }
-                Joint.Origin.XYZ = new double[] { 0, 0, 0 };
+                Joint.Origin.xyz = new double[] { 0, 0, 0 };
                 Joint.CoordinateSystemName = "Origin_global";
                 if (referenceSketchName == null)
                 {
@@ -398,26 +398,26 @@ namespace SW2URDF
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
 
             //Localize the axis to the Link's coordinate system.
-            localizeAxis(Link.Joint.Axis.XYZ, Link.Joint.CoordinateSystemName);
+            localizeAxis(Link.Joint.Axis.xyz, Link.Joint.CoordinateSystemName);
 
             // Get the array values and threshold them so small values are set to 0.
-            Link.Joint.Origin.XYZ = OPS.getXYZ(ChildJointOrigin);
-            OPS.threshold(Link.Joint.Origin.XYZ, 0.00001);
-            Link.Joint.Origin.RPY = OPS.getRPY(ChildJointOrigin);
-            OPS.threshold(Link.Joint.Origin.XYZ, 0.00001);
+            Link.Joint.Origin.xyz = OPS.getXYZ(ChildJointOrigin);
+            OPS.threshold(Link.Joint.Origin.xyz, 0.00001);
+            Link.Joint.Origin.rpy = OPS.getRPY(ChildJointOrigin);
+            OPS.threshold(Link.Joint.Origin.xyz, 0.00001);
         }
 
         //This is only used by the Part Exporter, but it localizes the link to the Origin_global coordinate system
         public void localizeLink(link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
-            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.XYZ);
+            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.xyz);
             Matrix<double> localLinkCoMTransform = GlobalTransformInverse * linkCoMTransform;
 
-            Matrix<double> linkVisualTransform = OPS.getTransformation(Link.Visual.Origin.XYZ, Link.Visual.Origin.RPY);
+            Matrix<double> linkVisualTransform = OPS.getTransformation(Link.Visual.Origin.xyz, Link.Visual.Origin.rpy);
             Matrix<double> localVisualTransform = GlobalTransformInverse * linkVisualTransform;
 
-            Matrix<double> linkCollisionTransform = OPS.getTransformation(Link.Collision.Origin.XYZ, Link.Collision.Origin.RPY);
+            Matrix<double> linkCollisionTransform = OPS.getTransformation(Link.Collision.Origin.xyz, Link.Collision.Origin.rpy);
             Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
 
             // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
@@ -427,19 +427,19 @@ namespace SW2URDF
             Matrix<double> GlobalRotMat = GlobalTransform.SubMatrix(0, 3, 0, 3);
             Matrix<double> linkLocalMomentInertia = GlobalRotMat.Inverse() * linkGlobalMomentInertia;
 
-            Link.Inertial.Origin.XYZ = OPS.getXYZ(localLinkCoMTransform);
-            Link.Inertial.Origin.RPY = new double[] { 0, 0, 0 };
+            Link.Inertial.Origin.xyz = OPS.getXYZ(localLinkCoMTransform);
+            Link.Inertial.Origin.rpy = new double[] { 0, 0, 0 };
 
             // Wait are you saying that even though the matrix was trasposed from column major order, you are writing it in row-major order here.
             // Yes, yes I am.
             Link.Inertial.Inertia.Moment = linkLocalMomentInertia.ToRowWiseArray();
 
 
-            Link.Collision.Origin.XYZ = OPS.getXYZ(localCollisionTransform);
-            Link.Collision.Origin.RPY = OPS.getRPY(localCollisionTransform);
+            Link.Collision.Origin.xyz = OPS.getXYZ(localCollisionTransform);
+            Link.Collision.Origin.rpy = OPS.getRPY(localCollisionTransform);
 
-            Link.Visual.Origin.XYZ = OPS.getXYZ(localVisualTransform);
-            Link.Visual.Origin.RPY = OPS.getRPY(localVisualTransform);
+            Link.Visual.Origin.rpy = OPS.getXYZ(localVisualTransform);
+            Link.Visual.Origin.xyz = OPS.getRPY(localVisualTransform);
         }
 
         // Funny method I created that inserts a RefAxis and then finds the reference to it.
@@ -504,7 +504,7 @@ namespace SW2URDF
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
             
             //Calculate the lines that need to be drawn
-            Matrix<double> transform = OPS.getRotation(Origin.RPY);
+            Matrix<double> transform = OPS.getRotation(Origin.rpy);
             Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
 
@@ -599,29 +599,29 @@ namespace SW2URDF
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.type = "fixed";
-                child.Joint.Origin.XYZ = OPS.getXYZ(child.SWMainComponent.Transform2);
-                child.Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
+                child.Joint.Origin.xyz = OPS.getXYZ(child.SWMainComponent.Transform2);
+                child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
 
                 if (DOFs == 0 && (R1Status + L1Status > 0))
                 {
                     if (R1Status == 1)
                     {
                         child.Joint.type = "continuous";
-                        child.Joint.Axis.XYZ = RDir1.ArrayData;
-                        child.Joint.Origin.XYZ = RPoint1.ArrayData;
-                        child.Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
+                        child.Joint.Axis.xyz = RDir1.ArrayData;
+                        child.Joint.Origin.xyz = RPoint1.ArrayData;
+                        child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
 
                     }
                     else if (L1Status == 1)
                     {
                         child.Joint.type = "prismatic";
-                        child.Joint.Axis.XYZ = LDir1.ArrayData;
-                        child.Joint.Origin.XYZ = OPS.getXYZ(child.SWMainComponent.Transform2);
-                        child.Joint.Origin.RPY = OPS.getRPY(child.SWMainComponent.Transform2);
+                        child.Joint.Axis.xyz = LDir1.ArrayData;
+                        child.Joint.Origin.xyz = OPS.getXYZ(child.SWMainComponent.Transform2);
+                        child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
                     }
                 }
-                OPS.threshold(child.Joint.Origin.XYZ, 0.00001);
-                OPS.threshold(child.Joint.Origin.RPY, 0.00001);
+                OPS.threshold(child.Joint.Origin.xyz, 0.00001);
+                OPS.threshold(child.Joint.Origin.rpy, 0.00001);
                 unsuppressLimitMates(limitMates);
                 if (limitMates.Count > 0)
                 {
@@ -776,6 +776,12 @@ namespace SW2URDF
         // Beginning method for exporting the full package
         public void exportRobot()
         {
+            //Setting up the progress bar
+            UserProgressBar progress;
+            iSwApp.GetUserProgressBar(out progress);
+            int progressBarBound = getLinkCount(mRobot.BaseLink);
+            progress.Start(0, progressBarBound, "Creating package directories");
+
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
@@ -796,25 +802,30 @@ namespace SW2URDF
             List<Component2> hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
-            string filename = exportFiles(mRobot.BaseLink, package);
+            string filename = exportFiles(mRobot.BaseLink, package, progress, 0);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
             
             showAllComponents(hiddenComponents);
             //Writing URDF to file
+            mRobot.name = mPackageName;
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             mRobot.writeURDF(uWriter.writer);
 
             resetUserPreferences();
+            progress.End();
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string exportFiles(link Link, URDFPackage package)
+        public string exportFiles(link Link, URDFPackage package, UserProgressBar progress, int count)
         {
+            progress.UpdateProgress(count);
+            progress.UpdateTitle("Exporting mesh: " + Link.name);
             // Iterate through each child and export its files
             foreach (link child in Link.Children)
             {
-                string filename = exportFiles(child, package);
+                count += 1;
+                string filename = exportFiles(child, package, progress, count);
                 child.Visual.Geometry.Mesh.filename = filename;
                 child.Collision.Geometry.Mesh.filename = filename;
             }
@@ -831,7 +842,7 @@ namespace SW2URDF
             }
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
-            string linkName = Link.uniqueName.Replace('/', '_');
+            string linkName = Link.name.Replace('/', '_');
             string meshFileName = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
@@ -912,6 +923,16 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
+        public int getLinkCount(link Link)
+        {
+            int count = 1;
+            foreach (link child in Link.Children)
+            {
+                count += getLinkCount(child);
+            }
+            return count;
+        }
+
         //Selects the components of a link. Helps highlight when the associated node is selected from the tree
         public void selectComponents(link Link, bool clearSelection, int mark = -1)
         {
@@ -968,6 +989,7 @@ namespace SW2URDF
                 }
             }
         }
+
 
         //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
         //remain hidden
@@ -1196,9 +1218,15 @@ namespace SW2URDF
         public void createRobotFromTreeView(TreeView tree)
         {
             mRobot = new robot();
-
+            UserProgressBar progress;
+            iSwApp.GetUserProgressBar(out progress);
+            progress.Start(0, tree.Nodes.Count, "Building links");
+            int count = 0;
             foreach (LinkNode node in tree.Nodes)
             {
+                progress.UpdateProgress(count);
+                progress.UpdateTitle("Building link: " + node.Name);
+                count++;
                 if (node.Level == 0)
                 {
 
@@ -1207,13 +1235,13 @@ namespace SW2URDF
                     node.Link = BaseLink;
                 }
             }
+            progress.End();
         }
 
         public link createLinkFromComponents(link parent, List<Component2> components, LinkNode node )
         {
             link child = new link();
             child.name = node.linkName;
-            child.uniqueName = node.linkName;
 
             child.SWMainComponent = components[0];
             child.SWcomponents.AddRange(components);
@@ -1246,18 +1274,18 @@ namespace SW2URDF
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
             swMass.SetCoordinateSystem(jointTransform);
 
-            child.Inertial.Mass.Value = swMass.Mass;
+            child.Inertial.Mass.value = swMass.Mass;
             child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
 
             double[] centerOfMass = swMass.CenterOfMass;
-            child.Inertial.Origin.XYZ = centerOfMass;
-            child.Inertial.Origin.RPY = new double[3] { 0, 0, 0 };
+            child.Inertial.Origin.xyz = centerOfMass;
+            child.Inertial.Origin.rpy = new double[3] { 0, 0, 0 };
 
             // Will this ever not be zeros?
-            child.Visual.Origin.XYZ = new double[3] { 0, 0, 0 };
-            child.Visual.Origin.RPY = new double[3] { 0, 0, 0 };
-            child.Collision.Origin.XYZ = new double[3] { 0, 0, 0 };
-            child.Collision.Origin.RPY = new double[3] { 0, 0, 0 };
+            child.Visual.Origin.xyz = new double[3] { 0, 0, 0 };
+            child.Visual.Origin.rpy = new double[3] { 0, 0, 0 };
+            child.Collision.Origin.xyz = new double[3] { 0, 0, 0 };
+            child.Collision.Origin.rpy = new double[3] { 0, 0, 0 };
 
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
             ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
@@ -1269,10 +1297,10 @@ namespace SW2URDF
             //child.Visual.Material.name = "material_" + child.name;
 
             //The part model doesn't actually know where the origin is, but the component does and this is important when exporting from assembly
-            child.Visual.Origin.XYZ = new double[] { 0, 0, 0 };
-            child.Visual.Origin.RPY = new double[] { 0, 0, 0 };
-            child.Collision.Origin.XYZ = new double[] { 0, 0, 0 };
-            child.Collision.Origin.RPY = new double[] { 0, 0, 0 };
+            child.Visual.Origin.xyz = new double[] { 0, 0, 0 };
+            child.Visual.Origin.rpy = new double[] { 0, 0, 0 };
+            child.Collision.Origin.xyz = new double[] { 0, 0, 0 };
+            child.Collision.Origin.rpy = new double[] { 0, 0, 0 };
 
             
             selectComponents(components, true);
@@ -1295,8 +1323,8 @@ namespace SW2URDF
             child.Joint.name = jointName;
 
 
-            child.Joint.Parent.name = parent.uniqueName;
-            child.Joint.Child.name = child.uniqueName;
+            child.Joint.Parent.name = parent.name;
+            child.Joint.Child.name = child.name;
 
 
 
@@ -1346,9 +1374,9 @@ namespace SW2URDF
             }
 
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName);
-            child.Joint.Origin.XYZ = OPS.getXYZ(coordsysTransform);
-            child.Joint.Origin.RPY = OPS.getRPY(coordsysTransform);
-            child.Joint.Axis.XYZ = estimateAxis(child.Joint.AxisName);
+            child.Joint.Origin.xyz = OPS.getXYZ(coordsysTransform);
+            child.Joint.Origin.rpy = OPS.getRPY(coordsysTransform);
+            child.Joint.Axis.xyz = estimateAxis(child.Joint.AxisName);
 
             Matrix<double> ParentJointGlobalTransform;
             coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;

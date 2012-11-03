@@ -183,6 +183,7 @@
             this.label66 = new System.Windows.Forms.Label();
             this.label67 = new System.Windows.Forms.Label();
             this.label69 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.panel_link_properties.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -1076,7 +1077,7 @@
             // 
             // textBox_k_velocity
             // 
-            this.textBox_k_velocity.Location = new System.Drawing.Point(973, 540);
+            this.textBox_k_velocity.Location = new System.Drawing.Point(955, 540);
             this.textBox_k_velocity.Name = "textBox_k_velocity";
             this.textBox_k_velocity.Size = new System.Drawing.Size(65, 20);
             this.textBox_k_velocity.TabIndex = 218;
@@ -1084,7 +1085,7 @@
             // label_kvelocity
             // 
             this.label_kvelocity.AutoSize = true;
-            this.label_kvelocity.Location = new System.Drawing.Point(915, 543);
+            this.label_kvelocity.Location = new System.Drawing.Point(897, 543);
             this.label_kvelocity.Name = "label_kvelocity";
             this.label_kvelocity.Size = new System.Drawing.Size(52, 13);
             this.label_kvelocity.TabIndex = 219;
@@ -1092,7 +1093,7 @@
             // 
             // textBox_soft_lower
             // 
-            this.textBox_soft_lower.Location = new System.Drawing.Point(973, 460);
+            this.textBox_soft_lower.Location = new System.Drawing.Point(955, 460);
             this.textBox_soft_lower.Name = "textBox_soft_lower";
             this.textBox_soft_lower.Size = new System.Drawing.Size(65, 20);
             this.textBox_soft_lower.TabIndex = 211;
@@ -1100,7 +1101,7 @@
             // label_soft_lower
             // 
             this.label_soft_lower.AutoSize = true;
-            this.label_soft_lower.Location = new System.Drawing.Point(871, 463);
+            this.label_soft_lower.Location = new System.Drawing.Point(853, 463);
             this.label_soft_lower.Name = "label_soft_lower";
             this.label_soft_lower.Size = new System.Drawing.Size(96, 13);
             this.label_soft_lower.TabIndex = 214;
@@ -1108,7 +1109,7 @@
             // 
             // textBox_soft_upper
             // 
-            this.textBox_soft_upper.Location = new System.Drawing.Point(973, 488);
+            this.textBox_soft_upper.Location = new System.Drawing.Point(955, 488);
             this.textBox_soft_upper.Name = "textBox_soft_upper";
             this.textBox_soft_upper.Size = new System.Drawing.Size(65, 20);
             this.textBox_soft_upper.TabIndex = 212;
@@ -1116,7 +1117,7 @@
             // label_soft_upper
             // 
             this.label_soft_upper.AutoSize = true;
-            this.label_soft_upper.Location = new System.Drawing.Point(869, 491);
+            this.label_soft_upper.Location = new System.Drawing.Point(851, 491);
             this.label_soft_upper.Name = "label_soft_upper";
             this.label_soft_upper.Size = new System.Drawing.Size(98, 13);
             this.label_soft_upper.TabIndex = 215;
@@ -1126,7 +1127,7 @@
             // 
             this.label80.AutoSize = true;
             this.label80.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label80.Location = new System.Drawing.Point(919, 432);
+            this.label80.Location = new System.Drawing.Point(952, 430);
             this.label80.Name = "label80";
             this.label80.Size = new System.Drawing.Size(101, 13);
             this.label80.TabIndex = 217;
@@ -1134,7 +1135,7 @@
             // 
             // textBox_k_position
             // 
-            this.textBox_k_position.Location = new System.Drawing.Point(973, 514);
+            this.textBox_k_position.Location = new System.Drawing.Point(955, 514);
             this.textBox_k_position.Name = "textBox_k_position";
             this.textBox_k_position.Size = new System.Drawing.Size(65, 20);
             this.textBox_k_position.TabIndex = 213;
@@ -1142,7 +1143,7 @@
             // label_kposition
             // 
             this.label_kposition.AutoSize = true;
-            this.label_kposition.Location = new System.Drawing.Point(915, 517);
+            this.label_kposition.Location = new System.Drawing.Point(897, 517);
             this.label_kposition.Name = "label_kposition";
             this.label_kposition.Size = new System.Drawing.Size(52, 13);
             this.label_kposition.TabIndex = 216;
@@ -1150,7 +1151,7 @@
             // 
             // textBox_friction
             // 
-            this.textBox_friction.Location = new System.Drawing.Point(780, 460);
+            this.textBox_friction.Location = new System.Drawing.Point(767, 460);
             this.textBox_friction.Name = "textBox_friction";
             this.textBox_friction.Size = new System.Drawing.Size(65, 20);
             this.textBox_friction.TabIndex = 206;
@@ -1158,7 +1159,7 @@
             // label_friction
             // 
             this.label_friction.AutoSize = true;
-            this.label_friction.Location = new System.Drawing.Point(707, 463);
+            this.label_friction.Location = new System.Drawing.Point(694, 463);
             this.label_friction.Name = "label_friction";
             this.label_friction.Size = new System.Drawing.Size(67, 13);
             this.label_friction.TabIndex = 208;
@@ -1166,7 +1167,7 @@
             // 
             // textBox_damping
             // 
-            this.textBox_damping.Location = new System.Drawing.Point(780, 486);
+            this.textBox_damping.Location = new System.Drawing.Point(767, 486);
             this.textBox_damping.Name = "textBox_damping";
             this.textBox_damping.Size = new System.Drawing.Size(65, 20);
             this.textBox_damping.TabIndex = 207;
@@ -1174,7 +1175,7 @@
             // label_damping
             // 
             this.label_damping.AutoSize = true;
-            this.label_damping.Location = new System.Drawing.Point(655, 489);
+            this.label_damping.Location = new System.Drawing.Point(642, 489);
             this.label_damping.Name = "label_damping";
             this.label_damping.Size = new System.Drawing.Size(119, 13);
             this.label_damping.TabIndex = 209;
@@ -1184,7 +1185,7 @@
             // 
             this.label76.AutoSize = true;
             this.label76.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label76.Location = new System.Drawing.Point(723, 430);
+            this.label76.Location = new System.Drawing.Point(764, 428);
             this.label76.Name = "label76";
             this.label76.Size = new System.Drawing.Size(61, 13);
             this.label76.TabIndex = 210;
@@ -1192,7 +1193,7 @@
             // 
             // textBox_calibration_rising
             // 
-            this.textBox_calibration_rising.Location = new System.Drawing.Point(570, 460);
+            this.textBox_calibration_rising.Location = new System.Drawing.Point(531, 460);
             this.textBox_calibration_rising.Name = "textBox_calibration_rising";
             this.textBox_calibration_rising.Size = new System.Drawing.Size(65, 20);
             this.textBox_calibration_rising.TabIndex = 201;
@@ -1200,7 +1201,7 @@
             // label7_calibration_rising
             // 
             this.label7_calibration_rising.AutoSize = true;
-            this.label7_calibration_rising.Location = new System.Drawing.Point(533, 463);
+            this.label7_calibration_rising.Location = new System.Drawing.Point(494, 463);
             this.label7_calibration_rising.Name = "label7_calibration_rising";
             this.label7_calibration_rising.Size = new System.Drawing.Size(31, 13);
             this.label7_calibration_rising.TabIndex = 203;
@@ -1208,7 +1209,7 @@
             // 
             // textBox_calibration_falling
             // 
-            this.textBox_calibration_falling.Location = new System.Drawing.Point(570, 486);
+            this.textBox_calibration_falling.Location = new System.Drawing.Point(531, 486);
             this.textBox_calibration_falling.Name = "textBox_calibration_falling";
             this.textBox_calibration_falling.Size = new System.Drawing.Size(65, 20);
             this.textBox_calibration_falling.TabIndex = 202;
@@ -1216,7 +1217,7 @@
             // label73
             // 
             this.label73.AutoSize = true;
-            this.label73.Location = new System.Drawing.Point(530, 489);
+            this.label73.Location = new System.Drawing.Point(491, 489);
             this.label73.Name = "label73";
             this.label73.Size = new System.Drawing.Size(34, 13);
             this.label73.TabIndex = 204;
@@ -1226,7 +1227,7 @@
             // 
             this.label74.AutoSize = true;
             this.label74.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label74.Location = new System.Drawing.Point(534, 430);
+            this.label74.Location = new System.Drawing.Point(528, 428);
             this.label74.Name = "label74";
             this.label74.Size = new System.Drawing.Size(67, 13);
             this.label74.TabIndex = 205;
@@ -1284,7 +1285,7 @@
             // 
             this.label68.AutoSize = true;
             this.label68.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label68.Location = new System.Drawing.Point(893, 269);
+            this.label68.Location = new System.Drawing.Point(952, 269);
             this.label68.Name = "label68";
             this.label68.Size = new System.Drawing.Size(33, 13);
             this.label68.TabIndex = 198;
@@ -1404,7 +1405,7 @@
             // 
             this.label60.AutoSize = true;
             this.label60.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label60.Location = new System.Drawing.Point(744, 269);
+            this.label60.Location = new System.Drawing.Point(764, 269);
             this.label60.Name = "label60";
             this.label60.Size = new System.Drawing.Size(30, 13);
             this.label60.TabIndex = 185;
@@ -1492,7 +1493,7 @@
             // 
             this.label54.AutoSize = true;
             this.label54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label54.Location = new System.Drawing.Point(512, 269);
+            this.label54.Location = new System.Drawing.Point(528, 269);
             this.label54.Name = "label54";
             this.label54.Size = new System.Drawing.Size(40, 13);
             this.label54.TabIndex = 172;
@@ -1603,6 +1604,15 @@
                 "axes in the model, click cancel and restart the export. The tool will recognize " +
                 "your changes on the next run.";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(521, 634);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(239, 13);
+            this.label4.TabIndex = 230;
+            this.label4.Text = "Entries that are blank will not be written to URDF.";
+            // 
             // AssemblyExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1676,6 +1686,7 @@
             this.Controls.Add(this.label66);
             this.Controls.Add(this.label67);
             this.Controls.Add(this.label69);
+            this.Controls.Add(this.label4);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
             this.Load += new System.EventHandler(this.AssemblyExportForm_Load);
@@ -1849,5 +1860,6 @@
         private System.Windows.Forms.Label label66;
         private System.Windows.Forms.Label label67;
         private System.Windows.Forms.Label label69;
+        private System.Windows.Forms.Label label4;
     }
 }

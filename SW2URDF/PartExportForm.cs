@@ -233,51 +233,49 @@ namespace SW2URDF
         #region Form event handlers
         private void button_finish_Click(object sender, EventArgs e)
         {
-            
-            double value;
             Exporter.mPackageName = Path.GetFileName(textBox_save_as.Text);
             Exporter.mSavePath = Path.GetDirectoryName(textBox_save_as.Text);
             Exporter.mRobot.BaseLink.name = Exporter.mPackageName;
-            Exporter.mRobot.BaseLink.uniqueName = Exporter.mPackageName;
-            Exporter.mRobot.BaseLink.Inertial.Origin.X = (Double.TryParse(textBox_inertial_origin_x.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Origin.Y = (Double.TryParse(textBox_inertial_origin_y.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Origin.Z = (Double.TryParse(textBox_inertial_origin_z.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Origin.Roll = (Double.TryParse(textBox_inertial_origin_roll.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Origin.Pitch = (Double.TryParse(textBox_inertial_origin_pitch.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Origin.Yaw = (Double.TryParse(textBox_inertial_origin_yaw.Text, out value)) ? value : 0;
 
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx = (Double.TryParse(textBox_ixx.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy = (Double.TryParse(textBox_ixy.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz = (Double.TryParse(textBox_ixz.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy = (Double.TryParse(textBox_iyy.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz = (Double.TryParse(textBox_iyz.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Inertial.Inertia.Izz = (Double.TryParse(textBox_izz.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Origin.update(textBox_inertial_origin_x, 
+                                                            textBox_inertial_origin_y, 
+                                                            textBox_inertial_origin_z, 
+                                                            textBox_inertial_origin_roll,
+                                                            textBox_inertial_origin_pitch,
+                                                            textBox_inertial_origin_yaw);
 
-            Exporter.mRobot.BaseLink.Inertial.Mass.Value = (Double.TryParse(textBox_mass.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Inertia.update(textBox_ixx, 
+                                                             textBox_ixy, 
+                                                             textBox_ixz, 
+                                                             textBox_iyy,
+                                                             textBox_iyz, 
+                                                             textBox_izz);
 
 
-            Exporter.mRobot.BaseLink.Visual.Origin.X = (Double.TryParse(textBox_visual_origin_x.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Origin.Y = (Double.TryParse(textBox_visual_origin_y.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Origin.Z = (Double.TryParse(textBox_visual_origin_z.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Origin.Roll = (Double.TryParse(textBox_visual_origin_roll.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Origin.Pitch = (Double.TryParse(textBox_visual_origin_pitch.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Origin.Yaw = (Double.TryParse(textBox_visual_origin_yaw.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Inertial.Mass.update(textBox_mass);
+
+            Exporter.mRobot.BaseLink.Visual.Origin.update(textBox_visual_origin_x, 
+                                                          textBox_visual_origin_y, 
+                                                          textBox_visual_origin_z, 
+                                                          textBox_visual_origin_roll, 
+                                                          textBox_visual_origin_pitch, 
+                                                          textBox_visual_origin_yaw);
+
 
             Exporter.mRobot.BaseLink.Visual.Material.name = comboBox_materials.Text;
             Exporter.mRobot.BaseLink.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Red = (Double.TryParse(domainUpDown_red.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Green = (Double.TryParse(domainUpDown_green.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Blue = (Double.TryParse(domainUpDown_blue.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha = (Double.TryParse(domainUpDown_alpha.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Visual.Material.Color.update(domainUpDown_red, 
+                                                                  domainUpDown_green, 
+                                                                  domainUpDown_blue, 
+                                                                  domainUpDown_alpha);
 
-
-            Exporter.mRobot.BaseLink.Collision.Origin.X = (Double.TryParse(textBox_collision_origin_x.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Collision.Origin.Y = (Double.TryParse(textBox_collision_origin_y.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Collision.Origin.Z = (Double.TryParse(textBox_collision_origin_z.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Collision.Origin.Roll = (Double.TryParse(textBox_collision_origin_roll.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Collision.Origin.Pitch = (Double.TryParse(textBox_collision_origin_pitch.Text, out value)) ? value : 0;
-            Exporter.mRobot.BaseLink.Collision.Origin.Yaw = (Double.TryParse(textBox_collision_origin_yaw.Text, out value)) ? value : 0;
+            Exporter.mRobot.BaseLink.Collision.Origin.update(textBox_collision_origin_x, 
+                                                             textBox_collision_origin_y, 
+                                                             textBox_collision_origin_z, 
+                                                             textBox_collision_origin_roll,
+                                                             textBox_collision_origin_pitch, 
+                                                             textBox_collision_origin_yaw);
 
             Exporter.mRobot.BaseLink.STLQualityFine = radioButton_fine.Checked;
 
@@ -295,41 +293,45 @@ namespace SW2URDF
             Exporter.createRobotFromActiveModel();
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
-            textBox_collision_origin_x.Text = Exporter.mRobot.BaseLink.Collision.Origin.X.ToString("G5");
-            textBox_collision_origin_y.Text = Exporter.mRobot.BaseLink.Collision.Origin.Y.ToString("G5");
-            textBox_collision_origin_z.Text = Exporter.mRobot.BaseLink.Collision.Origin.Z.ToString("G5");
-            textBox_collision_origin_roll.Text = "0";
-            textBox_collision_origin_pitch.Text = "0";
-            textBox_collision_origin_yaw.Text = "0";
+            Exporter.mRobot.BaseLink.Visual.Origin.fillBoxes(textBox_collision_origin_x, 
+                                                             textBox_collision_origin_y, 
+                                                             textBox_collision_origin_z, 
+                                                             textBox_collision_origin_roll,
+                                                             textBox_collision_origin_pitch, 
+                                                             textBox_collision_origin_yaw, 
+                                                             "G5");
 
-            textBox_visual_origin_x.Text = Exporter.mRobot.BaseLink.Visual.Origin.X.ToString("G5");
-            textBox_visual_origin_y.Text = Exporter.mRobot.BaseLink.Visual.Origin.Y.ToString("G5");
-            textBox_visual_origin_z.Text = Exporter.mRobot.BaseLink.Visual.Origin.Z.ToString("G5");
-            textBox_visual_origin_roll.Text = "0";
-            textBox_visual_origin_pitch.Text = "0";
-            textBox_visual_origin_yaw.Text = "0";
+            Exporter.mRobot.BaseLink.Visual.Origin.fillBoxes(textBox_visual_origin_x, 
+                                                             textBox_visual_origin_y,
+                                                             textBox_visual_origin_z, 
+                                                             textBox_visual_origin_roll,
+                                                             textBox_visual_origin_pitch, 
+                                                             textBox_visual_origin_yaw,
+                                                             "G5");
 
-            domainUpDown_red.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Red.ToString("G5");
-            domainUpDown_green.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Green.ToString("G5");
-            domainUpDown_blue.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Blue.ToString("G5");
-            domainUpDown_alpha.Text = Exporter.mRobot.BaseLink.Visual.Material.Color.Alpha.ToString("G5");
+            Exporter.mRobot.BaseLink.Visual.Material.Color.fillBoxes(domainUpDown_red, 
+                                                                     domainUpDown_green, 
+                                                                     domainUpDown_blue, 
+                                                                     domainUpDown_alpha, 
+                                                                     "G5");
 
-            textBox_inertial_origin_x.Text = Exporter.mRobot.BaseLink.Inertial.Origin.X.ToString("G5");
-            textBox_inertial_origin_y.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Y.ToString("G5");
-            textBox_inertial_origin_z.Text = Exporter.mRobot.BaseLink.Inertial.Origin.Z.ToString("G5");
-            textBox_inertial_origin_roll.Text = "0";
-            textBox_inertial_origin_pitch.Text = "0";
-            textBox_inertial_origin_yaw.Text = "0";
+            Exporter.mRobot.BaseLink.Inertial.Origin.fillBoxes(textBox_inertial_origin_x, 
+                                                               textBox_inertial_origin_y, 
+                                                               textBox_inertial_origin_z,
+                                                               textBox_inertial_origin_roll,
+                                                               textBox_inertial_origin_pitch, 
+                                                               textBox_inertial_origin_yaw, 
+                                                               "G5");
+            
+            Exporter.mRobot.BaseLink.Inertial.Mass.fillBoxes(textBox_mass, "G5");
 
-            textBox_mass.Text = Exporter.mRobot.BaseLink.Inertial.Mass.Value.ToString("G5");
-
-            textBox_ixx.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixx.ToString("G5");
-            textBox_ixy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixy.ToString("G5");
-            textBox_ixz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Ixz.ToString("G5");
-            textBox_iyy.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyy.ToString("G5");
-            textBox_iyz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Iyz.ToString("G5");
-            textBox_izz.Text = Exporter.mRobot.BaseLink.Inertial.Inertia.Izz.ToString("G5");
-
+            Exporter.mRobot.BaseLink.Inertial.Inertia.fillBoxes(textBox_ixx, 
+                                                                textBox_ixy,
+                                                                textBox_ixz,
+                                                                textBox_iyy, 
+                                                                textBox_iyz, 
+                                                                textBox_izz, 
+                                                                "G5");
         }
         #endregion
 
