@@ -42,6 +42,7 @@ namespace SW2URDF
         private int mSTLQuality;
         private double mHideTransitionSpeed;
         private string referenceSketchName;
+        private UserProgressBar progressBar;
 
         [XmlIgnore]
         public ModelDoc2 ActiveSWModel;
@@ -68,7 +69,7 @@ namespace SW2URDF
         public SW2URDFExporter(ISldWorks iSldWorksApp)
         {
             constructExporter(iSldWorksApp);
-
+            iSwApp.GetUserProgressBar(out progressBar);
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.GetTitle();
             
@@ -211,8 +212,8 @@ namespace SW2URDF
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
             Link.Inertial.Mass.value = swMass.Mass;
-
-            Link.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            Link.Inertial.Inertia.setMomentMatrix(moment);
 
             double[] centerOfMass = swMass.CenterOfMass;
             Link.Inertial.Origin.xyz = centerOfMass;
@@ -432,7 +433,8 @@ namespace SW2URDF
 
             // Wait are you saying that even though the matrix was trasposed from column major order, you are writing it in row-major order here.
             // Yes, yes I am.
-            Link.Inertial.Inertia.Moment = linkLocalMomentInertia.ToRowWiseArray();
+            double[] moment = linkLocalMomentInertia.ToRowWiseArray();
+            Link.Inertial.Inertia.setMomentMatrix(moment);
 
 
             Link.Collision.Origin.xyz = OPS.getXYZ(localCollisionTransform);
@@ -610,14 +612,15 @@ namespace SW2URDF
                         child.Joint.Axis.xyz = RDir1.ArrayData;
                         child.Joint.Origin.xyz = RPoint1.ArrayData;
                         child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
-
+                        moveOrigin(parent, child);
                     }
                     else if (L1Status == 1)
                     {
                         child.Joint.type = "prismatic";
                         child.Joint.Axis.xyz = LDir1.ArrayData;
-                        child.Joint.Origin.xyz = OPS.getXYZ(child.SWMainComponent.Transform2);
+                        child.Joint.Origin.xyz = RPoint1.ArrayData;
                         child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
+                        moveOrigin(parent, child);
                     }
                 }
                 OPS.threshold(child.Joint.Origin.xyz, 0.00001);
@@ -628,6 +631,31 @@ namespace SW2URDF
                     addLimits(child.Joint, limitMates);
                 }
             }
+        }
+
+        public void moveOrigin(link parent, link nonLocalizedChild)
+        {
+            double X_max = Double.MinValue; double Y_max = Double.MinValue; double Z_max = Double.MinValue;
+            double X_min = Double.MaxValue; double Y_min = Double.MaxValue; double Z_min = Double.MaxValue;
+            double[] points;
+
+            foreach (Component2 comp in nonLocalizedChild.SWcomponents)
+            {
+                points = comp.GetBox(false, false); // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
+                X_max = OPS.max(points[0], points[3], X_max);
+                Y_max = OPS.max(points[1], points[4], Y_max);
+                Z_max = OPS.max(points[2], points[5], Z_max);
+                X_min = OPS.min(points[0], points[3], X_min);
+                Y_min = OPS.min(points[1], points[4], Y_min);
+                Z_min = OPS.min(points[2], points[5], Z_min);
+            }
+            string coordsys = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+
+            MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
+            double[] idealOrigin = OPS.closestPointOnLineToPoint(OPS.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
+
+            nonLocalizedChild.Joint.Origin.xyz = OPS.closestPointOnLineWithinBox(X_min, X_max, Y_min, Y_max, Z_min, Z_max, nonLocalizedChild.Joint.Axis.xyz, idealOrigin);
+            
         }
 
         // Calculates the axis from a Reference Axis in the model
@@ -777,10 +805,9 @@ namespace SW2URDF
         public void exportRobot()
         {
             //Setting up the progress bar
-            UserProgressBar progress;
-            iSwApp.GetUserProgressBar(out progress);
-            int progressBarBound = getLinkCount(mRobot.BaseLink);
-            progress.Start(0, progressBarBound, "Creating package directories");
+
+            int progressBarBound = getCount(mRobot.BaseLink);
+            progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
@@ -802,7 +829,7 @@ namespace SW2URDF
             List<Component2> hiddenComponents = findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
-            string filename = exportFiles(mRobot.BaseLink, package, progress, 0);
+            string filename = exportFiles(mRobot.BaseLink, package, 0);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
             
@@ -813,19 +840,19 @@ namespace SW2URDF
             mRobot.writeURDF(uWriter.writer);
 
             resetUserPreferences();
-            progress.End();
+            progressBar.End();
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string exportFiles(link Link, URDFPackage package, UserProgressBar progress, int count)
+        public string exportFiles(link Link, URDFPackage package, int count)
         {
-            progress.UpdateProgress(count);
-            progress.UpdateTitle("Exporting mesh: " + Link.name);
+            progressBar.UpdateProgress(count);
+            progressBar.UpdateTitle("Exporting mesh: " + Link.name);
             // Iterate through each child and export its files
             foreach (link child in Link.Children)
             {
                 count += 1;
-                string filename = exportFiles(child, package, progress, count);
+                string filename = exportFiles(child, package, count);
                 child.Visual.Geometry.Mesh.filename = filename;
                 child.Collision.Geometry.Mesh.filename = filename;
             }
@@ -923,12 +950,32 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
-        public int getLinkCount(link Link)
+        public int getCount(link Link)
         {
             int count = 1;
             foreach (link child in Link.Children)
             {
-                count += getLinkCount(child);
+                count += getCount(child);
+            }
+            return count;
+        }
+
+        public int getCount(LinkNode node)
+        {
+            int count = 1;
+            foreach (LinkNode child in node.Nodes)
+            {
+                count += getCount(child);
+            }
+            return count;
+        }
+
+        public int getCount(TreeNodeCollection nodes)
+        {
+            int count = 0;
+            foreach (LinkNode node in nodes)
+            {
+                count += getCount(node);
             }
             return count;
         }
@@ -1193,8 +1240,10 @@ namespace SW2URDF
 
             mRobot.BaseLink = Link;
         }
-        public link createLink(LinkNode node)
+        public link createLink(LinkNode node, int count)
         {
+            progressBar.UpdateTitle("Building link: " + node.Name);
+            progressBar.UpdateProgress(count);
             link Link;
             if (node.isBaseNode)
             {
@@ -1209,7 +1258,7 @@ namespace SW2URDF
             node.Link = Link;
             foreach (LinkNode child in node.Nodes)
             {
-                link childLink = createLink(child);
+                link childLink = createLink(child, count + 1);
                 Link.Children.Add(childLink);
             }
             return Link;
@@ -1218,24 +1267,23 @@ namespace SW2URDF
         public void createRobotFromTreeView(TreeView tree)
         {
             mRobot = new robot();
-            UserProgressBar progress;
-            iSwApp.GetUserProgressBar(out progress);
-            progress.Start(0, tree.Nodes.Count, "Building links");
+            
+
+            progressBar.Start(0, getCount(tree.Nodes), "Building links");
             int count = 0;
             foreach (LinkNode node in tree.Nodes)
             {
-                progress.UpdateProgress(count);
-                progress.UpdateTitle("Building link: " + node.Name);
+                progressBar.UpdateProgress(count);
+                progressBar.UpdateTitle("Building link: " + node.Name);
                 count++;
                 if (node.Level == 0)
                 {
-
-                    link BaseLink = createLink(node);
+                    link BaseLink = createLink(node, 1);
                     mRobot.BaseLink = BaseLink;
                     node.Link = BaseLink;
                 }
             }
-            progress.End();
+            progressBar.End();
         }
 
         public link createLinkFromComponents(link parent, List<Component2> components, LinkNode node )
@@ -1275,7 +1323,8 @@ namespace SW2URDF
             swMass.SetCoordinateSystem(jointTransform);
 
             child.Inertial.Mass.value = swMass.Mass;
-            child.Inertial.Inertia.Moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            child.Inertial.Inertia.setMomentMatrix(moment);
 
             double[] centerOfMass = swMass.CenterOfMass;
             child.Inertial.Origin.xyz = centerOfMass;

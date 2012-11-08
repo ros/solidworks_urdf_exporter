@@ -198,7 +198,7 @@ namespace SW2URDF
 
                 case swComponentSuppressionState_e.swComponentFullyResolved:
                     {
-                        if ((modDoc != null) & !this.swAddin.OpenDocs.Contains(modDoc))
+                        if ((modDoc != null) && !this.swAddin.OpenDocs.Contains(modDoc))
                         {
                             this.swAddin.AttachModelDocEventHandler(modDoc);
                         }
@@ -207,7 +207,7 @@ namespace SW2URDF
 
                 case swComponentSuppressionState_e.swComponentResolved:
                     {
-                        if ((modDoc != null) & !this.swAddin.OpenDocs.Contains(modDoc))
+                        if ((modDoc != null) && !this.swAddin.OpenDocs.Contains(modDoc))
                         {
                             this.swAddin.AttachModelDocEventHandler(modDoc);
                         }

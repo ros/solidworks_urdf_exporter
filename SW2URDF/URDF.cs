@@ -59,15 +59,7 @@ namespace SW2URDF
         public void writeURDF(XmlWriter writer)
         {
             string value_string = "";
-            if (value.GetType() == typeof(double))
-            {
-                value_string = value.ToString();
-            }
-            else if (value.GetType() == typeof(string))
-            {
-                value_string = (string)value;
-            }
-            else if (value.GetType() == typeof(double[]))
+            if (value.GetType() == typeof(double[]))
             {
                 double[] value_array = (double[])value;
                 foreach (double d in value_array)
@@ -76,6 +68,15 @@ namespace SW2URDF
                 }
                 value_string.TrimEnd(' ');
             }
+            else if (value.GetType() == typeof(double))
+            {
+                value_string = value.ToString();
+            }
+            else if (value.GetType() == typeof(string))
+            {
+                value_string = (string)value;
+            }
+
             else if (value != null) 
             {
                 throw new Exception("Unhandled object type in write attribute");
@@ -536,15 +537,12 @@ namespace SW2URDF
         }
 
         private double[] moment;
+
         public double[] Moment
         {
             get
             {
                 return moment;
-            }
-            set
-            {
-                moment = value;
             }
         }
 
@@ -677,6 +675,16 @@ namespace SW2URDF
             Izz.isRequired = true;
             Izz.type = "izz";
             izz = 0.0;
+        }
+        public void setMomentMatrix(double[] array)
+        {
+            moment = array;
+            ixx = Moment[0];
+            ixy = Moment[1];
+            ixz = Moment[2];
+            iyy = Moment[4];
+            iyz = Moment[5];
+            izz = Moment[8];
         }
         new public void writeURDF(XmlWriter writer)
         {

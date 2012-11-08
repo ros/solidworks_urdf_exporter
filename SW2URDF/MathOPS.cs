@@ -87,6 +87,36 @@ namespace SW2URDF
             return vec;
         }
 
+        public double max(double d1, double d2, double d3)
+        {
+            return max(new double[] { d1, d2, d3 });
+        }
+
+        public double max(double[] array)
+        {
+            double result = Double.MinValue;
+            for (int i = 0; i < array.Length; i++)
+            {
+                result = Math.Max(array[i], result);
+            }
+            return result;
+        }
+
+        public double min(double d1, double d2, double d3)
+        {
+            return min(new double[] { d1, d2, d3 });
+        }
+
+        public double min(double[] array)
+        {
+            double result = Double.MaxValue;
+            for (int i = 0; i < array.Length; i++)
+            {
+                result = Math.Min(array[i], result);
+            }
+            return result;
+        }
+
         // This set of methods finds the bottom-most one in a column vector from a matrix.
         public int findLeadingOneinVector(Vector v)
         {
@@ -168,6 +198,49 @@ namespace SW2URDF
 
         }
 
+        public double[] closestPointOnLineToPoint(double[] point, double[] line, double[] pointOnLine)
+        {
+            if (point.Length != line.Length || point.Length != pointOnLine.Length)
+            {
+                throw new Exception("Points and line vectors are not the same length");
+            }
+
+            double denominator = 0;
+            double numerator = 0;
+            for (int i = 0; i < point.Length; i++)
+            {
+                denominator += line[i]*line[i];
+                numerator += line[i] * (point[i] - pointOnLine[i]);
+            }
+            double k = numerator / denominator;
+            double[] result = new double[point.Length];
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = pointOnLine[i] + k * line[i];
+            }
+            return result;
+        }
+
+
+        public double[] closestPointOnLineWithinBox(double X_min, double X_max, double Y_min, double Y_max, double Z_min, double Z_max, double[] line, double[] pointOnLine)
+        {
+            if (pointOnLine[0] > X_min && pointOnLine[0] < X_max && pointOnLine[1] > Y_min && pointOnLine[1] < Y_max && pointOnLine[2] > Z_min && pointOnLine[2] < Z_max)
+            {
+                return pointOnLine;
+            }
+            double[] point1 = closestPointOnLineToPoint(new double[] { X_max, Y_max, Z_max }, line, pointOnLine);
+            double[] point2 = closestPointOnLineToPoint(new double[] { X_min, Y_min, Z_min }, line, pointOnLine);
+
+            if (distance2(pointOnLine, point1) < distance2(pointOnLine, point2))
+            {
+                return point1;
+            }
+            else
+            {
+                return point2;
+            }
+            
+        }
         public Vector<double> crossProduct3(Vector<double> v1, Vector<double> v2)
         {
             Vector<double> v = new DenseVector(v1.Count);
@@ -362,6 +435,22 @@ namespace SW2URDF
                 }
             }
             return array;
+        }
+
+        public double distance(double[] array1, double[] array2)
+        {
+            return Math.Sqrt(distance2(array1, array2));
+        }
+
+        public double distance2(double[] array1, double[] array2)
+        {
+            double sqrdmag = 0;
+            for (int i = 0; i < array1.Length; i++)
+            {
+                double d = array1[i] - array2[i];
+                sqrdmag += d * d;
+            }
+            return sqrdmag;
         }
 
         public void threshold(double[] array, double min_value)
