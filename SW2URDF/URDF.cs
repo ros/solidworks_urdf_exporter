@@ -66,7 +66,7 @@ namespace SW2URDF
                 {
                     value_string += d.ToString() + " ";
                 }
-                value_string.TrimEnd(' ');
+                value_string = value_string.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
@@ -162,6 +162,7 @@ namespace SW2URDF
         public joint Joint;
         public bool STLQualityFine;
         public bool isIncomplete;
+        public bool isFixedFrame;
 
         // The SW part component object
         public Component2 SWComponent;
@@ -173,23 +174,30 @@ namespace SW2URDF
         public link()
         {
             Children = new List<link>();
-            Inertial = new inertial();
-            Visual = new visual();
-            Collision = new collision();
             SWcomponents = new List<Component2>();
             Name = new Attribute();
             Name.isRequired = true;
             Name.type = "name";
             isRequired = true;
+            isFixedFrame = true;
         }
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("link");
             Name.writeURDF(writer);
 
-            Inertial.writeURDF(writer);
-            Visual.writeURDF(writer);
-            Collision.writeURDF(writer);
+            if (Inertial != null)
+            {
+                Inertial.writeURDF(writer);
+            }
+            if (Visual != null)
+            {
+                Visual.writeURDF(writer);
+            }
+            if (Collision != null)
+            {
+                Collision.writeURDF(writer);
+            }
 
             writer.WriteEndElement();
             if (Joint != null && Joint.name != null)
@@ -1299,14 +1307,10 @@ namespace SW2URDF
         }
         public limit()
         {
-            Lower = new Attribute();
-            Upper = new Attribute();
             Effort = new Attribute();
             Velocity = new Attribute();
             Effort.isRequired = true;
             Velocity.isRequired = true;
-            Lower.type = "lower";
-            Upper.type = "upper";
             Effort.type = "effort";
             Velocity.type = "velocity";
             Effort.value = 0.0;
@@ -1316,19 +1320,19 @@ namespace SW2URDF
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("limit");
-            if (Lower.value != null)
+            if (Lower != null)
             {
                 Lower.writeURDF(writer);
             }
-            if (Upper.value != null)
+            if (Upper != null)
             {
                 Upper.writeURDF(writer);
             }
-            if (Effort.value != null)
+            if (Effort != null)
             {
                 Effort.writeURDF(writer);
             }
-            if (Velocity.value != null)
+            if (Velocity != null)
             {
                 Velocity.writeURDF(writer);
             }
@@ -1337,12 +1341,12 @@ namespace SW2URDF
 
         public void fillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity, string format)
         {
-            if (Lower.value != null)
+            if (Lower != null)
             {
                 box_lower.Text = lower.ToString(format);
             }
 
-            if (Upper.value != null)
+            if (Upper != null)
             {
                 box_upper.Text = upper.ToString(format);
             }
@@ -1351,23 +1355,33 @@ namespace SW2URDF
             box_velocity.Text = velocity.ToString(format);
         }
 
-        public void update(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity)
+        public void setValues(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity)
         {
             double value;
-            if (box_lower.Text == null)
+            if (box_lower.Text == "")
             {
-                Lower.value = null;
+                Lower = null;
             }
             else
             {
+                if (Lower == null)
+                {
+                    Lower = new Attribute();
+                    Lower.type = "lower";
+                }
                 lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
-            if (box_upper.Text == null)
+            if (box_upper.Text == "")
             {
-                Upper.value = null;
+                Upper = null;
             }
             else
             {
+                if (Upper == null)
+                {
+                    Upper = new Attribute();
+                    Upper.type = "upper";
+                }
                 upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
@@ -1407,19 +1421,16 @@ namespace SW2URDF
 
         public calibration()
         {
-            Rising = new Attribute();
-            Falling = new Attribute();
-            Rising.type = "rising";
-            Falling.type = "falling";
+
         }
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("calibration");
-            if (Rising.value != null)
+            if (Rising != null)
             {
                 Rising.writeURDF(writer);
             }
-            if (Falling.value != null)
+            if (Falling != null)
             {
                 Falling.writeURDF(writer);
             }
@@ -1427,34 +1438,44 @@ namespace SW2URDF
         }
         public void fillBoxes(TextBox box_rising, TextBox box_falling, string format)
         {
-            if (Rising.value != null)
+            if (Rising != null)
             {
                 box_rising.Text = rising.ToString(format);
             }
 
-            if (Falling.value != null)
+            if (Falling != null)
             {
                 box_falling.Text = falling.ToString(format);
             }
         }
 
-        public void update(TextBox box_rising, TextBox box_falling)
+        public void setValues(TextBox box_rising, TextBox box_falling)
         {
             double value;
             if (box_rising.Text == "")
             {
-                Rising.value = null;
+                Rising = null;
             }
             else
             {
+                if (Rising == null)
+                {
+                    Rising = new Attribute();
+                    Rising.type = "rising";
+                }
                 rising = (Double.TryParse(box_rising.Text, out value)) ? value : 0;
             }
             if (box_falling.Text == "")
             {
-                Falling.value = null;
+                Falling = null;
             }
             else
             {
+                if (Falling == null)
+                {
+                    Falling = new Attribute();
+                    Falling.type = "falling";
+                }
                 falling = (Double.TryParse(box_falling.Text, out value)) ? value : 0;
             }
         }
@@ -1490,15 +1511,12 @@ namespace SW2URDF
 
         public dynamics()
         {
-            Damping = new Attribute();
-            Friction = new Attribute();
-            Damping.type = "damping";
-            Friction.type = "friction";
+
         }
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("dynamics");
-            if (Damping.value != null)
+            if (Damping != null)
             {
                 Damping.writeURDF(writer);
             }
@@ -1511,33 +1529,43 @@ namespace SW2URDF
 
         public void fillBoxes(TextBox box_damping, TextBox box_friction, string format)
         {
-            if (Damping.value != null)
+            if (Damping != null)
             {
                 box_damping.Text = damping.ToString(format);
             }
-            if (Friction.value != null)
+            if (Friction != null)
             {
                 box_friction.Text = friction.ToString(format);
             }
         }
 
-        public void update(TextBox box_damping, TextBox box_friction)
+        public void setValues(TextBox box_damping, TextBox box_friction)
         {
             double value;
             if (box_damping.Text == "")
             {
-                Damping.value = null;
+                Damping = null;
             }
             else
             {
+                if (Damping == null)
+                {
+                    Damping = new Attribute();
+                    Damping.type = "damping";
+                }
                 damping = (Double.TryParse(box_damping.Text, out value)) ? value : 0;
             }
             if (box_friction.Text == "")
             {
-                Friction.value = null;
+                Friction = null;
             }
             else
             {
+                if (Friction == null)
+                {
+                    Friction = new Attribute();
+                    Friction.type = "friction";
+                }
                 friction = (Double.TryParse(box_friction.Text, out value)) ? value : 0;
             }
         }
@@ -1596,101 +1624,98 @@ namespace SW2URDF
         }
         public safety_controller()
         {
-            Soft_lower = new Attribute();
-            Soft_upper = new Attribute();
-            K_position = new Attribute();
             K_velocity = new Attribute();
-
-            Soft_lower.type = "soft_lower";
-            Soft_upper.type = "soft_upper";
-            K_position.type = "k_position";
             K_velocity.type = "k_velocity";
-            k_velocity = 0.0;
             K_velocity.isRequired = true;
         }
+
         new public void writeURDF(XmlWriter writer)
         {
             writer.WriteStartElement("safety_controller");
-            if (Soft_upper.value != null)
+            if (Soft_upper != null)
             {
                 Soft_upper.writeURDF(writer);
             }
-            if (Soft_lower.value != null)
+            if (Soft_lower != null)
             {
                 Soft_lower.writeURDF(writer);
             }
-            if (K_position.value != null)
+            if (K_position != null)
             {
                 K_position.writeURDF(writer);
             }
-            if (K_velocity.value != null)
-            {
-                K_velocity.writeURDF(writer);
-            }
+            K_velocity.writeURDF(writer);
+
             writer.WriteEndElement();
         }
 
         public void fillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity, string format)
         {
-            if (Soft_lower.value != null)
+            if (Soft_lower != null)
             {
                 box_lower.Text = soft_lower.ToString(format);
             }
 
-            if (Soft_upper.value != null)
+            if (Soft_upper != null)
             {
                 box_upper.Text = soft_upper.ToString(format);
             }
 
-            if (K_position.value != null)
+            if (K_position != null)
             {
                 box_position.Text = k_position.ToString(format);
             }
 
-            if (K_velocity.value != null)
-            {
-                box_velocity.Text = k_velocity.ToString(format);
-            }
+            box_velocity.Text = k_velocity.ToString(format);
+            
         }
 
-        public void update(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity)
+        public void setValues(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity)
         {
             double value;
             if (box_lower.Text == "")
             {
-                Soft_lower.value = null;
+                Soft_lower = null;
             }
             else
             {
+                if (Soft_lower == null)
+                {
+                    Soft_lower = new Attribute();
+                    Soft_lower.type = "soft_lower";
+                }
                 soft_lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
 
             if (box_upper.Text == "")
             {
-                Soft_upper.value = null;
+                Soft_upper = null;
             }
             else
             {
+                if (Soft_upper == null)
+                {
+                    Soft_upper = new Attribute();
+                    Soft_upper.type = "soft_upper";
+                }
                 soft_upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
             if (box_position.Text == "")
             {
-                K_position.value = null;
+                K_position = null;
             }
             else
             {
+                if (K_position == null)
+                {
+                    K_position = new Attribute();
+                    K_position.type = "k_position";
+                }
                 k_position = (Double.TryParse(box_position.Text, out value)) ? value : 0;
+                
             }
-
-            if (box_velocity.Text == "")
-            {
-                K_velocity.value = null;
-            }
-            else
-            {
-                k_velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
-            }
+            k_velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
         }
     }
     
@@ -1857,6 +1882,8 @@ namespace SW2URDF
         public bool isIncomplete
         { get; set; }
         public bool needsSaving
+        { get; set; }
+        public string whyIncomplete
         { get; set; }
 
     }

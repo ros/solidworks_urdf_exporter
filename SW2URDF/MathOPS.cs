@@ -87,34 +87,68 @@ namespace SW2URDF
             return vec;
         }
 
-        public double max(double d1, double d2, double d3)
+        public T max<T>(T d1, T d2, T d3) where T: System.IComparable<T>
         {
-            return max(new double[] { d1, d2, d3 });
+            return max(new T[] { d1, d2, d3 });
         }
 
-        public double max(double[] array)
+        public T max<T>(T[] array) where T: IComparable<T>
         {
-            double result = Double.MinValue;
-            for (int i = 0; i < array.Length; i++)
+            T result = default(T);
+            if (array.Length > 0)
             {
-                result = Math.Max(array[i], result);
+                result = array[0];
+                foreach (T t in array)
+                {
+                    result = Comparer<T>.Default.Compare(t, result) > 0 ? t : result;
+                }
             }
             return result;
         }
 
-        public double min(double d1, double d2, double d3)
+        public T max<T>(T t1, T t2) where T : System.IComparable<T>
         {
-            return min(new double[] { d1, d2, d3 });
+            return max(new T[] { t1, t2 });
         }
 
-        public double min(double[] array)
+        public T min<T>(T t1, T t2) where T : System.IComparable<T>
         {
-            double result = Double.MaxValue;
-            for (int i = 0; i < array.Length; i++)
+            return min(new T[] { t1, t2 });
+        }
+
+        public T min<T>(T d1, T d2, T d3) where T: System.IComparable<T>
+        {
+            return min(new T[] { d1, d2, d3 });
+        }
+
+        public T min<T>(T[] array) where T: System.IComparable<T>
+        {
+            T result = default(T);
+            if (array.Length > 0)
             {
-                result = Math.Min(array[i], result);
+                result = array[0];
+                foreach (T t in array)
+                {
+                    result = Comparer<T>.Default.Compare(t, result) < 0 ? t : result;
+                }
             }
             return result;
+        }
+
+        public T envelope<T>(T value, T min, T max) where T : System.IComparable<T>
+        {
+            if (Comparer<T>.Default.Compare(value, max) > 0)
+            {
+                return max;
+            }
+            else if (Comparer<T>.Default.Compare(value, min) < 0)
+            {
+                return min;
+            }
+            else
+            {
+                return value;
+            }
         }
 
         // This set of methods finds the bottom-most one in a column vector from a matrix.

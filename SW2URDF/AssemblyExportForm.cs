@@ -290,34 +290,58 @@ namespace SW2URDF
 
                 if (Joint.Limit != null)
                 {
-                    Joint.Limit.fillBoxes(textBox_limit_lower, 
-                                          textBox_limit_upper, 
-                                          textBox_limit_effort, 
-                                          textBox_limit_velocity, 
+                    Joint.Limit.fillBoxes(textBox_limit_lower,
+                                          textBox_limit_upper,
+                                          textBox_limit_effort,
+                                          textBox_limit_velocity,
                                           "G5");
+                }
+                else
+                {
+                    fillBlank(new TextBox[]{textBox_limit_lower,
+                                          textBox_limit_upper,
+                                          textBox_limit_effort,
+                                          textBox_limit_velocity});
                 }
 
                 if (Joint.Calibration != null)
                 {
-                    Joint.Calibration.fillBoxes(textBox_calibration_rising, 
-                                                textBox_calibration_falling, 
+                    Joint.Calibration.fillBoxes(textBox_calibration_rising,
+                                                textBox_calibration_falling,
                                                 "G5");
+                }
+                else
+                {
+                    fillBlank(new TextBox[]{textBox_calibration_rising, 
+                                                textBox_calibration_falling});
                 }
 
                 if (Joint.Dynamics != null)
                 {
-                    Joint.Dynamics.fillBoxes(textBox_damping, 
-                                             textBox_friction, 
+                    Joint.Dynamics.fillBoxes(textBox_damping,
+                                             textBox_friction,
                                              "G5");
+                }
+                else
+                {
+                    fillBlank(new TextBox[]{textBox_damping, 
+                                             textBox_friction});
                 }
 
                 if (Joint.Safety != null)
                 {
-                    Joint.Safety.fillBoxes(textBox_soft_lower, 
-                                           textBox_soft_upper, 
-                                           textBox_k_position, 
-                                           textBox_k_velocity, 
+                    Joint.Safety.fillBoxes(textBox_soft_lower,
+                                           textBox_soft_upper,
+                                           textBox_k_position,
+                                           textBox_k_velocity,
                                            "G5");
+                }
+                else
+                {
+                    fillBlank(new TextBox[] {textBox_soft_lower,
+                                           textBox_soft_upper,
+                                           textBox_k_position,
+                                           textBox_k_velocity});
                 }
 
                 if (Joint.type == "revolute" || Joint.type == "continuous")
@@ -371,6 +395,14 @@ namespace SW2URDF
                     comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
                 }
                 AutoUpdatingForm = false;
+            }
+        }
+
+        public void fillBlank(TextBox[] boxes)
+        {
+            foreach (TextBox box in boxes)
+            {
+                box.Text = "";
             }
         }
 
@@ -465,7 +497,7 @@ namespace SW2URDF
                 {
                     Joint.Limit = new limit();
                 }
-                Joint.Limit.update(textBox_limit_lower, 
+                Joint.Limit.setValues(textBox_limit_lower, 
                                    textBox_limit_upper, 
                                    textBox_limit_effort, 
                                    textBox_limit_velocity);
@@ -481,7 +513,7 @@ namespace SW2URDF
                 {
                     Joint.Calibration = new calibration();
                 }
-                Joint.Calibration.update(textBox_calibration_rising, 
+                Joint.Calibration.setValues(textBox_calibration_rising, 
                                          textBox_calibration_falling);
             }
 
@@ -495,7 +527,7 @@ namespace SW2URDF
                 {
                     Joint.Dynamics = new dynamics();
                 }
-                Joint.Dynamics.update(textBox_damping, 
+                Joint.Dynamics.setValues(textBox_damping, 
                                       textBox_friction);
             }
 
@@ -509,7 +541,7 @@ namespace SW2URDF
                 {
                     Joint.Safety = new safety_controller();
                 }
-                Joint.Safety.update(textBox_soft_lower, 
+                Joint.Safety.setValues(textBox_soft_lower, 
                                     textBox_soft_upper, 
                                     textBox_k_position, 
                                     textBox_k_velocity);

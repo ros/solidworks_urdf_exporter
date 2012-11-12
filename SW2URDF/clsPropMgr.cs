@@ -25,6 +25,7 @@ namespace SW2URDF
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
+        ops OPS;
 
         public SW2URDFExporter Exporter;
         public LinkNode previouslySelectedNode;
@@ -112,6 +113,7 @@ namespace SW2URDF
             int longerrors = 0;
             int controlType = 0;
             int alignment = 0;
+            OPS = new ops();
             string[] listItems = new string[4];
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
@@ -242,6 +244,11 @@ namespace SW2URDF
             {
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
+            int itemsCount = Exporter.getCount(tree.Nodes);
+            int height = OPS.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
+            tree.Height = height;
+            pm_tree.Height = height;
+
             currentNode.ExpandAll();
         }
 
@@ -307,9 +314,21 @@ namespace SW2URDF
         //Sets the node's isIncomplete flag if the node has key items that need to be completed
         public void checkNodeComplete(LinkNode node)
         {
-            node.isIncomplete = (node.linkName.Equals("Empty_Link") ||
-                                 node.linkName.Equals("") ||
-                                 node.Components.Count == 0 ||
+            node.whyIncomplete = "";
+            if (node.linkName.Equals(""))
+            {
+                node.whyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
+            }
+            if (node.Nodes.Count > 0 && node.Components.Count == 0)
+            {
+                node.whyIncomplete += "        Links with children cannot be empty. Select its associated components\r\n";
+            }
+            if (node.jointName == "" && !node.isBaseNode)
+            {
+                node.whyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
+            }
+            node.isIncomplete = (node.linkName.Equals("") ||
+                                 (node.Nodes.Count > 0 && node.Components.Count == 0) ||
                                  (node.jointName == "" && !node.isBaseNode));
         }
 
@@ -320,7 +339,7 @@ namespace SW2URDF
             checkNodeComplete(node);
             if (node.isIncomplete)
             {
-                incompleteNodes += "    " + node.Text + "\r\n"; //Building the message
+                incompleteNodes += "    '" + node.Text + "':\r\n" + node.whyIncomplete + "\r\n\r\n"; //Building the message
             }
             // Cycle through the rest of the nodes
             foreach (LinkNode child in node.Nodes)
@@ -1009,9 +1028,9 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_tree = pm_Page.AddControl(dotNet_tree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
-            pm_tree.Height = 600;
+            pm_tree.Height = 163;
             tree = new TreeView();
-            tree.Height = 600;
+            tree.Height = 163;
             tree.Visible = true;
             tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(tree_AfterSelect);
             tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(tree_NodeMouseClick);
