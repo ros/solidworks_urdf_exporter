@@ -315,21 +315,28 @@ namespace SW2URDF
         public void checkNodeComplete(LinkNode node)
         {
             node.whyIncomplete = "";
+            node.isIncomplete = false;
             if (node.linkName.Equals(""))
             {
+                node.isIncomplete = true;
                 node.whyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
             }
             if (node.Nodes.Count > 0 && node.Components.Count == 0)
             {
+                node.isIncomplete = true;
                 node.whyIncomplete += "        Links with children cannot be empty. Select its associated components\r\n";
+            }
+            if (node.Components.Count == 0 && node.coordsysName == "Automatically Generate")
+            {
+                node.isIncomplete = true;
+                node.whyIncomplete += "        The origin reference coordinate system cannot be automatically generated\r\n";
+                node.whyIncomplete += "        without components. Either select an origin or at least one component.";
             }
             if (node.jointName == "" && !node.isBaseNode)
             {
+                node.isIncomplete = true;
                 node.whyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
             }
-            node.isIncomplete = (node.linkName.Equals("") ||
-                                 (node.Nodes.Count > 0 && node.Components.Count == 0) ||
-                                 (node.jointName == "" && !node.isBaseNode));
         }
 
         //Recursive function to iterate though nodes and build a message containing those that are incomplete

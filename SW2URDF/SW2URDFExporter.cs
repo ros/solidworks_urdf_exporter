@@ -1403,9 +1403,9 @@ namespace SW2URDF
                 jointType = "fixed";
                 child.Joint.type = jointType;
             }
-            // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
-            if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
+            else if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
             {
+                // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
                 estimateGlobalJointFromComponents(assy, parent, child);
             }
 

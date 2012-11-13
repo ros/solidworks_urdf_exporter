@@ -26,7 +26,8 @@ namespace SW2URDF
         public SW2URDFExporter Exporter;
         LinkNode previouslySelectedNode;
         public bool AutoUpdatingForm;
-
+        Control[] jointBoxes;
+        Control[] linkBoxes;
         LinkNode BaseNode;
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
@@ -37,6 +38,27 @@ namespace SW2URDF
             ActiveSWModel = swApp.ActiveDoc;
             Exporter = new SW2URDFExporter(iSwApp);
             AutoUpdatingForm = false;
+
+
+            jointBoxes = new Control[] {
+                textBox_joint_name, comboBox_axis, comboBox_joint_type,
+                textBox_axis_x, textBox_axis_y, textBox_axis_z,
+                textBox_joint_x, textBox_joint_y, textBox_joint_z, textBox_joint_pitch, textBox_joint_roll, textBox_joint_yaw,
+                textBox_limit_lower, textBox_limit_upper, textBox_limit_effort, textBox_limit_velocity,
+                textBox_damping, textBox_friction,
+                textBox_calibration_falling, textBox_calibration_rising,
+                textBox_soft_lower, textBox_soft_upper, textBox_k_position, textBox_k_velocity
+            };
+            linkBoxes = new Control[] {
+                textBox_inertial_origin_x, textBox_inertial_origin_y, textBox_inertial_origin_z, textBox_inertial_origin_roll, textBox_inertial_origin_pitch, textBox_inertial_origin_yaw,
+                textBox_visual_origin_x, textBox_visual_origin_y, textBox_visual_origin_z, textBox_visual_origin_roll, textBox_visual_origin_pitch, textBox_visual_origin_yaw,
+                textBox_collision_origin_x, textBox_collision_origin_y, textBox_collision_origin_z, textBox_collision_origin_roll, textBox_collision_origin_pitch, textBox_collision_origin_yaw,
+                textBox_ixx, textBox_ixy, textBox_ixz, textBox_iyy, textBox_iyz, textBox_izz,
+                textBox_mass, 
+                domainUpDown_red, domainUpDown_green, domainUpDown_blue, domainUpDown_alpha,
+                comboBox_materials,
+                textBox_texture
+            };
         }
 
         //Joint form configuration controls
@@ -173,104 +195,63 @@ namespace SW2URDF
         //From the link, this method fills the property boxes on the Link Properties page
         public void fillLinkPropertyBoxes(link Link)
         {
-            Link.Collision.Origin.fillBoxes(textBox_collision_origin_x, 
-                                            textBox_collision_origin_y, 
-                                            textBox_collision_origin_z, 
-                                            textBox_collision_origin_roll, 
-                                            textBox_collision_origin_pitch, 
-                                            textBox_collision_origin_yaw, 
-                                            "G5" );
+            fillBlank(linkBoxes);
+            if (!Link.isFixedFrame)
+            {
+                Link.Collision.Origin.fillBoxes(textBox_collision_origin_x,
+                                                textBox_collision_origin_y,
+                                                textBox_collision_origin_z,
+                                                textBox_collision_origin_roll,
+                                                textBox_collision_origin_pitch,
+                                                textBox_collision_origin_yaw,
+                                                "G5");
 
-            Link.Visual.Origin.fillBoxes(textBox_visual_origin_x, 
-                                         textBox_visual_origin_y, 
-                                         textBox_visual_origin_z, 
-                                         textBox_visual_origin_roll, 
-                                         textBox_visual_origin_pitch, 
-                                         textBox_visual_origin_yaw, 
-                                         "G5" );
+                Link.Visual.Origin.fillBoxes(textBox_visual_origin_x,
+                                             textBox_visual_origin_y,
+                                             textBox_visual_origin_z,
+                                             textBox_visual_origin_roll,
+                                             textBox_visual_origin_pitch,
+                                             textBox_visual_origin_yaw,
+                                             "G5");
 
-            Link.Inertial.Origin.fillBoxes(textBox_inertial_origin_x, 
-                                           textBox_inertial_origin_y, 
-                                           textBox_inertial_origin_z, 
-                                           textBox_inertial_origin_roll, 
-                                           textBox_inertial_origin_pitch, 
-                                           textBox_inertial_origin_yaw,
-                                           "G5" );
+                Link.Inertial.Origin.fillBoxes(textBox_inertial_origin_x,
+                                               textBox_inertial_origin_y,
+                                               textBox_inertial_origin_z,
+                                               textBox_inertial_origin_roll,
+                                               textBox_inertial_origin_pitch,
+                                               textBox_inertial_origin_yaw,
+                                               "G5");
 
-            Link.Inertial.Mass.fillBoxes(textBox_mass, "G5");
+                Link.Inertial.Mass.fillBoxes(textBox_mass, "G5");
 
-            Link.Inertial.Inertia.fillBoxes(textBox_ixx, 
-                                            textBox_ixy, 
-                                            textBox_ixz, 
-                                            textBox_iyy, 
-                                            textBox_iyz, 
-                                            textBox_izz, 
-                                            "G5" );
+                Link.Inertial.Inertia.fillBoxes(textBox_ixx,
+                                                textBox_ixy,
+                                                textBox_ixz,
+                                                textBox_iyy,
+                                                textBox_iyz,
+                                                textBox_izz,
+                                                "G5");
 
-            Link.Visual.Material.fillBoxes(comboBox_materials, "G5");
-            textBox_texture.Text = Link.Visual.Material.Texture.wFilename;
+                Link.Visual.Material.fillBoxes(comboBox_materials, "G5");
+                textBox_texture.Text = Link.Visual.Material.Texture.wFilename;
 
-            Link.Visual.Material.Color.fillBoxes(domainUpDown_red, 
-                                                 domainUpDown_green, 
-                                                 domainUpDown_blue, 
-                                                 domainUpDown_alpha, 
-                                                 "G5");
+                Link.Visual.Material.Color.fillBoxes(domainUpDown_red,
+                                                     domainUpDown_green,
+                                                     domainUpDown_blue,
+                                                     domainUpDown_alpha,
+                                                     "G5");
 
-            radioButton_fine.Checked = Link.STLQualityFine;
-            radioButton_course.Checked = !Link.STLQualityFine;
+                radioButton_fine.Checked = Link.STLQualityFine;
+                radioButton_course.Checked = !Link.STLQualityFine;
+            }
         }
 
         //Fills the property boxes on the joint properties page
         public void fillJointPropertyBoxes(joint Joint)
         {
+            fillBlank(jointBoxes);
             AutoUpdatingForm = true;
-            if (Joint == null) //For the base_link or if none is selected
-            {
-                textBox_joint_name.Text = "";
-                comboBox_joint_type.Text = "";
-
-                label_parent.Text = "";
-                label_child.Text = "";
-
-                textBox_joint_x.Text = "";
-                textBox_joint_y.Text = "";
-                textBox_joint_z.Text = "";
-                textBox_joint_roll.Text = "";
-                textBox_joint_pitch.Text = "";
-                textBox_joint_yaw.Text = "";
-
-                textBox_axis_x.Text = "";
-                textBox_axis_y.Text = "";
-                textBox_axis_z.Text = "";
-
-                textBox_limit_lower.Text = "";
-                textBox_limit_upper.Text = "";
-                textBox_limit_effort.Text = "";
-                textBox_limit_velocity.Text = "";
-
-                textBox_calibration_rising.Text = "";
-                textBox_calibration_falling.Text = "";
-
-                textBox_friction.Text = "";
-                textBox_damping.Text = "";
-
-                textBox_soft_lower.Text = "";
-                textBox_soft_upper.Text = "";
-                textBox_k_position.Text = "";
-                textBox_k_velocity.Text = "";
-
-                label_lower_limit.Text = "lower";
-                label_limit_upper.Text = "upper";
-                label_effort.Text = "effort";
-                label_velocity.Text = "velocity";
-                label_friction.Text = "friction";
-                label_damping.Text = "damping";
-                label_soft_lower.Text = "soft lower limit";
-                label_soft_upper.Text = "soft upper limit";
-                label_kposition.Text = "k position";
-                label_kvelocity.Text = "k velocity";
-            }
-            else
+            if (Joint != null) //For the base_link or if none is selected
             {
                 Joint.fillBoxes(textBox_joint_name, comboBox_joint_type);
                 Joint.Parent.fillBoxes(label_parent);
@@ -296,13 +277,6 @@ namespace SW2URDF
                                           textBox_limit_velocity,
                                           "G5");
                 }
-                else
-                {
-                    fillBlank(new TextBox[]{textBox_limit_lower,
-                                          textBox_limit_upper,
-                                          textBox_limit_effort,
-                                          textBox_limit_velocity});
-                }
 
                 if (Joint.Calibration != null)
                 {
@@ -310,22 +284,12 @@ namespace SW2URDF
                                                 textBox_calibration_falling,
                                                 "G5");
                 }
-                else
-                {
-                    fillBlank(new TextBox[]{textBox_calibration_rising, 
-                                                textBox_calibration_falling});
-                }
 
                 if (Joint.Dynamics != null)
                 {
                     Joint.Dynamics.fillBoxes(textBox_damping,
                                              textBox_friction,
                                              "G5");
-                }
-                else
-                {
-                    fillBlank(new TextBox[]{textBox_damping, 
-                                             textBox_friction});
                 }
 
                 if (Joint.Safety != null)
@@ -336,71 +300,65 @@ namespace SW2URDF
                                            textBox_k_velocity,
                                            "G5");
                 }
-                else
-                {
-                    fillBlank(new TextBox[] {textBox_soft_lower,
-                                           textBox_soft_upper,
-                                           textBox_k_position,
-                                           textBox_k_velocity});
-                }
-
-                if (Joint.type == "revolute" || Joint.type == "continuous")
-                {
-                    label_lower_limit.Text = "lower (rad)";
-                    label_limit_upper.Text = "upper (rad)";
-                    label_effort.Text = "effort (N-m)";
-                    label_velocity.Text = "velocity (rad/s)";
-                    label_friction.Text = "friction (N-m)";
-                    label_damping.Text = "damping (N-m-s/rad)";
-                    label_soft_lower.Text = "soft lower limit (rad)";
-                    label_soft_upper.Text = "soft upper limit (rad)";
-                    label_kposition.Text = "k position";
-                    label_kvelocity.Text = "k velocity";
-                }
-                else if (Joint.type == "prismatic")
-                {
-                    label_lower_limit.Text = "lower (m)";
-                    label_limit_upper.Text = "upper (m)";
-                    label_effort.Text = "effort (N)";
-                    label_velocity.Text = "velocity (m/s)";
-                    label_friction.Text = "friction (N)";
-                    label_damping.Text = "damping (N-s/m)";
-                    label_soft_lower.Text = "soft lower limit (m)";
-                    label_soft_upper.Text = "soft upper limit (m)";
-                    label_kposition.Text = "k position";
-                    label_kvelocity.Text = "k velocity";
-                }
-                else
-                {
-                    label_lower_limit.Text = "lower";
-                    label_limit_upper.Text = "upper";
-                    label_effort.Text = "effort";
-                    label_velocity.Text = "velocity";
-                    label_friction.Text = "friction";
-                    label_damping.Text = "damping";
-                    label_soft_lower.Text = "soft lower limit";
-                    label_soft_upper.Text = "soft upper limit";
-                    label_kposition.Text = "k position";
-                    label_kvelocity.Text = "k velocity";
-                }
-                comboBox_origin.Items.Clear();
-                string[] originNames = Exporter.findOrigins();
-                comboBox_origin.Items.AddRange(originNames);
-                comboBox_axis.Items.Clear();
-                string[] axesNames = Exporter.findAxes();
-                comboBox_axis.Items.AddRange(axesNames);
-                comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
-                if (Joint.AxisName != "")
-                {
-                    comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
-                }
-                AutoUpdatingForm = false;
             }
+
+            if (Joint != null && (Joint.type == "revolute" || Joint.type == "continuous"))
+            {
+                label_lower_limit.Text = "lower (rad)";
+                label_limit_upper.Text = "upper (rad)";
+                label_effort.Text = "effort (N-m)";
+                label_velocity.Text = "velocity (rad/s)";
+                label_friction.Text = "friction (N-m)";
+                label_damping.Text = "damping (N-m-s/rad)";
+                label_soft_lower.Text = "soft lower limit (rad)";
+                label_soft_upper.Text = "soft upper limit (rad)";
+                label_kposition.Text = "k position";
+                label_kvelocity.Text = "k velocity";
+            }
+            else if (Joint != null && Joint.type == "prismatic")
+            {
+                label_lower_limit.Text = "lower (m)";
+                label_limit_upper.Text = "upper (m)";
+                label_effort.Text = "effort (N)";
+                label_velocity.Text = "velocity (m/s)";
+                label_friction.Text = "friction (N)";
+                label_damping.Text = "damping (N-s/m)";
+                label_soft_lower.Text = "soft lower limit (m)";
+                label_soft_upper.Text = "soft upper limit (m)";
+                label_kposition.Text = "k position";
+                label_kvelocity.Text = "k velocity";
+            }
+            else
+            {
+                label_lower_limit.Text = "lower";
+                label_limit_upper.Text = "upper";
+                label_effort.Text = "effort";
+                label_velocity.Text = "velocity";
+                label_friction.Text = "friction";
+                label_damping.Text = "damping";
+                label_soft_lower.Text = "soft lower limit";
+                label_soft_upper.Text = "soft upper limit";
+                label_kposition.Text = "k position";
+                label_kvelocity.Text = "k velocity";
+            }
+            comboBox_origin.Items.Clear();
+            string[] originNames = Exporter.findOrigins();
+            comboBox_origin.Items.AddRange(originNames);
+            comboBox_axis.Items.Clear();
+            string[] axesNames = Exporter.findAxes();
+            comboBox_axis.Items.AddRange(axesNames);
+            comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
+            if (Joint.AxisName != "")
+            {
+                comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
+            }
+            AutoUpdatingForm = false;
+            
         }
 
-        public void fillBlank(TextBox[] boxes)
+        public void fillBlank(Control[] boxes)
         {
-            foreach (TextBox box in boxes)
+            foreach (Control box in boxes)
             {
                 box.Text = "";
             }
@@ -409,45 +367,48 @@ namespace SW2URDF
         //Converts the text boxes back into values for the link
         public void saveLinkDataFromPropertyBoxes(link Link)
         {
-            Link.Inertial.Origin.update(textBox_inertial_origin_x, 
-                                        textBox_inertial_origin_y, 
-                                        textBox_inertial_origin_z, 
-                                        textBox_inertial_origin_roll, 
-                                        textBox_inertial_origin_pitch, 
-                                        textBox_inertial_origin_yaw);
+            if (!Link.isFixedFrame)
+            {
+                Link.Inertial.Origin.update(textBox_inertial_origin_x,
+                                            textBox_inertial_origin_y,
+                                            textBox_inertial_origin_z,
+                                            textBox_inertial_origin_roll,
+                                            textBox_inertial_origin_pitch,
+                                            textBox_inertial_origin_yaw);
 
-            Link.Visual.Origin.update(textBox_visual_origin_x, 
-                                      textBox_visual_origin_y, 
-                                      textBox_visual_origin_z, 
-                                      textBox_visual_origin_roll, 
-                                      textBox_visual_origin_pitch, 
-                                      textBox_visual_origin_yaw);
+                Link.Visual.Origin.update(textBox_visual_origin_x,
+                                          textBox_visual_origin_y,
+                                          textBox_visual_origin_z,
+                                          textBox_visual_origin_roll,
+                                          textBox_visual_origin_pitch,
+                                          textBox_visual_origin_yaw);
 
-            Link.Collision.Origin.update(textBox_collision_origin_x, 
-                                         textBox_collision_origin_y, 
-                                         textBox_collision_origin_z, 
-                                         textBox_collision_origin_roll, 
-                                         textBox_collision_origin_pitch, 
-                                         textBox_collision_origin_yaw);
+                Link.Collision.Origin.update(textBox_collision_origin_x,
+                                             textBox_collision_origin_y,
+                                             textBox_collision_origin_z,
+                                             textBox_collision_origin_roll,
+                                             textBox_collision_origin_pitch,
+                                             textBox_collision_origin_yaw);
 
-            Link.Inertial.Mass.update(textBox_mass);
+                Link.Inertial.Mass.update(textBox_mass);
 
-            Link.Inertial.Inertia.update(textBox_ixx, 
-                                         textBox_ixy, 
-                                         textBox_ixz, 
-                                         textBox_iyy, 
-                                         textBox_iyz, 
-                                         textBox_izz);
+                Link.Inertial.Inertia.update(textBox_ixx,
+                                             textBox_ixy,
+                                             textBox_ixz,
+                                             textBox_iyy,
+                                             textBox_iyz,
+                                             textBox_izz);
 
-            Link.Visual.Material.name = comboBox_materials.Text;
-            Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
+                Link.Visual.Material.name = comboBox_materials.Text;
+                Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
-            Link.Visual.Material.Color.update(domainUpDown_red, 
-                                              domainUpDown_green, 
-                                              domainUpDown_blue, 
-                                              domainUpDown_alpha);
- 
-            Link.STLQualityFine = radioButton_fine.Checked;
+                Link.Visual.Material.Color.update(domainUpDown_red,
+                                                  domainUpDown_green,
+                                                  domainUpDown_blue,
+                                                  domainUpDown_alpha);
+
+                Link.STLQualityFine = radioButton_fine.Checked;
+            }
         }
 
         //Saves data from text boxes back into a joint
@@ -472,7 +433,7 @@ namespace SW2URDF
                               textBox_axis_y, 
                               textBox_axis_z);
 
-            if (textBox_limit_lower.Text == "" && textBox_limit_upper.Text == "" && textBox_limit_effort.Text == "" && textBox_limit_lower.Text == "")
+            if (textBox_limit_lower.Text == "" && textBox_limit_upper.Text == "" && textBox_limit_effort.Text == "" && textBox_limit_velocity.Text == "")
             {
                 if (Joint.type == "prismatic" || Joint.type == "revolute")
                 {
