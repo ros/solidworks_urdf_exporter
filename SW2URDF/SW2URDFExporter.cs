@@ -1325,13 +1325,6 @@ namespace SW2URDF
                 createJoint(parent, child, node);
             }
 
-            ActiveSWModel.ClearSelection2(true);
-            
-            foreach (Component2 comp in components)
-            {
-                comp.Select(true);
-            }
-            IMassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
             string childCoordSysName = "";
             if (child.Joint == null)
             {
@@ -1342,10 +1335,16 @@ namespace SW2URDF
                 childCoordSysName = child.Joint.CoordinateSystemName;
             }
             MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
-            swMass.SetCoordinateSystem(jointTransform);
+            
 
             if (!child.isFixedFrame)
             {
+                //selectComponents(components, true);
+                IMassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+                swMass.SetCoordinateSystem(jointTransform);
+
+                Body2[] bodies = getBodies(components);
+                bool addedBodies = swMass.AddBodies(bodies);
                 child.Inertial.Mass.value = swMass.Mass;
                 double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
                 child.Inertial.Inertia.setMomentMatrix(moment);
@@ -1375,8 +1374,8 @@ namespace SW2URDF
                 child.Collision.Origin.xyz = new double[] { 0, 0, 0 };
                 child.Collision.Origin.rpy = new double[] { 0, 0, 0 };
             }
-            
-            selectComponents(components, true);
+
+            //ActiveSWModel.ClearSelection2(true);
             return child;
         }
 
@@ -1453,6 +1452,16 @@ namespace SW2URDF
             coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
             unFixComponents(componentsToFix);
             localizeJoint(child.Joint, coordSysName);
+        }
+
+        public Body2[] getBodies(List<Component2> components)
+        {
+            Body2[] bodies = new Body2[components.Count];
+            for (int i = 0; i < components.Count; i++)
+            {
+                bodies[i] = components[i].GetBody();
+            }
+            return bodies;
         }
 
         public void checkRefGeometryExists(joint Joint)
