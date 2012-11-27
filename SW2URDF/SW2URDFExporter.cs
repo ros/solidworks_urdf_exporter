@@ -209,6 +209,11 @@ namespace SW2URDF
             link Link = new link();
             Link.name = swModel.GetTitle();
 
+            Link.isFixedFrame = false;
+            Link.Visual = new visual();
+            Link.Inertial = new inertial();
+            Link.Collision = new collision();
+
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
             Link.Inertial.Mass.value = swMass.Mass;
@@ -1456,12 +1461,16 @@ namespace SW2URDF
 
         public Body2[] getBodies(List<Component2> components)
         {
-            Body2[] bodies = new Body2[components.Count];
-            for (int i = 0; i < components.Count; i++)
+            List<Body2> bodies = new List<Body2>();
+            object BodiesInfo;
+            object[] objs;
+            foreach (Component2 comp in components)
             {
-                bodies[i] = components[i].GetBody();
+                objs = comp.GetBodies3((int)swBodyType_e.swAllBodies, out BodiesInfo);
+                bodies.AddRange(Array.ConvertAll(objs, obj => (Body2)obj));
             }
-            return bodies;
+
+            return bodies.ToArray();
         }
 
         public void checkRefGeometryExists(joint Joint)
