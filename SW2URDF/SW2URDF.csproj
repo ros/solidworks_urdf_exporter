@@ -198,8 +198,8 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SDF.cs" />
     <Compile Include="clsPropMgr.cs" />
-    <Compile Include="dof.cs" />
     <Compile Include="PMLinkTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -207,8 +207,7 @@
       <DependentUpon>PMLinkTree.cs</DependentUpon>
     </Compile>
     <Compile Include="MathOPS.cs" />
-    <Compile Include="SW2URDFExporter.cs" />
-    <Compile Include="URDFPackage.cs" />
+    <Compile Include="Package.cs" />
     <Compile Include="EventHandling.cs" />
     <Compile Include="PartExportForm.cs">
       <SubType>Form</SubType>
@@ -216,6 +215,7 @@
     <Compile Include="PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
