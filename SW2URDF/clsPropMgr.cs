@@ -25,7 +25,6 @@ namespace SW2URDF
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
-        ops OPS;
 
         public SW2URDFExporter Exporter;
         public LinkNode previouslySelectedNode;
@@ -113,7 +112,6 @@ namespace SW2URDF
             int longerrors = 0;
             int controlType = 0;
             int alignment = 0;
-            OPS = new ops();
             string[] listItems = new string[4];
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
@@ -245,7 +243,7 @@ namespace SW2URDF
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
             int itemsCount = Exporter.getCount(tree.Nodes);
-            int height = OPS.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
+            int height = ops.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
             tree.Height = height;
             pm_tree.Height = height;
 

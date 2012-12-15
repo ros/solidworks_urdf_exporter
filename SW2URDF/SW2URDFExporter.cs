@@ -32,7 +32,6 @@ namespace SW2URDF
         [XmlIgnore]
         public ISldWorks iSwApp = null;
         [XmlIgnore]
-        ops OPS;
         private bool mBinary;
         private bool mshowInfo;
         private bool mSTLPreview;
@@ -81,7 +80,6 @@ namespace SW2URDF
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
 
             swMath = iSwApp.GetMathUtility();
-            OPS = new ops();
 
             saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
             int Options = 0;
@@ -399,33 +397,33 @@ namespace SW2URDF
         public void localizeJoint(joint Joint, string parentCoordsysName)
         {
             MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(parentCoordsysName);
-            Matrix<double> ParentJointGlobalTransform = OPS.getTransformation(parentTransform);
+            Matrix<double> ParentJointGlobalTransform = ops.getTransformation(parentTransform);
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
             //Transform from global origin to child joint
-            Matrix<double> ChildJointGlobalTransform = OPS.getTransformation(coordsysTransform);
+            Matrix<double> ChildJointGlobalTransform = ops.getTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
 
             //Localize the axis to the Link's coordinate system.
             localizeAxis(Joint.Axis.xyz, Joint.CoordinateSystemName);
 
             // Get the array values and threshold them so small values are set to 0.
-            Joint.Origin.xyz = OPS.getXYZ(ChildJointOrigin);
-            OPS.threshold(Joint.Origin.xyz, 0.00001);
-            Joint.Origin.rpy = OPS.getRPY(ChildJointOrigin);
-            OPS.threshold(Joint.Origin.xyz, 0.00001);
+            Joint.Origin.xyz = ops.getXYZ(ChildJointOrigin);
+            ops.threshold(Joint.Origin.xyz, 0.00001);
+            Joint.Origin.rpy = ops.getRPY(ChildJointOrigin);
+            ops.threshold(Joint.Origin.xyz, 0.00001);
         }
 
         //This is only used by the Part Exporter, but it localizes the link to the Origin_global coordinate system
         public void localizeLink(link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
-            Matrix<double> linkCoMTransform = OPS.getTranslation(Link.Inertial.Origin.xyz);
+            Matrix<double> linkCoMTransform = ops.getTranslation(Link.Inertial.Origin.xyz);
             Matrix<double> localLinkCoMTransform = GlobalTransformInverse * linkCoMTransform;
 
-            Matrix<double> linkVisualTransform = OPS.getTransformation(Link.Visual.Origin.xyz, Link.Visual.Origin.rpy);
+            Matrix<double> linkVisualTransform = ops.getTransformation(Link.Visual.Origin.xyz, Link.Visual.Origin.rpy);
             Matrix<double> localVisualTransform = GlobalTransformInverse * linkVisualTransform;
 
-            Matrix<double> linkCollisionTransform = OPS.getTransformation(Link.Collision.Origin.xyz, Link.Collision.Origin.rpy);
+            Matrix<double> linkCollisionTransform = ops.getTransformation(Link.Collision.Origin.xyz, Link.Collision.Origin.rpy);
             Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
 
             // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
@@ -435,7 +433,7 @@ namespace SW2URDF
             Matrix<double> GlobalRotMat = GlobalTransform.SubMatrix(0, 3, 0, 3);
             Matrix<double> linkLocalMomentInertia = GlobalRotMat.Inverse() * linkGlobalMomentInertia;
 
-            Link.Inertial.Origin.xyz = OPS.getXYZ(localLinkCoMTransform);
+            Link.Inertial.Origin.xyz = ops.getXYZ(localLinkCoMTransform);
             Link.Inertial.Origin.rpy = new double[] { 0, 0, 0 };
 
             // Wait are you saying that even though the matrix was trasposed from column major order, you are writing it in row-major order here.
@@ -444,11 +442,11 @@ namespace SW2URDF
             Link.Inertial.Inertia.setMomentMatrix(moment);
 
 
-            Link.Collision.Origin.xyz = OPS.getXYZ(localCollisionTransform);
-            Link.Collision.Origin.rpy = OPS.getRPY(localCollisionTransform);
+            Link.Collision.Origin.xyz = ops.getXYZ(localCollisionTransform);
+            Link.Collision.Origin.rpy = ops.getRPY(localCollisionTransform);
 
-            Link.Visual.Origin.rpy = OPS.getXYZ(localVisualTransform);
-            Link.Visual.Origin.xyz = OPS.getRPY(localVisualTransform);
+            Link.Visual.Origin.rpy = ops.getXYZ(localVisualTransform);
+            Link.Visual.Origin.xyz = ops.getRPY(localVisualTransform);
         }
 
         // Funny method I created that inserts a RefAxis and then finds the reference to it.
@@ -513,7 +511,7 @@ namespace SW2URDF
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
             
             //Calculate the lines that need to be drawn
-            Matrix<double> transform = OPS.getRotation(Origin.rpy);
+            Matrix<double> transform = ops.getRotation(Origin.rpy);
             Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
             Matrix<double> tA = transform * Axes;
 
@@ -608,8 +606,8 @@ namespace SW2URDF
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.type = "fixed";
-                child.Joint.Origin.xyz = OPS.getXYZ(child.SWMainComponent.Transform2);
-                child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
+                child.Joint.Origin.xyz = ops.getXYZ(child.SWMainComponent.Transform2);
+                child.Joint.Origin.rpy = ops.getRPY(child.SWMainComponent.Transform2);
 
                 if (DOFs == 0 && (R1Status + L1Status > 0))
                 {
@@ -618,7 +616,7 @@ namespace SW2URDF
                         child.Joint.type = "continuous";
                         child.Joint.Axis.xyz = RDir1.ArrayData;
                         child.Joint.Origin.xyz = RPoint1.ArrayData;
-                        child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
+                        child.Joint.Origin.rpy = ops.getRPY(child.SWMainComponent.Transform2);
                         moveOrigin(parent, child);
                     }
                     else if (L1Status == 1)
@@ -626,12 +624,12 @@ namespace SW2URDF
                         child.Joint.type = "prismatic";
                         child.Joint.Axis.xyz = LDir1.ArrayData;
                         child.Joint.Origin.xyz = RPoint1.ArrayData;
-                        child.Joint.Origin.rpy = OPS.getRPY(child.SWMainComponent.Transform2);
+                        child.Joint.Origin.rpy = ops.getRPY(child.SWMainComponent.Transform2);
                         moveOrigin(parent, child);
                     }
                 }
-                OPS.threshold(child.Joint.Origin.xyz, 0.00001);
-                OPS.threshold(child.Joint.Origin.rpy, 0.00001);
+                ops.threshold(child.Joint.Origin.xyz, 0.00001);
+                ops.threshold(child.Joint.Origin.rpy, 0.00001);
                 unsuppressLimitMates(limitMates);
                 if (limitMates.Count > 0)
                 {
@@ -643,8 +641,8 @@ namespace SW2URDF
         public void estimateGlobalJointFromRefGeometry(link parent, link child)
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName);
-            child.Joint.Origin.xyz = OPS.getXYZ(coordsysTransform);
-            child.Joint.Origin.rpy = OPS.getRPY(coordsysTransform);
+            child.Joint.Origin.xyz = ops.getXYZ(coordsysTransform);
+            child.Joint.Origin.rpy = ops.getRPY(coordsysTransform);
             estimateAxis(child.Joint);
         }
 
@@ -657,19 +655,19 @@ namespace SW2URDF
             foreach (Component2 comp in nonLocalizedChild.SWcomponents)
             {
                 points = comp.GetBox(false, false); // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
-                X_max = OPS.max(points[0], points[3], X_max);
-                Y_max = OPS.max(points[1], points[4], Y_max);
-                Z_max = OPS.max(points[2], points[5], Z_max);
-                X_min = OPS.min(points[0], points[3], X_min);
-                Y_min = OPS.min(points[1], points[4], Y_min);
-                Z_min = OPS.min(points[2], points[5], Z_min);
+                X_max = ops.max(points[0], points[3], X_max);
+                Y_max = ops.max(points[1], points[4], Y_max);
+                Z_max = ops.max(points[2], points[5], Z_max);
+                X_min = ops.min(points[0], points[3], X_min);
+                Y_min = ops.min(points[1], points[4], Y_min);
+                Z_min = ops.min(points[2], points[5], Z_min);
             }
             string coordsys = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
 
             MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
-            double[] idealOrigin = OPS.closestPointOnLineToPoint(OPS.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
+            double[] idealOrigin = ops.closestPointOnLineToPoint(ops.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
 
-            nonLocalizedChild.Joint.Origin.xyz = OPS.closestPointOnLineWithinBox(X_min, X_max, Y_min, Y_max, Z_min, Z_max, nonLocalizedChild.Joint.Axis.xyz, idealOrigin);
+            nonLocalizedChild.Joint.Origin.xyz = ops.closestPointOnLineWithinBox(X_min, X_max, Y_min, Y_max, Z_min, Z_max, nonLocalizedChild.Joint.Axis.xyz, idealOrigin);
             
         }
 
@@ -699,7 +697,7 @@ namespace SW2URDF
                 XYZ[0] = axisParams[0] - axisParams[3];
                 XYZ[1] = axisParams[1] - axisParams[4];
                 XYZ[2] = axisParams[2] - axisParams[5];
-                XYZ = OPS.pnorm(XYZ, 2);
+                XYZ = ops.pnorm(XYZ, 2);
             }
             return XYZ;
         }
@@ -709,10 +707,10 @@ namespace SW2URDF
         {
             MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
             Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
-            Matrix<double> transform = OPS.getTransformation(coordsysTransform);
+            Matrix<double> transform = ops.getTransformation(coordsysTransform);
             vec = transform.Inverse() * vec;
             Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
-            OPS.threshold(Axis, 0.00001);
+            ops.threshold(Axis, 0.00001);
             
         }
 
@@ -926,7 +924,7 @@ namespace SW2URDF
 
             createBaseRefOrigin(zIsUp);
             MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
-            Matrix<double> GlobalTransform = OPS.getTransformation(coordSysTransform);
+            Matrix<double> GlobalTransform = ops.getTransformation(coordSysTransform);
 
             localizeLink(mRobot.BaseLink, GlobalTransform);
 
