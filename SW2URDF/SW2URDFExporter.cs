@@ -829,7 +829,7 @@ namespace SW2URDF
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
-            URDFPackage package = new URDFPackage(mPackageName, mSavePath);
+            Package package = new Package(mPackageName, mSavePath);
             package.createDirectories();
             mRobot.name = mPackageName;
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".URDF";
@@ -864,7 +864,7 @@ namespace SW2URDF
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string exportFiles(link Link, URDFPackage package, int count)
+        public string exportFiles(link Link, Package package, int count)
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + Link.name);
@@ -931,7 +931,7 @@ namespace SW2URDF
             localizeLink(mRobot.BaseLink, GlobalTransform);
 
             //Creating package directories
-            URDFPackage package = new URDFPackage(mPackageName, mSavePath);
+            Package package = new Package(mPackageName, mSavePath);
             package.createDirectories();
             string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";

@@ -20,7 +20,7 @@ namespace SW2URDF
     [ComVisibleAttribute(true)]
 
     [Serializable]
-    public class clsPropMgr : PropertyManagerPage2Handler9
+    public class sdfPropMgr : PropertyManagerPage2Handler9
     {
         #region class variables
         public SldWorks swApp;
@@ -36,26 +36,84 @@ namespace SW2URDF
         //General objects required for the PropertyManager page
 
         PropertyManagerPage2 pm_Page;
-        PropertyManagerPageGroup pm_Group;
+        PropertyManagerPageGroup pm_jointGroup;
+        PropertyManagerPageGroup pm_linkGroup;
+        PropertyManagerPageGroup pm_visualGroup;
+        PropertyManagerPageGroup pm_collisionGroup;
+        PropertyManagerPageGroup pm_inertialGroup;
 
-        PropertyManagerPageSelectionbox pm_Selection;
-        PropertyManagerPageButton pm_Button_Export;
+        //Link group items
+        PropertyManagerPageLabel pm_Label_LinkName;
         PropertyManagerPageTextbox pm_TextBox_LinkName;
+
+        PropertyManagerPageLabel pm_Label_Inertial;
+        PropertyManagerPageCheckbox pm_CheckBox_Inertial;
+
+        PropertyManagerPageLabel pm_Label_VisualCount;
+        PropertyManagerPageNumberbox pm_NumberBox_VisualCount;
+
+        PropertyManagerPageLabel pm_Label_CollisionCount;
+        PropertyManagerPageNumberbox pm_NumberBox_CollisionCount;
+
+        PropertyManagerPageLabel pm_Label_SensorCount;
+        PropertyManagerPageNumberbox pm_NumberBox_SensorCount;
+
+        PropertyManagerPageLabel pm_Label_ProjectorCount;
+        PropertyManagerPageNumberbox pm_NumberBox_ProjectorCount;
+
+        PropertyManagerPageLabel pm_Label_JointCount;
+        PropertyManagerPageNumberbox pm_NumberBox_JointCount;
+
+        PropertyManagerPageLabel pm_Label_Selection;
+        PropertyManagerPageSelectionbox pm_Selection;       
+
+        //Visual group items
+        PropertyManagerPageLabel pm_Label_VisualName;
+        PropertyManagerPageTextbox pm_VisualName;
+
+        PropertyManagerPageLabel pm_Label_VisualSelection;
+        PropertyManagerPageSelectionbox pm_VisualSelection;
+
+        PropertyManagerPageLabel pm_Label_VisualColorPart;
+        PropertyManagerPageSelectionbox pm_VisualColorPart;
+
+        //Collision group items
+        PropertyManagerPageLabel pm_Label_CollisionName;
+        PropertyManagerPageTextbox pm_CollisionName;
+
+        PropertyManagerPageLabel pm_Label_CollisionSelection;
+        PropertyManagerPageSelectionbox pm_CollisionSelection;
+
+        //Inertial group items
+        PropertyManagerPageLabel pm_Label_InertialName;
+        PropertyManagerPageTextbox pm_InertialName;
+
+        PropertyManagerPageLabel pm_Label_InertialSelection;
+        PropertyManagerPageSelectionbox pm_InertialSelection;
+
+
+        //Joint group items
+        PropertyManagerPageLabel pm_Label_JointName;
         PropertyManagerPageTextbox pm_TextBox_JointName;
-        PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
+
+        PropertyManagerPageLabel pm_Label_ParentName;
+        PropertyManagerPageCombobox pm_ComboBox_ParentName;
+
+        PropertyManagerPageLabel pm_Label_ChildName;
+        PropertyManagerPageCombobox pm_ComboBox_ChildName;
+
+        PropertyManagerPageLabel pm_Label_Axes;
         PropertyManagerPageCombobox pm_ComboBox_Axes;
+
+        PropertyManagerPageLabel pm_Label_CoordSys;
         PropertyManagerPageCombobox pm_ComboBox_CoordSys;
+
+        PropertyManagerPageLabel pm_Label_JointType;
         PropertyManagerPageCombobox pm_ComboBox_JointType;
 
-        PropertyManagerPageLabel pm_Label_LinkName;
-        PropertyManagerPageLabel pm_Label_JointName;
-        PropertyManagerPageLabel pm_Label_Selection;
-        PropertyManagerPageLabel pm_Label_ChildCount;
-        PropertyManagerPageLabel pm_ParentName;
-        PropertyManagerPageLabel pm_Label_ParentName;
-        PropertyManagerPageLabel pm_Label_Axes;
-        PropertyManagerPageLabel pm_Label_CoordSys;
-        PropertyManagerPageLabel pm_Label_JointType;
+
+        //Common items
+        PropertyManagerPageButton pm_Button_export;
 
         PropertyManagerPageWindowFromHandle pm_tree;
         public TreeView tree
@@ -63,29 +121,59 @@ namespace SW2URDF
         bool automaticallySwitched = false;
 
         //Each object in the page needs a unique ID
+        const int ID_jointGroup = 1;
+        const int ID_linkGroup = 2;
+        const int ID_Label_LinkName = 3;
+        const int ID_LinkName = 4;
+        const int ID_Label_Inertial = 5;
+        const int ID_Inertial = 6;
+        const int ID_Label_VisualCount = 7;
+        const int ID_VisualCount = 8;
+        const int ID_Label_CollisionCount = 9;
+        const int ID_CollisionCount = 10;
+        const int ID_Label_SensorCount = 11;
+        const int ID_SensorCount = 12;
+        const int ID_Label_ProjectorCount = 13;
+        const int ID_ProjectorCount = 14;
+        const int ID_Label_JointCount = 15;
+        const int ID_JointCount = 16;
+        const int ID_Label_Selection = 17;
+        const int ID_Selection = 18;
+        const int ID_Label_JointName = 19;
+        const int ID_JointName = 20;
+        const int ID_Label_ParentName = 21;
+        const int ID_ParentName = 22;
+        const int ID_Label_ChildName = 23;
+        const int ID_ChildName = 24;
+        const int ID_Label_Axes = 25;
+        const int ID_Axes = 26;
+        const int ID_Label_CoordSys = 27;
+        const int ID_CoordSys = 28;
+        const int ID_Label_JointType = 29;
+        const int ID_JointType = 29;
+        const int ID_Export = 30;
+        const int ID_Tree = 31;
+        const int ID_visualGroup = 32;
+        const int ID_collisionGroup = 33;
+        const int ID_inertialGroup = 34;
+        const int ID_Label_VisualName = 35;
+        const int ID_VisualName = 36;
+        const int ID_Label_VisualSelection = 37;
+        const int ID_VisualSelection = 38;
+        const int ID_Label_VisualSelectionColor = 39;
+        const int ID_VisualSelectionColor = 40;
+        const int ID_Label_CollisionName = 41;
+        const int ID_CollisionName = 42;
+        const int ID_Label_CollisionSelection = 43;
+        const int ID_CollisionSelection = 44;
+        const int ID_Label_InertialName = 45;
+        const int ID_InertialName = 46;
+        const int ID_Label_InertialSelection = 47;
+        const int ID_InertialSelection = 48;
 
-        const int ID_Group = 1;
-        const int ID_LinkName = 2;
-        const int ID_Selection = 3;
-        const int ID_Combo = 4;
-        const int ID_List = 5;
-        const int ID_ButtonSave = 6;
-        const int ID_ChildCount = 7;
-        const int ID_Label_LinkName = 8;
-        const int ID_Label_Selection = 9;
-        const int ID_Label_ChildCount = 10;
-        const int ID_ParentName = 11;
-        const int ID_Label_ParentName = 12;
-        const int ID_JointName = 13;
-        const int ID_Label_JointName = 14;
-        const int ID_Tree = 16;
-        const int ID_Export = 17;
-        const int ID_Axes = 18;
-        const int ID_CoordSys = 19;
-        const int ID_Label_Axes = 20;
-        const int ID_Label_CoordSys = 21;
-        const int ID_JointType = 22;
-        const int ID_Label_JointType = 23;
+
+
+
         #endregion
 
         public void Show()
@@ -94,7 +182,7 @@ namespace SW2URDF
         }
 
         //The following runs when a new instance of the class is created
-        public clsPropMgr(SldWorks swAppPtr)
+        public sdfPropMgr(SldWorks swAppPtr)
         {
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
@@ -228,7 +316,7 @@ namespace SW2URDF
         // Determines how many nodes need to be built, and they are added to the current node
         private void createNewNodes(LinkNode CurrentlySelectedNode)
         {
-            int nodesToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
+            int nodesToBuild = (int)pm_NumberBox_JointCount.Value - CurrentlySelectedNode.Nodes.Count;
             createNewNodes(CurrentlySelectedNode, nodesToBuild);
         }
 
@@ -421,7 +509,7 @@ namespace SW2URDF
         public void fillPropertyManager(LinkNode node)
         {
             pm_TextBox_LinkName.Text = node.linkName;
-            pm_NumberBox_ChildCount.Value = node.Nodes.Count;
+            pm_NumberBox_JointCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
             Exporter.selectComponents(node.Components, true, pm_Selection.Mark);
@@ -432,7 +520,7 @@ namespace SW2URDF
                 //Labels need to be activated before changing them
                 enableJointControls(!node.isBaseNode);
                 pm_TextBox_JointName.Text = node.jointName;
-                pm_ParentName.Caption = node.Parent.Name;
+                selectComboBox(pm_ComboBox_ParentName, node.Parent.Name);
 
                 updateComboBoxes();
                 selectComboBox(pm_ComboBox_CoordSys, node.coordsysName);
@@ -442,7 +530,7 @@ namespace SW2URDF
             else
             {
                 //Labels and text box have be blanked before de-activating them
-                pm_ParentName.Caption = " ";
+                selectComboBox(pm_ComboBox_ParentName, "");
                 selectComboBox(pm_ComboBox_CoordSys, "");
                 selectComboBox(pm_ComboBox_Axes, "");
                 selectComboBox(pm_ComboBox_JointType, "");
@@ -649,7 +737,7 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnNumberboxChanged(int Id, double Value)
         {
-            if (Id == ID_ChildCount)
+            if (Id == ID_JointCount)
             {
                 LinkNode node = (LinkNode)tree.SelectedNode;
                 createNewNodes(node);
@@ -872,24 +960,11 @@ namespace SW2URDF
         private void setupPropertyManagerPage(ref string caption, ref string tip, ref long options, ref int controlType, ref int alignment)
         {
             //Begin adding the controls to the page
+
             //Create the group box
-            caption = "Configure and Organize Links";
+            caption = "Configure Link";
             options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
-            pm_Group = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_Group, caption, (int)options);
-
-            //Create the parent link label (static)
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Parent Link";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_ParentName = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, "");
-
-            //Create the parent link name label, the one that is updated
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_ParentName = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, "");
+            pm_linkGroup = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_linkGroup, caption, (int)options);
 
             //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -897,7 +972,7 @@ namespace SW2URDF
             tip = "Enter the name of the link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_LinkName = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_Label_LinkName = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the link name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
@@ -905,80 +980,118 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the link";
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_TextBox_LinkName = (PropertyManagerPageTextbox)pm_Group.AddControl(ID_LinkName, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            pm_TextBox_LinkName = (PropertyManagerPageTextbox)pm_linkGroup.AddControl(ID_LinkName, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
-
-            //Create the joint name text box label
+            //Create the inertial checkbox name label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Joint Name";
-            tip = "Enter the name of the joint";
+            caption = "Include inertial element";
+            tip = "Check to create an inertial element from the component properties";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_JointName = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_JointName, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_Inertial = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Inertial, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //Create the joint name text box
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
+            //Create the inertial checkbox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Include inertial element";
+            tip = "Check to create an inertial element from the component properties";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_CheckBox_Inertial = (PropertyManagerPageCheckbox)pm_linkGroup.AddControl(ID_Inertial, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the visual count label
+            //Create the visual count name label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Number of visual elements";
+            tip = "Enter the number of visual elements for this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_VisualCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_VisualCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the visual element number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            tip = "Enter the name of the joint";
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_TextBox_JointName = (PropertyManagerPageTextbox)pm_Group.AddControl(ID_LinkName, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            tip = "Enter the number of visual elements for this link";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_VisualCount = pm_linkGroup.AddControl(ID_VisualCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_VisualCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0,1, true, 1, 1, 1);
+            pm_NumberBox_VisualCount.Value = 0;
 
-            //Create the ref coordinate sys label
+            //Create the collision element count label
+            //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Reference Coordinate System";
-            tip = "Select the reference coordinate system for the joint origin";
+            caption = "Number of collision elements";
+            tip = "Enter the number of collision elements for this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_CoordSys = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_CollisionCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_CollisionCount, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
-            // Create pull down menu for Coordinate systems
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
-            caption = "Reference Coordinate System Name";
-            tip = "Select the reference coordinate system for the joint origin";
+            //Create the number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            tip = "Enter the number of collision elements for this link";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_CollisionCount = pm_linkGroup.AddControl(ID_CollisionCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_CollisionCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            pm_NumberBox_CollisionCount.Value = 0;
 
-            //Create the ref axis label
+            //Create the sensor element count box label
+            //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Reference Axis";
-            tip = "Select the reference axis for the joint";
+            caption = "Number of sensor elements";
+            tip = "Enter the number of sensor elements for this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_Axes = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_Axes, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_SensorCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_SensorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
-            // Create pull down menu for axes
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
-            caption = "Reference Axis Name";
-            tip = "Select the reference axis for the joint";
+            //Create the number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_Axes = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            tip = "Enter the number of sensor elements for this link";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_SensorCount = pm_linkGroup.AddControl(ID_SensorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_SensorCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, 1, true, 1, 1, 1);
+            pm_NumberBox_SensorCount.Value = 0;
 
-            //Create the joint type label
+            //Create the projector element count label
+            //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Joint Type";
-            tip = "Select the joint type";
+            caption = "Number of projector elements";
+            tip = "Enter the number of projector elements for this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_JointType = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_Axes, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_ProjectorCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_ProjectorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
-            // Create pull down menu for joint type
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
-            caption = "Joint type";
-            tip = "Select the joint type";
+            //Create the number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
-            pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
+            tip = "Enter the number of child links and they will be automatically added";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_ProjectorCount = pm_linkGroup.AddControl(ID_ProjectorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_ProjectorCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, 1, true, 1, 1, 1);
+            pm_NumberBox_ProjectorCount.Value = 0;
 
+            //Create the number box label
+            //Create the link name text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Number of joints attached to this link";
+            tip = "Enter the number of joints attached to this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_JointCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_JointCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the number of joints attached to this link";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_JointCount = pm_linkGroup.AddControl(ID_JointCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_JointCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            pm_NumberBox_JointCount.Value = 0;
 
             //Create the selection box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -986,7 +1099,7 @@ namespace SW2URDF
             tip = "Select components associated with this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_Selection = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_Label_Selection = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create selection box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
@@ -994,8 +1107,9 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             tip = "Select components associated with this link";
-            pm_Selection = (PropertyManagerPageSelectionbox)pm_Group.AddControl(ID_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_Selection = (PropertyManagerPageSelectionbox)pm_linkGroup.AddControl(ID_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
 
+            //Setup selection box
             swSelectType_e[] filters = new swSelectType_e[1];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
             object filterObj = null;
@@ -1007,27 +1121,304 @@ namespace SW2URDF
             pm_Selection.Height = 50;
             pm_Selection.SetSelectionFilters(filterObj);
 
-            //Create the number box label
-            //Create the link name text box label
+            //Visual group items
+            //Create the visual group box
+            caption = "Visual Element";
+            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
+            pm_visualGroup = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_visualGroup, caption, (int)options);
+
+            //Create the visual name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Number of child links";
-            tip = "Enter the number of child links and they will be automatically added";
+            caption = "Visual Name";
+            tip = "Enter the name of the visual element";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_ChildCount = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_LinkName, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_Label_VisualName = (PropertyManagerPageLabel)pm_visualGroup.AddControl(ID_Label_VisualName, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //Create the number box
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            //Create the visual name text box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
+            caption = "base_link_visual";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the name of the visual element";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_VisualName = (PropertyManagerPageTextbox)pm_visualGroup.AddControl(ID_VisualName, (short)(controlType), caption, (short)alignment, (int)options, tip);
+
+            //Create the selection box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Visual Element Components";
+            tip = "Select components associated with the visual element of this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_VisualSelection = (PropertyManagerPageLabel)pm_visualGroup.AddControl(ID_Label_VisualSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create selection box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
+            caption = "Visual element Components";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            tip = "Select components associated with the visual element of this link";
+            pm_VisualSelection = (PropertyManagerPageSelectionbox)pm_visualGroup.AddControl(ID_VisualSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Setup selection box
+            swSelectType_e[] visualFilters = new swSelectType_e[1];
+            visualFilters[0] = swSelectType_e.swSelCOMPONENTS;
+            object visualFilterObj = null;
+            visualFilterObj = filters;
+
+            pm_VisualSelection.AllowSelectInMultipleBoxes = true;
+            pm_VisualSelection.SingleEntityOnly = false;
+            pm_VisualSelection.AllowMultipleSelectOfSameEntity = false;
+            pm_VisualSelection.Height = 50;
+            pm_VisualSelection.SetSelectionFilters(visualFilterObj);
+
+
+            //Create the selection box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Visual Color Component";
+            tip = "Select the Part for this links color.";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_VisualColorPart = (PropertyManagerPageLabel)pm_visualGroup.AddControl(ID_Label_VisualSelectionColor, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create selection box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
+            caption = "Visual Color Component";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            tip = "Select the part for this links color.";
+            pm_VisualColorPart = (PropertyManagerPageSelectionbox)pm_visualGroup.AddControl(ID_VisualSelectionColor, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Setup selection box
+            swSelectType_e[] colorFilters = new swSelectType_e[1];
+            colorFilters[0] = swSelectType_e.swSelCOMPONENTS;
+            object colorFilterObj = null;
+            colorFilterObj = filters;
+
+            pm_VisualColorPart.AllowSelectInMultipleBoxes = true;
+            pm_VisualColorPart.SingleEntityOnly = true;
+            pm_VisualColorPart.AllowMultipleSelectOfSameEntity = false;
+            pm_VisualColorPart.Height = 50;
+            pm_VisualColorPart.SetSelectionFilters(colorFilterObj);
+
+
+            //Collision group items
+            //Create the Collision group box
+            caption = "Collision Element";
+            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
+            pm_collisionGroup = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_collisionGroup, caption, (int)options);
+
+            //Create the Collision name text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Collision Name";
+            tip = "Enter the name of the Collision element";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_CollisionName = (PropertyManagerPageLabel)pm_collisionGroup.AddControl(ID_Label_CollisionName, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the Collision name text box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
+            caption = "base_link_Collision";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the name of the Collision element";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_CollisionName = (PropertyManagerPageTextbox)pm_collisionGroup.AddControl(ID_CollisionName, (short)(controlType), caption, (short)alignment, (int)options, tip);
+
+            //Create the selection box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Collision Element Components";
+            tip = "Select components associated with the Collision element of this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_CollisionSelection = (PropertyManagerPageLabel)pm_collisionGroup.AddControl(ID_Label_CollisionSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create selection box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
+            caption = "Collision element Components";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            tip = "Select components associated with the Collision element of this link";
+            pm_CollisionSelection = (PropertyManagerPageSelectionbox)pm_collisionGroup.AddControl(ID_CollisionSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Setup selection box
+            swSelectType_e[] CollisionFilters = new swSelectType_e[1];
+            CollisionFilters[0] = swSelectType_e.swSelCOMPONENTS;
+            object CollisionFilterObj = null;
+            CollisionFilterObj = filters;
+
+            pm_CollisionSelection.AllowSelectInMultipleBoxes = true;
+            pm_CollisionSelection.SingleEntityOnly = false;
+            pm_CollisionSelection.AllowMultipleSelectOfSameEntity = false;
+            pm_CollisionSelection.Height = 50;
+            pm_CollisionSelection.SetSelectionFilters(CollisionFilterObj);
+
+            //Inertial group items
+            //Create the Inertial group box
+            caption = "Inertial Element";
+            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
+            pm_inertialGroup = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_inertialGroup, caption, (int)options);
+
+            //Create the Inertial name text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Inertial Name";
+            tip = "Enter the name of the Inertial element";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_InertialName = (PropertyManagerPageLabel)pm_inertialGroup.AddControl(ID_Label_InertialName, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the Inertial name text box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
+            caption = "base_link_Inertial";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the name of the Inertial element";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_InertialName = (PropertyManagerPageTextbox)pm_inertialGroup.AddControl(ID_InertialName, (short)(controlType), caption, (short)alignment, (int)options, tip);
+
+            //Create the selection box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Inertial Element Components";
+            tip = "Select components associated with the Inertial element of this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_InertialSelection = (PropertyManagerPageLabel)pm_inertialGroup.AddControl(ID_Label_InertialSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create selection box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
+            caption = "Inertial element Components";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            tip = "Select components associated with the Inertial element of this link";
+            pm_InertialSelection = (PropertyManagerPageSelectionbox)pm_inertialGroup.AddControl(ID_InertialSelection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Setup selection box
+            swSelectType_e[] InertialFilters = new swSelectType_e[1];
+            InertialFilters[0] = swSelectType_e.swSelCOMPONENTS;
+            object InertialFilterObj = null;
+            InertialFilterObj = filters;
+
+            pm_InertialSelection.AllowSelectInMultipleBoxes = true;
+            pm_InertialSelection.SingleEntityOnly = false;
+            pm_InertialSelection.AllowMultipleSelectOfSameEntity = false;
+            pm_InertialSelection.Height = 50;
+            pm_InertialSelection.SetSelectionFilters(InertialFilterObj);
+
+
+
+
+
+
+
+
+
+
+
+            //Create the group box
+            caption = "Configure Joint";
+            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
+            pm_jointGroup = (PropertyManagerPageGroup)pm_Page.AddGroupBox(ID_jointGroup, caption, (int)options);
+
+
+            //Create the joint name text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Joint Name";
+            tip = "Enter the name of the joint";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_JointName = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_JointName, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the joint name text box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            tip = "Enter the number of child links and they will be automatically added";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_NumberBox_ChildCount = pm_Group.AddControl(ID_ChildCount, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_NumberBox_ChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
-            pm_NumberBox_ChildCount.Value = 0;
+            tip = "Enter the name of the joint";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_TextBox_JointName = (PropertyManagerPageTextbox)pm_jointGroup.AddControl(ID_JointName, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
-            //pm_Button_save = pm_Group.AddControl(Button_save_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Build Link", 0, (int)options, "");
-            pm_Button_Export = pm_Group.AddControl(ID_Export, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
+            //Create the parent link label (static)
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Parent Link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_ParentName = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_ParentName, (short)controlType, caption, (short)alignment, (int)options, "");
+
+            //Create the parent link name combobox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_ComboBox_ParentName = (PropertyManagerPageCombobox)pm_jointGroup.AddControl(ID_ParentName, (short)controlType, caption, (short)alignment, (int)options, "");
+
+            //Create the child link label (static)
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Child Link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_ParentName = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_ChildName, (short)controlType, caption, (short)alignment, (int)options, "");
+
+            //Create the child link name combobox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_ComboBox_ParentName = (PropertyManagerPageCombobox)pm_jointGroup.AddControl(ID_ChildName, (short)controlType, caption, (short)alignment, (int)options, "");
+
+            //Create the ref coordinate sys label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Reference Coordinate System";
+            tip = "Select the reference coordinate system for the joint origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_CoordSys = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            // Create pull down menu for Coordinate systems
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "Reference Coordinate System Name";
+            tip = "Select the reference coordinate system for the joint origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_jointGroup.AddControl(ID_CoordSys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+
+            //Create the ref axis label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Reference Axis";
+            tip = "Select the reference axis for the joint";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_Axes = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_Axes, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            // Create pull down menu for axes
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "Reference Axis Name";
+            tip = "Select the reference axis for the joint";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_ComboBox_Axes = (PropertyManagerPageCombobox)pm_jointGroup.AddControl(ID_Axes, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+
+            //Create the joint type label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Joint Type";
+            tip = "Select the joint type";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_JointType = (PropertyManagerPageLabel)pm_jointGroup.AddControl(ID_Label_JointType, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+
+            // Create pull down menu for joint type
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "Joint type";
+            tip = "Select the joint type";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_jointGroup.AddControl(ID_JointType, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
+
+            pm_jointGroup.Visible = false;
+
+
+            //Adding the export button
+            pm_Button_export = pm_jointGroup.AddControl(ID_Export, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
 
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
@@ -1071,10 +1462,6 @@ namespace SW2URDF
             pm_Selection.SetSelectionFocus();
             pm_Page.SetFocus(ID_Tree);
             //updateNodeNames(tree);
-
-
-
-
         }
 
 
