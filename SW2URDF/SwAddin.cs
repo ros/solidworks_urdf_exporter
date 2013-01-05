@@ -285,7 +285,7 @@ namespace SW2URDF
 
         public void setupSDFPropertyManager()
         {
-            sdfPropMgr pm = new sdfPropMgr((SldWorks)iSwApp);
+            SW2SDF.sdfPropMgr pm = new SW2SDF.sdfPropMgr((SldWorks)iSwApp);
             pm.loadConfigTree();
             pm.Show();
         }

@@ -243,7 +243,7 @@ namespace SW2URDF
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
             int itemsCount = Exporter.getCount(tree.Nodes);
-            int height = ops.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
+            int height = SW2DF.ops.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
             tree.Height = height;
             pm_tree.Height = height;
 

@@ -18,7 +18,7 @@ using SolidWorks.Interop.swconst;
 using SolidWorksTools;
 using SolidWorksTools.File;
 
-namespace SW2URDF
+namespace SW2DF
 {
     public static class ops
     {

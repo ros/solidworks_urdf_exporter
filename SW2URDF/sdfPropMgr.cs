@@ -14,7 +14,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace SW2URDF
+namespace SW2SDF
 {
 
     [ComVisibleAttribute(true)]
@@ -26,7 +26,7 @@ namespace SW2URDF
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
 
-        public SW2URDFExporter Exporter;
+        public SW2SDFExporter Exporter;
         public LinkNode previouslySelectedNode;
         public link previouslySelectedLink;
         public List<link> linksToVisit;
@@ -41,6 +41,13 @@ namespace SW2URDF
         PropertyManagerPageGroup pm_collisionGroup;
         PropertyManagerPageGroup pm_inertialGroup;
 
+        //Non-grouped items
+        PropertyManagerPageLabel pm_Label_AddLinks;
+        PropertyManagerPageNumberbox pm_Numberbox_AddLinks;
+
+        PropertyManagerPageLabel pm_Label_AddJoints;
+        PropertyManagerPageNumberbox pm_Numberbox_AddJoints;
+
         //Link group items
         PropertyManagerPageLabel pm_Label_LinkName;
         PropertyManagerPageTextbox pm_TextBox_LinkName;
@@ -48,11 +55,11 @@ namespace SW2URDF
         PropertyManagerPageLabel pm_Label_Inertial;
         PropertyManagerPageCheckbox pm_CheckBox_Inertial;
 
-        PropertyManagerPageLabel pm_Label_VisualCount;
-        PropertyManagerPageNumberbox pm_NumberBox_VisualCount;
+        PropertyManagerPageLabel pm_Label_Collision;
+        PropertyManagerPageCheckbox pm_CheckBox_Collision;
 
-        PropertyManagerPageLabel pm_Label_CollisionCount;
-        PropertyManagerPageNumberbox pm_NumberBox_CollisionCount;
+        PropertyManagerPageLabel pm_Label_Visual;
+        PropertyManagerPageCheckbox pm_CheckBox_Visual;
 
         PropertyManagerPageLabel pm_Label_SensorCount;
         PropertyManagerPageNumberbox pm_NumberBox_SensorCount;
@@ -126,10 +133,10 @@ namespace SW2URDF
         const int ID_LinkName = 4;
         const int ID_Label_Inertial = 5;
         const int ID_Inertial = 6;
-        const int ID_Label_VisualCount = 7;
-        const int ID_VisualCount = 8;
-        const int ID_Label_CollisionCount = 9;
-        const int ID_CollisionCount = 10;
+        const int ID_Label_Visual = 7;
+        const int ID_Visual = 8;
+        const int ID_Label_Collision = 9;
+        const int ID_Collision = 10;
         const int ID_Label_SensorCount = 11;
         const int ID_SensorCount = 12;
         const int ID_Label_ProjectorCount = 13;
@@ -169,6 +176,10 @@ namespace SW2URDF
         const int ID_InertialName = 46;
         const int ID_Label_InertialSelection = 47;
         const int ID_InertialSelection = 48;
+        const int ID_Label_AddJoints = 49;
+        const int ID_AddJoints = 50;
+        const int ID_Label_AddLinks = 51;
+        const int ID_AddLinks = 52;
 
 
 
@@ -186,7 +197,7 @@ namespace SW2URDF
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
 
-            Exporter = new SW2URDFExporter(swApp);
+            Exporter = new SW2SDFExporter(swApp);
             Exporter.mRobot = new robot();
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
 
@@ -695,6 +706,37 @@ namespace SW2URDF
 
         }
 
+        void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
+        {
+            if (Id == ID_Inertial || Id == ID_Visual || Id == ID_Collision)
+            {
+                LinkNode selectedNode = (LinkNode)tree.SelectedNode;
+                LinkNode node = default(LinkNode);
+                int mark = -1;
+                if (selectedNode == null)
+                {
+                    return;
+                }
+                if (Id == ID_Inertial)
+                {
+                    node = new InertialNode();
+                    mark = pm_InertialSelection.Mark;
+                }
+                if (Id == ID_Visual)
+                {
+                    node = new VisualNode();
+                    mark = pm_VisualSelection.Mark;
+                }
+                if (Id == ID_Collision)
+                {
+                    node = new CollisionNode();
+                    mark = pm_CollisionSelection.Mark;
+                }
+                Exporter.getSelectedComponents(node.Components, mark);
+                selectedNode.Nodes.Add(node);
+            }
+        }
+
         void IPropertyManagerPage2Handler9.OnClose(int Reason)
         {
             if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
@@ -959,6 +1001,42 @@ namespace SW2URDF
         {
             //Begin adding the controls to the page
 
+            //Create the add links text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Add Empty Links";
+            tip = "Enter the number of links to add";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_AddLinks = (PropertyManagerPageLabel)pm_Page.AddControl(ID_Label_AddLinks, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the add links numberbox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the number of links to add";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_SensorCount = pm_Page.AddControl(ID_SensorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_SensorCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            pm_NumberBox_SensorCount.Value = 0;
+
+            //Create the add joints text box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Add Empty Joints";
+            tip = "Enter the number of joints to add";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_AddJoints = (PropertyManagerPageLabel)pm_Page.AddControl(ID_Label_AddJoints, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create the add joints number box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Enter the number of joints to add";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_NumberBox_SensorCount = pm_Page.AddControl(ID_SensorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_NumberBox_SensorCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            pm_NumberBox_SensorCount.Value = 0;
+
             //Create the group box
             caption = "Configure Link";
             options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
@@ -980,6 +1058,34 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_TextBox_LinkName = (PropertyManagerPageTextbox)pm_linkGroup.AddControl(ID_LinkName, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
+            //Create the selection box label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Link Components";
+            tip = "Select components associated with this link";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_Selection = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Create selection box
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
+            caption = "Link Components";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            tip = "Select components associated with this link";
+            pm_Selection = (PropertyManagerPageSelectionbox)pm_linkGroup.AddControl(ID_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //Setup selection box
+            swSelectType_e[] filters = new swSelectType_e[1];
+            filters[0] = swSelectType_e.swSelCOMPONENTS;
+            object filterObj = null;
+            filterObj = filters;
+
+            pm_Selection.AllowSelectInMultipleBoxes = true;
+            pm_Selection.SingleEntityOnly = false;
+            pm_Selection.AllowMultipleSelectOfSameEntity = false;
+            pm_Selection.Height = 50;
+            pm_Selection.SetSelectionFilters(filterObj);
+
             //Create the inertial checkbox name label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Include inertial element";
@@ -996,44 +1102,39 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_CheckBox_Inertial = (PropertyManagerPageCheckbox)pm_linkGroup.AddControl(ID_Inertial, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //Create the visual count label
-            //Create the visual count name label
+            //Create the visual checkbox label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Number of visual elements";
-            tip = "Enter the number of visual elements for this link";
+            caption = "Include visual element";
+            tip = "Check to create a visual element from the component properties";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_VisualCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_VisualCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_Label_Visual = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Visual, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //Create the visual element number box
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
-            caption = "";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            tip = "Enter the number of visual elements for this link";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_NumberBox_VisualCount = pm_linkGroup.AddControl(ID_VisualCount, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_NumberBox_VisualCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0,1, true, 1, 1, 1);
-            pm_NumberBox_VisualCount.Value = 0;
-
-            //Create the collision element count label
-            //Create the link name text box label
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Number of collision elements";
-            tip = "Enter the number of collision elements for this link";
+            //Create the visual checkbox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Include visual element";
+            tip = "Check to create an visual element from the component properties";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_CollisionCount = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_CollisionCount, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_CheckBox_Visual = (PropertyManagerPageCheckbox)pm_linkGroup.AddControl(ID_Visual, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //Create the number box
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
-            caption = "";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            tip = "Enter the number of collision elements for this link";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_NumberBox_CollisionCount = pm_linkGroup.AddControl(ID_CollisionCount, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_NumberBox_CollisionCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
-            pm_NumberBox_CollisionCount.Value = 0;
+            //Create the collision checkbox label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Include collision element";
+            tip = "Check to create a collision element from the component properties";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_Label_Collision = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Collision, (short)controlType, caption, (short)alignment, (int)options, tip);
 
+            //Create the collision checkbox
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Include collision element";
+            tip = "Check to create an collision element from the component properties";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            pm_CheckBox_Collision = (PropertyManagerPageCheckbox)pm_linkGroup.AddControl(ID_Collision, (short)controlType, caption, (short)alignment, (int)options, tip);
+            
+            /*
             //Create the sensor element count box label
             //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -1066,11 +1167,12 @@ namespace SW2URDF
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            tip = "Enter the number of child links and they will be automatically added";
+            tip = "Enter the number of projector elements for this link";
             options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_NumberBox_ProjectorCount = pm_linkGroup.AddControl(ID_ProjectorCount, (short)controlType, caption, (short)alignment, (int)options, tip);
             pm_NumberBox_ProjectorCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, 1, true, 1, 1, 1);
             pm_NumberBox_ProjectorCount.Value = 0;
+            */
 
             //Create the number box label
             //Create the link name text box label
@@ -1090,34 +1192,6 @@ namespace SW2URDF
             pm_NumberBox_JointCount = pm_linkGroup.AddControl(ID_JointCount, (short)controlType, caption, (short)alignment, (int)options, tip);
             pm_NumberBox_JointCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
             pm_NumberBox_JointCount.Value = 0;
-
-            //Create the selection box label
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
-            caption = "Link Components";
-            tip = "Select components associated with this link";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_Selection = (PropertyManagerPageLabel)pm_linkGroup.AddControl(ID_Label_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
-
-            //Create selection box
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
-            caption = "Link Components";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            tip = "Select components associated with this link";
-            pm_Selection = (PropertyManagerPageSelectionbox)pm_linkGroup.AddControl(ID_Selection, (short)controlType, caption, (short)alignment, (int)options, tip);
-
-            //Setup selection box
-            swSelectType_e[] filters = new swSelectType_e[1];
-            filters[0] = swSelectType_e.swSelCOMPONENTS;
-            object filterObj = null;
-            filterObj = filters;
-
-            pm_Selection.AllowSelectInMultipleBoxes = true;
-            pm_Selection.SingleEntityOnly = false;
-            pm_Selection.AllowMultipleSelectOfSameEntity = false;
-            pm_Selection.Height = 50;
-            pm_Selection.SetSelectionFilters(filterObj);
 
             //Visual group items
             //Create the visual group box
@@ -1466,12 +1540,7 @@ namespace SW2URDF
         #region Not implemented handler methods
         // These methods are still active. The exceptions that are thrown only cause the debugger to pause. Comment out the exception
         // if you choose not to implement it, but it gets regularly called anyway
-        void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
-        {
 
-            throw new Exception("The method or operation is not implemented.");
-
-        }
 
         void IPropertyManagerPage2Handler9.OnComboboxEditChanged(int Id, string Text)
         {

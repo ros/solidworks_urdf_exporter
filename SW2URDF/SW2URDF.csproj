@@ -198,6 +198,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="SW2SDFExporter.cs" />
     <Compile Include="sdfPropMgr.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

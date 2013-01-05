@@ -1853,21 +1853,10 @@ namespace SW2SDF
             writer.WriteEndElement();
         }
     }
-
-
-    #region Windows Forms Derived classes
-
-    //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so that information can be passed around
-    //from the TreeView itself.
     public class LinkNode : TreeNode
     {
+       
         public link Link
-        { get; set; }
-        public string linkName
-        { get; set; }
-        public string jointName
-        { get; set; }
-        public string axisName
         { get; set; }
         public string coordsysName
         { get; set; }
@@ -1875,9 +1864,28 @@ namespace SW2SDF
         { get; set; }
         public List<byte[]> ComponentPIDs
         { get; set; }
-        public string jointType
+        public bool isIncomplete
         { get; set; }
-        public bool isBaseNode
+        public bool needsSaving
+        { get; set; }
+        public string whyIncomplete
+        { get; set; }
+    }
+    public class JointNode : TreeNode
+    {
+        public joint Joint
+        { get; set; }
+        public string jointName
+        { get; set; }
+        public string axisName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public Component2 component
+        { get; set; }
+        public byte[] componentPID
+        { get; set; }
+        public string jointType
         { get; set; }
         public bool isIncomplete
         { get; set; }
@@ -1887,5 +1895,65 @@ namespace SW2SDF
         { get; set; }
 
     }
+    public class VisualNode : LinkNode
+    {
+        public visual Visual
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+    }
+    public class CollisionNode : LinkNode
+    {
+        public collision Collision
+        { get; set; }
+    }
+    public class InertialNode : LinkNode
+    {
+        public inertial Inertial
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+    }
+    public class ProjectorNode : TreeNode
+    {
+        public string projectorName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public List<Component2> Components
+        { get; set; }
+        public List<byte[]> ComponentPIDs
+        { get; set; }
+        public bool isIncomplete
+        { get; set; }
+        public bool needsSaving
+        { get; set; }
+        public string whyIncomplete
+        { get; set; }
+    }
+    public class SensorNode : TreeNode
+    {
+        public string sensorName
+        { get; set; }
+        public string coordsysName
+        { get; set; }
+        public List<Component2> Components
+        { get; set; }
+        public List<byte[]> ComponentPIDs
+        { get; set; }
+        public bool isIncomplete
+        { get; set; }
+        public bool needsSaving
+        { get; set; }
+        public string whyIncomplete
+        { get; set; }
+
+    }
+
+    #region Windows Forms Derived classes
+
+    //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so that information can be passed around
+    //from the TreeView itself.
+
     #endregion
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.IO;
-using System.Runtime.InterSW2DF.opservices;
+using System.Runtime.InteropServices;
 using System.Collections;
 using System.Reflection;
 
@@ -21,12 +21,12 @@ using MathNet.Numerics.LinearAlgebra;
 using System.Numerics;
 
 
-namespace SW2URDF
+namespace SW2SDF
 {
     // This class contains a long list of methods that are used throughout the export process. Methods for building links and joints are contained in here.
     // Many of the methods are overloaded, but seek to reduce repeated code as much as possible (i.e. the overloaded methods call eachother).
     // These methods are used by the PartExportForm, the AssemblyExportForm and the PropertyManager Page
-    public class SW2URDFExporter
+    public class SW2SDFExporter
     {
         #region class variables
         [XmlIgnore]
@@ -65,7 +65,7 @@ namespace SW2URDF
         #endregion
 
         // Constructor for SW2URDF Exporter class
-        public SW2URDFExporter(ISldWorks iSldWorksApp)
+        public SW2SDFExporter(ISldWorks iSldWorksApp)
         {
             constructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
@@ -99,7 +99,7 @@ namespace SW2URDF
 
             if (node.Link == null)
             {
-                sNode.linkName = node.linkName;
+                sNode.linkName = node.Name;
                 sNode.jointName = node.jointName;
                 sNode.axisName = node.axisName;
                 sNode.coordsysName = node.coordsysName;
