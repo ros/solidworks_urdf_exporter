@@ -198,18 +198,14 @@ namespace SW2URDF
         #region UI Methods
         public void AddCommandMgr()
         {
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "assemblyURDFExporter", "", "Export assembly to a URDF file", "");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as SDF@&File", 11, "assemblySDFExporter", "", "Export assembly to an SDF file", "");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "partURDFExporter", "", "Export part to a URDF file", "");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as SDF@&File", 11, "partSDFExporter", "", "Export part an SDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "assemblyURDFExporter", "", "Export assembly as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "partURDFExporter", "", "Export part as URDF file", "");
         }
 
         public void RemoveCommandMgr()
         {
             iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as URDF@&File", "");
-            iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as SDF@&File", "");
             iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocPART, "Export as URDF@&File", "");
-            iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocPART, "Export as SDF@&File", "");
         }
 
         public bool CompareIDs(int[] storedIDs, int[] addinIDs)
@@ -246,46 +242,29 @@ namespace SW2URDF
         public void assemblyURDFExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || MessageBox.Show("This process requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || MessageBox.Show("The SW to URDF exporter requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
                     int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                     modeldoc.Save3(options, 0, 0);
                 }
+                //AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
+                //exportForm.Show();
 
-                setupURDFPropertyManager();
+                setupPropertyManager();
+                //AddContextMenu()
+
+
             }
         }
 
-        public void assemblySDFExporter()
-        {
-            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || MessageBox.Show("This process requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                if (modeldoc.Extension.NeedsRebuild2 != 0)
-                {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                    modeldoc.Save3(options, 0, 0);
-                }
-
-                setupSDFPropertyManager();
-            }
-        }
-
-        public void setupURDFPropertyManager()
+        public void setupPropertyManager()
         {
             //SW2URDFExporter exporter = loadConfigFile();
 
             clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
 
-            pm.loadConfigTree();
-            pm.Show();
-        }
-
-        public void setupSDFPropertyManager()
-        {
-            SW2SDF.sdfPropMgr pm = new SW2SDF.sdfPropMgr((SldWorks)iSwApp);
             pm.loadConfigTree();
             pm.Show();
         }
@@ -302,9 +281,6 @@ namespace SW2URDF
                 PartExportForm exportForm = new PartExportForm(iSwApp);
                 exportForm.Show();
             }
-        }
-        public void partSDFExporter()
-        {
         }
 
         private SW2URDFExporter loadConfigFile()

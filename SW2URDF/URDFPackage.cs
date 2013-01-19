@@ -6,7 +6,7 @@ using System.IO;
 
 namespace SW2URDF
 {
-    public class Package
+    public class URDFPackage
     {
         private string packageName;
         public string PackageName
@@ -89,7 +89,7 @@ namespace SW2URDF
             }
         }
 
-        public Package(string name, string dir)
+        public URDFPackage(string name, string dir)
         {
             packageName = name;
             packageDirectory = @"package://" + name + @"/";
@@ -107,7 +107,7 @@ namespace SW2URDF
 
         public void createDirectories()
         {
-            System.Windows.Forms.MessageBox.Show("Creating Package \"" + packageName + "\" at:\n" + windowsPackageDirectory);
+            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" + packageName + "\" at:\n" + windowsPackageDirectory);
             if (!Directory.Exists(windowsPackageDirectory))
             {
                 Directory.CreateDirectory(windowsPackageDirectory);
