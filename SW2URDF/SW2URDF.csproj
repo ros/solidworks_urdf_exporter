@@ -198,7 +198,6 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SDF.cs" />
     <Compile Include="clsPropMgr.cs" />
     <Compile Include="PMLinkTree.cs">
       <SubType>Form</SubType>
@@ -207,7 +206,6 @@
       <DependentUpon>PMLinkTree.cs</DependentUpon>
     </Compile>
     <Compile Include="MathOPS.cs" />
-    <Compile Include="Package.cs" />
     <Compile Include="EventHandling.cs" />
     <Compile Include="PartExportForm.cs">
       <SubType>Form</SubType>
@@ -220,6 +218,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="URDF.cs" />
+    <Compile Include="URDFPackage.cs" />
     <EmbeddedResource Include="AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
