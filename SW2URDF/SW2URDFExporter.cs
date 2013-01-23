@@ -1466,8 +1466,21 @@ namespace SW2URDF
             object[] objs;
             foreach (Component2 comp in components)
             {
-                objs = comp.GetBodies3((int)swBodyType_e.swAllBodies, out BodiesInfo);
-                bodies.AddRange(Array.ConvertAll(objs, obj => (Body2)obj));
+                ModelDoc2 modeldoc = comp.GetModelDoc2();
+                if (modeldoc != null && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                {
+                    object[] assyObjs = comp.GetChildren();
+                    List<Component2> assyComponents = Array.ConvertAll(assyObjs, assyObj => (Component2)assyObj).ToList();
+                    bodies.AddRange(getBodies(assyComponents));
+                }
+                else
+                {
+                    objs = comp.GetBodies3((int)swBodyType_e.swAllBodies, out BodiesInfo);
+                    if (objs != null)
+                    {
+                        bodies.AddRange(Array.ConvertAll(objs, obj => (Body2)obj));
+                    }
+                }
             }
 
             return bodies.ToArray();
