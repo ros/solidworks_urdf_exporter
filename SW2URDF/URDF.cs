@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Reflection;
+using System.Globalization;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swpublished;
@@ -64,13 +65,13 @@ namespace SW2URDF
                 double[] value_array = (double[])value;
                 foreach (double d in value_array)
                 {
-                    value_string += d.ToString() + " ";
+                    value_string += d.ToString(CultureInfo.CurrentCulture) + " ";
                 }
                 value_string = value_string.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
-                value_string = value.ToString();
+                value_string = ((Double)value).ToString(CultureInfo.CurrentCulture);
             }
             else if (value.GetType() == typeof(string))
             {
@@ -373,9 +374,9 @@ namespace SW2URDF
         {
             if (XYZ.value != null)
             {
-                box_x.Text = X.ToString(format);
-                box_y.Text = Y.ToString(format);
-                box_z.Text = Z.ToString(format);
+                box_x.Text = X.ToString(format, CultureInfo.CurrentCulture);
+                box_y.Text = Y.ToString(format, CultureInfo.CurrentCulture);
+                box_z.Text = Z.ToString(format, CultureInfo.CurrentCulture);
             }
             else
             {
@@ -384,9 +385,9 @@ namespace SW2URDF
 
             if (RPY.value != null)
             {
-                box_roll.Text = Roll.ToString(format);
-                box_pitch.Text = Pitch.ToString(format);
-                box_yaw.Text = Yaw.ToString(format);
+                box_roll.Text = Roll.ToString(format, CultureInfo.CurrentCulture);
+                box_pitch.Text = Pitch.ToString(format, CultureInfo.CurrentCulture);
+                box_yaw.Text = Yaw.ToString(format, CultureInfo.CurrentCulture);
             }
             else
             {
@@ -403,9 +404,9 @@ namespace SW2URDF
             }
             else
             {
-                X = (Double.TryParse(box_x.Text, out value)) ? value : 0;
-                Y = (Double.TryParse(box_y.Text, out value)) ? value : 0;
-                Z = (Double.TryParse(box_z.Text, out value)) ? value : 0;
+                X = (Double.TryParse(box_x.Text, NumberStyles.Any, CultureInfo.InvariantCulture ,out value)) ? value : 0;
+                Y = (Double.TryParse(box_y.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) ? value : 0;
+                Z = (Double.TryParse(box_z.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) ? value : 0;
             }
 
             if (box_roll.Text == "" && box_pitch.Text == "" && box_yaw.Text == "")
@@ -414,9 +415,9 @@ namespace SW2URDF
             }
             else
             {
-                Roll = (Double.TryParse(box_roll.Text, out value)) ? value : 0;
-                Pitch = (Double.TryParse(box_pitch.Text, out value)) ? value : 0;
-                Yaw = (Double.TryParse(box_yaw.Text, out value)) ? value : 0;
+                Roll = (Double.TryParse(box_roll.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) ? value : 0;
+                Pitch = (Double.TryParse(box_pitch.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) ? value : 0;
+                Yaw = (Double.TryParse(box_yaw.Text, NumberStyles.Any, CultureInfo.InvariantCulture, out value)) ? value : 0;
 
             }
         }
