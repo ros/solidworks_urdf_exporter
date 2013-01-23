@@ -1349,7 +1349,6 @@ namespace SW2URDF
                 swMass.SetCoordinateSystem(jointTransform);
 
                 Body2[] bodies = getBodies(components);
-                
                 bool addedBodies = swMass.AddBodies(bodies);
                 child.Inertial.Mass.value = swMass.Mass;
                 double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
@@ -1467,15 +1466,12 @@ namespace SW2URDF
             object[] objs;
             foreach (Component2 comp in components)
             {
-                string something = comp.Name2;
-                
                 ModelDoc2 modeldoc = comp.GetModelDoc2();
                 if (modeldoc != null && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
                 {
                     object[] assyObjs = comp.GetChildren();
                     List<Component2> assyComponents = Array.ConvertAll(assyObjs, assyObj => (Component2)assyObj).ToList();
                     bodies.AddRange(getBodies(assyComponents));
-
                 }
                 else
                 {
