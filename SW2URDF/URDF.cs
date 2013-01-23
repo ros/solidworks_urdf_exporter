@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Reflection;
+using System.Globalization;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swpublished;
@@ -47,6 +48,7 @@ namespace SW2URDF
 
     public class Attribute
     {
+        string USStringFormat = "en-US";
         public bool isRequired;
         public string type;
         public object value;
@@ -64,13 +66,13 @@ namespace SW2URDF
                 double[] value_array = (double[])value;
                 foreach (double d in value_array)
                 {
-                    value_string += d.ToString() + " ";
+                    value_string += d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
                 }
                 value_string = value_string.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
-                value_string = value.ToString();
+                value_string = ((Double)value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
             }
             else if (value.GetType() == typeof(string))
             {
