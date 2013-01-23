@@ -65,13 +65,13 @@ namespace SW2URDF
                 double[] value_array = (double[])value;
                 foreach (double d in value_array)
                 {
-                    value_string += d.ToString(CultureInfo.CurrentCulture) + " ";
+                    value_string += d.ToString(CultureInfo.InvariantCulture) + " ";
                 }
                 value_string = value_string.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
-                value_string = ((Double)value).ToString(CultureInfo.CurrentCulture);
+                value_string = ((Double)value).ToString(CultureInfo.InvariantCulture);
             }
             else if (value.GetType() == typeof(string))
             {
@@ -374,9 +374,9 @@ namespace SW2URDF
         {
             if (XYZ.value != null)
             {
-                box_x.Text = X.ToString(format, CultureInfo.CurrentCulture);
-                box_y.Text = Y.ToString(format, CultureInfo.CurrentCulture);
-                box_z.Text = Z.ToString(format, CultureInfo.CurrentCulture);
+                box_x.Text = X.ToString(format, CultureInfo.InvariantCulture);
+                box_y.Text = Y.ToString(format, CultureInfo.InvariantCulture);
+                box_z.Text = Z.ToString(format, CultureInfo.InvariantCulture);
             }
             else
             {
@@ -385,9 +385,9 @@ namespace SW2URDF
 
             if (RPY.value != null)
             {
-                box_roll.Text = Roll.ToString(format, CultureInfo.CurrentCulture);
-                box_pitch.Text = Pitch.ToString(format, CultureInfo.CurrentCulture);
-                box_yaw.Text = Yaw.ToString(format, CultureInfo.CurrentCulture);
+                box_roll.Text = Roll.ToString(format, CultureInfo.InvariantCulture);
+                box_pitch.Text = Pitch.ToString(format, CultureInfo.InvariantCulture);
+                box_yaw.Text = Yaw.ToString(format, CultureInfo.InvariantCulture);
             }
             else
             {
