@@ -130,8 +130,12 @@ namespace SW2URDF
                     {
                         sNode.axisName = node.Link.Joint.AxisName;
                     }
-                        sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
+                    sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
                     sNode.jointType = (string)node.Link.Joint.type;
+                }
+                else
+                {
+                    sNode.coordsysName = node.coordsysName;
                 }
                 sNode.componentPIDs = saveSWComponents(node.Link.SWcomponents);
                 sNode.isBaseNode = node.isBaseNode;
@@ -664,7 +668,7 @@ namespace SW2URDF
                 Y_min = OPS.min(points[1], points[4], Y_min);
                 Z_min = OPS.min(points[2], points[5], Z_min);
             }
-            string coordsys = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+            string coordsys = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
 
             MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
             double[] idealOrigin = OPS.closestPointOnLineToPoint(OPS.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
@@ -758,6 +762,7 @@ namespace SW2URDF
                 if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
                     (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
                 {
+                    Joint.Limit = new limit();
                     Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
                     Joint.Limit.lower = swMate.MinimumVariation;
                     if (Joint.type == "continuous")
@@ -905,7 +910,7 @@ namespace SW2URDF
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
             {
-                setLinkSpecificSTLPreferences("Origin_global", Link.STLQualityFine);
+                setLinkSpecificSTLPreferences(Link.CoordSysName, Link.STLQualityFine);
             }
             else
             {
@@ -1259,8 +1264,16 @@ namespace SW2URDF
         {
             // Build the link from the partdoc
             link Link = createLinkFromComponents(null, node.Components, node);
-            createBaseRefOrigin(true);
-
+            if (node.coordsysName == "Automatically Generate")
+            {
+                createBaseRefOrigin(true);
+                node.coordsysName = "Origin_global";
+                Link.CoordSysName = node.coordsysName;
+            }
+            else
+            {
+                Link.CoordSysName = node.coordsysName;
+            }
             mRobot.BaseLink = Link;
         }
         public link createLink(LinkNode node, int count)
@@ -1270,6 +1283,7 @@ namespace SW2URDF
             link Link;
             if (node.isBaseNode)
             {
+                
                 createBaseLinkFromComponents(node);
                 Link = mRobot.BaseLink;
             }
@@ -1287,25 +1301,21 @@ namespace SW2URDF
             return Link;
         }
 
-        public void createRobotFromTreeView(TreeView tree)
+        public void createRobotFromTreeView(LinkNode baseNode)
         {
             mRobot = new robot();
-            
 
-            progressBar.Start(0, getCount(tree.Nodes), "Building links");
+            progressBar.Start(0, getCount(baseNode.Nodes) + 1, "Building links");
             int count = 0;
-            foreach (LinkNode node in tree.Nodes)
-            {
-                progressBar.UpdateProgress(count);
-                progressBar.UpdateTitle("Building link: " + node.Name);
-                count++;
-                if (node.Level == 0)
-                {
-                    link BaseLink = createLink(node, 1);
-                    mRobot.BaseLink = BaseLink;
-                    node.Link = BaseLink;
-                }
-            }
+
+            progressBar.UpdateProgress(count);
+            progressBar.UpdateTitle("Building link: " + baseNode.Name);
+            count++;
+
+            link BaseLink = createLink(baseNode, 1);
+            mRobot.BaseLink = BaseLink;
+            baseNode.Link = BaseLink;
+
             progressBar.End();
         }
 
@@ -1333,7 +1343,7 @@ namespace SW2URDF
             string childCoordSysName = "";
             if (child.Joint == null)
             {
-                childCoordSysName = "Origin_global";
+                childCoordSysName = node.coordsysName;
             }
             else
             {
@@ -1454,7 +1464,7 @@ namespace SW2URDF
 
             estimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+            coordSysName = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
             unFixComponents(componentsToFix);
             localizeJoint(child.Joint, coordSysName);
         }
@@ -1557,7 +1567,6 @@ namespace SW2URDF
                         oldData = param.GetStringValue();
                     }
                 }
-
             }
 
 
@@ -1584,6 +1593,8 @@ namespace SW2URDF
                     param.SetStringValue2("config1", ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("date");
                     param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("exporterVersion");
+                    param.SetStringValue2("1.1", ConfigurationOptions, "");
                 }
             }
         }
@@ -1616,6 +1627,7 @@ namespace SW2URDF
         {
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
             string data = "";
+            string version = "";
             foreach (Object obj in objects)
             {
                 Feature feat = (Feature)obj;
