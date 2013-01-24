@@ -43,6 +43,7 @@ namespace SW2URDF
         PropertyManagerPageTextbox pm_TextBox_LinkName;
         PropertyManagerPageTextbox pm_TextBox_JointName;
         PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
+        PropertyManagerPageCombobox pm_ComboBox_GlobalCoordsys;
         PropertyManagerPageCombobox pm_ComboBox_Axes;
         PropertyManagerPageCombobox pm_ComboBox_CoordSys;
         PropertyManagerPageCombobox pm_ComboBox_JointType;
@@ -56,6 +57,7 @@ namespace SW2URDF
         PropertyManagerPageLabel pm_Label_Axes;
         PropertyManagerPageLabel pm_Label_CoordSys;
         PropertyManagerPageLabel pm_Label_JointType;
+        PropertyManagerPageLabel pm_Label_GlobalCoordsys;
 
         PropertyManagerPageWindowFromHandle pm_tree;
         public TreeView tree
@@ -86,6 +88,9 @@ namespace SW2URDF
         const int Label_CoordSys_ID = 21;
         const int ComboBox_JointType_ID = 22;
         const int Label_JointType_ID = 23;
+        const int ID_GlobalCoordsys = 24;
+        const int ID_Label_GlobalCoordsys = 25;
+
         #endregion
 
         public void Show()
@@ -145,29 +150,28 @@ namespace SW2URDF
 
         #region Property Manager Methods
 
-        // Finds all the RefAxis and Coordsys currently in the SolidWorks model doc and adds them to the appropriate pull down menus
-        private void updateComboBoxes()
+        // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
+        private void updateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
         {
-            List<Feature> axes = new List<Feature>();
-            List<Feature> coordsys = new List<Feature>();
+            List<Feature> features = getFeaturesOfType(featureName);
+            fillComboBox(box, features);
+        }
 
-            object[] features;
-            features = ActiveSWModel.FeatureManager.GetFeatures(true);
-            foreach (Feature feat in features)
+        // Creates a list of all the features of this type.
+        private List<Feature> getFeaturesOfType(string featureName)
+        {
+            List<Feature> features = new List<Feature>();
+            object[] featureObjects;
+
+            featureObjects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            foreach (Feature feat in featureObjects)
             {
-                if (feat.GetTypeName2() == "RefAxis")
+                if (feat.GetTypeName2() == featureName)
                 {
-                    axes.Add(feat);
-                }
-                else if (feat.GetTypeName2() == "CoordSys")
-                {
-                    coordsys.Add(feat);
+                    features.Add(feat);
                 }
             }
-
-            fillComboBox(pm_ComboBox_CoordSys, coordsys);
-            fillComboBox(pm_ComboBox_Axes, axes);
-            pm_ComboBox_Axes.AddItems("None");
+            return features;
         }
 
         // Populates the combo box with feature names
@@ -382,6 +386,10 @@ namespace SW2URDF
                     previouslySelectedNode.coordsysName = pm_ComboBox_CoordSys.get_ItemText(-1);
                     previouslySelectedNode.jointType = pm_ComboBox_JointType.get_ItemText(-1);
                 }
+                else
+                {
+                    previouslySelectedNode.coordsysName = pm_ComboBox_GlobalCoordsys.get_ItemText(-1);
+                }
                 Exporter.getSelectedComponents(previouslySelectedNode.Components, pm_Selection.Mark);
             }
         }
@@ -429,12 +437,17 @@ namespace SW2URDF
             //Setting joint properties
             if (!node.isBaseNode && node.Parent != null)
             {
+                //Combobox needs to be blanked before de-activating
+                selectComboBox(pm_ComboBox_GlobalCoordsys, "");
+
                 //Labels need to be activated before changing them
-                enableJointControls(!node.isBaseNode);
+                enableControls(!node.isBaseNode);
                 pm_TextBox_JointName.Text = node.jointName;
                 pm_Label_ParentLink.Caption = node.Parent.Name;
 
-                updateComboBoxes();
+                updateComboBoxFromFeatures(pm_ComboBox_CoordSys, "CoordSys");
+                updateComboBoxFromFeatures(pm_ComboBox_Axes, "RefAxis");
+                pm_ComboBox_Axes.AddItems("None");
                 selectComboBox(pm_ComboBox_CoordSys, node.coordsysName);
                 selectComboBox(pm_ComboBox_Axes, node.axisName);
                 selectComboBox(pm_ComboBox_JointType, node.jointType);
@@ -446,15 +459,19 @@ namespace SW2URDF
                 selectComboBox(pm_ComboBox_CoordSys, "");
                 selectComboBox(pm_ComboBox_Axes, "");
                 selectComboBox(pm_ComboBox_JointType, "");
-                enableJointControls(!node.isBaseNode);
+
+                //Activate controls before changing them
+                enableControls(!node.isBaseNode);
+                updateComboBoxFromFeatures(pm_ComboBox_GlobalCoordsys, "CoordSys");
+                selectComboBox(pm_ComboBox_GlobalCoordsys, node.coordsysName);
             }
         }
 
         //Takes care of activating/deactivating the drop down menus, lables and text box for joint configuration
         //Generally these are deactivated for the base node
-        private void enableJointControls(bool enabled)
+        private void enableControls(bool enableJoints)
         {
-            PropertyManagerPageControl[] pm_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName, 
+             PropertyManagerPageControl[] pm_joint_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName, 
                                                                                           (PropertyManagerPageControl)pm_Label_JointName, 
                                                                                           (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
                                                                                           (PropertyManagerPageControl)pm_Label_CoordSys, 
@@ -463,9 +480,25 @@ namespace SW2URDF
                                                                                           (PropertyManagerPageControl)pm_ComboBox_JointType, 
                                                                                           (PropertyManagerPageControl)pm_Label_JointType };
 
-            foreach (PropertyManagerPageControl control in pm_controls)
+            PropertyManagerPageControl[] pm_GlobalOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_GlobalCoordsys, 
+                                                                                                       (PropertyManagerPageControl)pm_Label_GlobalCoordsys};
+
+            PropertyManagerPageControl[] pm_JointOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
+                                                                                                       (PropertyManagerPageControl)pm_Label_CoordSys};
+
+            foreach (PropertyManagerPageControl control in pm_GlobalOrigin_controls)
             {
-                control.Enabled = enabled;
+                control.Visible = !enableJoints; // Make the global origin controls visible when no joint controls are needed
+                control.Enabled = !enableJoints;
+            }
+            foreach (PropertyManagerPageControl control in pm_JointOrigin_controls)
+            {
+                control.Visible = enableJoints;
+                control.Enabled = enableJoints;
+            }
+            foreach (PropertyManagerPageControl control in pm_joint_controls)
+            {
+                control.Enabled = enableJoints;
             }
         }
 
@@ -924,12 +957,32 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_TextBox_JointName = (PropertyManagerPageTextbox)pm_Group.AddControl(TextBox_LinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
+            //Create the global origin coordinate sys label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Global Origin Coordinate System";
+            tip = "Select the reference coordinate system for the global origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_GlobalCoordsys = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+
+            // Create pull down menu for Coordinate systems
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "Global Origin Coordinate System Name";
+            tip = "Select the reference coordinate system for the global origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_ComboBox_GlobalCoordsys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+
+
+
             //Create the ref coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Reference Coordinate System";
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             pm_Label_CoordSys = (PropertyManagerPageLabel)pm_Group.AddControl(Label_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
 
@@ -938,7 +991,7 @@ namespace SW2URDF
             caption = "Reference Coordinate System Name";
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
             pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
 

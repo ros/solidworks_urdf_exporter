@@ -664,7 +664,7 @@ namespace SW2URDF
                 Y_min = OPS.min(points[1], points[4], Y_min);
                 Z_min = OPS.min(points[2], points[5], Z_min);
             }
-            string coordsys = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+            string coordsys = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
 
             MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
             double[] idealOrigin = OPS.closestPointOnLineToPoint(OPS.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
@@ -758,6 +758,7 @@ namespace SW2URDF
                 if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
                     (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
                 {
+                    Joint.Limit = new limit();
                     Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
                     Joint.Limit.lower = swMate.MinimumVariation;
                     if (Joint.type == "continuous")
@@ -905,7 +906,7 @@ namespace SW2URDF
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
             {
-                setLinkSpecificSTLPreferences("Origin_global", Link.STLQualityFine);
+                setLinkSpecificSTLPreferences(Link.CoordSysName, Link.STLQualityFine);
             }
             else
             {
@@ -1259,8 +1260,15 @@ namespace SW2URDF
         {
             // Build the link from the partdoc
             link Link = createLinkFromComponents(null, node.Components, node);
-            createBaseRefOrigin(true);
-
+            if (node.coordsysName == "Automatically Generate")
+            {
+                createBaseRefOrigin(true);
+                Link.CoordSysName = "Origin_global";
+            }
+            else
+            {
+                Link.CoordSysName = node.coordsysName;
+            }
             mRobot.BaseLink = Link;
         }
         public link createLink(LinkNode node, int count)
@@ -1270,6 +1278,7 @@ namespace SW2URDF
             link Link;
             if (node.isBaseNode)
             {
+                
                 createBaseLinkFromComponents(node);
                 Link = mRobot.BaseLink;
             }
@@ -1333,7 +1342,7 @@ namespace SW2URDF
             string childCoordSysName = "";
             if (child.Joint == null)
             {
-                childCoordSysName = "Origin_global";
+                childCoordSysName = node.coordsysName;
             }
             else
             {
@@ -1454,7 +1463,7 @@ namespace SW2URDF
 
             estimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = (parent.Joint == null) ? "Origin_global" : parent.Joint.CoordinateSystemName;
+            coordSysName = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
             unFixComponents(componentsToFix);
             localizeJoint(child.Joint, coordSysName);
         }
@@ -1557,7 +1566,6 @@ namespace SW2URDF
                         oldData = param.GetStringValue();
                     }
                 }
-
             }
 
 
@@ -1584,6 +1592,8 @@ namespace SW2URDF
                     param.SetStringValue2("config1", ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("date");
                     param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("exporterVersion");
+                    param.SetStringValue2("1.1", ConfigurationOptions, "");
                 }
             }
         }
