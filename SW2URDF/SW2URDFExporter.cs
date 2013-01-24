@@ -130,8 +130,12 @@ namespace SW2URDF
                     {
                         sNode.axisName = node.Link.Joint.AxisName;
                     }
-                        sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
+                    sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
                     sNode.jointType = (string)node.Link.Joint.type;
+                }
+                else
+                {
+                    sNode.coordsysName = node.coordsysName;
                 }
                 sNode.componentPIDs = saveSWComponents(node.Link.SWcomponents);
                 sNode.isBaseNode = node.isBaseNode;
@@ -1263,7 +1267,8 @@ namespace SW2URDF
             if (node.coordsysName == "Automatically Generate")
             {
                 createBaseRefOrigin(true);
-                Link.CoordSysName = "Origin_global";
+                node.coordsysName = "Origin_global";
+                Link.CoordSysName = node.coordsysName;
             }
             else
             {
@@ -1296,25 +1301,21 @@ namespace SW2URDF
             return Link;
         }
 
-        public void createRobotFromTreeView(TreeView tree)
+        public void createRobotFromTreeView(LinkNode baseNode)
         {
             mRobot = new robot();
-            
 
-            progressBar.Start(0, getCount(tree.Nodes), "Building links");
+            progressBar.Start(0, getCount(baseNode.Nodes) + 1, "Building links");
             int count = 0;
-            foreach (LinkNode node in tree.Nodes)
-            {
-                progressBar.UpdateProgress(count);
-                progressBar.UpdateTitle("Building link: " + node.Name);
-                count++;
-                if (node.Level == 0)
-                {
-                    link BaseLink = createLink(node, 1);
-                    mRobot.BaseLink = BaseLink;
-                    node.Link = BaseLink;
-                }
-            }
+
+            progressBar.UpdateProgress(count);
+            progressBar.UpdateTitle("Building link: " + baseNode.Name);
+            count++;
+
+            link BaseLink = createLink(baseNode, 1);
+            mRobot.BaseLink = BaseLink;
+            baseNode.Link = BaseLink;
+
             progressBar.End();
         }
 
@@ -1626,6 +1627,7 @@ namespace SW2URDF
         {
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
             string data = "";
+            string version = "";
             foreach (Object obj in objects)
             {
                 Feature feat = (Feature)obj;

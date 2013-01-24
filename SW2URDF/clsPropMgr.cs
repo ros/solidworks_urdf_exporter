@@ -153,24 +153,51 @@ namespace SW2URDF
         // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
         private void updateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
         {
-            List<Feature> features = getFeaturesOfType(featureName);
+            List<Feature> features = getFeaturesOfType(featureName, true);
             fillComboBox(box, features);
         }
 
         // Creates a list of all the features of this type.
-        private List<Feature> getFeaturesOfType(string featureName)
+        private List<Feature> getFeaturesOfType(string featureName, bool topLevelOnly)
+        {
+            return getFeaturesOfType(ActiveSWModel, featureName, topLevelOnly);
+        }
+        private List<Feature> getFeaturesOfType(ModelDoc2 modeldoc, string featureName, bool topLevelOnly)
         {
             List<Feature> features = new List<Feature>();
+
+            if (modeldoc.GetType() != (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                return features;
+            }
             object[] featureObjects;
 
-            featureObjects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            featureObjects = modeldoc.FeatureManager.GetFeatures(false);
             foreach (Feature feat in featureObjects)
             {
+                string name = feat.Name;
+                string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == featureName)
                 {
                     features.Add(feat);
                 }
             }
+
+
+            if (!topLevelOnly)
+            {
+                AssemblyDoc assyDoc = (AssemblyDoc)modeldoc;
+                object[] components = assyDoc.GetComponents(true);
+                foreach (Component2 comp in components)
+                {
+                    ModelDoc2 doc = comp.GetModelDoc2();
+                    if (doc != null)
+                    {
+                        features.AddRange(getFeaturesOfType(comp.GetModelDoc2(), featureName, true));
+                    }
+                }
+            }
+
             return features;
         }
 
@@ -622,9 +649,10 @@ namespace SW2URDF
                     if (result == (int)swComponentResolveStatus_e.swResolveOk)
                     {
                         // Builds the links and joints from the PMPage configuration
-                        Exporter.createRobotFromTreeView(tree);
                         LinkNode BaseNode = (LinkNode)tree.Nodes[0];
                         tree.Nodes.Remove(BaseNode);
+
+                        Exporter.createRobotFromTreeView(BaseNode);
                         AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
                         exportForm.Exporter = Exporter;
                         exportForm.Show();
@@ -973,7 +1001,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_ComboBox_GlobalCoordsys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
 
 
@@ -993,7 +1021,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = 0;
             pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref axis label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -1011,7 +1039,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_ComboBox_Axes = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the joint type label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -1029,7 +1057,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
             pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
 
 
