@@ -526,6 +526,7 @@ namespace SW2URDF
             foreach (PropertyManagerPageControl control in pm_joint_controls)
             {
                 control.Enabled = enableJoints;
+                control.Visible = enableJoints;
             }
         }
 
