@@ -95,86 +95,7 @@ namespace SW2URDF
         }
 
         // Converts a LinkNode to a SerialNode for Serialization and saving purposes
-        public SerialNode convertLinkNodeToSerialNode(LinkNode node)
-        {
-            SerialNode sNode = new SerialNode();
 
-            if (node.Link == null)
-            {
-                sNode.linkName = node.linkName;
-                sNode.jointName = node.jointName;
-                sNode.axisName = node.axisName;
-                sNode.coordsysName = node.coordsysName;
-
-                // The SWComponents associated with a node are converted to persisted IDs so that they can be referenced when SolidWorks is opened later
-                // or on a different machine.
-                sNode.componentPIDs = saveSWComponents(node.Components);
-
-                sNode.jointType = node.jointType;
-                sNode.isBaseNode = node.isBaseNode;
-                sNode.isIncomplete = node.isIncomplete;
-            }
-            else
-            {
-                sNode.linkName = (string)node.Link.name;
-
-                if (node.Link.Joint != null)
-                {
-                    sNode.jointName = (string)node.Link.Joint.name;
-
-                    if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
-                    {
-                        sNode.axisName = "None";
-                    }
-                    else
-                    {
-                        sNode.axisName = node.Link.Joint.AxisName;
-                    }
-                    sNode.coordsysName = node.Link.Joint.CoordinateSystemName;
-                    sNode.jointType = (string)node.Link.Joint.type;
-                }
-                else
-                {
-                    sNode.coordsysName = node.coordsysName;
-                }
-                sNode.componentPIDs = saveSWComponents(node.Link.SWcomponents);
-                sNode.isBaseNode = node.isBaseNode;
-                sNode.isIncomplete = node.isIncomplete;
-            }
-            //Proceed recursively through the nodes
-            foreach (LinkNode child in node.Nodes)
-            {
-                sNode.Nodes.Add(convertLinkNodeToSerialNode(child));
-            }
-
-            return sNode;
-        }
-
-        // Converts a SerialNode to LinkNode used when loading a configuration
-        public LinkNode convertSerialNodeToLinkNode(SerialNode node)
-        {
-            LinkNode lNode = new LinkNode();
-            lNode.linkName = node.linkName;
-            lNode.jointName = node.jointName;
-            lNode.axisName = node.axisName;
-            lNode.coordsysName = node.coordsysName;
-            lNode.ComponentPIDs = node.componentPIDs;
-            lNode.jointType = node.jointType;
-            lNode.isBaseNode = node.isBaseNode;
-            lNode.isIncomplete = node.isIncomplete;
-
-            //Converts the Component PIDs to actual Component references
-            lNode.Components = loadSWComponents(lNode.ComponentPIDs);
-            lNode.Name = lNode.linkName;
-            lNode.Text = lNode.linkName;
-
-            foreach (SerialNode child in node.Nodes)
-            {
-                lNode.Nodes.Add(convertSerialNodeToLinkNode(child));
-            }
-
-            return lNode;
-        }
 
         #region SW to Robot and link methods
 
@@ -245,38 +166,7 @@ namespace SW2URDF
             return Link;
         }
 
-        // Converts the PIDs to actual references to the components and proceeds recursively through the child links
-        public void loadSWComponents(link Link)
-        {
-            Link.SWMainComponent = loadSWComponent(Link.SWMainComponentPID);
-            Link.SWcomponents = loadSWComponents(Link.SWComponentPIDs);
-            foreach (link Child in Link.Children)
-            {
-                loadSWComponents(Child);
-            }
-        }
 
-        // Converts the PIDs to actual references to the components
-        public List<Component2> loadSWComponents(List<byte[]> PIDs)
-        {
-            List<Component2> components = new List<Component2>();
-            foreach (byte[] PID in PIDs)
-            {
-                components.Add(loadSWComponent(PID));
-            }
-            return components;
-        }
-
-        // Converts a single PID to a Component2 object
-        public Component2 loadSWComponent(byte[] PID)
-        {
-            int Errors = 0;
-            if (PID != null)
-            {
-                return (Component2)ActiveSWModel.Extension.GetObjectByPersistReference3(PID, out Errors);
-            }
-            return null;
-        }
 
         #endregion
 
@@ -1195,71 +1085,7 @@ namespace SW2URDF
 
         #region Testing new export method
 
-        //Converts the SW component references to PIDs
-        public void saveSWComponents(link Link)
-        {
-            ActiveSWModel.ClearSelection2(true);
-            byte[] PID = saveSWComponent(Link.SWMainComponent);
-            if (PID != null)
-            {
-                Link.SWMainComponentPID = PID;
-            }
-            Link.SWComponentPIDs = saveSWComponents(Link.SWcomponents);
 
-            foreach (link Child in Link.Children)
-            {
-                saveSWComponents(Child);
-            }
-        }
-
-        //Converts SW component references to PIDs
-        public List<byte[]> saveSWComponents(List<Component2> components)
-        {
-            List<byte[]> PIDs = new List<byte[]>();
-            foreach (Component2 component in components)
-            {
-                byte[] PID = saveSWComponent(component);
-                if (PID != null)
-                {
-                    PIDs.Add(PID);
-                }
-            }
-            return PIDs;
-        }
-
-        public byte[] saveSWComponent(Component2 component)
-        {
-            if (component != null)
-            {
-                return ActiveSWModel.Extension.GetPersistReference3(component);
-            }
-            return null;
-        }
-
-        public void retrieveSWComponentPIDs(LinkNode node)
-        {
-            if (node.Components != null)
-            {
-                node.ComponentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in node.Components)
-                {
-                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
-                    node.ComponentPIDs.Add(PID);
-                }
-            }
-            foreach (LinkNode child in node.Nodes)
-            {
-                retrieveSWComponentPIDs(child);
-            }
-        }
-
-        public void retrieveSWComponentPIDs(TreeView tree)
-        {
-            foreach (LinkNode node in tree.Nodes)
-            {
-                retrieveSWComponentPIDs(node);
-            }
-        }
         public void createBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
