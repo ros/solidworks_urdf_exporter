@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swpublished;
 using SolidWorks.Interop.swconst;
-using SolidWorksTools;
-using SolidWorksTools.File;
-using System.Xml;
 using System.Xml.Serialization;
 
 namespace SW2URDF
@@ -29,6 +21,7 @@ namespace SW2URDF
         Control[] jointBoxes;
         Control[] linkBoxes;
         LinkNode BaseNode;
+        public AttributeDef saveConfigurationAttributeDef;
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
@@ -59,6 +52,15 @@ namespace SW2URDF
                 comboBox_materials,
                 textBox_texture
             };
+
+            saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
+            int Options = 0;
+
+            saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+            saveConfigurationAttributeDef.Register();
         }
 
         //Joint form configuration controls
@@ -102,7 +104,7 @@ namespace SW2URDF
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
-            Exporter.saveConfigTree(BaseNode, true);
+            saveConfigTree(ActiveSWModel, BaseNode, true);
             this.Close();
         }
         private void button_links_cancel_Click(object sender, EventArgs e)
@@ -111,7 +113,7 @@ namespace SW2URDF
             {
                 saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
-            Exporter.saveConfigTree(BaseNode, true);
+            saveConfigTree(ActiveSWModel, BaseNode, true);
             this.Close();
         }
 
@@ -133,7 +135,7 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
-            Exporter.saveConfigTree(BaseNode, false);
+            saveConfigTree(ActiveSWModel, BaseNode, false);
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.RestoreDirectory = true;
             saveFileDialog1.InitialDirectory = Exporter.mSavePath;
@@ -342,10 +344,10 @@ namespace SW2URDF
                 label_kvelocity.Text = "k velocity";
             }
             comboBox_origin.Items.Clear();
-            string[] originNames = Exporter.findOrigins();
+            string[] originNames = Exporter.builder.findOrigins();
             comboBox_origin.Items.AddRange(originNames);
             comboBox_axis.Items.Clear();
-            string[] axesNames = Exporter.findAxes();
+            string[] axesNames = Exporter.builder.findAxes();
             comboBox_axis.Items.AddRange(axesNames);
             comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
             if (Joint.AxisName != "")
@@ -886,8 +888,8 @@ namespace SW2URDF
             {
                 if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
                 {
-                    double[] Axis = Exporter.estimateAxis(comboBox_axis.Text);
-                    Exporter.localizeAxis(Axis, comboBox_origin.Text);
+                    double[] Axis = Exporter.builder.estimateAxis(comboBox_axis.Text);
+                    Exporter.builder.localizeAxis(Axis, comboBox_origin.Text);
                     textBox_axis_x.Text = Axis[0].ToString("G5");
                     textBox_axis_y.Text = Axis[1].ToString("G5");
                     textBox_axis_z.Text = Axis[2].ToString("G5");
@@ -895,6 +897,88 @@ namespace SW2URDF
             }
         }
         #endregion
+
+
+
+
+
+
+
+        public void saveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        {
+            Object[] objects = model.FeatureManager.GetFeatures(true);
+            string oldData = "";
+            Parameter param;
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        param = att.GetParameter("data");
+                        oldData = param.GetStringValue();
+                    }
+                }
+            }
+
+
+            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
+            Common.retrieveSWComponentPIDs(model, BaseNode);
+            SerialNode sNode = new SerialNode(BaseNode);
+
+            StringWriter stringWriter;
+            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+            stringWriter = new StringWriter();
+            serializer.Serialize(stringWriter, sNode);
+            stringWriter.Flush();
+            stringWriter.Close();
+
+            string newData = stringWriter.ToString();
+            if (oldData != newData)
+            {
+                if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+                {
+                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute(swApp, "URDF Export Configuration");
+                    param = saveExporterAttribute.GetParameter("data");
+                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("name");
+                    param.SetStringValue2("config1", ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("date");
+                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("exporterVersion");
+                    param.SetStringValue2("1.1", ConfigurationOptions, "");
+                }
+            }
+        }
+
+        private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(ISldWorks iSwApp, string name)
+        {
+            int Options = 0;
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            ModelDoc2 ActiveSWModel = iSwApp.ActiveDoc;
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == name)
+                    {
+                        return att;
+                    }
+                }
+
+            }
+
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            return saveExporterAttribute;
+        }
 
     }
 

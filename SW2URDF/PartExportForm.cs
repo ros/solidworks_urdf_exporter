@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
@@ -290,7 +285,7 @@ namespace SW2URDF
 
         private void PartExportForm_Load(object sender, EventArgs e)
         {
-            Exporter.createRobotFromActiveModel();
+            Exporter.builder.createRobotFromActiveModel();
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
             Exporter.mRobot.BaseLink.Visual.Origin.fillBoxes(textBox_collision_origin_x, 

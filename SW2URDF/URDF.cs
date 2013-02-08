@@ -1,20 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Collections;
-using System.Reflection;
 using System.Globalization;
 
 using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swpublished;
-using SolidWorks.Interop.swconst;
-using SolidWorksTools;
-using SolidWorksTools.File;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Serialization;
 using System.Text;
 
 namespace SW2URDF
@@ -231,6 +221,52 @@ namespace SW2URDF
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
+        }
+        public SerialNode(LinkNode node)
+        {
+            if (node.Link == null)
+            {
+                linkName = node.linkName;
+                jointName = node.jointName;
+                axisName = node.axisName;
+                coordsysName = node.coordsysName;
+                componentPIDs = node.ComponentPIDs;
+                jointType = node.jointType;
+                isBaseNode = node.isBaseNode;
+                isIncomplete = node.isIncomplete;
+            }
+            else
+            {
+                linkName = (string)node.Link.name;
+                componentPIDs = node.Link.SWComponentPIDs;
+                if (node.Link.Joint != null)
+                {
+                    jointName = (string)node.Link.Joint.name;
+
+                    if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
+                    {
+                        axisName = "None";
+                    }
+                    else
+                    {
+                        axisName = node.Link.Joint.AxisName;
+                    }
+                    coordsysName = node.Link.Joint.CoordinateSystemName;
+                    jointType = (string)node.Link.Joint.type;
+                }
+                else
+                {
+                    coordsysName = node.coordsysName;
+                }
+
+                isBaseNode = node.isBaseNode;
+                isIncomplete = node.isIncomplete;
+            }
+            //Proceed recursively through the nodes
+            foreach (LinkNode child in node.Nodes)
+            {
+                Nodes.Add(new SerialNode(child));
+            }
         }
     }
 
@@ -1888,6 +1924,30 @@ namespace SW2URDF
         { get; set; }
         public string whyIncomplete
         { get; set; }
+
+        public LinkNode()
+        {
+        }
+
+        public LinkNode(SerialNode node)
+        {
+            linkName = node.linkName;
+            jointName = node.jointName;
+            axisName = node.axisName;
+            coordsysName = node.coordsysName;
+            ComponentPIDs = node.componentPIDs;
+            jointType = node.jointType;
+            isBaseNode = node.isBaseNode;
+            isIncomplete = node.isIncomplete;
+
+            Name = linkName;
+            Text = linkName;
+
+            foreach (SerialNode child in node.Nodes)
+            {
+                Nodes.Add(new LinkNode(child));
+            }
+        }
 
     }
     #endregion

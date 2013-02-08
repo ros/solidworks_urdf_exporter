@@ -199,6 +199,8 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Builder.cs" />
+    <Compile Include="Common.cs" />
     <Compile Include="PMHelper.cs" />
     <Compile Include="clsPropMgr.cs" />
     <Compile Include="PMLinkTree.cs">
