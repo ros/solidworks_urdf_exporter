@@ -14,13 +14,13 @@ namespace SW2URDF
     [ComVisibleAttribute(true)]
 
     [Serializable]
-    public class clsPropMgr : PropertyManagerPage2Handler9
+    public class URDFExporterPropertyManager : PropertyManagerPage2Handler9
     {
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
 
-        public SW2URDFExporter Exporter;
+        public URDFExporter Exporter;
         PMHelper pmHelper;
         public LinkNode previouslySelectedNode;
         public link previouslySelectedLink;
@@ -93,12 +93,12 @@ namespace SW2URDF
         }
 
         //The following runs when a new instance of the class is created
-        public clsPropMgr(SldWorks swAppPtr)
+        public URDFExporterPropertyManager(SldWorks swAppPtr)
         {
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
             pmHelper = new PMHelper(swApp);
-            Exporter = new SW2URDFExporter(swApp);
+            Exporter = new URDFExporter(swApp);
             Exporter.mRobot = new robot();
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
 
@@ -649,7 +649,7 @@ namespace SW2URDF
                         LinkNode BaseNode = (LinkNode)tree.Nodes[0];
                         tree.Nodes.Remove(BaseNode);
 
-                        Exporter.builder.createRobotFromTreeView(BaseNode);
+                        Exporter.createRobotFromTreeView(BaseNode);
                         AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
                         exportForm.Exporter = Exporter;
                         exportForm.Show();

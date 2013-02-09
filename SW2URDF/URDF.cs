@@ -218,12 +218,15 @@ namespace SW2URDF
         public bool isIncomplete;
         public List<SerialNode> Nodes;
 
+        //This is only used by the serialization module.
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
         }
+
         public SerialNode(LinkNode node)
         {
+            Nodes = new List<SerialNode>();
             if (node.Link == null)
             {
                 linkName = node.linkName;
@@ -238,7 +241,8 @@ namespace SW2URDF
             else
             {
                 linkName = (string)node.Link.name;
-                componentPIDs = node.Link.SWComponentPIDs;
+                
+                componentPIDs = node.ComponentPIDs;
                 if (node.Link.Joint != null)
                 {
                     jointName = (string)node.Link.Joint.name;

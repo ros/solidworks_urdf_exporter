@@ -199,7 +199,10 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Builder.cs" />
+    <Compile Include="URDFExporterExtension.cs" />
+    <Compile Include="AssemblyExportFormExtension.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Common.cs" />
     <Compile Include="PMHelper.cs" />
     <Compile Include="clsPropMgr.cs" />

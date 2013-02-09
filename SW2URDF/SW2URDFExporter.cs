@@ -14,7 +14,7 @@ namespace SW2URDF
     // This class contains a long list of methods that are used throughout the export process. Methods for building links and joints are contained in here.
     // Many of the methods are overloaded, but seek to reduce repeated code as much as possible (i.e. the overloaded methods call eachother).
     // These methods are used by the PartExportForm, the AssemblyExportForm and the PropertyManager Page
-    public class SW2URDFExporter
+    public partial class URDFExporter
     {
         #region class variables
         [XmlIgnore]
@@ -30,14 +30,12 @@ namespace SW2URDF
         private double mHideTransitionSpeed;
 
         private UserProgressBar progressBar;
-        public Builder builder;
 
         [XmlIgnore]
         public ModelDoc2 ActiveSWModel;
         [XmlIgnore]
         public MathUtility swMath;
         [XmlIgnore]
-
         public Object swMathPID
         { get; set; }
 
@@ -53,7 +51,7 @@ namespace SW2URDF
         #endregion
 
         // Constructor for SW2URDF Exporter class
-        public SW2URDFExporter(ISldWorks iSldWorksApp)
+        public URDFExporter(ISldWorks iSldWorksApp)
         {
             constructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
@@ -66,7 +64,6 @@ namespace SW2URDF
         {
             iSwApp = iSldWorksApp;
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
-            builder = new Builder(iSwApp);
             swMath = iSwApp.GetMathUtility();
         }
 
@@ -180,11 +177,11 @@ namespace SW2URDF
         public void exportLink(bool zIsUp)
         {
             
-            builder.createBaseRefOrigin(zIsUp);
+            createBaseRefOrigin(zIsUp);
             MathTransform coordSysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
             Matrix<double> GlobalTransform = ops.getTransformation(coordSysTransform);
 
-            builder.localizeLink(mRobot.BaseLink, GlobalTransform);
+            localizeLink(mRobot.BaseLink, GlobalTransform);
 
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);

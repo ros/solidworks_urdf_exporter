@@ -9,11 +9,11 @@ namespace SW2URDF
 {
     public partial class PartExportForm : Form
     {
-        public SW2URDFExporter Exporter;
+        public URDFExporter Exporter;
         public PartExportForm(ISldWorks iSwApp)
         {
             InitializeComponent();
-            Exporter = new SW2URDFExporter(iSwApp);
+            Exporter = new URDFExporter(iSwApp);
         }
 
         #region Basic event handelers
@@ -285,7 +285,7 @@ namespace SW2URDF
 
         private void PartExportForm_Load(object sender, EventArgs e)
         {
-            Exporter.builder.createRobotFromActiveModel();
+            Exporter.createRobotFromActiveModel();
             textBox_save_as.Text = Exporter.mSavePath + "\\" + Exporter.mPackageName;
 
             Exporter.mRobot.BaseLink.Visual.Origin.fillBoxes(textBox_collision_origin_x, 
