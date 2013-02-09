@@ -263,7 +263,7 @@ namespace SW2URDF
         {
             //SW2URDFExporter exporter = loadConfigFile();
 
-            URDFExporterPropertyManager pm = new URDFExporterPropertyManager((SldWorks)iSwApp);
+            URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
 
             pm.loadConfigTree();
             pm.Show();

@@ -7,53 +7,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Xml.Serialization;
 using System.Xml;
+using SolidWorks.Interop.swpublished;
 
 namespace SW2URDF
 {
-    public class PMHelper
+    public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
-        ISldWorks iSwApp;
-        ModelDoc2 ActiveSWModel;
-
-        public PMHelper(ISldWorks iSldWorksApp)
-        {
-            iSwApp = iSldWorksApp;
-            ActiveSWModel = iSwApp.ActiveDoc;
-
-        }
-
-        public LinkNode loadConfigTree()
-        {
-            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
-            string data = "";
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        Parameter param = att.GetParameter("data");
-                        data = param.GetStringValue();
-                    }
-                }
-
-            }
-            LinkNode lNode = null;
-            if (!data.Equals(""))
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
-                lNode = new LinkNode(node);
-                Common.loadSWComponents(ActiveSWModel, lNode);
-                textReader.Close();
-            }
-            return lNode;
-        }
-
         public void moveComponentsToFolder(LinkNode node)
         {
             bool needToCreateFolder = true;

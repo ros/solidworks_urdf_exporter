@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using System.Xml.Serialization;
+using System.Xml;
+using System.IO;
 
 namespace SW2URDF
 {
@@ -14,14 +17,13 @@ namespace SW2URDF
     [ComVisibleAttribute(true)]
 
     [Serializable]
-    public class URDFExporterPropertyManager : PropertyManagerPage2Handler9
+    public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
 
         public URDFExporter Exporter;
-        PMHelper pmHelper;
         public LinkNode previouslySelectedNode;
         public link previouslySelectedLink;
         public List<link> linksToVisit;
@@ -93,11 +95,10 @@ namespace SW2URDF
         }
 
         //The following runs when a new instance of the class is created
-        public URDFExporterPropertyManager(SldWorks swAppPtr)
+        public URDFExporterPM(SldWorks swAppPtr)
         {
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
-            pmHelper = new PMHelper(swApp);
             Exporter = new URDFExporter(swApp);
             Exporter.mRobot = new robot();
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
@@ -604,7 +605,34 @@ namespace SW2URDF
         // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
         public void loadConfigTree()
         {
-            LinkNode basenode = pmHelper.loadConfigTree();
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            string data = "";
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        Parameter param = att.GetParameter("data");
+                        data = param.GetStringValue();
+                    }
+                }
+
+            }
+            LinkNode basenode = null;
+            if (!data.Equals(""))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                basenode = new LinkNode(node);
+                Common.loadSWComponents(ActiveSWModel, basenode);
+                textReader.Close();
+            }
+
             if (basenode == null)
             {
                 basenode = createEmptyNode(null);
@@ -634,7 +662,7 @@ namespace SW2URDF
             if (Id == Button_export_ID) //If the export button was pressed
             {
                 saveActiveNode();
-                if (pmHelper.checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
                 {
                     pm_Page.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;

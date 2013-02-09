@@ -205,7 +205,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Common.cs" />
-    <Compile Include="PMHelper.cs" />
+    <Compile Include="URDFExporterPMExtension.cs" />
     <Compile Include="PMLinkTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -224,7 +224,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="URDF.cs" />
-    <Compile Include="URDFExporterPropertyManager.cs" />
+    <Compile Include="URDFExporterPM.cs" />
     <Compile Include="URDFPackage.cs" />
     <EmbeddedResource Include="AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>

@@ -7,9 +7,11 @@ using SolidWorks.Interop.swconst;
 using System.Xml.Serialization;
 using System.IO;
 using SolidWorks.Interop.sldworks;
+using System.Drawing;
 
 namespace SW2URDF
 {
+    //This source file contains all the non-handler methods for the assembly export form, the ones that are helpers.
     public partial class AssemblyExportForm : Form
     {
                 //From the link, this method fills the property boxes on the Link Properties page
@@ -517,6 +519,15 @@ namespace SW2URDF
 
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
+        }
+
+        public void changeAllNodeFont(LinkNode node, Font font)
+        {
+            node.NodeFont = font;
+            foreach (LinkNode child in node.Nodes)
+            {
+                changeAllNodeFont(child, font);
+            }
         }
     }
 }

@@ -16,8 +16,8 @@ namespace SW2URDF
     public partial class PMLinkTree : Form
     {
         public URDFExporter Exporter;
-        public URDFExporterPropertyManager propMgr;
-        public PMLinkTree(URDFExporterPropertyManager sPropMgr, URDFExporter sExporter)
+        public URDFExporterPM propMgr;
+        public PMLinkTree(URDFExporterPM sPropMgr, URDFExporter sExporter)
         {
             propMgr = sPropMgr;
             Exporter = sExporter;

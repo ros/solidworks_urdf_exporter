@@ -193,10 +193,6 @@ namespace SW2URDF
             previouslySelectedNode = node;
         }
 
-        #region Robot<->Tree
-
-
-
         #region Link Properties Controls Handlers
 
         private void textBox_inertial_origin_x_TextChanged(object sender, EventArgs e)
@@ -407,15 +403,6 @@ namespace SW2URDF
 
         }
 
-        public void changeAllNodeFont(LinkNode node, Font font)
-        {
-            node.NodeFont = font;
-            foreach (LinkNode child in node.Nodes)
-            {
-                changeAllNodeFont(child, font);
-            }
-        }
-
         private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
@@ -466,8 +453,5 @@ namespace SW2URDF
             }
         }
         #endregion
-
-        #endregion
     }
-
 }
