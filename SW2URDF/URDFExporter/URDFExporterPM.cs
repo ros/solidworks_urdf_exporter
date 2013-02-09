@@ -1,18 +1,12 @@
-﻿using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
-using SolidWorks.Interop.swpublished;
-using System;
-using System.Runtime.InteropServices;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swpublished;
 
 namespace SW2URDF
 {
@@ -20,14 +14,13 @@ namespace SW2URDF
     [ComVisibleAttribute(true)]
 
     [Serializable]
-    public class clsPropMgr : PropertyManagerPage2Handler9
+    public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
-        ops OPS;
 
-        public SW2URDFExporter Exporter;
+        public URDFExporter Exporter;
         public LinkNode previouslySelectedNode;
         public link previouslySelectedLink;
         public List<link> linksToVisit;
@@ -43,6 +36,7 @@ namespace SW2URDF
         PropertyManagerPageTextbox pm_TextBox_LinkName;
         PropertyManagerPageTextbox pm_TextBox_JointName;
         PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
+        PropertyManagerPageCombobox pm_ComboBox_GlobalCoordsys;
         PropertyManagerPageCombobox pm_ComboBox_Axes;
         PropertyManagerPageCombobox pm_ComboBox_CoordSys;
         PropertyManagerPageCombobox pm_ComboBox_JointType;
@@ -56,6 +50,7 @@ namespace SW2URDF
         PropertyManagerPageLabel pm_Label_Axes;
         PropertyManagerPageLabel pm_Label_CoordSys;
         PropertyManagerPageLabel pm_Label_JointType;
+        PropertyManagerPageLabel pm_Label_GlobalCoordsys;
 
         PropertyManagerPageWindowFromHandle pm_tree;
         public TreeView tree
@@ -86,6 +81,9 @@ namespace SW2URDF
         const int Label_CoordSys_ID = 21;
         const int ComboBox_JointType_ID = 22;
         const int Label_JointType_ID = 23;
+        const int ID_GlobalCoordsys = 24;
+        const int ID_Label_GlobalCoordsys = 25;
+
         #endregion
 
         public void Show()
@@ -94,12 +92,11 @@ namespace SW2URDF
         }
 
         //The following runs when a new instance of the class is created
-        public clsPropMgr(SldWorks swAppPtr)
+        public URDFExporterPM(SldWorks swAppPtr)
         {
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
-
-            Exporter = new SW2URDFExporter(swApp);
+            Exporter = new URDFExporter(swApp);
             Exporter.mRobot = new robot();
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
 
@@ -113,7 +110,6 @@ namespace SW2URDF
             int longerrors = 0;
             int controlType = 0;
             int alignment = 0;
-            OPS = new ops();
             string[] listItems = new string[4];
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
@@ -143,426 +139,6 @@ namespace SW2URDF
             #endregion
         }
 
-        #region Property Manager Methods
-
-        // Finds all the RefAxis and Coordsys currently in the SolidWorks model doc and adds them to the appropriate pull down menus
-        private void updateComboBoxes()
-        {
-            List<Feature> axes = new List<Feature>();
-            List<Feature> coordsys = new List<Feature>();
-
-            object[] features;
-            features = ActiveSWModel.FeatureManager.GetFeatures(true);
-            foreach (Feature feat in features)
-            {
-                if (feat.GetTypeName2() == "RefAxis")
-                {
-                    axes.Add(feat);
-                }
-                else if (feat.GetTypeName2() == "CoordSys")
-                {
-                    coordsys.Add(feat);
-                }
-            }
-
-            fillComboBox(pm_ComboBox_CoordSys, coordsys);
-            fillComboBox(pm_ComboBox_Axes, axes);
-            pm_ComboBox_Axes.AddItems("None");
-        }
-
-        // Populates the combo box with feature names
-        private void fillComboBox(PropertyManagerPageCombobox box, List<Feature> features)
-        {
-            box.Clear();
-            box.AddItems("Automatically Generate");
-
-            foreach (Feature feat in features)
-            {
-                box.AddItems(feat.Name);
-            }
-        }
-
-        // Finds the specified item in a combobox and sets the box to it. I'm not sure why I couldn't do this with a foreach loop
-        // or even a for loop, but there is no way to get the current number of items in the menu
-        private void selectComboBox(PropertyManagerPageCombobox box, string item)
-        {
-            short i = 0;
-            string itemtext = "nothing";
-            box.CurrentSelection = 0;
-
-            // Cycles through the menu items until it finds what its looking for, it finds blank strings, or itemtext is null
-            while (itemtext != null && itemtext != "" && itemtext != item)
-            {
-                // Gets the item text at index in a pull-down menu. No way to now how many items are in the combobox
-                itemtext = box.get_ItemText(i);
-                if (itemtext == item)
-                {
-                    box.CurrentSelection = i;
-                }
-                i++;
-            }
-        }
-
-        // Adds an asterix to the node text if it is incomplete (not currently used)
-        private void updateNodeNames(TreeView tree)
-        {
-            foreach (LinkNode node in tree.Nodes)
-            {
-                updateNodeNames(node);
-            }
-        }
-
-        // Adds an asterix to the node text if it is incomplete (not currently used)
-        private void updateNodeNames(LinkNode node)
-        {
-            if (node.isIncomplete)
-            {
-                node.Text = node.linkName + "*";
-            }
-            foreach (LinkNode child in node.Nodes)
-            {
-                updateNodeNames(child);
-            }
-        }
-
-        // Determines how many nodes need to be built, and they are added to the current node
-        private void createNewNodes(LinkNode CurrentlySelectedNode)
-        {
-            int nodesToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
-            createNewNodes(CurrentlySelectedNode, nodesToBuild);
-        }
-
-        // Adds the number of empty nodes to the currently active node
-        private void createNewNodes(LinkNode currentNode, int number)
-        {
-            for (int i = 0; i < number; i++)
-            {
-                LinkNode node = createEmptyNode(currentNode);
-                currentNode.Nodes.Add(node);
-            }
-            for (int i = 0; i < -number; i++)
-            {
-                currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
-            }
-            int itemsCount = Exporter.getCount(tree.Nodes);
-            int height = OPS.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
-            tree.Height = height;
-            pm_tree.Height = height;
-
-            currentNode.ExpandAll();
-        }
-
-        // When a new node is selected or another node is found that needs to be visited, this method saves the previously
-        // active node and fills in the property mananger with the new one
-        public void switchActiveNodes(LinkNode node)
-        {
-            saveActiveNode();
-
-            Font fontRegular = new Font(tree.Font, FontStyle.Regular);
-            Font fontBold = new Font(tree.Font, FontStyle.Bold);
-            if (previouslySelectedNode != null)
-            {
-                previouslySelectedNode.NodeFont = fontRegular;
-            }
-            fillPropertyManager(node);
-
-            //If this flag is set to true, it prevents this method from getting called again when changing the selected node
-            automaticallySwitched = true;
-
-            //Change the selected node to the argument node. This highlights the newly activated node
-            tree.SelectedNode = node;
-
-            node.NodeFont = fontBold;
-            node.Text = node.Text;
-            previouslySelectedNode = node;
-            checkNodeComplete(node);
-        }
-
-        // This method runs through first the child nodes of the selected node to see if there are more to visit
-        // then it runs through the nodes top to bottom to find the next to visit. Returns the node if one is found
-        // otherwise it returns null.
-        public LinkNode findNextLinkToVisit(System.Windows.Forms.TreeView tree)
-        {
-            // First check if SelectedNode has any nodes to visit
-            if (tree.SelectedNode != null)
-            {
-                LinkNode nodeToReturn = findNextLinkToVisit((LinkNode)tree.SelectedNode);
-                if (nodeToReturn != null)
-                {
-                    return nodeToReturn;
-                }
-            }
-
-            // Now run through tree to see if any other nodes need to be visited
-            return findNextLinkToVisit((LinkNode)tree.Nodes[0]);
-        }
-
-        // Finds the next incomplete node and returns that
-        public LinkNode findNextLinkToVisit(LinkNode nodeToCheck)
-        {
-            if (nodeToCheck.Link.isIncomplete)
-            {
-                return nodeToCheck;
-            }
-            foreach (LinkNode node in nodeToCheck.Nodes)
-            {
-                return findNextLinkToVisit(node);
-            }
-            return null;
-        }
-
-        //Sets the node's isIncomplete flag if the node has key items that need to be completed
-        public void checkNodeComplete(LinkNode node)
-        {
-            node.whyIncomplete = "";
-            node.isIncomplete = false;
-            if (node.linkName.Equals(""))
-            {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
-            }
-            if (node.Nodes.Count > 0 && node.Components.Count == 0)
-            {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Links with children cannot be empty. Select its associated components\r\n";
-            }
-            if (node.Components.Count == 0 && node.coordsysName == "Automatically Generate")
-            {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        The origin reference coordinate system cannot be automatically generated\r\n";
-                node.whyIncomplete += "        without components. Either select an origin or at least one component.";
-            }
-            if (node.jointName == "" && !node.isBaseNode)
-            {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
-            }
-        }
-
-        //Recursive function to iterate though nodes and build a message containing those that are incomplete
-        public string checkNodesComplete(LinkNode node, string incompleteNodes)
-        {
-            // Determine if the node is incomplete
-            checkNodeComplete(node);
-            if (node.isIncomplete)
-            {
-                incompleteNodes += "    '" + node.Text + "':\r\n" + node.whyIncomplete + "\r\n\r\n"; //Building the message
-            }
-            // Cycle through the rest of the nodes
-            foreach (LinkNode child in node.Nodes)
-            {
-                incompleteNodes = checkNodesComplete(child, incompleteNodes);
-            }
-            return incompleteNodes;
-        }
-
-        //Finds all the nodes in a TreeView that need to be completed before exporting
-        public bool checkNodesComplete(TreeView tree)
-        {
-            //Calls the recursive function starting with the base_link node and retrieves a string identifying the incomplete nodes
-            string incompleteNodes = checkNodesComplete((LinkNode)tree.Nodes[0], "");
-            if (incompleteNodes != "")
-            {
-                MessageBox.Show("The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
-                return false;
-            }
-            return true;
-        }
-
-        // When the selected node is changed, the previously active node needs to be saved
-        public void saveActiveNode()
-        {
-            if (previouslySelectedNode != null)
-            {
-                previouslySelectedNode.linkName = pm_TextBox_LinkName.Text;
-                if (!previouslySelectedNode.isBaseNode)
-                {
-                    previouslySelectedNode.jointName = pm_TextBox_JointName.Text;
-                    previouslySelectedNode.axisName = pm_ComboBox_Axes.get_ItemText(-1);
-                    previouslySelectedNode.coordsysName = pm_ComboBox_CoordSys.get_ItemText(-1);
-                    previouslySelectedNode.jointType = pm_ComboBox_JointType.get_ItemText(-1);
-                }
-                Exporter.getSelectedComponents(previouslySelectedNode.Components, pm_Selection.Mark);
-            }
-        }
-
-        //Creates an Empty node when children are added to a link
-        public LinkNode createEmptyNode(LinkNode Parent)
-        {
-            LinkNode node = new LinkNode();
-
-            if (Parent == null)             //For the base_link node
-            {
-                node.linkName = "base_link";
-                node.axisName = "";
-                node.coordsysName = "Automatically Generate";
-                node.Components = new List<Component2>();
-                node.isBaseNode = true;
-                node.isIncomplete = true;
-            }
-            else
-            {
-                node.isBaseNode = false;
-                node.linkName = "Empty_Link";
-                node.axisName = "Automatically Generate";
-                node.coordsysName = "Automatically Generate";
-                node.jointType = "Automatically Detect";
-                node.Components = new List<Component2>();
-                node.isBaseNode = false;
-                node.isIncomplete = true;
-            }
-            node.Name = node.linkName;
-            node.Text = node.linkName;
-            node.ContextMenuStrip = docMenu;
-            return node;
-        }
-
-        //Sets all the controls in the Property Manager from the Selected Node
-        public void fillPropertyManager(LinkNode node)
-        {
-            pm_TextBox_LinkName.Text = node.linkName;
-            pm_NumberBox_ChildCount.Value = node.Nodes.Count;
-
-            //Selecting the associated link components
-            Exporter.selectComponents(node.Components, true, pm_Selection.Mark);
-
-            //Setting joint properties
-            if (!node.isBaseNode && node.Parent != null)
-            {
-                //Labels need to be activated before changing them
-                enableJointControls(!node.isBaseNode);
-                pm_TextBox_JointName.Text = node.jointName;
-                pm_Label_ParentLink.Caption = node.Parent.Name;
-
-                updateComboBoxes();
-                selectComboBox(pm_ComboBox_CoordSys, node.coordsysName);
-                selectComboBox(pm_ComboBox_Axes, node.axisName);
-                selectComboBox(pm_ComboBox_JointType, node.jointType);
-            }
-            else
-            {
-                //Labels and text box have be blanked before de-activating them
-                pm_Label_ParentLink.Caption = " ";
-                selectComboBox(pm_ComboBox_CoordSys, "");
-                selectComboBox(pm_ComboBox_Axes, "");
-                selectComboBox(pm_ComboBox_JointType, "");
-                enableJointControls(!node.isBaseNode);
-            }
-        }
-
-        //Takes care of activating/deactivating the drop down menus, lables and text box for joint configuration
-        //Generally these are deactivated for the base node
-        private void enableJointControls(bool enabled)
-        {
-            PropertyManagerPageControl[] pm_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_Label_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_Label_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_Label_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_JointType, 
-                                                                                          (PropertyManagerPageControl)pm_Label_JointType };
-
-            foreach (PropertyManagerPageControl control in pm_controls)
-            {
-                control.Enabled = enabled;
-            }
-        }
-
-        //Only allows components to be selected for the PMPage selection box
-        void setComponentFilters()
-        {
-            swSelectType_e[] filters = new swSelectType_e[1];
-            filters[0] = swSelectType_e.swSelCOMPONENTS;
-            object filterObj = null;
-            filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
-        }
-
-        // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
-        // and items are added to the selection box. 
-        // Because the PMPage closes before selections need to occur, this method is no longer used. 
-        void setGeneralFilters()
-        {
-            swSelectType_e[] filters = new swSelectType_e[15];
-            filters[0] = swSelectType_e.swSelCOMPONENTS;
-            filters[1] = swSelectType_e.swSelEXTSKETCHPOINTS;
-            filters[2] = swSelectType_e.swSelEXTSKETCHSEGS;
-            filters[3] = swSelectType_e.swSelSKETCHES;
-            filters[4] = swSelectType_e.swSelSKETCHPOINTS;
-            filters[5] = swSelectType_e.swSelSKETCHSEGS;
-            filters[6] = swSelectType_e.swSelCOORDSYS;
-            filters[7] = swSelectType_e.swSelDATUMAXES;
-            filters[8] = swSelectType_e.swSelDATUMPOINTS;
-            filters[9] = swSelectType_e.swSelCONNECTIONPOINTS;
-            filters[10] = swSelectType_e.swSelFRAMEPOINT;
-            filters[11] = swSelectType_e.swSelMIDPOINTS;
-            filters[12] = swSelectType_e.swSelROUTEPOINTS;
-            filters[13] = swSelectType_e.swSelSKETCHPOINTFEAT;
-            filters[14] = swSelectType_e.swSelVERTICES;
-
-            object filterObj = null;
-
-            filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
-        }
-
-        //Populates the TreeView with the organized links from the robot
-        public void fillTreeViewFromRobot(robot robot)
-        {
-            tree.Nodes.Clear();
-            LinkNode baseNode = new LinkNode();
-            link baseLink = robot.BaseLink;
-            baseNode.Name = baseLink.name;
-            baseNode.Text = baseLink.name;
-            baseNode.Link = baseLink;
-            baseNode.ContextMenuStrip = docMenu;
-
-            foreach (link child in baseLink.Children)
-            {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child));
-            }
-            tree.Nodes.Add(baseNode);
-            tree.ExpandAll();
-        }
-
-        // Similar to the AssemblyExportForm method. It creates a LinkNode from a Link object
-        public LinkNode createLinkNodeFromLink(link Link)
-        {
-            LinkNode node = new LinkNode();
-            node.Name = Link.name;
-            node.Text = Link.name;
-            node.Link = Link;
-            node.ContextMenuStrip = docMenu;
-
-            foreach (link child in Link.Children)
-            {
-                node.Nodes.Add(createLinkNodeFromLink(child));
-            }
-            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
-            return node;
-        }
-
-
-        // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
-        public void loadConfigTree()
-        {
-            LinkNode basenode = Exporter.loadConfigTree();
-            if (basenode == null)
-            {
-                basenode = createEmptyNode(null);
-            }
-            addDocMenu(basenode);
-
-            tree.Nodes.Clear();
-            tree.Nodes.Add(basenode);
-            tree.ExpandAll();
-            tree.SelectedNode = tree.Nodes[0];
-
-
-        }
-        #endregion
-
         #region Implemented Property Manager Page Handler Methods
 
         void IPropertyManagerPage2Handler9.AfterActivation()
@@ -577,7 +153,7 @@ namespace SW2URDF
             if (Id == Button_export_ID) //If the export button was pressed
             {
                 saveActiveNode();
-                if (Exporter.checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
                 {
                     pm_Page.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -589,9 +165,10 @@ namespace SW2URDF
                     if (result == (int)swComponentResolveStatus_e.swResolveOk)
                     {
                         // Builds the links and joints from the PMPage configuration
-                        Exporter.createRobotFromTreeView(tree);
                         LinkNode BaseNode = (LinkNode)tree.Nodes[0];
                         tree.Nodes.Remove(BaseNode);
+
+                        Exporter.createRobotFromTreeView(BaseNode);
                         AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
                         exportForm.Exporter = Exporter;
                         exportForm.Show();
@@ -619,7 +196,7 @@ namespace SW2URDF
             else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
             {
                 saveActiveNode();
-                Exporter.saveConfigTree((LinkNode)tree.Nodes[0], false);
+                saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
             }
         }
 
@@ -692,6 +269,7 @@ namespace SW2URDF
 
         #endregion
 
+
         #region TreeView handler methods
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
         private void tree_AfterSelect(object sender, TreeViewEventArgs e)
@@ -707,17 +285,6 @@ namespace SW2URDF
         private void tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             rightClickedNode = (LinkNode)e.Node;
-        }
-
-        //As nodes are created and destroyed, this menu gets called a lot. It basically just adds the context menu (right-click menu)
-        // to the node
-        public void addDocMenu(LinkNode node)
-        {
-            node.ContextMenuStrip = docMenu;
-            foreach (LinkNode child in node.Nodes)
-            {
-                addDocMenu(child);
-            }
         }
 
         //When a keyboard key is pressed on the tree
@@ -924,12 +491,32 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_TextBox_JointName = (PropertyManagerPageTextbox)pm_Group.AddControl(TextBox_LinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
+            //Create the global origin coordinate sys label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Global Origin Coordinate System";
+            tip = "Select the reference coordinate system for the global origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_Label_GlobalCoordsys = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+
+            // Create pull down menu for Coordinate systems
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
+            caption = "Global Origin Coordinate System Name";
+            tip = "Select the reference coordinate system for the global origin";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            pm_ComboBox_GlobalCoordsys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+
+
+
             //Create the ref coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Reference Coordinate System";
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             pm_Label_CoordSys = (PropertyManagerPageLabel)pm_Group.AddControl(Label_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
 
@@ -938,9 +525,9 @@ namespace SW2URDF
             caption = "Reference Coordinate System Name";
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref axis label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -958,7 +545,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_ComboBox_Axes = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the joint type label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -976,7 +563,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly + (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_Sorted;
+            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
             pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
 
 
@@ -1029,7 +616,6 @@ namespace SW2URDF
             //pm_Button_save = pm_Group.AddControl(Button_save_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Build Link", 0, (int)options, "");
             pm_Button_export = pm_Group.AddControl(Button_export_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
 
-
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
             caption = "Link Tree";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
@@ -1048,9 +634,6 @@ namespace SW2URDF
             tree.ItemDrag += new ItemDragEventHandler(tree_ItemDrag);
             tree.AllowDrop = true;
             pm_tree.SetWindowHandlex64(tree.Handle.ToInt64());
-
-
-
 
             ToolStripMenuItem addChild = new ToolStripMenuItem();
             ToolStripMenuItem removeChild = new ToolStripMenuItem();

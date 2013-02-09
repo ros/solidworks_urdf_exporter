@@ -1,21 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Collections;
-using System.Reflection;
-using System.Globalization;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swpublished;
-using SolidWorks.Interop.swconst;
-using SolidWorksTools;
-using SolidWorksTools.File;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Serialization;
-using System.Text;
+using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
@@ -165,6 +154,7 @@ namespace SW2URDF
         public bool STLQualityFine;
         public bool isIncomplete;
         public bool isFixedFrame;
+        public string CoordSysName;
 
         // The SW part component object
         public Component2 SWComponent;
@@ -227,9 +217,59 @@ namespace SW2URDF
         public bool isIncomplete;
         public List<SerialNode> Nodes;
 
+        //This is only used by the serialization module.
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
+        }
+
+        public SerialNode(LinkNode node)
+        {
+            Nodes = new List<SerialNode>();
+            if (node.Link == null)
+            {
+                linkName = node.linkName;
+                jointName = node.jointName;
+                axisName = node.axisName;
+                coordsysName = node.coordsysName;
+                componentPIDs = node.ComponentPIDs;
+                jointType = node.jointType;
+                isBaseNode = node.isBaseNode;
+                isIncomplete = node.isIncomplete;
+            }
+            else
+            {
+                linkName = (string)node.Link.name;
+                
+                componentPIDs = node.ComponentPIDs;
+                if (node.Link.Joint != null)
+                {
+                    jointName = (string)node.Link.Joint.name;
+
+                    if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
+                    {
+                        axisName = "None";
+                    }
+                    else
+                    {
+                        axisName = node.Link.Joint.AxisName;
+                    }
+                    coordsysName = node.Link.Joint.CoordinateSystemName;
+                    jointType = (string)node.Link.Joint.type;
+                }
+                else
+                {
+                    coordsysName = node.coordsysName;
+                }
+
+                isBaseNode = node.isBaseNode;
+                isIncomplete = node.isIncomplete;
+            }
+            //Proceed recursively through the nodes
+            foreach (LinkNode child in node.Nodes)
+            {
+                Nodes.Add(new SerialNode(child));
+            }
         }
     }
 
@@ -1271,6 +1311,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Lower == null)
+                {
+                    Lower = new Attribute();
+                    Lower.type = "lower";
+                }
                 Lower.value = value;
             }
         }
@@ -1282,6 +1327,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Upper == null)
+                {
+                    Upper = new Attribute();
+                    Upper.type = "upper";
+                }
                 Upper.value = value;
             }
         }
@@ -1366,11 +1416,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Lower == null)
-                {
-                    Lower = new Attribute();
-                    Lower.type = "lower";
-                }
                 lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
             if (box_upper.Text == "")
@@ -1379,11 +1424,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Upper == null)
-                {
-                    Upper = new Attribute();
-                    Upper.type = "upper";
-                }
                 upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
@@ -1405,6 +1445,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Rising == null)
+                {
+                    Rising = new Attribute();
+                    Rising.type = "rising";
+                }
                 Rising.value = value;
             }
         }
@@ -1417,6 +1462,12 @@ namespace SW2URDF
             }
             set
             {
+                if (Falling == null)
+                {
+                    Falling = new Attribute();
+                    Falling.type = "falling";
+                }
+                    
                 Falling.value = value;
             }
         }
@@ -1460,11 +1511,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Rising == null)
-                {
-                    Rising = new Attribute();
-                    Rising.type = "rising";
-                }
                 rising = (Double.TryParse(box_rising.Text, out value)) ? value : 0;
             }
             if (box_falling.Text == "")
@@ -1473,11 +1519,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Falling == null)
-                {
-                    Falling = new Attribute();
-                    Falling.type = "falling";
-                }
                 falling = (Double.TryParse(box_falling.Text, out value)) ? value : 0;
             }
         }
@@ -1495,6 +1536,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Damping == null)
+                {
+                    Damping = new Attribute();
+                    Damping.type = "damping";
+                }
                 Damping.value = value;
             }
         }
@@ -1507,6 +1553,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Friction == null)
+                {
+                    Friction = new Attribute();
+                    Friction.type = "friction";
+                }
                 Friction.value = value;
             }
         }
@@ -1550,11 +1601,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Damping == null)
-                {
-                    Damping = new Attribute();
-                    Damping.type = "damping";
-                }
                 damping = (Double.TryParse(box_damping.Text, out value)) ? value : 0;
             }
             if (box_friction.Text == "")
@@ -1563,11 +1609,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Friction == null)
-                {
-                    Friction = new Attribute();
-                    Friction.type = "friction";
-                }
                 friction = (Double.TryParse(box_friction.Text, out value)) ? value : 0;
             }
         }
@@ -1585,6 +1626,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Soft_lower == null)
+                {
+                    Soft_lower = new Attribute();
+                    Soft_lower.type = "soft_lower";
+                }
                 Soft_lower.value = value;
             }
         }
@@ -1597,6 +1643,11 @@ namespace SW2URDF
             }
             set
             {
+                if (Soft_upper == null)
+                {
+                    Soft_upper = new Attribute();
+                    Soft_upper.type = "soft_upper";
+                }
                 Soft_upper.value = value;
             }
         }
@@ -1609,6 +1660,11 @@ namespace SW2URDF
             }
             set
             {
+                if (K_position == null)
+                {
+                    K_position = new Attribute();
+                    K_position.type = "k_position";
+                }
                 K_position.value = value;
             }
         }
@@ -1681,11 +1737,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Soft_lower == null)
-                {
-                    Soft_lower = new Attribute();
-                    Soft_lower.type = "soft_lower";
-                }
                 soft_lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
 
@@ -1695,11 +1746,6 @@ namespace SW2URDF
             }
             else
             {
-                if (Soft_upper == null)
-                {
-                    Soft_upper = new Attribute();
-                    Soft_upper.type = "soft_upper";
-                }
                 soft_upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
@@ -1709,13 +1755,7 @@ namespace SW2URDF
             }
             else
             {
-                if (K_position == null)
-                {
-                    K_position = new Attribute();
-                    K_position.type = "k_position";
-                }
-                k_position = (Double.TryParse(box_position.Text, out value)) ? value : 0;
-                
+                k_position = (Double.TryParse(box_position.Text, out value)) ? value : 0;   
             }
             k_velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
         }
@@ -1887,6 +1927,30 @@ namespace SW2URDF
         { get; set; }
         public string whyIncomplete
         { get; set; }
+
+        public LinkNode()
+        {
+        }
+
+        public LinkNode(SerialNode node)
+        {
+            linkName = node.linkName;
+            jointName = node.jointName;
+            axisName = node.axisName;
+            coordsysName = node.coordsysName;
+            ComponentPIDs = node.componentPIDs;
+            jointType = node.jointType;
+            isBaseNode = node.isBaseNode;
+            isIncomplete = node.isIncomplete;
+
+            Name = linkName;
+            Text = linkName;
+
+            foreach (SerialNode child in node.Nodes)
+            {
+                Nodes.Add(new LinkNode(child));
+            }
+        }
 
     }
     #endregion

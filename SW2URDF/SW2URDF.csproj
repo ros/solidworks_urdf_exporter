@@ -190,43 +190,40 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyExportForm.cs">
+    <Compile Include="URDFExporter\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AssemblyExportForm.Designer.cs">
+    <Compile Include="URDFExporter\AssemblyExportForm.Designer.cs">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="clsPropMgr.cs" />
-    <Compile Include="PMLinkTree.cs">
+    <Compile Include="URDFExporter\URDFExporter.cs" />
+    <Compile Include="URDFExporter\URDFExporterExtension.cs" />
+    <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PMLinkTree.Designer.cs">
-      <DependentUpon>PMLinkTree.cs</DependentUpon>
-    </Compile>
+    <Compile Include="URDFExporter\Common.cs" />
+    <Compile Include="URDFExporter\URDFExporterPMExtension.cs" />
     <Compile Include="MathOPS.cs" />
     <Compile Include="EventHandling.cs" />
-    <Compile Include="PartExportForm.cs">
+    <Compile Include="URDFExporter\PartExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PartExportForm.Designer.cs">
+    <Compile Include="URDFExporter\PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="URDF.cs" />
-    <Compile Include="URDFPackage.cs" />
-    <EmbeddedResource Include="AssemblyExportForm.resx">
+    <Compile Include="URDFExporter\URDF.cs" />
+    <Compile Include="URDFExporter\URDFExporterPM.cs" />
+    <Compile Include="URDFExporter\URDFPackage.cs" />
+    <EmbeddedResource Include="URDFExporter\AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PMLinkTree.resx">
-      <DependentUpon>PMLinkTree.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PartExportForm.resx">
+    <EmbeddedResource Include="URDFExporter\PartExportForm.resx">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToolbarLarge.bmp" />

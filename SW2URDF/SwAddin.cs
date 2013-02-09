@@ -1,22 +1,15 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Collections;
-using System.Reflection;
-using System.Windows.Forms;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swpublished;
-using SolidWorks.Interop.swconst;
-using SolidWorksTools;
-using SolidWorksTools.File;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
-
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swpublished;
+using SolidWorksTools;
 
 namespace SW2URDF
 {
@@ -263,7 +256,7 @@ namespace SW2URDF
         {
             //SW2URDFExporter exporter = loadConfigFile();
 
-            clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
+            URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
 
             pm.loadConfigTree();
             pm.Show();
@@ -283,7 +276,7 @@ namespace SW2URDF
             }
         }
 
-        private SW2URDFExporter loadConfigFile()
+        private URDFExporter loadConfigFile()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
 
@@ -307,11 +300,11 @@ namespace SW2URDF
             }
             if (!data.Equals(""))
             {
-                SW2URDFExporter Exporter;
+                URDFExporter Exporter;
 
-                XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+                XmlSerializer serializer = new XmlSerializer(typeof(URDFExporter));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                Exporter = (SW2URDFExporter)serializer.Deserialize(textReader);
+                Exporter = (URDFExporter)serializer.Deserialize(textReader);
                 textReader.Close();
 
                 return Exporter;
