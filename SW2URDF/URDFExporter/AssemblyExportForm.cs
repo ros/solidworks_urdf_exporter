@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Drawing;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
-using System.Xml.Serialization;
 
 namespace SW2URDF
 {

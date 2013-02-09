@@ -1,9 +1,7 @@
 ﻿using System;
-
 using System.Collections.Generic;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using MathNet.Numerics.LinearAlgebra.Double;
-
+using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF

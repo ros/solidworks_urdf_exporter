@@ -1,22 +1,15 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Collections;
-using System.Reflection;
-using System.Windows.Forms;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swpublished;
-using SolidWorks.Interop.swconst;
-using SolidWorksTools;
-using SolidWorksTools.File;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
-
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swpublished;
+using SolidWorksTools;
 
 namespace SW2URDF
 {

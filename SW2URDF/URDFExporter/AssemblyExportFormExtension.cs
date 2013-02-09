@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using SolidWorks.Interop.swconst;
-using System.Xml.Serialization;
-using System.IO;
-using SolidWorks.Interop.sldworks;
 using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
+using System.Xml.Serialization;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
