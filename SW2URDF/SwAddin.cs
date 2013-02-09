@@ -263,7 +263,7 @@ namespace SW2URDF
         {
             //SW2URDFExporter exporter = loadConfigFile();
 
-            clsPropMgr pm = new clsPropMgr((SldWorks)iSwApp);
+            URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
 
             pm.loadConfigTree();
             pm.Show();
@@ -283,7 +283,7 @@ namespace SW2URDF
             }
         }
 
-        private SW2URDFExporter loadConfigFile()
+        private URDFExporter loadConfigFile()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
 
@@ -307,11 +307,11 @@ namespace SW2URDF
             }
             if (!data.Equals(""))
             {
-                SW2URDFExporter Exporter;
+                URDFExporter Exporter;
 
-                XmlSerializer serializer = new XmlSerializer(typeof(SW2URDFExporter));
+                XmlSerializer serializer = new XmlSerializer(typeof(URDFExporter));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                Exporter = (SW2URDFExporter)serializer.Deserialize(textReader);
+                Exporter = (URDFExporter)serializer.Deserialize(textReader);
                 textReader.Close();
 
                 return Exporter;

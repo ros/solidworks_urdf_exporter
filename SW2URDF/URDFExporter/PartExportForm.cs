@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
@@ -14,11 +9,11 @@ namespace SW2URDF
 {
     public partial class PartExportForm : Form
     {
-        public SW2URDFExporter Exporter;
+        public URDFExporter Exporter;
         public PartExportForm(ISldWorks iSwApp)
         {
             InitializeComponent();
-            Exporter = new SW2URDFExporter(iSwApp);
+            Exporter = new URDFExporter(iSwApp);
         }
 
         #region Basic event handelers

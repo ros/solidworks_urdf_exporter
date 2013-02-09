@@ -6,13 +6,10 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections;
 using System.Collections.Generic;
-using System.Xml;
 using System.Xml.Serialization;
+using System.Xml;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SW2URDF
 {
@@ -20,14 +17,13 @@ namespace SW2URDF
     [ComVisibleAttribute(true)]
 
     [Serializable]
-    public class clsPropMgr : PropertyManagerPage2Handler9
+    public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
-        ops OPS;
 
-        public SW2URDFExporter Exporter;
+        public URDFExporter Exporter;
         public LinkNode previouslySelectedNode;
         public link previouslySelectedLink;
         public List<link> linksToVisit;
@@ -99,12 +95,11 @@ namespace SW2URDF
         }
 
         //The following runs when a new instance of the class is created
-        public clsPropMgr(SldWorks swAppPtr)
+        public URDFExporterPM(SldWorks swAppPtr)
         {
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
-
-            Exporter = new SW2URDFExporter(swApp);
+            Exporter = new URDFExporter(swApp);
             Exporter.mRobot = new robot();
             Exporter.mRobot.name = ActiveSWModel.GetTitle();
 
@@ -118,7 +113,6 @@ namespace SW2URDF
             int longerrors = 0;
             int controlType = 0;
             int alignment = 0;
-            OPS = new ops();
             string[] listItems = new string[4];
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
@@ -275,11 +269,14 @@ namespace SW2URDF
             {
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
-            int itemsCount = Exporter.getCount(tree.Nodes);
-            int height = OPS.envelope(1 + itemsCount * tree.ItemHeight, 163, 600);
+            int itemsCount = Common.getCount(tree.Nodes);
+            int itemHeight = 1 + itemsCount * tree.ItemHeight;
+            int min = 163;
+            int max = 600;
+
+            int height = ops.envelope(itemHeight, min, max);
             tree.Height = height;
             pm_tree.Height = height;
-
             currentNode.ExpandAll();
         }
 
@@ -417,7 +414,7 @@ namespace SW2URDF
                 {
                     previouslySelectedNode.coordsysName = pm_ComboBox_GlobalCoordsys.get_ItemText(-1);
                 }
-                Exporter.getSelectedComponents(previouslySelectedNode.Components, pm_Selection.Mark);
+                Common.getSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, pm_Selection.Mark);
             }
         }
 
@@ -459,7 +456,7 @@ namespace SW2URDF
             pm_NumberBox_ChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Exporter.selectComponents(node.Components, true, pm_Selection.Mark);
+            Common.selectComponents(ActiveSWModel, node.Components, true, pm_Selection.Mark);
 
             //Setting joint properties
             if (!node.isBaseNode && node.Parent != null)
@@ -608,7 +605,34 @@ namespace SW2URDF
         // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
         public void loadConfigTree()
         {
-            LinkNode basenode = Exporter.loadConfigTree();
+            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
+            string data = "";
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        Parameter param = att.GetParameter("data");
+                        data = param.GetStringValue();
+                    }
+                }
+
+            }
+            LinkNode basenode = null;
+            if (!data.Equals(""))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                basenode = new LinkNode(node);
+                Common.loadSWComponents(ActiveSWModel, basenode);
+                textReader.Close();
+            }
+
             if (basenode == null)
             {
                 basenode = createEmptyNode(null);
@@ -638,7 +662,7 @@ namespace SW2URDF
             if (Id == Button_export_ID) //If the export button was pressed
             {
                 saveActiveNode();
-                if (Exporter.checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
                 {
                     pm_Page.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -681,7 +705,7 @@ namespace SW2URDF
             else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
             {
                 saveActiveNode();
-                Exporter.saveConfigTree((LinkNode)tree.Nodes[0], false);
+                saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
             }
         }
 
@@ -753,7 +777,26 @@ namespace SW2URDF
 
 
         #endregion
-
+        public void saveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        {
+            Object[] objects = model.FeatureManager.GetFeatures(true);
+            string oldData = "";
+            Parameter param;
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        param = att.GetParameter("data");
+                        oldData = param.GetStringValue();
+                    }
+                }
+            }
+        }
         #region TreeView handler methods
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
         private void tree_AfterSelect(object sender, TreeViewEventArgs e)
