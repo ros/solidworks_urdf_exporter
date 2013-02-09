@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
+using System.Drawing;
 
 namespace SW2URDF
 {
@@ -56,6 +57,7 @@ namespace SW2URDF
         {
             return getFeaturesOfType(ActiveSWModel, featureName, topLevelOnly);
         }
+
         private List<Feature> getFeaturesOfType(ModelDoc2 modeldoc, string featureName, bool topLevelOnly)
         {
             List<Feature> features = new List<Feature>();
@@ -349,6 +351,28 @@ namespace SW2URDF
             return node;
         }
 
+        //My conclusions seem to point to that the coordinate system transform pulled from a local component, is in its transform.
+        // It will have to be transformed based on the component's transform too. :(
+        public void checkTransforms(ModelDoc2 model)
+        {
+            List<Feature> features = getFeaturesOfType(model, "CoordSys", true);
+            foreach (Feature feature in features)
+            {
+                MathTransform transform = model.Extension.GetCoordinateSystemTransformByName(feature.Name);
+                double[] data = transform.ArrayData;
+            }
+
+            if (model.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                AssemblyDoc assydoc = (AssemblyDoc)model;
+                object[] components = assydoc.GetComponents(true);
+                foreach (Component2 comp in components)
+                {
+                    checkTransforms(comp.GetModelDoc2());
+                }
+            }
+        }
+
         //Sets all the controls in the Property Manager from the Selected Node
         public void fillPropertyManager(LinkNode node)
         {
@@ -370,6 +394,12 @@ namespace SW2URDF
                 pm_Label_ParentLink.Caption = node.Parent.Name;
 
                 updateComboBoxFromFeatures(pm_ComboBox_CoordSys, "CoordSys");
+                checkTransforms(ActiveSWModel);
+
+               
+
+
+
                 updateComboBoxFromFeatures(pm_ComboBox_Axes, "RefAxis");
                 pm_ComboBox_Axes.AddItems("None");
                 selectComboBox(pm_ComboBox_CoordSys, node.coordsysName);
