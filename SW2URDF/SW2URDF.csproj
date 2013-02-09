@@ -199,13 +199,13 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="URDFExporter.cs" />
     <Compile Include="URDFExporterExtension.cs" />
     <Compile Include="AssemblyExportFormExtension.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Common.cs" />
     <Compile Include="PMHelper.cs" />
-    <Compile Include="clsPropMgr.cs" />
     <Compile Include="PMLinkTree.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -220,11 +220,11 @@
     <Compile Include="PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SW2URDFExporter.cs" />
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="URDF.cs" />
+    <Compile Include="URDFExporterPropertyManager.cs" />
     <Compile Include="URDFPackage.cs" />
     <EmbeddedResource Include="AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
