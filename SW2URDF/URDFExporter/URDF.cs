@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Globalization;
-
-using SolidWorks.Interop.sldworks;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using System.Text;
+using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
