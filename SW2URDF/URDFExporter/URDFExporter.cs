@@ -67,11 +67,7 @@ namespace SW2URDF
             swMath = iSwApp.GetMathUtility();
         }
 
-
-
         #region Export Methods
-
-        //Copy and export textures here
 
         // Beginning method for exporting the full package
         public void exportRobot()
@@ -226,10 +222,6 @@ namespace SW2URDF
             resetUserPreferences();
         }
 
-
-
-
-
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
         public void correctSTLMesh(string filename)
         {
@@ -295,15 +287,5 @@ namespace SW2URDF
             }
         }
         #endregion
-
-        #region Testing new export method
-
-
-
-
- 
-        #endregion
-
-
     }
 }

@@ -12,7 +12,6 @@ namespace SW2URDF
     {
         private string referenceSketchName;
 
-
         #region SW to Robot and link methods
 
         //Used right now only by the Part Exporter, but this starts the building of the robot
@@ -920,10 +919,5 @@ namespace SW2URDF
             return componentsToUnfix;
         }
         #endregion
-
-
-
-
-
     }
 }
