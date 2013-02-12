@@ -48,64 +48,89 @@ namespace SW2URDF
         // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
         private void updateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
         {
-            List<Feature> features = getFeaturesOfType(featureName, true);
+            Dictionary<string, List<Feature>> features = getFeaturesOfType(featureName, false);
             fillComboBox(box, features);
         }
 
         // Creates a list of all the features of this type.
-        private List<Feature> getFeaturesOfType(string featureName, bool topLevelOnly)
+        private Dictionary<string, List<Feature>> getFeaturesOfType(string featureName, bool topLevelOnly)
         {
-            return getFeaturesOfType(ActiveSWModel, featureName, topLevelOnly);
+            Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
+            getFeaturesOfType(null, featureName, topLevelOnly, features);
+            return features;
         }
 
-        private List<Feature> getFeaturesOfType(ModelDoc2 modeldoc, string featureName, bool topLevelOnly)
+        private void getFeaturesOfType(Component2 component, string featureName, bool topLevelOnly, Dictionary<string, List<Feature>> features)
         {
-            List<Feature> features = new List<Feature>();
-
-            if (modeldoc.GetType() != (int)swDocumentTypes_e.swDocASSEMBLY)
+            ModelDoc2 modeldoc;
+            string ComponentName = "";
+            if (component == null)
             {
-                return features;
+                modeldoc = ActiveSWModel;
             }
-            object[] featureObjects;
+            else
+            {
+                modeldoc = component.GetModelDoc2();
+                ComponentName = component.Name2;
+            }
+            features[ComponentName] = new List<Feature>();
 
+            object[] featureObjects;
             featureObjects = modeldoc.FeatureManager.GetFeatures(false);
+
             foreach (Feature feat in featureObjects)
             {
-                string name = feat.Name;
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == featureName)
                 {
-                    features.Add(feat);
+                    features[ComponentName].Add(feat);
                 }
             }
 
-
-            if (!topLevelOnly)
+            if (!topLevelOnly && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
                 AssemblyDoc assyDoc = (AssemblyDoc)modeldoc;
-                object[] components = assyDoc.GetComponents(true);
+
+                //Get all components in an assembly
+                object[] components = assyDoc.GetComponents(false);
                 foreach (Component2 comp in components)
                 {
                     ModelDoc2 doc = comp.GetModelDoc2();
                     if (doc != null)
                     {
-                        features.AddRange(getFeaturesOfType(comp.GetModelDoc2(), featureName, true));
+                        //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
+                        getFeaturesOfType(comp, featureName, true, features);
                     }
                 }
             }
-
-            return features;
         }
 
         // Populates the combo box with feature names
-        private void fillComboBox(PropertyManagerPageCombobox box, List<Feature> features)
+        private void fillComboBox(PropertyManagerPageCombobox box, Dictionary<string, List<Feature>> features)
         {
             box.Clear();
             box.AddItems("Automatically Generate");
 
-            foreach (Feature feat in features)
+            foreach (string key in features.Keys)
             {
-                box.AddItems(feat.Name);
+                foreach (Feature feat in features[key])
+                {
+                    Entity ent = (Entity)feat;
+                    Component2 comp = (Component2)ent.GetComponent();
+                    if (comp != null)
+                    {
+                        string s = "Cool";
+                    }
+                    if (key != "")
+                    {
+                        box.AddItems("\"" + key + "\"" + " " + feat.Name);
+                    }
+                    else
+                    {
+                        box.AddItems(feat.Name);
+                    }
+                    
+                }
             }
         }
 
@@ -353,6 +378,7 @@ namespace SW2URDF
 
         //My conclusions seem to point to that the coordinate system transform pulled from a local component, is in its transform.
         // It will have to be transformed based on the component's transform too. :(
+        /*
         public void checkTransforms(ModelDoc2 model)
         {
             List<Feature> features = getFeaturesOfType(model, "CoordSys", true);
@@ -372,6 +398,7 @@ namespace SW2URDF
                 }
             }
         }
+         * */
 
         //Sets all the controls in the Property Manager from the Selected Node
         public void fillPropertyManager(LinkNode node)
@@ -394,7 +421,7 @@ namespace SW2URDF
                 pm_Label_ParentLink.Caption = node.Parent.Name;
 
                 updateComboBoxFromFeatures(pm_ComboBox_CoordSys, "CoordSys");
-                checkTransforms(ActiveSWModel);
+                //checkTransforms(ActiveSWModel);
 
                
 
