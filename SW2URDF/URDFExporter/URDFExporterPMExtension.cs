@@ -13,6 +13,9 @@ namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
+
+        public AttributeDef saveConfigurationAttributeDef;
+
         public void saveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
@@ -32,7 +35,36 @@ namespace SW2URDF
                     }
                 }
             }
+            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
+            retrieveSWComponentPIDs(BaseNode);
+            SerialNode sNode = new SerialNode(BaseNode);
+            StringWriter stringWriter;
+            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+            stringWriter = new StringWriter();
+            serializer.Serialize(stringWriter, sNode);
+            stringWriter.Flush();
+            stringWriter.Close();
+
+            string newData = stringWriter.ToString();
+            if (oldData != newData)
+            {
+                if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+                {
+                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
+                    param = saveExporterAttribute.GetParameter("data");
+                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("name");
+                    param.SetStringValue2("config1", ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("date");
+                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                    param = saveExporterAttribute.GetParameter("exporterVersion");
+                    param.SetStringValue2("1.1", ConfigurationOptions, "");
+                }
+            }
         }
+ 
+
 
         //As nodes are created and destroyed, this menu gets called a lot. It basically just adds the context menu (right-click menu)
         // to the node
@@ -48,89 +80,18 @@ namespace SW2URDF
         // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
         private void updateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
         {
-            Dictionary<string, List<Feature>> features = getFeaturesOfType(featureName, false);
-            fillComboBox(box, features);
-        }
-
-        // Creates a list of all the features of this type.
-        private Dictionary<string, List<Feature>> getFeaturesOfType(string featureName, bool topLevelOnly)
-        {
-            Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
-            getFeaturesOfType(null, featureName, topLevelOnly, features);
-            return features;
-        }
-
-        private void getFeaturesOfType(Component2 component, string featureName, bool topLevelOnly, Dictionary<string, List<Feature>> features)
-        {
-            ModelDoc2 modeldoc;
-            string ComponentName = "";
-            if (component == null)
-            {
-                modeldoc = ActiveSWModel;
-            }
-            else
-            {
-                modeldoc = component.GetModelDoc2();
-                ComponentName = component.Name2;
-            }
-            features[ComponentName] = new List<Feature>();
-
-            object[] featureObjects;
-            featureObjects = modeldoc.FeatureManager.GetFeatures(false);
-
-            foreach (Feature feat in featureObjects)
-            {
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == featureName)
-                {
-                    features[ComponentName].Add(feat);
-                }
-            }
-
-            if (!topLevelOnly && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
-            {
-                AssemblyDoc assyDoc = (AssemblyDoc)modeldoc;
-
-                //Get all components in an assembly
-                object[] components = assyDoc.GetComponents(false);
-                foreach (Component2 comp in components)
-                {
-                    ModelDoc2 doc = comp.GetModelDoc2();
-                    if (doc != null)
-                    {
-                        //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
-                        getFeaturesOfType(comp, featureName, true, features);
-                    }
-                }
-            }
+            List<string> featureNames = Exporter.FindRefGeoNames(featureName);
+            fillComboBox(box, featureNames);
         }
 
         // Populates the combo box with feature names
-        private void fillComboBox(PropertyManagerPageCombobox box, Dictionary<string, List<Feature>> features)
+        private void fillComboBox(PropertyManagerPageCombobox box, List<string> featureNames)
         {
             box.Clear();
             box.AddItems("Automatically Generate");
-
-            foreach (string key in features.Keys)
+            foreach (string name in featureNames)
             {
-                foreach (Feature feat in features[key])
-                {
-                    Entity ent = (Entity)feat;
-                    Component2 comp = (Component2)ent.GetComponent();
-                    if (comp != null)
-                    {
-                        string s = "Cool";
-                    }
-                    if (key != "")
-                    {
-                        box.AddItems(feat.Name + " <" + key + ">");
-                    }
-                    else
-                    {
-                        box.AddItems(feat.Name);
-                    }
-                    
-                }
+                box.AddItems(name);
             }
         }
 
@@ -601,6 +562,32 @@ namespace SW2URDF
             tree.SelectedNode = tree.Nodes[0];
         }
 
+        public void retrieveSWComponentPIDs(LinkNode node)
+        {
+            if (node.Components != null)
+            {
+                node.ComponentPIDs = new List<byte[]>();
+                foreach (IComponent2 comp in node.Components)
+                {
+                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
+                    node.ComponentPIDs.Add(PID);
+                }
+            }
+            foreach (LinkNode child in node.Nodes)
+            {
+                retrieveSWComponentPIDs(child);
+            }
+        }
+
+        public void retrieveSWComponentPIDs(TreeView tree)
+        {
+            foreach (LinkNode node in tree.Nodes)
+            {
+                retrieveSWComponentPIDs(node);
+            }
+        }
+
+
         public void moveComponentsToFolder(LinkNode node)
         {
             bool needToCreateFolder = true;
@@ -775,6 +762,30 @@ namespace SW2URDF
                 //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
                 checkIfJointNamesAreUnique(basenode, child, conflicts);
             }
+        }
+
+        private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(string name)
+        {
+            int Options = 0;
+            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+            ModelDoc2 modeldoc = swApp.ActiveDoc;
+            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == name)
+                    {
+                        return att;
+                    }
+                }
+
+            }
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            return saveExporterAttribute;
         }
     }
 }
