@@ -759,19 +759,17 @@ namespace SW2URDF
             Joint.Axis.xyz = estimateAxis(Joint.AxisName);
         }
 
+        //This doesn't seem to get the right values for the estimatedAxis. Check the actual vaules
         public double[] estimateAxis(string axisName)
         {
-            double[] XYZ = new double[3];
+            double[] XYZ = new double[3]
 
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
-            bool selected = ActiveSWModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
-            if (selected)
-            {
-                //Get the axis feature
-                Feature feat = ActiveSWModel.SelectionManager.GetSelectedObject6(1, 0);
-                RefAxis axis = (RefAxis)feat.GetSpecificFeature2();
 
+            RefAxis axis = getRefAxis(axisName);
+            if (axis != null)
+            {
                 //Calculate!
                 double[] axisParams;
 
@@ -782,6 +780,43 @@ namespace SW2URDF
                 XYZ = ops.pnorm(XYZ, 2);
             }
             return XYZ;
+        }
+
+        public RefAxis getRefAxis(string axisStr)
+        {
+            ModelDoc2 ComponentModel = ActiveSWModel;
+            string axisName = "";
+            RefAxis axis = default(RefAxis);
+            if (axisStr.Contains("<") && axisStr.Contains(">"))
+            {
+                string componentStr = "";
+                string CoordinateSystemNameUnTrimmed = "";
+                int index_first = axisStr.IndexOf('<');
+                int index_last = axisStr.IndexOf('>', index_first);
+                if (index_last > index_first)
+                {
+                    componentStr = axisStr.Substring(index_first + 1, index_last - index_first - 1);
+                    CoordinateSystemNameUnTrimmed = axisStr.Substring(0, index_first);
+                    axisName = CoordinateSystemNameUnTrimmed.Trim();
+                }
+                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+                object[] components = assy.GetComponents(false);
+                foreach (Component2 comp in components)
+                {
+                    if (comp.Name2 == componentStr)
+                    {
+                        ComponentModel = comp.GetModelDoc2();
+                    }
+                }
+            }
+            bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
+            if (selected)
+            {
+                Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
+                axis = (RefAxis)feat.GetSpecificFeature2();
+            }
+
+            return axis;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
