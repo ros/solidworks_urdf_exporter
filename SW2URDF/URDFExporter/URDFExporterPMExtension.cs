@@ -123,7 +123,7 @@ namespace SW2URDF
                     }
                     if (key != "")
                     {
-                        box.AddItems("\"" + key + "\"" + " " + feat.Name);
+                        box.AddItems(feat.Name + " <" + key + ">");
                     }
                     else
                     {

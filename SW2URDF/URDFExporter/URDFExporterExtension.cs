@@ -693,7 +693,7 @@ namespace SW2URDF
         //Then it needs to transform to the top level assembly (sounds like fun).
         public void estimateGlobalJointFromRefGeometry(link parent, link child)
         {
-            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName)
+            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName);
             child.Joint.Origin.xyz = ops.getXYZ(coordsysTransform);
             child.Joint.Origin.rpy = ops.getRPY(coordsysTransform);
             estimateAxis(child.Joint);
