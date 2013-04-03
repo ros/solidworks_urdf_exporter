@@ -190,6 +190,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ROSFiles.cs" />
     <Compile Include="URDFExporter\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>

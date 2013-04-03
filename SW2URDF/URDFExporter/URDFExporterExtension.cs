@@ -482,11 +482,18 @@ namespace SW2URDF
         public void localizeJoint(joint Joint, string parentCoordsysName)
         {
             MathTransform parentTransform = getCoordinateSystemTransform(parentCoordsysName);
+            double[] parentRPY = ops.getRPY(parentTransform);
+
+
             Matrix<double> ParentJointGlobalTransform = ops.getTransformation(parentTransform);
             MathTransform coordsysTransform = getCoordinateSystemTransform(Joint.CoordinateSystemName);
+            double[] coordsysRPY = ops.getRPY(coordsysTransform);
+
             //Transform from global origin to child joint
             Matrix<double> ChildJointGlobalTransform = ops.getTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
+            double[] globalRPY = ops.getRPY(ChildJointOrigin);
+
 
             //Localize the axis to the Link's coordinate system.
             localizeAxis(Joint.Axis.xyz, Joint.CoordinateSystemName);
@@ -725,9 +732,18 @@ namespace SW2URDF
                     }
                 }
             }
+            double[] componentdata = (ComponentTransform == null) ? new double[3] : ComponentTransform.ArrayData;
             MathTransform LocalCoordsysTransform = ComponentModel.Extension.GetCoordinateSystemTransformByName(CoordinateSystemName);
+            double[] compRPY = (ComponentTransform == null) ? new double[3] : ops.getRPY(ComponentTransform);
+            double[] localRPY = ops.getRPY(LocalCoordsysTransform);
+            double[] data = LocalCoordsysTransform.ArrayData;
             MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ? LocalCoordsysTransform : ComponentTransform.Multiply(LocalCoordsysTransform);
-            return GlobalCoordsysTransform;
+            double[] moredata = GlobalCoordsysTransform.ArrayData;
+            double[] globalRPY = ops.getRPY(GlobalCoordsysTransform);
+            MathTransform JustBecause = (ComponentTransform == null) ? LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
+            double[] yup = JustBecause.ArrayData;
+            double[] yupRPY = ops.getRPY(JustBecause);
+            return JustBecause;
         }
 
         public void moveOrigin(link parent, link nonLocalizedChild)
@@ -762,31 +778,21 @@ namespace SW2URDF
         //This doesn't seem to get the right values for the estimatedAxis. Check the actual values
         public double[] estimateAxis(string axisName)
         {
-            double[] XYZ = new double[3];
 
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
 
-            RefAxis axis = getRefAxis(axisName);
-            if (axis != null)
-            {
-                //Calculate!
-                double[] axisParams;
-
-                axisParams = axis.GetRefAxisParams();
-                XYZ[0] = axisParams[0] - axisParams[3];
-                XYZ[1] = axisParams[1] - axisParams[4];
-                XYZ[2] = axisParams[2] - axisParams[5];
-                XYZ = ops.pnorm(XYZ, 2);
-            }
-            return XYZ;
+            return getRefAxis(axisName);
         }
 
-        public RefAxis getRefAxis(string axisStr)
+        public double[] getRefAxis(string axisStr)
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             string axisName = axisStr;
             RefAxis axis = default(RefAxis);
+            MathTransform ComponentTransform = default(MathTransform);
+
+
             if (axisStr.Contains("<") && axisStr.Contains(">"))
             {
                 string componentStr = "";
@@ -806,6 +812,7 @@ namespace SW2URDF
                     if (comp.Name2 == componentStr)
                     {
                         ComponentModel = comp.GetModelDoc2();
+                        ComponentTransform = comp.Transform2;
                     }
                 }
             }
@@ -815,20 +822,48 @@ namespace SW2URDF
                 Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
                 axis = (RefAxis)feat.GetSpecificFeature2();
             }
-
-            return axis;
+            //Calculate!
+            double[] axisParams;
+            double[] XYZ = new double[3];
+            axisParams = axis.GetRefAxisParams();
+            XYZ[0] = axisParams[0] - axisParams[3];
+            XYZ[1] = axisParams[1] - axisParams[4];
+            XYZ[2] = axisParams[2] - axisParams[5];
+            XYZ = ops.pnorm(XYZ, 2);
+            globalAxis(XYZ, ComponentTransform);
+            return XYZ;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
         public void localizeAxis(double[] Axis, string coordsys)
         {
             MathTransform coordsysTransform = getCoordinateSystemTransform(coordsys);
-            Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
-            Matrix<double> transform = ops.getTransformation(coordsysTransform);
-            vec = transform.Inverse() * vec;
-            Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
-            ops.threshold(Axis, 0.00001);
+            localizeAxis(Axis, coordsysTransform);
+        }
 
+        // This is called by the above method and the getRefAxis method
+        public void localizeAxis(double[] Axis, MathTransform coordsysTransform)
+        {
+            if (coordsysTransform != null)
+            {
+                Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
+                Matrix<double> transform = ops.getTransformation(coordsysTransform);
+                vec = transform.Inverse() * vec;
+                Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+            }
+            ops.threshold(Axis, 0.00001);
+        }
+
+        public void globalAxis(double[] Axis, MathTransform coordsysTransform)
+        {
+            if (coordsysTransform != null)
+            {
+                Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
+                Matrix<double> transform = ops.getTransformation(coordsysTransform);
+                vec = transform * vec;
+                Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+            }
+            ops.threshold(Axis, 0.00001);
         }
 
         // Creates a list of all the features of this type.

@@ -89,6 +89,15 @@ namespace SW2URDF
             manifest Manifest = new manifest(mPackageName);
             Manifest.writeElement(manifestWriter);
 
+            //Creating RVIZ launch file
+            Rviz rviz = new Rviz(mPackageName, mSavePath);
+            rviz.writeFiles(package.WindowsLaunchDirectory);
+
+            //Creating Gazebo launch file
+            Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, this.mSavePath);
+            gazebo.writeFile(package.WindowsLaunchDirectory);
+
+
             //Customizing STL preferences to how I want them
             saveUserPreferences();
             setSTLExportPreferences();
