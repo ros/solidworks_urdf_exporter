@@ -648,9 +648,9 @@ namespace SW2URDF
                 // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
                 // https://forum.solidworks.com/thread/57414
                 int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
-                                                  out R2Status, out RPoint2, out R2DirStatus, out RDir2,
-                                                  out L1Status, out LDir1,
-                                                  out L2Status, out LDir2);
+                                                                           out R2Status, out RPoint2, out R2DirStatus, out RDir2,
+                                                                           out L1Status, out LDir1,
+                                                                           out L2Status, out LDir2);
                 DOFs = remainingDOFs;
 
 
@@ -759,10 +759,10 @@ namespace SW2URDF
             Joint.Axis.xyz = estimateAxis(Joint.AxisName);
         }
 
-        //This doesn't seem to get the right values for the estimatedAxis. Check the actual vaules
+        //This doesn't seem to get the right values for the estimatedAxis. Check the actual values
         public double[] estimateAxis(string axisName)
         {
-            double[] XYZ = new double[3]
+            double[] XYZ = new double[3];
 
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
@@ -785,7 +785,7 @@ namespace SW2URDF
         public RefAxis getRefAxis(string axisStr)
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
-            string axisName = "";
+            string axisName = axisStr;
             RefAxis axis = default(RefAxis);
             if (axisStr.Contains("<") && axisStr.Contains(">"))
             {
