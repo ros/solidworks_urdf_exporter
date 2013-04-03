@@ -166,6 +166,7 @@ namespace SW2URDF
                     {
                         // Builds the links and joints from the PMPage configuration
                         LinkNode BaseNode = (LinkNode)tree.Nodes[0];
+                        automaticallySwitched = true;
                         tree.Nodes.Remove(BaseNode);
 
                         Exporter.createRobotFromTreeView(BaseNode);

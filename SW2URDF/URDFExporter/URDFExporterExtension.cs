@@ -12,7 +12,6 @@ namespace SW2URDF
     {
         private string referenceSketchName;
 
-
         #region SW to Robot and link methods
 
         //Used right now only by the Part Exporter, but this starts the building of the robot
@@ -211,8 +210,9 @@ namespace SW2URDF
             {
                 childCoordSysName = child.Joint.CoordinateSystemName;
             }
-            MathTransform jointTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(childCoordSysName);
 
+            // Get the SolidWorks MathTransform that corresponds to the child coordinate system
+            MathTransform jointTransform = getCoordinateSystemTransform(childCoordSysName);
 
             if (!child.isFixedFrame)
             {
@@ -483,12 +483,19 @@ namespace SW2URDF
         // axis to local values
         public void localizeJoint(joint Joint, string parentCoordsysName)
         {
-            MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(parentCoordsysName);
+            MathTransform parentTransform = getCoordinateSystemTransform(parentCoordsysName);
+            double[] parentRPY = ops.getRPY(parentTransform);
+
+
             Matrix<double> ParentJointGlobalTransform = ops.getTransformation(parentTransform);
-            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(Joint.CoordinateSystemName);
+            MathTransform coordsysTransform = getCoordinateSystemTransform(Joint.CoordinateSystemName);
+            double[] coordsysRPY = ops.getRPY(coordsysTransform);
+
             //Transform from global origin to child joint
             Matrix<double> ChildJointGlobalTransform = ops.getTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
+            double[] globalRPY = ops.getRPY(ChildJointOrigin);
+
 
             //Localize the axis to the Link's coordinate system.
             localizeAxis(Joint.Axis.xyz, Joint.CoordinateSystemName);
@@ -650,9 +657,9 @@ namespace SW2URDF
                 // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
                 // https://forum.solidworks.com/thread/57414
                 int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
-                                                  out R2Status, out RPoint2, out R2DirStatus, out RDir2,
-                                                  out L1Status, out LDir1,
-                                                  out L2Status, out LDir2);
+                                                                           out R2Status, out RPoint2, out R2DirStatus, out RDir2,
+                                                                           out L1Status, out LDir1,
+                                                                           out L2Status, out LDir2);
                 DOFs = remainingDOFs;
 
 
@@ -690,12 +697,50 @@ namespace SW2URDF
             }
         }
 
+        //This now needs to be able to get the component, and it's associated coordinate system name.
+        //Then it needs to transform to the top level assembly (sounds like fun).
         public void estimateGlobalJointFromRefGeometry(link parent, link child)
         {
-            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(child.Joint.CoordinateSystemName);
-            child.Joint.Origin.xyz = ops.getXYZ(coordsysTransform);
-            child.Joint.Origin.rpy = ops.getRPY(coordsysTransform);
+            MathTransform GlobalCoordsysTransform = getCoordinateSystemTransform(child.Joint.CoordinateSystemName);
+            child.Joint.Origin.xyz = ops.getXYZ(GlobalCoordsysTransform);
+            child.Joint.Origin.rpy = ops.getRPY(GlobalCoordsysTransform);
             estimateAxis(child.Joint);
+        }
+
+        // Method to get the SolidWorks MathTransform from a coordinate system. This method can account for
+        // coordinate systems that are embedded in subcomponents, and apply the correct transformation to return
+        // it to a global transform. It assumes that the coordinate system name is formatted like:
+        // "Coordinate System 1 <assy/subassy/comp>" where the full Component2.Name2 is between the <>
+        public MathTransform getCoordinateSystemTransform(string CoordinateSystemName)
+        {
+            ModelDoc2 ComponentModel = ActiveSWModel;
+            MathTransform ComponentTransform = default(MathTransform);
+            if (CoordinateSystemName.Contains("<") && CoordinateSystemName.Contains(">"))
+            {
+                string componentStr = "";
+                string CoordinateSystemNameUnTrimmed = "";
+                int index_first = CoordinateSystemName.IndexOf('<');
+                int index_last = CoordinateSystemName.IndexOf('>', index_first);
+                if (index_last > index_first)
+                {
+                    componentStr = CoordinateSystemName.Substring(index_first + 1, index_last - index_first - 1);
+                    CoordinateSystemNameUnTrimmed = CoordinateSystemName.Substring(0, index_first);
+                    CoordinateSystemName = CoordinateSystemNameUnTrimmed.Trim();
+                }
+                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+                object[] components = assy.GetComponents(false);
+                foreach (Component2 comp in components)
+                {
+                    if (comp.Name2 == componentStr)
+                    {
+                        ComponentModel = comp.GetModelDoc2();
+                        ComponentTransform = comp.Transform2;
+                    }
+                }
+            }
+            MathTransform LocalCoordsysTransform = ComponentModel.Extension.GetCoordinateSystemTransformByName(CoordinateSystemName);
+            MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ? LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
+            return GlobalCoordsysTransform;
         }
 
         public void moveOrigin(link parent, link nonLocalizedChild)
@@ -715,8 +760,7 @@ namespace SW2URDF
                 Z_min = ops.min(points[2], points[5], Z_min);
             }
             string coordsys = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
-
-            MathTransform parentTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
+            MathTransform parentTransform = getCoordinateSystemTransform(coordsys);
             double[] idealOrigin = ops.closestPointOnLineToPoint(ops.getXYZ(parentTransform), nonLocalizedChild.Joint.Axis.xyz, nonLocalizedChild.Joint.Origin.xyz);
 
             nonLocalizedChild.Joint.Origin.xyz = ops.closestPointOnLineWithinBox(X_min, X_max, Y_min, Y_max, Z_min, Z_max, nonLocalizedChild.Joint.Axis.xyz, idealOrigin);
@@ -728,73 +772,194 @@ namespace SW2URDF
             Joint.Axis.xyz = estimateAxis(Joint.AxisName);
         }
 
+        //This doesn't seem to get the right values for the estimatedAxis. Check the actual values
         public double[] estimateAxis(string axisName)
         {
-            double[] XYZ = new double[3];
 
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
-            bool selected = ActiveSWModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
+
+            return getRefAxis(axisName);
+        }
+
+        public double[] getRefAxis(string axisStr)
+        {
+            ModelDoc2 ComponentModel = ActiveSWModel;
+            string axisName = axisStr;
+            RefAxis axis = default(RefAxis);
+            MathTransform ComponentTransform = default(MathTransform);
+
+
+            if (axisStr.Contains("<") && axisStr.Contains(">"))
+            {
+                string componentStr = "";
+                string CoordinateSystemNameUnTrimmed = "";
+                int index_first = axisStr.IndexOf('<');
+                int index_last = axisStr.IndexOf('>', index_first);
+                if (index_last > index_first)
+                {
+                    componentStr = axisStr.Substring(index_first + 1, index_last - index_first - 1);
+                    CoordinateSystemNameUnTrimmed = axisStr.Substring(0, index_first);
+                    axisName = CoordinateSystemNameUnTrimmed.Trim();
+                }
+                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+                object[] components = assy.GetComponents(false);
+                foreach (Component2 comp in components)
+                {
+                    if (comp.Name2 == componentStr)
+                    {
+                        ComponentModel = comp.GetModelDoc2();
+                        ComponentTransform = comp.Transform2;
+                    }
+                }
+            }
+            bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
             {
-                //Get the axis feature
-                Feature feat = ActiveSWModel.SelectionManager.GetSelectedObject6(1, 0);
-                RefAxis axis = (RefAxis)feat.GetSpecificFeature2();
-
-                //Calculate!
-                double[] axisParams;
-
-                axisParams = axis.GetRefAxisParams();
-                XYZ[0] = axisParams[0] - axisParams[3];
-                XYZ[1] = axisParams[1] - axisParams[4];
-                XYZ[2] = axisParams[2] - axisParams[5];
-                XYZ = ops.pnorm(XYZ, 2);
+                Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
+                axis = (RefAxis)feat.GetSpecificFeature2();
             }
+            //Calculate!
+            double[] axisParams;
+            double[] XYZ = new double[3];
+            axisParams = axis.GetRefAxisParams();
+            XYZ[0] = axisParams[0] - axisParams[3];
+            XYZ[1] = axisParams[1] - axisParams[4];
+            XYZ[2] = axisParams[2] - axisParams[5];
+            XYZ = ops.pnorm(XYZ, 2);
+            globalAxis(XYZ, ComponentTransform);
             return XYZ;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
         public void localizeAxis(double[] Axis, string coordsys)
         {
-            MathTransform coordsysTransform = ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsys);
-            Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
-            Matrix<double> transform = ops.getTransformation(coordsysTransform);
-            vec = transform.Inverse() * vec;
-            Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+            MathTransform coordsysTransform = getCoordinateSystemTransform(coordsys);
+            localizeAxis(Axis, coordsysTransform);
+        }
+
+        // This is called by the above method and the getRefAxis method
+        public void localizeAxis(double[] Axis, MathTransform coordsysTransform)
+        {
+            if (coordsysTransform != null)
+            {
+                Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
+                Matrix<double> transform = ops.getTransformation(coordsysTransform);
+                vec = transform.Inverse() * vec;
+                Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+            }
             ops.threshold(Axis, 0.00001);
-
         }
 
-        // Used to fill Combo Boxes
-        public string[] findAxes()
+        public void globalAxis(double[] Axis, MathTransform coordsysTransform)
         {
-            List<string> axesNames = new List<string>();
-            object[] features;
-            features = ActiveSWModel.FeatureManager.GetFeatures(true);
-            foreach (Feature feat in features)
+            if (coordsysTransform != null)
             {
-                if (feat.GetTypeName2() == "RefAxis")
-                {
-                    axesNames.Add(feat.Name);
-                }
+                Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
+                Matrix<double> transform = ops.getTransformation(coordsysTransform);
+                vec = transform * vec;
+                Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
             }
-            return axesNames.ToArray();
+            ops.threshold(Axis, 0.00001);
         }
 
-        //Used the fill combo boxes in the AssemblyExportForm
-        public string[] findOrigins()
+        // Creates a list of all the features of this type.
+        public Dictionary<string, List<Feature>> getFeaturesOfType(string featureName, bool topLevelOnly)
         {
-            List<string> originNames = new List<string>();
-            object[] features;
-            features = ActiveSWModel.FeatureManager.GetFeatures(true);
-            foreach (Feature feat in features)
+            Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
+            getFeaturesOfType(null, featureName, topLevelOnly, features);
+            return features;
+        }
+
+        public void getFeaturesOfType(Component2 component, string featureName, bool topLevelOnly, Dictionary<string, List<Feature>> features)
+        {
+            ModelDoc2 modeldoc;
+            string ComponentName = "";
+            if (component == null)
             {
-                if (feat.GetTypeName2() == "CoordSys")
+                modeldoc = ActiveSWModel;
+            }
+            else
+            {
+                modeldoc = component.GetModelDoc2();
+                ComponentName = component.Name2;
+            }
+            features[ComponentName] = new List<Feature>();
+
+            object[] featureObjects;
+            featureObjects = modeldoc.FeatureManager.GetFeatures(false);
+
+            foreach (Feature feat in featureObjects)
+            {
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == featureName)
                 {
-                    originNames.Add(feat.Name);
+                    features[ComponentName].Add(feat);
                 }
             }
-            return originNames.ToArray();
+
+            if (!topLevelOnly && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            {
+                AssemblyDoc assyDoc = (AssemblyDoc)modeldoc;
+
+                //Get all components in an assembly
+                object[] components = assyDoc.GetComponents(false);
+                foreach (Component2 comp in components)
+                {
+                    ModelDoc2 doc = comp.GetModelDoc2();
+                    if (doc != null)
+                    {
+                        //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
+                        getFeaturesOfType(comp, featureName, true, features);
+                    }
+                }
+            }
+        }
+
+        public Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
+        {
+            string RefGeoName = "";
+            string ComponentName = "";
+            if (StringToParse.Contains("<") && StringToParse.Contains(">"))
+            {
+                string RefGeoNameUnTrimmed = "";
+                int index_first = StringToParse.IndexOf('<');
+                int index_last = StringToParse.IndexOf('>', index_first);
+                if (index_last > index_first)
+                {
+                    ComponentName = StringToParse.Substring(index_first + 1, index_last - index_first - 1);
+                    RefGeoNameUnTrimmed = StringToParse.Substring(0, index_first);
+                    RefGeoName = RefGeoNameUnTrimmed.Trim();
+                }
+            }
+
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict["geo"] = RefGeoName;
+            dict["component"] = ComponentName;
+            return dict;
+        }
+
+        public List<string> FindRefGeoNames(string FeatureName)
+        {
+            Dictionary<string, List<Feature>> features = getFeaturesOfType(FeatureName, false);
+            List<string> featureNames = new List<string>();
+            foreach (string key in features.Keys)
+            {
+                foreach (Feature feat in features[key])
+                {
+                    Entity ent = (Entity)feat;
+                    Component2 comp = (Component2)ent.GetComponent();
+                    if (key != "")
+                    {
+                        featureNames.Add(feat.Name + " <" + key + ">");
+                    }
+                    else
+                    {
+                        featureNames.Add(feat.Name);
+                    }
+                }
+            }
+            return featureNames;
         }
 
         //This method adds in the limits from a limit mate, to make a joint a revolute joint. It really needs to checked for correctness.
@@ -892,13 +1057,13 @@ namespace SW2URDF
 
         public bool checkRefCoordsysExists(string OriginName)
         {
-            string[] Origins = findOrigins();
+            List<string> Origins = FindRefGeoNames("CoordSys");
             return Origins.Contains(OriginName);
         }
 
         public bool checkRefAxisExists(string AxisName)
         {
-            string[] Axes = findAxes();
+            List<string> Axes = FindRefGeoNames("RefAxis");
             return Axes.Contains(AxisName);
         }
 
@@ -920,10 +1085,5 @@ namespace SW2URDF
             return componentsToUnfix;
         }
         #endregion
-
-
-
-
-
     }
 }

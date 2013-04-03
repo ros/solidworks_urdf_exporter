@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System.Collections.Generic;
 
 namespace SW2URDF
 {
@@ -161,11 +162,11 @@ namespace SW2URDF
                 label_kvelocity.Text = "k velocity";
             }
             comboBox_origin.Items.Clear();
-            string[] originNames = Exporter.findOrigins();
-            comboBox_origin.Items.AddRange(originNames);
+            List<string> originNames = Exporter.FindRefGeoNames("CoordSys");
+            comboBox_origin.Items.AddRange(originNames.ToArray());
             comboBox_axis.Items.Clear();
-            string[] axesNames = Exporter.findAxes();
-            comboBox_axis.Items.AddRange(axesNames);
+            List<string> axesNames = Exporter.FindRefGeoNames("RefAxis");
+            comboBox_axis.Items.AddRange(axesNames.ToArray());
             comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
             if (Joint.AxisName != "")
             {

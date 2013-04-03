@@ -89,6 +89,25 @@ namespace SW2URDF
             }
         }
 
+        private string launchDirectory;
+        public string LaunchDirectory
+        {
+            get
+            {
+                return launchDirectory;
+            }
+        }
+
+        private string windowsLaunchDirectory;
+        public string WindowsLaunchDirectory
+        {
+            get
+            {
+                return windowsLaunchDirectory;
+            }
+        }
+
+
         public URDFPackage(string name, string dir)
         {
             packageName = name;
@@ -96,6 +115,7 @@ namespace SW2URDF
             meshesDirectory = packageDirectory + @"meshes/";
             robotsDirectory = packageDirectory + @"robots/";
             texturesDirectory = packageDirectory + @"textures/";
+            launchDirectory = packageDirectory + @"launch/";
 
             char last = dir[dir.Length - 1];
             dir = (last == '\\') ? dir : dir + @"\";
@@ -103,6 +123,7 @@ namespace SW2URDF
             windowsMeshesDirectory = windowsPackageDirectory + @"meshes\";
             windowsRobotsDirectory = windowsPackageDirectory + @"robots\";
             windowsTexturesDirectory = windowsPackageDirectory + @"textures\";
+            windowsLaunchDirectory = windowsPackageDirectory + @"launch\";
         }
 
         public void createDirectories()
@@ -123,6 +144,10 @@ namespace SW2URDF
             if (!Directory.Exists(windowsTexturesDirectory))
             {
                 Directory.CreateDirectory(windowsTexturesDirectory);
+            }
+            if (!Directory.Exists(windowsLaunchDirectory))
+            {
+                Directory.CreateDirectory(windowsLaunchDirectory);
             }
         }
     }
