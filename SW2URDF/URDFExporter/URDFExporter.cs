@@ -90,11 +90,11 @@ namespace SW2URDF
             Manifest.writeElement(manifestWriter);
 
             //Creating RVIZ launch file
-            Rviz rviz = new Rviz(mPackageName, mSavePath);
+            Rviz rviz = new Rviz(mPackageName, mRobot.name + ".URDF");
             rviz.writeFiles(package.WindowsLaunchDirectory);
 
             //Creating Gazebo launch file
-            Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, this.mSavePath);
+            Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, mRobot.name + ".URDF");
             gazebo.writeFile(package.WindowsLaunchDirectory);
 
 
@@ -154,30 +154,57 @@ namespace SW2URDF
             string meshFileName = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
-            int errors = 0;
-            int warnings = 0;
-
             // Export STL
-            Common.showComponents(ActiveSWModel, Link.SWcomponents);
-
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-            if (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
-            {
-                setLinkSpecificSTLPreferences(Link.CoordSysName, Link.STLQualityFine);
-            }
-            else
-            {
-                setLinkSpecificSTLPreferences(Link.Joint.CoordinateSystemName, Link.STLQualityFine);
-            }
-            string coordsysname = ActiveSWModel.Extension.GetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified);
-            ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            Common.hideComponents(ActiveSWModel, Link.SWcomponents);
-
-            correctSTLMesh(windowsMeshFileName);
+            saveSTL(Link, windowsMeshFileName);
 
             return meshFileName;
         }
 
+        private void saveSTL(link Link, string windowsMeshFileName)
+        {
+
+            Common.showComponents(ActiveSWModel, Link.SWcomponents);
+
+            int errors = 0;
+            int warnings = 0;
+           
+            string coordsysName  = "";
+            coordsysName = (Link.Joint == null || Link.Joint.CoordinateSystemName == null) ? Link.CoordSysName : Link.Joint.CoordinateSystemName;
+
+            Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
+            ModelDoc2 ActiveDoc = ActiveSWModel;
+
+            string ComponentName = "";
+            if (names["component"].Length > 0)
+            {
+                foreach (Component2 comp in Link.SWcomponents)
+                {
+                    if (comp.Name2 == names["component"])
+                    {
+                        ComponentName = comp.GetPathName();
+                        ActiveDoc = (ModelDoc2)iSwApp.ActivateDoc3(ComponentName, false, 0, 0);
+                    }
+                    break;
+                }
+            }
+
+
+
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+            setLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
+
+            ActiveDoc.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+            if (ComponentName.Length > 0)
+            {
+                iSwApp.CloseDoc(ComponentName);
+            }
+
+            Common.hideComponents(ActiveSWModel, Link.SWcomponents);
+
+            correctSTLMesh(windowsMeshFileName);
+        }
+
+        
         // Used only by the part exporter
         public void exportLink(bool zIsUp)
         {
@@ -204,7 +231,7 @@ namespace SW2URDF
             //Customizing STL preferences to how I want them
             saveUserPreferences();
             setSTLExportPreferences();
-            setLinkSpecificSTLPreferences("", mRobot.BaseLink.STLQualityFine);
+            setLinkSpecificSTLPreferences("", mRobot.BaseLink.STLQualityFine, ActiveSWModel);
             int errors = 0;
             int warnings = 0;
 
@@ -283,9 +310,9 @@ namespace SW2URDF
         }
 
         //If the user selected something specific for a particular link, that is handled here.
-        public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine)
+        public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
         {
-            ActiveSWModel.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
+            doc.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
             if (qualityFine)
             {
                 iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Fine);

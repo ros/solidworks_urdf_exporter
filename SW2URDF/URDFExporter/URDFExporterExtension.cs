@@ -919,6 +919,29 @@ namespace SW2URDF
             }
         }
 
+        public Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
+        {
+            string RefGeoName = "";
+            string ComponentName = "";
+            if (StringToParse.Contains("<") && StringToParse.Contains(">"))
+            {
+                string RefGeoNameUnTrimmed = "";
+                int index_first = StringToParse.IndexOf('<');
+                int index_last = StringToParse.IndexOf('>', index_first);
+                if (index_last > index_first)
+                {
+                    ComponentName = StringToParse.Substring(index_first + 1, index_last - index_first - 1);
+                    RefGeoNameUnTrimmed = StringToParse.Substring(0, index_first);
+                    RefGeoName = RefGeoNameUnTrimmed.Trim();
+                }
+            }
+
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict["geo"] = RefGeoName;
+            dict["component"] = ComponentName;
+            return dict;
+        }
+
         public List<string> FindRefGeoNames(string FeatureName)
         {
             Dictionary<string, List<Feature>> features = getFeaturesOfType(FeatureName, false);
