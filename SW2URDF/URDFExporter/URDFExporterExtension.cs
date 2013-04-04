@@ -210,6 +210,8 @@ namespace SW2URDF
             {
                 childCoordSysName = child.Joint.CoordinateSystemName;
             }
+
+            // Get the SolidWorks MathTransform that corresponds to the child coordinate system
             MathTransform jointTransform = getCoordinateSystemTransform(childCoordSysName);
 
             if (!child.isFixedFrame)
@@ -732,18 +734,9 @@ namespace SW2URDF
                     }
                 }
             }
-            double[] componentdata = (ComponentTransform == null) ? new double[3] : ComponentTransform.ArrayData;
             MathTransform LocalCoordsysTransform = ComponentModel.Extension.GetCoordinateSystemTransformByName(CoordinateSystemName);
-            double[] compRPY = (ComponentTransform == null) ? new double[3] : ops.getRPY(ComponentTransform);
-            double[] localRPY = ops.getRPY(LocalCoordsysTransform);
-            double[] data = LocalCoordsysTransform.ArrayData;
-            MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ? LocalCoordsysTransform : ComponentTransform.Multiply(LocalCoordsysTransform);
-            double[] moredata = GlobalCoordsysTransform.ArrayData;
-            double[] globalRPY = ops.getRPY(GlobalCoordsysTransform);
-            MathTransform JustBecause = (ComponentTransform == null) ? LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
-            double[] yup = JustBecause.ArrayData;
-            double[] yupRPY = ops.getRPY(JustBecause);
-            return JustBecause;
+            MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ? LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
+            return GlobalCoordsysTransform;
         }
 
         public void moveOrigin(link parent, link nonLocalizedChild)
