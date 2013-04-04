@@ -66,29 +66,29 @@ namespace SW2URDF
 
         //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
         //remain hidden
-        public static List<Component2> findHiddenComponents(object[] varComp)
+        public static List<string> findHiddenComponents(object[] varComp)
         {
-            List<Component2> hiddenComp = new List<Component2>();
+            List<string> hiddenComp = new List<string>();
             foreach (object obj in varComp)
             {
                 Component2 comp = (Component2)obj;
                 if (comp.IsHidden(false))
                 {
-                    hiddenComp.Add(comp);
+                    hiddenComp.Add(comp.Name2);
                 }
             }
             return hiddenComp;
         }
 
         //Except for an exclusionary list, this shows all the components
-        public static void showAllComponents(ModelDoc2 model, List<Component2> hiddenComponents)
+        public static void showAllComponents(ModelDoc2 model, List<string> hiddenComponents)
         {
             AssemblyDoc assyDoc = (AssemblyDoc)model;
             List<Component2> componentsToShow = new List<Component2>();
             object[] varComps = assyDoc.GetComponents(false);
             foreach (Component2 comp in varComps)
             {
-                if (!hiddenComponents.Contains(comp))
+                if (!hiddenComponents.Contains(comp.Name2))
                 {
                     componentsToShow.Add(comp);
                 }

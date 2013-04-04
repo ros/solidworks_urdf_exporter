@@ -104,7 +104,7 @@ namespace SW2URDF
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            List<Component2> hiddenComponents = Common.findHiddenComponents(assyDoc.GetComponents(false));
+            List<string> hiddenComponents = Common.findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
             string filename = exportFiles(mRobot.BaseLink, package, 0);
@@ -163,7 +163,6 @@ namespace SW2URDF
         private void saveSTL(link Link, string windowsMeshFileName)
         {
 
-            Common.showComponents(ActiveSWModel, Link.SWcomponents);
 
             int errors = 0;
             int warnings = 0;
@@ -175,20 +174,34 @@ namespace SW2URDF
             ModelDoc2 ActiveDoc = ActiveSWModel;
 
             string ComponentName = "";
+            string ConfigurationName = "";
+            string DisplayStateName = "";
+            Component2 geoComponent = default(Component2);
             if (names["component"].Length > 0)
             {
                 foreach (Component2 comp in Link.SWcomponents)
                 {
                     if (comp.Name2 == names["component"])
                     {
+                        geoComponent = comp;
                         ComponentName = comp.GetPathName();
+                        ConfigurationName = comp.ReferencedConfiguration;
+                        DisplayStateName = comp.ReferencedDisplayState;
+                        bool usenamed = comp.UseNamedConfiguration;
                         ActiveDoc = (ModelDoc2)iSwApp.ActivateDoc3(ComponentName, false, 0, 0);
+
+                        Configuration config = ActiveDoc.GetConfigurationByName(ConfigurationName);
+                        ActiveDoc.ShowConfiguration2(ConfigurationName);
+                        config.ApplyDisplayState(DisplayStateName);
                     }
                     break;
                 }
             }
 
-
+            if (ComponentName.Length == 0)
+            {
+                Common.showComponents(ActiveSWModel, Link.SWcomponents);
+            }
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             setLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
@@ -197,9 +210,13 @@ namespace SW2URDF
             if (ComponentName.Length > 0)
             {
                 iSwApp.CloseDoc(ComponentName);
+                geoComponent.ReferencedConfiguration = ConfigurationName;
+            }
+            else
+            {
+                Common.hideComponents(ActiveSWModel, Link.SWcomponents);
             }
 
-            Common.hideComponents(ActiveSWModel, Link.SWcomponents);
 
             correctSTLMesh(windowsMeshFileName);
         }
