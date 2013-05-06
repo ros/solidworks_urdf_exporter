@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Double;
@@ -345,7 +347,10 @@ namespace SW2URDF
                     child.Joint.AxisName = "Axis_" + child.Joint.name + i.ToString();
                     i++;
                 }
-                createRefAxis(child.Joint);
+                if (child.Joint.type != "fixed")
+                {
+                    createRefAxis(child.Joint);
+                }
             }
             else
             {
@@ -704,7 +709,10 @@ namespace SW2URDF
             MathTransform GlobalCoordsysTransform = getCoordinateSystemTransform(child.Joint.CoordinateSystemName);
             child.Joint.Origin.xyz = ops.getXYZ(GlobalCoordsysTransform);
             child.Joint.Origin.rpy = ops.getRPY(GlobalCoordsysTransform);
-            estimateAxis(child.Joint);
+            if (child.Joint.type != "fixed")
+            {
+                estimateAxis(child.Joint);
+            }
         }
 
         // Method to get the SolidWorks MathTransform from a coordinate system. This method can account for

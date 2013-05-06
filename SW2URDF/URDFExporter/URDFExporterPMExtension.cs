@@ -736,9 +736,21 @@ namespace SW2URDF
             }
         }
 
+
         private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(string name)
         {
             int Options = 0;
+            if (saveConfigurationAttributeDef == null)
+            {
+                saveConfigurationAttributeDef = swApp.DefineAttribute("URDF Export Configuration");
+
+                saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+                saveConfigurationAttributeDef.Register();
+            }
+
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
             ModelDoc2 modeldoc = swApp.ActiveDoc;
             Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
