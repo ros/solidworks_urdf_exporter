@@ -912,13 +912,18 @@ namespace SW2URDF
 
                 //Get all components in an assembly
                 object[] components = assyDoc.GetComponents(false);
-                foreach (Component2 comp in components)
+                
+                // If there are no components in an assembly, this object will be null.
+                if (components != null)
                 {
-                    ModelDoc2 doc = comp.GetModelDoc2();
-                    if (doc != null)
+                    foreach (Component2 comp in components)
                     {
-                        //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
-                        getFeaturesOfType(comp, featureName, true, features);
+                        ModelDoc2 doc = comp.GetModelDoc2();
+                        if (doc != null)
+                        {
+                            //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
+                            getFeaturesOfType(comp, featureName, true, features);
+                        }
                     }
                 }
             }
@@ -926,7 +931,7 @@ namespace SW2URDF
 
         public Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
         {
-            string RefGeoName = "";
+            string RefGeoName = StringToParse;
             string ComponentName = "";
             if (StringToParse.Contains("<") && StringToParse.Contains(">"))
             {
