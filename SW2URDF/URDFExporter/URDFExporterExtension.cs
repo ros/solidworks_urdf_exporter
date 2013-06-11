@@ -1003,17 +1003,23 @@ namespace SW2URDF
             List<Mate2> limitMates = new List<Mate2>();
 
             object[] objs = component.GetMates();
-            foreach (object obj in objs)
+
+            //limit mates aren't always present
+            if (objs != null)
             {
-                if (obj is Mate2)
+                foreach (object obj in objs)
                 {
-                    Mate2 swMate = (Mate2)obj;
-                    if (swMate.MinimumVariation != swMate.MaximumVariation)
+                    if (obj is Mate2)
                     {
-                        limitMates.Add(swMate);
+                        Mate2 swMate = (Mate2)obj;
+                        if (swMate.MinimumVariation != swMate.MaximumVariation)
+                        {
+                            limitMates.Add(swMate);
+                        }
                     }
                 }
             }
+            
             foreach (Mate2 swMate in limitMates)
             {
                 ModelDoc2 doc = component.GetModelDoc2();
