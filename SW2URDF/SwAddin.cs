@@ -189,7 +189,7 @@ namespace SW2URDF
         #endregion
 
         #region UI Methods
-        public void AddCommandMgr()
+        public void AddCommandMgr() 
         {
             iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "assemblyURDFExporter", "", "Export assembly as URDF file", "");
             iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "partURDFExporter", "", "Export part as URDF file", "");
