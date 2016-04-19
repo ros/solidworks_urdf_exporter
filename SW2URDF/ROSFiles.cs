@@ -188,10 +188,9 @@ namespace SW2URDF
             this.package = packageName;
             this.robotURDF = URDFName;
 
-            this.elements.Add(new launchInclude("$(find gazebo_worlds)/launch/empty_world.launch"));
+            this.elements.Add(new launchInclude("$(find gazebo_ros)/launch/empty_world.launch"));
             this.elements.Add(new launchNode("tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
-            this.elements.Add(new launchNode("spawn_model", "gazebo", "spawn_model", "-file $(find " + this.package + ")/robots/" + this.robotURDF + "-urdf -model " + this.model, "screen"));
-            this.elements.Add(new launchInclude("$(find pr2_controller_manager)/controller_manager.launch"));
+            this.elements.Add(new launchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + this.package + ")/robots/" + this.robotURDF + "-urdf -model " + this.model, "screen"));
             this.elements.Add(new launchNode("fake_joint_calibration", "rostopic", "rostopic", "pub /calibrated std_msgs/Bool true"));
         }
 
