@@ -758,10 +758,10 @@ namespace SW2URDF
         {
             moment = array;
             ixx = Moment[0];
-            ixy = Moment[1];
-            ixz = Moment[2];
+            ixy = -Moment[1];
+            ixz = -Moment[2];
             iyy = Moment[4];
-            iyz = Moment[5];
+            iyz = -Moment[5];
             izz = Moment[8];
         }
         new public void writeURDF(XmlWriter writer)
