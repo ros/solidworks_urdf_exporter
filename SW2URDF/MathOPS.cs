@@ -510,6 +510,27 @@ namespace SW2URDF
 
         }
 
+        public static double sum(double[] vec)
+        {
+            double s = 0.0;
+            foreach (double d in vec)
+            {
+                s += d;
+            }
+            return s;
+        }
+
+        public static double[] flip(double[] vec)
+        {
+            double[] flipped = new double[vec.Length];
+            for (int i = 0; i < vec.Length; i++)
+            {
+                flipped[i] = -vec[i];
+            }
+            return flipped;
+
+        }
+
             
     }
 }

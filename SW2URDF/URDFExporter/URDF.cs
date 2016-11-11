@@ -138,7 +138,7 @@ namespace SW2URDF
 
         public robot()
         {
-            BaseLink = new link();
+            BaseLink = new link(null);
             isRequired = true;
             Name = new Attribute();
             Name.isRequired = true;
@@ -161,6 +161,7 @@ namespace SW2URDF
     //The link class, it contains many other elements not found in the URDF.
     public class link : URDFElement
     {
+        public link Parent;
         public List<link> Children;
         private Attribute Name;
         public string name
@@ -191,8 +192,9 @@ namespace SW2URDF
         public List<byte[]> SWComponentPIDs;
         public byte[] SWMainComponentPID;
 
-        public link()
+        public link(link parent)
         {
+            Parent = parent;
             Children = new List<link>();
             SWcomponents = new List<Component2>();
             Name = new Attribute();

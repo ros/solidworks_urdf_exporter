@@ -74,7 +74,7 @@ namespace SW2URDF
         // This creates a Link from a Part ModelDoc. It basically just extracts the material properties and saves them to the appropriate fields.
         public link createLinkFromPartModel(ModelDoc2 swModel)
         {
-            link Link = new link();
+            link Link = new link(null);
             Link.name = swModel.GetTitle();
 
             Link.isFixedFrame = false;
@@ -210,7 +210,7 @@ namespace SW2URDF
         //Method which builds a single link
         public link createLinkFromComponents(link parent, List<Component2> components, LinkNode node)
         {
-            link child = new link();
+            link child = new link(parent);
             child.name = node.linkName;
 
             if (components.Count > 0)
@@ -226,6 +226,7 @@ namespace SW2URDF
 
             if (parent != null)
             {
+                System.Diagnostics.Debug.WriteLine("Creating joint " + child.name);
                 createJoint(parent, child, node);
             }
 
@@ -325,9 +326,8 @@ namespace SW2URDF
             string axisName = node.axisName;
             string jointType = node.jointType;
 
-            List<Component2> componentsToFix = fixComponents(parent);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-
+            List<Component2> fixedComponents = fixComponents(parent);
             child.Joint = new joint();
             child.Joint.name = jointName;
             child.Joint.Parent.name = parent.name;
@@ -392,7 +392,7 @@ namespace SW2URDF
             coordSysName = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
             if (unfix)
             {
-                unFixComponents(componentsToFix);
+                unFixComponents(fixedComponents);
             }
             localizeJoint(child.Joint, coordSysName);
         }
@@ -687,7 +687,7 @@ namespace SW2URDF
             Boolean success = false;
             if (child.SWMainComponent != null)
             {
-
+                
                 // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
                 // https://forum.solidworks.com/thread/57414
                 int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
@@ -696,41 +696,41 @@ namespace SW2URDF
                                                                            out L2Status, out LDir2);
                 if (RPoint1 != null)
                 {
-                    System.Console.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1);
+                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1);
                 }
                 else {
-                    System.Console.WriteLine("R1: " + R1Status + ", " + R1DirStatus);
+                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + R1DirStatus);
                 }
 
                 if (RPoint2 != null)
                 {
-                    System.Console.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
+                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
                 }
                 else
                 {
-                    System.Console.WriteLine("R2: " + R2Status + ", " + R2DirStatus);
+                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + R2DirStatus);
                 }
                 if (LDir1 != null)
                 {
-                    System.Console.WriteLine("L1: " + L1Status + ", "  + LDir1);
+                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status + ", "  + LDir1);
                 }
                 else
                 {
-                    System.Console.WriteLine("L1: " + L1Status);
+                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status);
                 }
                 if (LDir2 != null)
                 {
-                    System.Console.WriteLine("L2: " + ", " + LDir2);
+                    System.Diagnostics.Debug.WriteLine("L2: " + ", " + LDir2);
                 }
                 else
                 {
-                    System.Console.WriteLine("L2: " + L2Status);
+                    System.Diagnostics.Debug.WriteLine("L2: " + L2Status);
                 }
 
 
-                System.Console.WriteLine(R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
-                System.Console.WriteLine(L1Status + ", " + LDir1);
-                System.Console.WriteLine(L2Status + ", " + LDir2);
+                System.Diagnostics.Debug.WriteLine(R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
+                System.Diagnostics.Debug.WriteLine(L1Status + ", " + LDir1);
+                System.Diagnostics.Debug.WriteLine(L2Status + ", " + LDir2);
                 DOFs = remainingDOFs;
 
 
@@ -903,6 +903,10 @@ namespace SW2URDF
             XYZ[1] = axisParams[1] - axisParams[4];
             XYZ[2] = axisParams[2] - axisParams[5];
             XYZ = ops.pnorm(XYZ, 2);
+            if (ops.sum(XYZ) < 0.0)
+            {
+                XYZ = ops.flip(XYZ);
+            }
             globalAxis(XYZ, ComponentTransform);
             return XYZ;
         }
@@ -1112,6 +1116,11 @@ namespace SW2URDF
         //Unfixes components that were fixed to find the free degree of freedom
         public void unFixComponents(List<Component2> components)
         {
+            foreach (Component2 comp in components)
+            {
+                System.Diagnostics.Debug.WriteLine("Unfixing component " + comp.GetID());
+            }
+
             Common.selectComponents(ActiveSWModel, components, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.UnfixComponent();
@@ -1154,19 +1163,38 @@ namespace SW2URDF
             return Axes.Contains(AxisName);
         }
 
+        private List<Component2> getParentAncestorComponents(link node)
+        {
+            List<Component2> components = new List<Component2>(node.SWcomponents);
+            if (node.Parent != null)
+            {
+                components.AddRange(getParentAncestorComponents(node.Parent));
+            }
+            return components;
+        }
+
+
         //Used to fix components to estimate the degree of freedom.
         private List<Component2> fixComponents(link parent)
         {
+            System.Diagnostics.Debug.WriteLine("Fixing components for " + parent.name);
+            List<Component2> componentsToFix = getParentAncestorComponents(parent);
             List<Component2> componentsToUnfix = new List<Component2>();
-            foreach (Component2 comp in parent.SWcomponents)
+            foreach (Component2 comp in componentsToFix)
             {
+                System.Diagnostics.Debug.WriteLine("Fixing " + comp.GetID());
                 bool isFixed = comp.IsFixed();
                 if (!comp.IsFixed())
                 {
                     componentsToUnfix.Add(comp);
                 }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Component " + comp.GetID() + " is already fixed");
+                }
+
             }
-            Common.selectComponents(ActiveSWModel, parent.SWcomponents, true);
+            Common.selectComponents(ActiveSWModel, componentsToFix, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.FixComponent();
             return componentsToUnfix;
