@@ -127,7 +127,7 @@ namespace SW2URDF
             // These three matrices are 3x3 as opposed to the 4x4 transformation matrices above. You're welcome for the confusion.
             Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3, 3, Link.Inertial.Inertia.Moment);
             Matrix<double> GlobalRotMat = GlobalTransform.SubMatrix(0, 3, 0, 3);
-            Matrix<double> linkLocalMomentInertia = GlobalRotMat.Inverse() * linkGlobalMomentInertia;
+            Matrix<double> linkLocalMomentInertia = GlobalRotMat * linkGlobalMomentInertia * GlobalRotMat.Transpose();
 
             Link.Inertial.Origin.xyz = ops.getXYZ(localLinkCoMTransform);
             Link.Inertial.Origin.rpy = new double[] { 0, 0, 0 };
