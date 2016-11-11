@@ -332,7 +332,7 @@ namespace SW2URDF
             child.Joint.name = jointName;
             child.Joint.Parent.name = parent.name;
             child.Joint.Child.name = child.name;
-
+            Boolean unfix = false;
             if (child.isFixedFrame)
             {
                 axisName = "";
@@ -342,7 +342,7 @@ namespace SW2URDF
             else if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
             {
                 // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
-                estimateGlobalJointFromComponents(assy, parent, child);
+                unfix = estimateGlobalJointFromComponents(assy, parent, child);
             }
 
             if (coordSysName == "Automatically Generate")
@@ -390,7 +390,10 @@ namespace SW2URDF
             estimateGlobalJointFromRefGeometry(parent, child);
 
             coordSysName = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
-            unFixComponents(componentsToFix);
+            if (unfix)
+            {
+                unFixComponents(componentsToFix);
+            }
             localizeJoint(child.Joint, coordSysName);
         }
 
@@ -671,7 +674,7 @@ namespace SW2URDF
         }
 
         //Calculates the free degree of freedom (if exists), and then determines the location of the joint, the axis of rotation/translation, and the type of joint
-        public void estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
+        public Boolean estimateGlobalJointFromComponents(AssemblyDoc assy, link parent, link child)
         {
             //Create the ref objects
             int R1Status, R2Status, L1Status, L2Status, R1DirStatus, R2DirStatus, DOFs;
@@ -681,7 +684,7 @@ namespace SW2URDF
             // Surpress Limit Mates to properly find degrees of freedom. They don't work with the API call
             List<Mate2> limitMates = new List<Mate2>();
             limitMates = suppressLimitMates(child.SWMainComponent);
-
+            Boolean success = false;
             if (child.SWMainComponent != null)
             {
 
@@ -691,6 +694,43 @@ namespace SW2URDF
                                                                            out R2Status, out RPoint2, out R2DirStatus, out RDir2,
                                                                            out L1Status, out LDir1,
                                                                            out L2Status, out LDir2);
+                if (RPoint1 != null)
+                {
+                    System.Console.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1);
+                }
+                else {
+                    System.Console.WriteLine("R1: " + R1Status + ", " + R1DirStatus);
+                }
+
+                if (RPoint2 != null)
+                {
+                    System.Console.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
+                }
+                else
+                {
+                    System.Console.WriteLine("R2: " + R2Status + ", " + R2DirStatus);
+                }
+                if (LDir1 != null)
+                {
+                    System.Console.WriteLine("L1: " + L1Status + ", "  + LDir1);
+                }
+                else
+                {
+                    System.Console.WriteLine("L1: " + L1Status);
+                }
+                if (LDir2 != null)
+                {
+                    System.Console.WriteLine("L2: " + ", " + LDir2);
+                }
+                else
+                {
+                    System.Console.WriteLine("L2: " + L2Status);
+                }
+
+
+                System.Console.WriteLine(R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
+                System.Console.WriteLine(L1Status + ", " + LDir1);
+                System.Console.WriteLine(L2Status + ", " + LDir2);
                 DOFs = remainingDOFs;
 
 
@@ -701,6 +741,7 @@ namespace SW2URDF
 
                 if (DOFs == 0 && (R1Status + L1Status > 0))
                 {
+                    success = true;
                     if (R1Status == 1)
                     {
                         child.Joint.type = "continuous";
@@ -726,6 +767,7 @@ namespace SW2URDF
                     addLimits(child.Joint, limitMates);
                 }
             }
+            return success;
         }
 
         //This now needs to be able to get the component, and it's associated coordinate system name.

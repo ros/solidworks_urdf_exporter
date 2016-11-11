@@ -263,11 +263,14 @@ namespace SW2URDF
         public void assemblyURDFExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || MessageBox.Show("The SW to URDF exporter requires saving before continuing", "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || 
+                MessageBox.Show("The SW to URDF exporter requires saving before continuing", 
+                "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                        (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                     modeldoc.Save3(options, 0, 0);
                 }
                 //AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
@@ -292,11 +295,14 @@ namespace SW2URDF
         public void partURDFExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if ((modeldoc.Extension.NeedsRebuild2 == 0) || MessageBox.Show("Save and rebuild document?", "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if ((modeldoc.Extension.NeedsRebuild2 == 0) || 
+                MessageBox.Show("Save and rebuild document?", 
+                "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                        (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                     modeldoc.Save3(options, 0, 0);
                 }
                 PartExportForm exportForm = new PartExportForm(iSwApp);
@@ -317,7 +323,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att = 
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         Parameter param = att.GetParameter("data");

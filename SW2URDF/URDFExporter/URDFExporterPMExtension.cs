@@ -76,7 +76,10 @@ namespace SW2URDF
             string newData = stringWriter.ToString();
             if (oldData != newData)
             {
-                if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+                if (!warnUser || 
+                    (warnUser && 
+                    MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", 
+                    MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
                     SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
@@ -796,7 +799,8 @@ namespace SW2URDF
                 }
 
             }
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = 
+                saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
     }

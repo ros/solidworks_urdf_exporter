@@ -141,7 +141,7 @@ namespace SW2URDF
             packageName = name;
             packageDirectory = @"package://" + name + @"/";
             meshesDirectory = packageDirectory + @"meshes/";
-            robotsDirectory = packageDirectory + @"robots/";
+            robotsDirectory = packageDirectory + @"urdf/";
             texturesDirectory = packageDirectory + @"textures/";
             launchDirectory = packageDirectory + @"launch/";
 
@@ -149,7 +149,7 @@ namespace SW2URDF
             dir = (last == '\\') ? dir : dir + @"\";
             windowsPackageDirectory = dir + name + @"\";
             windowsMeshesDirectory = windowsPackageDirectory + @"meshes\";
-            windowsRobotsDirectory = windowsPackageDirectory + @"robots\";
+            windowsRobotsDirectory = windowsPackageDirectory + @"urdf\";
             windowsTexturesDirectory = windowsPackageDirectory + @"textures\";
             windowsLaunchDirectory = windowsPackageDirectory + @"launch\";
         }
