@@ -696,7 +696,7 @@ namespace SW2URDF
                                                                            out L2Status, out LDir2);
                 if (RPoint1 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1);
+                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
                 }
                 else {
                     System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + R1DirStatus);
@@ -704,7 +704,7 @@ namespace SW2URDF
 
                 if (RPoint2 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
+                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2.get_IArrayData());
                 }
                 else
                 {
@@ -712,7 +712,7 @@ namespace SW2URDF
                 }
                 if (LDir1 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status + ", "  + LDir1);
+                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status + ", "  + LDir1.get_IArrayData());
                 }
                 else
                 {
@@ -720,17 +720,13 @@ namespace SW2URDF
                 }
                 if (LDir2 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("L2: " + ", " + LDir2);
+                    System.Diagnostics.Debug.WriteLine("L2: " + ", " + LDir2.get_IArrayData());
                 }
                 else
                 {
                     System.Diagnostics.Debug.WriteLine("L2: " + L2Status);
                 }
 
-
-                System.Diagnostics.Debug.WriteLine(R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2);
-                System.Diagnostics.Debug.WriteLine(L1Status + ", " + LDir1);
-                System.Diagnostics.Debug.WriteLine(L2Status + ", " + LDir2);
                 DOFs = remainingDOFs;
 
 
@@ -754,7 +750,7 @@ namespace SW2URDF
                     {
                         child.Joint.type = "prismatic";
                         child.Joint.Axis.xyz = LDir1.ArrayData;
-                        child.Joint.Origin.xyz = RPoint1.ArrayData;
+                        child.Joint.Origin.xyz = ops.getXYZ(child.SWMainComponent.Transform2);
                         child.Joint.Origin.rpy = ops.getRPY(child.SWMainComponent.Transform2);
                         moveOrigin(parent, child);
                     }

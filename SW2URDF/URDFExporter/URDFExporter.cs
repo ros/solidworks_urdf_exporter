@@ -271,9 +271,9 @@ namespace SW2URDF
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
-            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
-            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".URDF";
+            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".stl";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".stl";
+            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".urdf";
             string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
 
             //Creating manifest file
