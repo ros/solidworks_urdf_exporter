@@ -141,8 +141,8 @@ namespace SW2URDF
             Link.Collision.Origin.xyz = ops.getXYZ(localCollisionTransform);
             Link.Collision.Origin.rpy = ops.getRPY(localCollisionTransform);
 
-            Link.Visual.Origin.rpy = ops.getXYZ(localVisualTransform);
-            Link.Visual.Origin.xyz = ops.getRPY(localVisualTransform);
+            Link.Visual.Origin.xyz = ops.getXYZ(localVisualTransform);
+            Link.Visual.Origin.rpy = ops.getRPY(localVisualTransform);
         }
 
         // The one used by the Assembly Exporter
@@ -760,7 +760,7 @@ namespace SW2URDF
                 unsuppressLimitMates(limitMates);
                 if (limitMates.Count > 0)
                 {
-                    addLimits(child.Joint, limitMates);
+                    addLimits(child.Joint, limitMates, parent.SWMainComponent, child.SWMainComponent);
                 }
             }
             return success;
@@ -1044,21 +1044,58 @@ namespace SW2URDF
         }
 
         //This method adds in the limits from a limit mate, to make a joint a revolute joint. It really needs to checked for correctness.
-        public void addLimits(joint Joint, List<Mate2> limitMates)
+        public void addLimits(joint Joint, List<Mate2> limitMates, Component2 parentComponent, Component2 childComponent)
         {
+            System.Diagnostics.Debug.WriteLine("Parent SW Component: " + parentComponent.Name2);
+            System.Diagnostics.Debug.WriteLine("Child SW Component: " + childComponent.Name2);
             // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
             foreach (Mate2 swMate in limitMates)
             {
-                // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
-                if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
-                    (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
+                System.Diagnostics.Debug.WriteLine("Determining limit mate eligibility ");
+                List<Component2> entities = new List<Component2>();
+                for (int i = 0; i < swMate.GetMateEntityCount(); i++)
                 {
-                    Joint.Limit = new limit();
-                    Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
-                    Joint.Limit.lower = swMate.MinimumVariation;
-                    if (Joint.type == "continuous")
+                    MateEntity2 entity = swMate.MateEntity(i);
+                    entities.Add(entity.ReferenceComponent);
+                    System.Diagnostics.Debug.WriteLine("Adding component entity: " + entity.ReferenceComponent.Name2);
+
+                    Component2 parent = entity.ReferenceComponent.GetParent();
+                    while (parent != null)
                     {
-                        Joint.type = "revolute";
+                        System.Diagnostics.Debug.WriteLine("Adding component entity: " + parent.Name2);
+                        entities.Add(parent);
+                        parent = parent.GetParent();
+                        
+                    }
+
+                    
+
+                }
+
+                if (entities.Contains(parentComponent) && entities.Contains(childComponent)) {
+                    // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
+                    if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
+                        (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
+                    {
+                        Joint.Limit = new limit();
+
+                        // Unclear if flipped is the right thing we want to be checking here. 
+                        // From a sample size of 1, in SolidWorks it appears that an aligned and anti-aligned mates are NOT flipped...
+                        if (!swMate.Flipped)
+                        {
+                            
+                            Joint.Limit.upper = -swMate.MinimumVariation; // Reverse mate directions, for some reason
+                            Joint.Limit.lower = -swMate.MaximumVariation;
+                        }
+                        else
+                        {
+                            Joint.Limit.upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
+                            Joint.Limit.lower = swMate.MinimumVariation;
+                        }
+                        if (Joint.type == "continuous")
+                        {
+                            Joint.type = "revolute";
+                        }
                     }
                 }
             }

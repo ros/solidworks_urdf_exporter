@@ -103,27 +103,38 @@ namespace SW2URDF
         public void exportRobot()
         {
             //Setting up the progress bar
-
+            System.Diagnostics.Debug.WriteLine("Beginning the export process");
             int progressBarBound = Common.getCount(mRobot.BaseLink);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
+            System.Diagnostics.Debug.WriteLine("Creating package directories");
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
             mRobot.name = mPackageName;
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".urdf";
-            string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
+            string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
-            //Creating manifest file
-            manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
-            manifest Manifest = new manifest(mPackageName);
-            Manifest.writeElement(manifestWriter);
+            //Create CMakeLists
+            System.Diagnostics.Debug.WriteLine("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
+            package.createCMakeLists();
+
+            //Create Config joint names, not sure how this is used...
+            System.Diagnostics.Debug.WriteLine("Creating joint names config at " + package.WindowsConfigYAML);
+            package.createConfigYAML(mRobot.getJointNames(false));
+
+            //Creating package.xml file
+            PackageXMLWriter packageXMLWriter = new PackageXMLWriter(windowsPackageXMLFileName);
+            PackageXML packageXML = new PackageXML(mPackageName);
+            packageXML.writeElement(packageXMLWriter);
 
             //Creating RVIZ launch file
             Rviz rviz = new Rviz(mPackageName, mRobot.name + ".urdf");
+            System.Diagnostics.Debug.WriteLine("Creating RVIZ launch file");
             rviz.writeFiles(package.WindowsLaunchDirectory);
 
             //Creating Gazebo launch file
+            System.Diagnostics.Debug.WriteLine("Creating Gazebo launch file");
             Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, mRobot.name + ".urdf");
             gazebo.writeFile(package.WindowsLaunchDirectory);
 
@@ -183,8 +194,8 @@ namespace SW2URDF
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
             string linkName = Link.name.Replace('/', '_');
-            string meshFileName = package.MeshesDirectory + linkName + ".stl";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".stl";
+            string meshFileName = package.MeshesDirectory + linkName + ".STL";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
             // Export STL
             saveSTL(Link, windowsMeshFileName);
@@ -271,14 +282,14 @@ namespace SW2URDF
             //Creating package directories
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
-            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".stl";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".stl";
+            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
             string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".urdf";
             string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
 
             //Creating manifest file
-            manifestWriter manifestWriter = new manifestWriter(windowsManifestFileName);
-            manifest Manifest = new manifest(mRobot.name);
+            PackageXMLWriter manifestWriter = new PackageXMLWriter(windowsManifestFileName);
+            PackageXML Manifest = new PackageXML(mRobot.name);
             Manifest.writeElement(manifestWriter);
 
             //Customizing STL preferences to how I want them

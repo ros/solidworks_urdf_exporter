@@ -99,7 +99,6 @@ namespace SW2URDF
             else if (value != null) 
             {
                 throw new Exception("Unhandled object type in write attribute");
-                return;
             }
             if (isRequired && value == null)
             {
@@ -108,7 +107,6 @@ namespace SW2URDF
             if (type == "")
             {
                 throw new Exception("No type specified");
-                return;
             }
             if (value != null)
             {
@@ -155,6 +153,11 @@ namespace SW2URDF
             writer.WriteEndElement();
             writer.WriteEndDocument();
             writer.Close();
+        }
+
+        internal string[] getJointNames(bool includeFixed)
+        {
+            return this.BaseLink.getJointNames(includeFixed);
         }
     }
 
@@ -232,6 +235,22 @@ namespace SW2URDF
                 child.writeURDF(writer);
             }
         }
+
+        public String[] getJointNames(bool includeFixed)
+        {
+            List<String> names = new List<string>();
+
+            if (Joint != null && (includeFixed || Joint.type != "fixed")) {
+                names.Add(Joint.name);
+            }
+            foreach (link child in Children)
+            {
+                names.AddRange(child.getJointNames(includeFixed));
+            }
+
+            return names.ToArray();
+        }
+
     }
 
     //The serial node class, it is used only for saving the configuration.
@@ -1792,66 +1811,67 @@ namespace SW2URDF
     }
     
     //A class that just writes the bare minimum of the manifest file necessary for ROS packages.
-    public class manifestWriter
+    public class PackageXMLWriter
     {
         public XmlWriter writer;
-        public manifestWriter(string savePath)
+        public PackageXMLWriter(string savePath)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Encoding = new UTF8Encoding(false);
             settings.OmitXmlDeclaration = true;
             settings.Indent = true;
             settings.NewLineOnAttributes = false;
+            System.Diagnostics.Debug.WriteLine("Creating package.xml at " + savePath);
             writer = XmlWriter.Create(savePath, settings);
         }
     }
 
-    //The base class for manifest elements. Again, I guess I like having empty base classes
-    public class manifestElement
+    //The base class for packageXML elements. Again, I guess I like having empty base classes
+    public class PackageElement
     {
-        public manifestElement() { }
+        public PackageElement() { }
         public void writeElement() { }
     }
 
-    //Top level class for the manifest file.
-    public class manifest : manifestElement
+    //Top level class for the package XML file.
+    public class PackageXML : PackageElement
     {
-        public description Description;
-        public depend[] Depends;
-        public author Author;
-        public license License;
+        public Description description;
+        public Dependencies dependencies;
+        public Author author;
+        public License license;
 
-        public manifest(string name)
+        public PackageXML(string name)
         {
-            Description = new description();
-            Description.brief = name;
-            Description.longDescription = name;
+            description = new Description(name);
+            
+            dependencies = new Dependencies(
+                new String[] { "catkin" },
+                new String[] { "roslaunch" },
+                new String[] { "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
 
-            Depends = new depend[1];
-            depend dep = new depend();
-            dep.package = "gazebo";
-            Depends[0] = dep;
-
-            Author = new author();
-            Author.name = "me";
-
-            License = new license();
-            License.lic = "BSD";
+            author = new Author("me");
+ 
+            license = new License("BSD");
         }
-        public void writeElement(manifestWriter mWriter)
+        public void writeElement(PackageXMLWriter mWriter)
         {
             XmlWriter writer = mWriter.writer;
             writer.WriteStartDocument();
             writer.WriteStartElement("package");
 
-            Description.writeElement(writer);
-            foreach (depend dep in Depends)
-            {
-                dep.writeElement(writer);
-            }
+            description.writeElement(writer);
+            
+            author.writeElement(writer);
+            license.writeElement(writer);
+            dependencies.writeElement(writer);
 
-            Author.writeElement(writer);
-            License.writeElement(writer);
+            writer.WriteStartElement("export");
+
+            writer.WriteStartElement("architecture_independent");
+            writer.WriteEndElement();
+
+            writer.WriteEndElement();
 
             writer.WriteEndElement();
             writer.WriteEndDocument();
@@ -1860,63 +1880,106 @@ namespace SW2URDF
     }
 
     //description element of the manifest file
-    public class description : manifestElement
+    public class Description : PackageElement
     {
-        public string brief;
-        public string longDescription;
-        public description()
+        private string name;
+        private string brief;
+        private string longDescription;
+        public Description(string name)
         {
-            brief = "";
-            longDescription = "";
+            this.name = name;
+            this.brief = "URDF Description package for " + name;
+            this.longDescription = "This package contains configuration data, 3D models and launch files\r\n" +
+                                    "for " + name + " robot";
         }
         public void writeElement(XmlWriter writer)
         {
+            writer.WriteStartElement("name");
+            writer.WriteString(name);
+            writer.WriteEndElement();
+
+            writer.WriteStartElement("version");
+            writer.WriteString("1.0.0");
+            writer.WriteEndElement();
+
             writer.WriteStartElement("description");
-            writer.WriteAttributeString("brief", brief);
-            writer.WriteString(longDescription);
+
+            writer.WriteStartElement("p");
+            writer.WriteString(this.brief);
+            writer.WriteEndElement();
+
+            writer.WriteStartElement("p");
+            writer.WriteString(this.longDescription);
+            writer.WriteEndElement();
+
             writer.WriteEndElement();
         }
     }
 
     //The depend element of the manifest file
-    public class depend : manifestElement
+    public class Dependencies : PackageElement
     {
-        public string package;
-        public depend()
+        private string package;
+        private string[] buildTool;
+        private string[] build;
+        private string[] run;
+        public Dependencies(String[] buildTool, String[] build, String[] run)
         {
-            package = "";
+            this.buildTool = buildTool;
+            this.build = build;
+            this.run = run;
         }
         public void writeElement(XmlWriter writer)
         {
-            writer.WriteStartElement("depend");
-            writer.WriteAttributeString("package", package);
-            writer.WriteEndElement();
+            foreach (String depend in buildTool) {
+                writer.WriteStartElement("buildtool_depend");
+                writer.WriteString(depend);
+                writer.WriteEndElement();
+            }
+
+            foreach (String depend in build)
+            {
+                writer.WriteStartElement("build_depend");
+                writer.WriteString(depend);
+                writer.WriteEndElement();
+            }
+
+            foreach (String depend in run)
+            {
+                writer.WriteStartElement("run_depend");
+                writer.WriteString(depend);
+                writer.WriteEndElement();
+            }
         }
     }
 
     //The author element of the manifest file
-    public class author : manifestElement
+    public class Author : PackageElement
     {
-        public string name;
-        public author()
+        private string name;
+        public Author(string name)
         {
-            name = "";
+            this.name = name;
         }
         public void writeElement(XmlWriter writer)
         {
             writer.WriteStartElement("author");
             writer.WriteString(name);
             writer.WriteEndElement();
+
+            writer.WriteStartElement("maintainer");
+            writer.WriteAttributeString("email", name + "2email.com");
+            writer.WriteEndElement();
         }
     }
 
     //The license element of the manifest file
-    public class license : manifestElement
+    public class License : PackageElement
     {
-        public string lic;
-        public license()
+        private string lic;
+        public License(string lic)
         {
-            lic = "";
+            this.lic = lic;
         }
         public void writeElement(XmlWriter writer)
         {

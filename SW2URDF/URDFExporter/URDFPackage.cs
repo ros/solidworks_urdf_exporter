@@ -72,6 +72,17 @@ namespace SW2URDF
             }
         }
 
+        private string configDirectory;
+        public string ConfigDirectory
+        {
+            get
+            {
+                return configDirectory;
+            }
+
+        }
+
+
         private string windowsMeshesDirectory;
         public string WindowsMeshesDirectory
         {
@@ -135,6 +146,33 @@ namespace SW2URDF
             }
         }
 
+        private string windowsConfigDirectory;
+        public string WindowsConfigDirectory
+        {
+            get
+            {
+                return windowsConfigDirectory;
+            }
+        }
+
+        private string windowsCMakeLists;
+        public string WindowsCMakeLists
+        {
+            get
+            {
+                return windowsCMakeLists;
+            }
+        }
+
+        private string windowsConfigYAML;
+        public string WindowsConfigYAML
+        {
+            get
+            {
+                return windowsConfigYAML;
+            }
+        }
+
 
         public URDFPackage(string name, string dir)
         {
@@ -144,6 +182,8 @@ namespace SW2URDF
             robotsDirectory = packageDirectory + @"urdf/";
             texturesDirectory = packageDirectory + @"textures/";
             launchDirectory = packageDirectory + @"launch/";
+            configDirectory = packageDirectory + @"config/";
+           
 
             char last = dir[dir.Length - 1];
             dir = (last == '\\') ? dir : dir + @"\";
@@ -152,6 +192,9 @@ namespace SW2URDF
             windowsRobotsDirectory = windowsPackageDirectory + @"urdf\";
             windowsTexturesDirectory = windowsPackageDirectory + @"textures\";
             windowsLaunchDirectory = windowsPackageDirectory + @"launch\";
+            windowsConfigDirectory = windowsPackageDirectory + @"config\";
+            windowsCMakeLists = windowsPackageDirectory + @"CMakeLists.txt";
+            windowsConfigYAML = windowsConfigDirectory + @"joint_names_" + name + ".yaml";
         }
 
         public void createDirectories()
@@ -177,6 +220,47 @@ namespace SW2URDF
             {
                 Directory.CreateDirectory(windowsLaunchDirectory);
             }
+            if (!Directory.Exists(windowsConfigDirectory))
+            {
+                Directory.CreateDirectory(windowsConfigDirectory);
+            }
+
         }
+
+        public void createCMakeLists()
+        {
+            using (StreamWriter file = new StreamWriter(windowsCMakeLists))
+            {
+                file.WriteLine("cmake_minimum_required(VERSION 2.8.3)\r\n");
+                file.WriteLine("project(" + packageName + ")\r\n");
+                file.WriteLine("find_package(catkin REQUIRED)\r\n");
+                file.WriteLine("catkin_package()\r\n");
+                file.WriteLine("find_package(roslaunch)\r\n");
+                file.WriteLine("foreach(dir config launch meshes urdf)");
+                file.WriteLine("\tinstall(DIRECTORY ${dir}/");
+                file.WriteLine("\t\tDESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})");
+                file.WriteLine("endforeach(dir)");
+            }
+        }
+
+        public void createConfigYAML(String[] jointNames)
+        {
+            using (StreamWriter file = new StreamWriter(windowsConfigYAML))
+            {
+                file.Write("controller_joint_names: " + "[");
+
+                foreach (String name in jointNames)
+                {
+                    file.Write("'" + name + "', ");
+                }
+
+                file.WriteLine("]");
+            }
+
+        }
+
+
+
+
     }
 }
