@@ -1968,7 +1968,7 @@ namespace SW2URDF
             writer.WriteEndElement();
 
             writer.WriteStartElement("maintainer");
-            writer.WriteAttributeString("email", name + "2email.com");
+            writer.WriteAttributeString("email", name + "@email.com");
             writer.WriteEndElement();
         }
     }

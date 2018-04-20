@@ -190,7 +190,7 @@ namespace SW2URDF
 
             this.elements.Add(new launchInclude("$(find gazebo_ros)/launch/empty_world.launch"));
             this.elements.Add(new launchNode("tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
-            this.elements.Add(new launchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + this.package + ")/robots/" + this.robotURDF + " -urdf -model " + this.model, "screen"));
+            this.elements.Add(new launchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + this.package + ")/urdf/" + this.robotURDF + " -urdf -model " + this.model, "screen"));
             this.elements.Add(new launchNode("fake_joint_calibration", "rostopic", "rostopic", "pub /calibrated std_msgs/Bool true"));
         }
 
@@ -234,7 +234,7 @@ namespace SW2URDF
             this.elements.Add(new launchArg("model"));
             this.elements.Add(new launchArg("gui", "False"));
 
-            this.elements.Add(new launchParam("robot_description", "", "$(find " + package + ")/robots/" + robotURDF));
+            this.elements.Add(new launchParam("robot_description", "", "$(find " + package + ")/urdf/" + robotURDF));
             this.elements.Add(new launchParam("use_gui", "$(arg gui)"));
 
             this.elements.Add(new launchNode("joint_state_publisher", "joint_state_publisher", "joint_state_publisher"));
