@@ -1,0 +1,202 @@
+<robot
+  name="3_DOF_ARM_description">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.00249115384615384 0.00305587412587413 -2.1584679354658E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.0510508806208341" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="prox_link">
+    <inertial>
+      <origin
+        xyz="6.94771683976621E-10 -0.0881460587278585 2.58403334320312E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.132570921155528" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/prox_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/prox_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="prox_joint"
+    type="continuous">
+    <origin
+      xyz="0.00249115384615384 0 0"
+      rpy="-1.5707963267949 -6.12303176911189E-17 -1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="prox_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="dist_Link">
+    <inertial>
+      <origin
+        xyz="6.94771725475764E-10 -0.101063661551862 -2.58403354269632E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.132570921155528" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/dist_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/dist_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="dist_joint"
+    type="continuous">
+    <origin
+      xyz="0 -0.18920972027972 0"
+      rpy="-1.5707963267949 -1.78622307916987E-17 -4.68021606411955E-34" />
+    <parent
+      link="prox_link" />
+    <child
+      link="dist_Link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="effector_link">
+    <inertial>
+      <origin
+        xyz="7.89731593155378E-17 -1.94289029309402E-16 0.0118918918918916"
+        rpy="0 0 0" />
+      <mass
+        value="0.0290597320457048" />
+      <inertia
+        ixx="0"
+        ixy="0"
+        ixz="0"
+        iyy="0"
+        iyz="0"
+        izz="0" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/effector_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://3_DOF_ARM_description/meshes/effector_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="effector_joint"
+    type="continuous">
+    <origin
+      xyz="0 -0.18 0"
+      rpy="1.5707963267949 7.49830360911068E-33 6.12303176911189E-17" />
+    <parent
+      link="dist_Link" />
+    <child
+      link="effector_link" />
+    <axis
+      xyz="0 0 1" />
+  </joint>
+</robot>
