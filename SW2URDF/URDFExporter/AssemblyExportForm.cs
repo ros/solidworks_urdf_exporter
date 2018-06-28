@@ -163,6 +163,16 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
+            finish_export(true);
+        }
+
+        private void button_links_export_urdf_only_Click(object sender, EventArgs e)
+        {
+            finish_export(false);
+        }
+
+        private void finish_export(bool exportSTL)
+        {
             saveConfigTree(ActiveSWModel, BaseNode, false);
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.RestoreDirectory = true;
@@ -179,7 +189,7 @@ namespace SW2URDF
                 }
                 Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
 
-                Exporter.exportRobot();
+                Exporter.exportRobot(exportSTL);
                 this.Close();
             }
         }
@@ -480,5 +490,6 @@ namespace SW2URDF
             }
         }
         #endregion
+        
     }
 }

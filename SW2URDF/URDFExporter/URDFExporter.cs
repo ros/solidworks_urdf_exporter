@@ -100,7 +100,7 @@ namespace SW2URDF
         #region Export Methods
 
         // Beginning method for exporting the full package
-        public void exportRobot()
+        public void exportRobot(bool exportSTL = true)
         {
             //Setting up the progress bar
             System.Diagnostics.Debug.WriteLine("Beginning the export process");
@@ -148,7 +148,7 @@ namespace SW2URDF
             List<string> hiddenComponents = Common.findHiddenComponents(assyDoc.GetComponents(false));
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
-            string filename = exportFiles(mRobot.BaseLink, package, 0);
+            string filename = exportFiles(mRobot.BaseLink, package, 0, exportSTL);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
             
@@ -163,7 +163,7 @@ namespace SW2URDF
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string exportFiles(link Link, URDFPackage package, int count)
+        public string exportFiles(link Link, URDFPackage package, int count, bool exportSTL = true)
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + Link.name);
@@ -173,7 +173,7 @@ namespace SW2URDF
                 count += 1;
                 if (!child.isFixedFrame)
                 {
-                    string filename = exportFiles(child, package, count);
+                    string filename = exportFiles(child, package, count, exportSTL);
                     child.Visual.Geometry.Mesh.filename = filename;
                     child.Collision.Geometry.Mesh.filename = filename;
                 }
@@ -198,7 +198,10 @@ namespace SW2URDF
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
             // Export STL
-            saveSTL(Link, windowsMeshFileName);
+            if (exportSTL)
+            {
+                saveSTL(Link, windowsMeshFileName);
+            }
 
             return meshFileName;
         }
