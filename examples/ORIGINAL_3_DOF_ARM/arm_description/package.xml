@@ -1,10 +1,10 @@
 <package>
-  <name>4_WHEELER_description</name>
+  <name>arm_description</name>
   <version>1.0.0</version>
   <description>
-    <p>URDF Description package for 4_WHEELER_description</p>
+    <p>URDF Description package for arm_description</p>
     <p>This package contains configuration data, 3D models and launch files
-for 4_WHEELER_description robot</p>
+for arm_description robot</p>
   </description>
   <author>TODO</author>
   <maintainer email="TODO@email.com" />
