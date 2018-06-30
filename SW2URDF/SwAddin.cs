@@ -56,9 +56,8 @@ namespace SW2URDF
     public class SwAddin : ISwAddin
     {
         #region Static Variables
-        private static readonly log4net.ILog logger = 
-            log4net.LogManager.GetLogger(
-                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog logger = Logger.GetLogger();
+            
         #endregion
         //
         #region Local Variables
@@ -99,6 +98,7 @@ namespace SW2URDF
         #endregion
 
         #region SolidWorks Registration
+
         [ComRegisterFunctionAttribute]
         public static void RegisterFunction(Type t)
         {
@@ -181,6 +181,11 @@ namespace SW2URDF
         #region ISwAddin Implementation
         public SwAddin()
         {
+            Logger.Setup();
+            //var repo = log4net.LogManager.GetRepository();
+            //Console.WriteLine("Repo found");
+            //XmlElement log4NetSection = (XmlElement)log4net.Config.ConfigurationManager
+            //log4net.Config.XmlConfigurator.Configure(log4NetSection);
         }
 
         public bool ConnectToSW(object ThisSW, int cookie)

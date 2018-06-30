@@ -49,9 +49,7 @@ namespace SW2URDF
     public partial class URDFExporter
     {
         #region class variables
-        private static readonly log4net.ILog logger =
-            log4net.LogManager.GetLogger(
-                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog logger = Logger.GetLogger();
         
         [XmlIgnore]
         public ISldWorks iSwApp = null;
@@ -109,12 +107,12 @@ namespace SW2URDF
         public void exportRobot()
         {
             //Setting up the progress bar
-            System.Diagnostics.Debug.WriteLine("Beginning the export process");
+            logger.Info("Beginning the export process");
             int progressBarBound = Common.getCount(mRobot.BaseLink);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
-            System.Diagnostics.Debug.WriteLine("Creating package directories");
+            logger.Info("Creating package directories with name " + mPackageName + " and save path " + mSavePath);
             URDFPackage package = new URDFPackage(mPackageName, mSavePath);
             package.createDirectories();
             mRobot.name = mPackageName;
@@ -122,48 +120,62 @@ namespace SW2URDF
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
-            System.Diagnostics.Debug.WriteLine("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
+            logger.Info("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
             package.createCMakeLists();
 
             //Create Config joint names, not sure how this is used...
-            System.Diagnostics.Debug.WriteLine("Creating joint names config at " + package.WindowsConfigYAML);
+            logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
             package.createConfigYAML(mRobot.getJointNames(false));
 
             //Creating package.xml file
+            logger.Info("Creating package.xml at " + windowsPackageXMLFileName);
             PackageXMLWriter packageXMLWriter = new PackageXMLWriter(windowsPackageXMLFileName);
             PackageXML packageXML = new PackageXML(mPackageName);
             packageXML.writeElement(packageXMLWriter);
 
             //Creating RVIZ launch file
             Rviz rviz = new Rviz(mPackageName, mRobot.name + ".urdf");
-            System.Diagnostics.Debug.WriteLine("Creating RVIZ launch file");
+            logger.Info("Creating RVIZ launch file in " + package.WindowsLaunchDirectory);
             rviz.writeFiles(package.WindowsLaunchDirectory);
 
             //Creating Gazebo launch file
-            System.Diagnostics.Debug.WriteLine("Creating Gazebo launch file");
             Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, mRobot.name + ".urdf");
+            logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
             gazebo.writeFile(package.WindowsLaunchDirectory);
 
 
             //Customizing STL preferences to how I want them
+            logger.Info("Saving existing STL preferences");
             saveUserPreferences();
+
+            logger.Info("Modifying STL preferences");
             setSTLExportPreferences();
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
             List<string> hiddenComponents = Common.findHiddenComponents(assyDoc.GetComponents(false));
+            logger.Info("Found " + hiddenComponents.Count + " hidden components " + String.Join(", ", hiddenComponents));
+            logger.Info("Hiding all components");
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
+
+            logger.Info("Beginning individual files export");
             string filename = exportFiles(mRobot.BaseLink, package, 0);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
-            
+
+            logger.Info("Showing all components except previously hidden components");
             Common.showAllComponents(ActiveSWModel, hiddenComponents);
             //Writing URDF to file
 
+            logger.Info("Writing URDF file to " + windowsURDFFileName);
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             mRobot.writeURDF(uWriter.writer);
+
+            logger.Info("Copying log file");
             copyLogFile(package);
+
+            logger.Info("Resetting STL preferences");
             resetUserPreferences();
             progressBar.End();
         }
@@ -346,27 +358,29 @@ namespace SW2URDF
             string destination = package.WindowsPackageDirectory + "export.log";
 
             // Gets the Log FileAppender's log file name
-           
-            //var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
-             //                            .FirstOrDefault();
-            //foreach(var appender in LogManager.GetRepository().GetAppenders())
-            //{
-            //    Console.WriteLine(appender.Name);
-            //}
 
-            //if (rootAppender != null)
-            //{
-            string log_filename = "C:\\sw2urdf_logs\\sw2urdf.log";
-            if (!File.Exists(log_filename))
+            var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
+                                         .FirstOrDefault();
+            foreach (var appender in LogManager.GetRepository().GetAppenders())
             {
-                System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + log_filename +
-                    ", but it was not found. Please contact your developer with this error message.");
+                Console.WriteLine(appender.Name);
             }
-            else
+
+            if (rootAppender != null)
             {
-                System.IO.File.Copy(log_filename, destination);
+                //string log_filename = "C:\\sw2urdf_logs\\sw2urdf.log";
+                string log_filename = rootAppender.File;
+                if (!File.Exists(log_filename))
+                {
+
+                    System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + log_filename +
+                        ", but it was not found. Please contact your developer with this error message.");
+                }
+                else
+                {
+                    System.IO.File.Copy(log_filename, destination);
+                }
             }
-            //}
         }
 
         #region STL Preference shuffling
