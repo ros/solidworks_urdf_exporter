@@ -137,14 +137,14 @@ namespace SW2URDF
             }
             catch (System.NullReferenceException nl)
             {
-                logger.Error("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"");
-                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null.\n\"" + nl.Message + "\"");
+                logger.Error("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"", nl);
+                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
             catch (System.Exception e)
             {
                 logger.Error(e.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message + "\"");
+                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -167,12 +167,12 @@ namespace SW2URDF
             catch (System.NullReferenceException nl)
             {
                 logger.Error("There was a problem unregistering this dll: " + nl.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + nl.Message + "\"");
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
             catch (System.Exception e)
             {
                 logger.Error("There was a problem unregistering this dll: " + e.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"");
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -182,10 +182,6 @@ namespace SW2URDF
         public SwAddin()
         {
             Logger.Setup();
-            //var repo = log4net.LogManager.GetRepository();
-            //Console.WriteLine("Repo found");
-            //XmlElement log4NetSection = (XmlElement)log4net.Config.ConfigurationManager
-            //log4net.Config.XmlConfigurator.Configure(log4NetSection);
         }
 
         public bool ConnectToSW(object ThisSW, int cookie)
@@ -281,32 +277,47 @@ namespace SW2URDF
 
         public void assemblyURDFExporter()
         {
-            logger.Info("Assembly export called");
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || 
-                MessageBox.Show("The SW to URDF exporter requires saving before continuing", 
+            logger.Info("Assembly export called for file " + modeldoc.GetTitle());
+            bool saveAndRebuild = false;
+            if (modeldoc.GetSaveFlag())
+            {
+                saveAndRebuild = true;
+                logger.Info("Save is required");
+            }
+            else if (modeldoc.Extension.NeedsRebuild2 != (int)swModelRebuildStatus_e.swModelRebuildStatus_FullyRebuilt)
+            {
+                saveAndRebuild = true;
+                logger.Info("A rebuild is required");
+            }
+            if (saveAndRebuild || 
+                MessageBox.Show("The SW to URDF exporter requires saving and/or rebuilding before continuing", 
                 "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                if (modeldoc.Extension.NeedsRebuild2 != 0)
-                {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
                         (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                    logger.Info("Saving assembly");
-                    modeldoc.Save3(options, 0, 0);
-                }
+                logger.Info("Saving assembly");
+                modeldoc.Save3(options, 0, 0);
+                
 
                 logger.Info("Opening property manager");
-                setupPropertyManager();
+                try
+                {
+                    setupPropertyManager();
+                }
+                catch (Exception e)
+                {
+                    logger.Error("An exception was caught when trying setup property mananger", e);
+                    System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                }
             }
         }
 
         public void setupPropertyManager()
         {
             URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
-
             logger.Info("Loading config tree");
             pm.loadConfigTree();
-
             logger.Info("Showing property manager");
             pm.Show();
         }
@@ -325,9 +336,19 @@ namespace SW2URDF
                     logger.Info("Saving part");
                     modeldoc.Save3(options, 0, 0);
                 }
-                PartExportForm exportForm = new PartExportForm(iSwApp);
-                logger.Info("Showing part");
-                exportForm.Show();
+                try
+                {
+                    PartExportForm exportForm = new PartExportForm(iSwApp);
+                    logger.Info("Showing part");
+                    exportForm.Show();
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Excoption caught setting up export form", e);
+                    MessageBox.Show("An exception occured setting up the export form, please email your maintainer with the logfile found at " + Logger.GetFileName());
+                }
+                
+                
             }
         }
 
@@ -335,7 +356,6 @@ namespace SW2URDF
         {
             logger.Info("Attempting to load config file");
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-
 
             Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
             logger.Info("Retrieved " + objects.Length + " features for component");
@@ -418,7 +438,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error("Attaching SW events failed", e);
                 return false;
             }
         }
@@ -438,7 +458,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error("Attaching SW events failed", e);
                 return false;
             }
 

@@ -185,7 +185,9 @@ namespace SW2URDF
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + Link.name);
+            logger.Info("Exporting link: " + Link.name);
             // Iterate through each child and export its files
+            logger.Info("Link " + Link.name + " has " + Link.Children.Count + " children");
             foreach (link child in Link.Children)
             {
                 count += 1;
@@ -195,6 +197,10 @@ namespace SW2URDF
                     child.Visual.Geometry.Mesh.filename = filename;
                     child.Collision.Geometry.Mesh.filename = filename;
                 }
+            }
+            if (Link.Children.Count == 0)
+            {
+                throw new SystemException("I'm an exception");
             }
 
             // Copy the texture file (if it was specified) to the textures directory
@@ -214,7 +220,6 @@ namespace SW2URDF
             string linkName = Link.name.Replace('/', '_');
             string meshFileName = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
-
             // Export STL
             saveSTL(Link, windowsMeshFileName);
 
@@ -223,15 +228,14 @@ namespace SW2URDF
 
         private void saveSTL(link Link, string windowsMeshFileName)
         {
-
-
             int errors = 0;
             int warnings = 0;
-           
-            string coordsysName  = "";
-            coordsysName = 
-                (Link.Joint == null || Link.Joint.CoordinateSystemName == null) 
+
+            string coordsysName = "";
+            coordsysName =
+                (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
                 ? Link.CoordSysName : Link.Joint.CoordinateSystemName;
+            logger.Info(Link.name + ": Exporting STL with coordinate frame " + coordsysName);
 
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
             ModelDoc2 ActiveDoc = ActiveSWModel;
@@ -240,6 +244,7 @@ namespace SW2URDF
             string ConfigurationName = "";
             string DisplayStateName = "";
             Component2 geoComponent = default(Component2);
+            logger.Info(Link.name + ": Reference geometry name " + names["component"]);
             if (names["component"].Length > 0)
             {
                 foreach (Component2 comp in Link.SWcomponents)
@@ -269,6 +274,7 @@ namespace SW2URDF
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             setLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
 
+            logger.Info("Saving STL to " + windowsMeshFileName);
             ActiveDoc.Extension.SaveAs(windowsMeshFileName, 
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             if (ComponentName.Length > 0)
@@ -346,6 +352,7 @@ namespace SW2URDF
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
         public void correctSTLMesh(string filename)
         {
+            logger.Info("Removing SW header in STL file");
             FileStream fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
             byte[] emptyHeader = new byte[80];
             fileStream.Write(emptyHeader, 0, emptyHeader.Length);
@@ -357,19 +364,10 @@ namespace SW2URDF
         {
             string destination = package.WindowsPackageDirectory + "export.log";
 
-            // Gets the Log FileAppender's log file name
+            string log_filename = Logger.GetFileName();
 
-            var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
-                                         .FirstOrDefault();
-            foreach (var appender in LogManager.GetRepository().GetAppenders())
+            if (log_filename != null)
             {
-                Console.WriteLine(appender.Name);
-            }
-
-            if (rootAppender != null)
-            {
-                //string log_filename = "C:\\sw2urdf_logs\\sw2urdf.log";
-                string log_filename = rootAppender.File;
                 if (!File.Exists(log_filename))
                 {
 
@@ -378,6 +376,7 @@ namespace SW2URDF
                 }
                 else
                 {
+                    logger.Info("Copying " + log_filename + " to " + destination);
                     System.IO.File.Copy(log_filename, destination);
                 }
             }
@@ -388,6 +387,7 @@ namespace SW2URDF
         //Saves the preferences that the user had setup so that I can change them and revert back to their configuration
         public void saveUserPreferences()
         {
+            logger.Info("Saving users preferences");
             mBinary = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat);
             mTranslateToPositive = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive);
             mSTLUnits = iSwApp.GetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits);
@@ -401,6 +401,7 @@ namespace SW2URDF
         //This is how the STL export preferences need to be to properly export
         public void setSTLExportPreferences()
         {
+            logger.Info("Setting STL preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, true);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive, true);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits, 2);
@@ -414,6 +415,7 @@ namespace SW2URDF
         //This resets the user preferences back to what they were.
         public void resetUserPreferences()
         {
+            logger.Info("Returning STL preferences to user preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, mBinary);
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLDontTranslateToPositive, mTranslateToPositive);
             iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swExportStlUnits, mSTLUnits);

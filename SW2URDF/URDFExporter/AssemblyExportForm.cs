@@ -49,6 +49,7 @@ namespace SW2URDF
         Control[] linkBoxes;
         LinkNode BaseNode;
         public AttributeDef saveConfigurationAttributeDef;
+        private static readonly log4net.ILog logger = Logger.GetLogger();
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
@@ -93,7 +94,15 @@ namespace SW2URDF
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
-            fillJointTree();
+            try
+            {
+                fillJointTree();
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught when filling joint tree", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem filling the joint tree: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         private void button_joint_next_Click(object sender, EventArgs e)
@@ -114,7 +123,16 @@ namespace SW2URDF
                 BaseNode.Nodes.Add(node);
             }
             changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
-            fillLinkTree();
+
+            try
+            {
+                fillLinkTree();
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught when filling Link tree", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem filling link tree: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
             panel_link_properties.Visible = true;
             this.Focus();
         }
@@ -163,24 +181,33 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
-            saveConfigTree(ActiveSWModel, BaseNode, false);
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.InitialDirectory = Exporter.mSavePath;
-            saveFileDialog1.FileName = Exporter.mPackageName;
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            logger.Info("Completing URDF export");
+            try
             {
-                Exporter.mSavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
-                Exporter.mPackageName = Path.GetFileName(saveFileDialog1.FileName);
-                LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
-                if (node != null)
+                saveConfigTree(ActiveSWModel, BaseNode, false);
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.RestoreDirectory = true;
+                saveFileDialog1.InitialDirectory = Exporter.mSavePath;
+                saveFileDialog1.FileName = Exporter.mPackageName;
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    saveLinkDataFromPropertyBoxes(node.Link);
-                }
-                Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+                    Exporter.mSavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
+                    Exporter.mPackageName = Path.GetFileName(saveFileDialog1.FileName);
+                    LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+                    if (node != null)
+                    {
+                        saveLinkDataFromPropertyBoxes(node.Link);
+                    }
+                    Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
 
-                Exporter.exportRobot();
-                this.Close();
+                    Exporter.exportRobot();
+                    this.Close();
+                }
+            } 
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught when completing URDF export", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem completing export: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         

@@ -6,7 +6,6 @@ using log4net.Layout;
 using System;
 using System.Linq;
 using log4net.Layout.Pattern;
-using log4net.Core;
 using System.IO;
 
 namespace SW2URDF
@@ -66,6 +65,20 @@ namespace SW2URDF
             Logger.Setup();
             return log4net.LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        }
+
+        public static string GetFileName()
+        {
+            var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
+                                         .FirstOrDefault();
+            if (rootAppender != null)
+            {
+                return rootAppender.File;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

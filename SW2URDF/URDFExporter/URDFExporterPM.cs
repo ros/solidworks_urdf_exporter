@@ -45,6 +45,7 @@ namespace SW2URDF
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
+        private static readonly log4net.ILog logger = Logger.GetLogger();
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
 
@@ -161,7 +162,7 @@ namespace SW2URDF
             else
             {
                 //If the page is not created
-                System.Windows.Forms.MessageBox.Show("An error occurred while attempting to create the " + "PropertyManager Page");
+                logger.Error("An error occurred while attempting to create the PropertyManager Page\nError: " + longerrors);
             }
 
             #endregion
@@ -178,54 +179,72 @@ namespace SW2URDF
         // Called when a PropertyManagerPageButton is pressed. In our case, that's only the export button for now
         void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
         {
-            if (Id == Button_export_ID) //If the export button was pressed
+            try
             {
-                saveActiveNode();
-                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                if (Id == Button_export_ID) //If the export button was pressed
                 {
-                    pm_Page.Close(true); //It saves automatically when sending Okay as true;
-                    AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-
-                    //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
-                    int result = assy.ResolveAllLightWeightComponents(true);
-
-                    // If the user confirms to resolve the components and they are successfully resolved we can continue
-                    if (result == (int)swComponentResolveStatus_e.swResolveOk)
+                    saveActiveNode();
+                    if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
                     {
-                        // Builds the links and joints from the PMPage configuration
-                        LinkNode BaseNode = (LinkNode)tree.Nodes[0];
-                        automaticallySwitched = true;
-                        tree.Nodes.Remove(BaseNode);
+                        pm_Page.Close(true); //It saves automatically when sending Okay as true;
+                        AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
-                        Exporter.createRobotFromTreeView(BaseNode);
-                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
-                        exportForm.Exporter = Exporter;
-                        exportForm.Show();
-                    }
-                    else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
-                    {
-                        MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
-                    }
-                    else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
-                    {
-                        MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
+                        //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
+                        int result = assy.ResolveAllLightWeightComponents(true);
+
+                        // If the user confirms to resolve the components and they are successfully resolved we can continue
+                        if (result == (int)swComponentResolveStatus_e.swResolveOk)
+                        {
+                            // Builds the links and joints from the PMPage configuration
+                            LinkNode BaseNode = (LinkNode)tree.Nodes[0];
+                            automaticallySwitched = true;
+                            tree.Nodes.Remove(BaseNode);
+
+                            Exporter.createRobotFromTreeView(BaseNode);
+                            AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
+                            exportForm.Exporter = Exporter;
+                            exportForm.Show();
+                        }
+                        else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
+                        {
+                            MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
+                        }
+                        else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
+                        {
+                            MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                logger.Error("Exception caught with configuration setup page ", e);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the configuration: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
         }
 
         void IPropertyManagerPage2Handler9.OnClose(int Reason)
         {
-            if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
+            try
             {
-                saveActiveNode();
-            }
+                if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
+                {
+                    logger.Info("Configuration canceled");
+                    saveActiveNode();
+                }
 
-            else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
+                else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
+                {
+                    logger.Info("Configuration saved");
+                    saveActiveNode();
+                    saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
+                }
+            }
+            catch (Exception e)
             {
-                saveActiveNode();
-                saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
+                logger.Error("Exception caught on close ", e);
+                System.Windows.Forms.MessageBox.Show("There was a problem closing the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -259,7 +278,6 @@ namespace SW2URDF
             {
                 LinkNode node = (LinkNode)tree.SelectedNode;
                 createNewNodes(node);
-                //updateNodeNames((LinkNode)tree.Nodes[0]);
             }
         }
 
