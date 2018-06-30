@@ -1,0 +1,43 @@
+<robot
+  name="BlockA">
+  <link
+    name="block_description">
+    <inertial>
+      <origin
+        xyz="0.022513 0.022479 0.021743"
+        rpy="0 0 0" />
+      <mass
+        value="0.043027" />
+      <inertia
+        ixx="1.41188162923529E-05"
+        ixy="-2.48714811617225E-09"
+        ixz="1.20388854164856E-08"
+        iyy="1.41109902182813E-05"
+        iyz="1.99007361056528E-08"
+        izz="1.4608435930638E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="1.5707963267949 0 0" />
+      <geometry>
+        <mesh
+          filename="package://block_description/meshes/block_description.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="1.5707963267949 0 0" />
+      <geometry>
+        <mesh
+          filename="package://block_description/meshes/block_description.STL" />
+      </geometry>
+    </collision>
+  </link>
+</robot>

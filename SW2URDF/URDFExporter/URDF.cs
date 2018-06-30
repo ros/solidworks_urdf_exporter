@@ -1847,10 +1847,9 @@ namespace SW2URDF
             
             dependencies = new Dependencies(
                 new String[] { "catkin" },
-                new String[] { "roslaunch" },
-                new String[] { "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
+                new String[] { "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
 
-            author = new Author("me");
+            author = new Author("TODO");
  
             license = new License("BSD");
         }
@@ -1921,13 +1920,11 @@ namespace SW2URDF
     {
         private string package;
         private string[] buildTool;
-        private string[] build;
-        private string[] run;
-        public Dependencies(String[] buildTool, String[] build, String[] run)
+        private string[] build_exec;
+        public Dependencies(String[] buildTool, String[] build_exec)
         {
             this.buildTool = buildTool;
-            this.build = build;
-            this.run = run;
+            this.build_exec = build_exec;
         }
         public void writeElement(XmlWriter writer)
         {
@@ -1937,16 +1934,9 @@ namespace SW2URDF
                 writer.WriteEndElement();
             }
 
-            foreach (String depend in build)
+            foreach (String depend in this.build_exec)
             {
-                writer.WriteStartElement("build_depend");
-                writer.WriteString(depend);
-                writer.WriteEndElement();
-            }
-
-            foreach (String depend in run)
-            {
-                writer.WriteStartElement("run_depend");
+                writer.WriteStartElement("depend");
                 writer.WriteString(depend);
                 writer.WriteEndElement();
             }
