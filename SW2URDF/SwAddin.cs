@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+using log4net.Appender;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;

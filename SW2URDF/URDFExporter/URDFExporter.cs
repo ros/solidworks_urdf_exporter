@@ -34,8 +34,10 @@ using SolidWorks.Interop.swconst;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using MathNet.Numerics.LinearAlgebra.Generic;
-using MathNet.Numerics.LinearAlgebra.Double;
-
+using log4net;
+using log4net.Repository.Hierarchy;
+using log4net.Appender;
+using System.Linq;
 
 namespace SW2URDF
 {
@@ -47,6 +49,10 @@ namespace SW2URDF
     public partial class URDFExporter
     {
         #region class variables
+        private static readonly log4net.ILog logger =
+            log4net.LogManager.GetLogger(
+                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
         [XmlIgnore]
         public ISldWorks iSwApp = null;
         [XmlIgnore]
@@ -157,7 +163,7 @@ namespace SW2URDF
 
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             mRobot.writeURDF(uWriter.writer);
-
+            copyLogFile(package);
             resetUserPreferences();
             progressBar.End();
         }
@@ -334,6 +340,34 @@ namespace SW2URDF
             fileStream.Close();
         }
         #endregion
+
+        private void copyLogFile(URDFPackage package)
+        {
+            string destination = package.WindowsPackageDirectory + "export.log";
+
+            // Gets the Log FileAppender's log file name
+           
+            //var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
+             //                            .FirstOrDefault();
+            //foreach(var appender in LogManager.GetRepository().GetAppenders())
+            //{
+            //    Console.WriteLine(appender.Name);
+            //}
+
+            //if (rootAppender != null)
+            //{
+            string log_filename = "C:\\sw2urdf_logs\\sw2urdf.log";
+            if (!File.Exists(log_filename))
+            {
+                System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + log_filename +
+                    ", but it was not found. Please contact your developer with this error message.");
+            }
+            else
+            {
+                System.IO.File.Copy(log_filename, destination);
+            }
+            //}
+        }
 
         #region STL Preference shuffling
 

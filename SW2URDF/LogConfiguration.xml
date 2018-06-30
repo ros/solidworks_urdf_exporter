@@ -10,7 +10,7 @@
   </appender>
 
   <appender name="RollingFile" type="log4net.Appender.RollingFileAppender">
-    <file value="sw2urdf.log" />
+    <file value="C:\sw2urdf_logs\sw2urdf.log" />
     <appendToFile value="true" />
     <maximumFileSize value="1MB" />
     <maxSizeRollBackups value="5" />
