@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -156,16 +157,36 @@ namespace SW2URDF
             //Make sure that the page was created properly
             if (longerrors == (int)swPropertyManagerPageStatus_e.swPropertyManagerPage_Okay)
             {
-                setupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
+                try
+                {
+                    setupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error("Exception caught while setting up property mananger", ex);
+                    System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+
+                }
             }
 
             else
             {
                 //If the page is not created
                 logger.Error("An error occurred while attempting to create the PropertyManager Page\nError: " + longerrors);
+                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
             #endregion
+        }
+
+        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        {
+            logger.Warn("Exception encountered in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), e.Exception);
+        }
+
+        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
 
         #region Implemented Property Manager Page Handler Methods
@@ -176,50 +197,57 @@ namespace SW2URDF
             pm_Selection.SetSelectionFocus();
         }
 
+        private void onButtonPress(int Id)
+        {
+            if (Id == Button_export_ID) //If the export button was pressed
+            {
+                saveActiveNode();
+                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                {
+                    pm_Page.Close(true); //It saves automatically when sending Okay as true;
+                    AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+
+                    //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
+                    int result = assy.ResolveAllLightWeightComponents(true);
+
+                    // If the user confirms to resolve the components and they are successfully resolved we can continue
+                    if (result == (int)swComponentResolveStatus_e.swResolveOk)
+                    {
+                        // Builds the links and joints from the PMPage configuration
+                        LinkNode BaseNode = (LinkNode)tree.Nodes[0];
+                        automaticallySwitched = true;
+                        tree.Nodes.Remove(BaseNode);
+
+                        Exporter.createRobotFromTreeView(BaseNode);
+                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
+                        exportForm.Exporter = Exporter;
+                        exportForm.Show();
+                    }
+                    else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
+                    {
+                        logger.Warn("Resolving components failed. Warning user to do so on their own");
+                        MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
+                    }
+                    else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
+                    {
+                        logger.Warn("Components were not resolved by user");
+                        MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
+                    }
+                }
+            }
+        }
+
         // Called when a PropertyManagerPageButton is pressed. In our case, that's only the export button for now
         void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
         {
             try
             {
-                if (Id == Button_export_ID) //If the export button was pressed
-                {
-                    saveActiveNode();
-                    if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
-                    {
-                        pm_Page.Close(true); //It saves automatically when sending Okay as true;
-                        AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-
-                        //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
-                        int result = assy.ResolveAllLightWeightComponents(true);
-
-                        // If the user confirms to resolve the components and they are successfully resolved we can continue
-                        if (result == (int)swComponentResolveStatus_e.swResolveOk)
-                        {
-                            // Builds the links and joints from the PMPage configuration
-                            LinkNode BaseNode = (LinkNode)tree.Nodes[0];
-                            automaticallySwitched = true;
-                            tree.Nodes.Remove(BaseNode);
-
-                            Exporter.createRobotFromTreeView(BaseNode);
-                            AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
-                            exportForm.Exporter = Exporter;
-                            exportForm.Show();
-                        }
-                        else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
-                        {
-                            MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
-                        }
-                        else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
-                        {
-                            MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
-                        }
-                    }
-                }
+                onButtonPress(Id);
             }
             catch (Exception e)
             {
-                logger.Error("Exception caught with configuration setup page ", e);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the configuration: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                logger.Error("Exception caught handling button press " + Id, e);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
         }
@@ -321,11 +349,19 @@ namespace SW2URDF
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
         private void tree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (!automaticallySwitched && e.Node != null)
+            try
             {
-                switchActiveNodes((LinkNode)e.Node);
+                if (!automaticallySwitched && e.Node != null)
+                {
+                    switchActiveNodes((LinkNode)e.Node);
+                }
+                automaticallySwitched = false;
             }
-            automaticallySwitched = false;
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view AfterSelect ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // Captures which node was right clicked
@@ -353,50 +389,98 @@ namespace SW2URDF
         // The callback for the configuration page context menu 'Add Child' option
         void addChild_Click(object sender, EventArgs e)
         {
-            createNewNodes(rightClickedNode, 1);
+            try
+            {
+                createNewNodes(rightClickedNode, 1);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view add child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // The callback for the configuration page context menu 'Remove Child' option
         void removeChild_Click(object sender, EventArgs e)
         {
-            LinkNode parent = (LinkNode)rightClickedNode.Parent;
-            parent.Nodes.Remove(rightClickedNode);
+            try
+            {
+                LinkNode parent = (LinkNode)rightClickedNode.Parent;
+                parent.Nodes.Remove(rightClickedNode);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view remove child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // The callback for the configuration page context menu 'Rename Child' option
         // This isn't really working right now, so the option was deactivated from the context menu
         void renameChild_Click(object sender, EventArgs e)
         {
-            tree.SelectedNode = rightClickedNode;
-            tree.LabelEdit = true;
-            rightClickedNode.BeginEdit();
-            pm_Page.SetFocus(dotNet_tree);
+            try
+            {
+                tree.SelectedNode = rightClickedNode;
+                tree.LabelEdit = true;
+                rightClickedNode.BeginEdit();
+                pm_Page.SetFocus(dotNet_tree);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view rename child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         private void tree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
         {
-            tree.DoDragDrop(e.Item, DragDropEffects.Move);
-
+            try
+            { 
+                tree.DoDragDrop(e.Item, DragDropEffects.Move);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
         private void tree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
         {
-            // Retrieve the client coordinates of the mouse position.
-            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+            try
+            { 
+                // Retrieve the client coordinates of the mouse position.
+                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
 
-            // Select the node at the mouse position.
-            tree.SelectedNode = tree.GetNodeAt(targetPoint);
-            e.Effect = DragDropEffects.Move;
+                // Select the node at the mouse position.
+                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                e.Effect = DragDropEffects.Move;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag Over ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
         private void tree_DragEnter(object sender, DragEventArgs e)
         {
-            // Retrieve the client coordinates of the mouse position.
-            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+            try
+            { 
+                // Retrieve the client coordinates of the mouse position.
+                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
 
-            // Select the node at the mouse position.
-            tree.SelectedNode = tree.GetNodeAt(targetPoint);
-            e.Effect = DragDropEffects.Move;
+                // Select the node at the mouse position.
+                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                e.Effect = DragDropEffects.Move;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view DragEnter ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
-        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+
+        private void doDragDrop(DragEventArgs e)
         {
             // Retrieve the client coordinates of the drop location.
             Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
@@ -478,6 +562,19 @@ namespace SW2URDF
                 draggedNode.Remove();
                 targetNode.Nodes.Add(draggedNode);
                 targetNode.ExpandAll();
+            }
+        }
+
+        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            try
+            {
+                doDragDrop(e);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag Drop ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         #endregion

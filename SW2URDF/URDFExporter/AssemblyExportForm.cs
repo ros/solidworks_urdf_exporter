@@ -30,6 +30,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -53,6 +54,8 @@ namespace SW2URDF
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
+            Application.ThreadException += new ThreadExceptionEventHandler(this.exceptionHandler);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.unhandledException);
             InitializeComponent();
             swApp = iSwApp;
             BaseNode = node;
@@ -89,6 +92,19 @@ namespace SW2URDF
             saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
             saveConfigurationAttributeDef.Register();
+        }
+
+        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        {
+            logger.Error("Exception encountered in Assembly export form", e.Exception);
+            System.Windows.Forms.MessageBox.Show("There was a problem filling the joint tree: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+        }
+
+        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (System.Exception)e.ExceptionObject;
+            logger.Error("Unhandled exception in Assembly Export form", ex);
+            System.Windows.Forms.MessageBox.Show("There was a problem filling the joint tree: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
         }
 
         //Joint form configuration controls
