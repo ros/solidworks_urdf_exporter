@@ -20,7 +20,7 @@ namespace SW2URDF
 
     public class Logger
     {
-        public static bool Initialized = false;
+        private static bool Initialized = false;
         public static void Setup()
         {
             if (Initialized)
