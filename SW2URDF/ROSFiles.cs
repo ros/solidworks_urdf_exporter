@@ -176,9 +176,9 @@ namespace SW2URDF
 
     public class Gazebo
     {
-        public readonly string package;
-        public readonly string robotURDF;
-        public readonly string model;
+        string package;
+        string robotURDF;
+        string model;
         List<launchElement> elements;
         
         public Gazebo(string modelName, string packageName, string URDFName)
@@ -221,8 +221,8 @@ namespace SW2URDF
 
     public class Rviz
     {
-        public readonly string package;
-        public readonly string robotURDF;
+        string package;
+        string robotURDF;
         List<launchElement> elements;
         public Rviz(string packageName, string URDFName)
         {
