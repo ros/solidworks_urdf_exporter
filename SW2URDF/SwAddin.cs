@@ -31,9 +31,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+using log4net.Appender;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
@@ -54,6 +56,10 @@ namespace SW2URDF
         )]
     public class SwAddin : ISwAddin
     {
+        #region Static Variables
+        private static readonly log4net.ILog logger = Logger.GetLogger();
+            
+        #endregion
         //
         #region Local Variables
         ISldWorks iSwApp = null;
@@ -70,10 +76,6 @@ namespace SW2URDF
         Hashtable openDocs = new Hashtable();
         SolidWorks.Interop.sldworks.SldWorks SwEventPtr = null;
         #endregion
-
-        #region Property Manager Variables
-        #endregion
-
 
         // Public Properties
         public ISldWorks SwApp
@@ -117,6 +119,7 @@ namespace SW2URDF
                 Microsoft.Win32.RegistryKey hkcu = Microsoft.Win32.Registry.CurrentUser;
 
                 string keyname = "SOFTWARE\\SolidWorks\\Addins\\{" + t.GUID.ToString() + "}";
+                logger.Info("Registering " + keyname);
                 Microsoft.Win32.RegistryKey addinkey = hklm.CreateSubKey(keyname);
                 addinkey.SetValue(null, 0);
 
@@ -124,20 +127,21 @@ namespace SW2URDF
                 addinkey.SetValue("Title", SWattr.Title);
 
                 keyname = "Software\\SolidWorks\\AddInsStartup\\{" + t.GUID.ToString() + "}";
+                logger.Info("Registering " + keyname);
                 addinkey = hkcu.CreateSubKey(keyname);
                 addinkey.SetValue(null, Convert.ToInt32(SWattr.LoadAtStartup), Microsoft.Win32.RegistryValueKind.DWord);
             }
             catch (System.NullReferenceException nl)
             {
-                Console.WriteLine("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"");
-                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null.\n\"" + nl.Message + "\"");
+                logger.Error("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"", nl);
+                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
+                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
-
             catch (System.Exception e)
             {
-                Console.WriteLine(e.Message);
-
-                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message + "\"");
+                logger.Error(e.Message);
+                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
+                    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -150,28 +154,43 @@ namespace SW2URDF
                 Microsoft.Win32.RegistryKey hkcu = Microsoft.Win32.Registry.CurrentUser;
 
                 string keyname = "SOFTWARE\\SolidWorks\\Addins\\{" + t.GUID.ToString() + "}";
+                logger.Info("Unregistering " + keyname);
                 hklm.DeleteSubKey(keyname);
 
                 keyname = "Software\\SolidWorks\\AddInsStartup\\{" + t.GUID.ToString() + "}";
+                logger.Info("Unregistering " + keyname);
                 hkcu.DeleteSubKey(keyname);
             }
             catch (System.NullReferenceException nl)
             {
-                Console.WriteLine("There was a problem unregistering this dll: " + nl.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + nl.Message + "\"");
+                logger.Error("There was a problem unregistering this dll: " + nl.Message);
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
             catch (System.Exception e)
             {
-                Console.WriteLine("There was a problem unregistering this dll: " + e.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"");
+                logger.Error("There was a problem unregistering this dll: " + e.Message);
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-
         #endregion
 
         #region ISwAddin Implementation
         public SwAddin()
         {
+            Application.ThreadException += new ThreadExceptionEventHandler(this.exceptionHandler);
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.unhandledException);
+            Logger.Setup();
+        }
+
+        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        {
+            logger.Warn("Exception encountered in Assembly export form", e.Exception);
+        }
+
+        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
 
         public bool ConnectToSW(object ThisSW, int cookie)
@@ -192,7 +211,7 @@ namespace SW2URDF
             openDocs = new Hashtable();
             AttachEventHandlers();
             #endregion
-
+            logger.Info("Connecting plugin to SolidWorks");
             return true;
         }
 
@@ -212,6 +231,7 @@ namespace SW2URDF
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
+            logger.Info("Disconnecting plugin from SolidWorks");
             return true;
         }
         #endregion
@@ -219,134 +239,109 @@ namespace SW2URDF
         #region UI Methods
         public void AddCommandMgr() 
         {
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "assemblyURDFExporter", "", "Export assembly as URDF file", "");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "partURDFExporter", "", "Export part as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
+            logger.Info("Adding Assembly export to file menu");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "PartURDFExporter", "", "Export part as URDF file", "");
+            logger.Info("Adding Part export to file menu");
         }
 
         public void RemoveCommandMgr()
         {
             iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as URDF@&File", "");
+            logger.Info("Removing assembly export from file menu");
             iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocPART, "Export as URDF@&File", "");
+            logger.Info("Removing part export from file menu");
         }
-
-        public bool CompareIDs(int[] storedIDs, int[] addinIDs)
-        {
-            List<int> storedList = new List<int>(storedIDs);
-            List<int> addinList = new List<int>(addinIDs);
-
-            addinList.Sort();
-            storedList.Sort();
-
-            if (addinList.Count != storedList.Count)
-            {
-                return false;
-            }
-            else
-            {
-
-                for (int i = 0; i < addinList.Count; i++)
-                {
-                    if (addinList[i] != storedList[i])
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
         #endregion
-
         #region UI Callbacks
 
-
-        public void assemblyURDFExporter()
+        public void SetupAssemblyExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if (modeldoc.GetSaveFlag() || modeldoc.Extension.NeedsRebuild2 == 0 || 
-                MessageBox.Show("The SW to URDF exporter requires saving before continuing", 
+            logger.Info("Assembly export called for file " + modeldoc.GetTitle());
+            bool saveAndRebuild = false;
+            if (modeldoc.GetSaveFlag())
+            {
+                saveAndRebuild = true;
+                logger.Info("Save is required");
+            }
+            else if (modeldoc.Extension.NeedsRebuild2 != (int)swModelRebuildStatus_e.swModelRebuildStatus_FullyRebuilt)
+            {
+                saveAndRebuild = true;
+                logger.Info("A rebuild is required");
+            }
+            if (saveAndRebuild ||
+                MessageBox.Show("The SW to URDF exporter requires saving and/or rebuilding before continuing",
                 "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                if (modeldoc.Extension.NeedsRebuild2 != 0)
-                {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced |
                         (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-                    modeldoc.Save3(options, 0, 0);
-                }
-                //AssemblyExportForm exportForm = new AssemblyExportForm(iSwApp);
-                //exportForm.Show();
+                logger.Info("Saving assembly");
+                modeldoc.Save3(options, 0, 0);
 
-                setupPropertyManager();
-                //AddContextMenu()
-
-
+                logger.Info("Opening property manager");
+                this.SetupPropertyManager();
             }
         }
 
-        public void setupPropertyManager()
+        public void AssemblyURDFExporter()
         {
-            //SW2URDFExporter exporter = loadConfigFile();
+            try
+            {
+                this.SetupAssemblyExporter();
+            }
+            catch (Exception e)
+            {
+                logger.Error("An exception was caught when trying to setup the assembly exporter", e);
+                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + 
+                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
+        }
 
+        public void SetupPropertyManager()
+        {
             URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
-
+            logger.Info("Loading config tree");
             pm.loadConfigTree();
+            logger.Info("Showing property manager");
             pm.Show();
         }
-        public void partURDFExporter()
+
+        public void SetupPartExporter()
         {
+            logger.Info("Part export called");
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if ((modeldoc.Extension.NeedsRebuild2 == 0) || 
-                MessageBox.Show("Save and rebuild document?", 
+            if ((modeldoc.Extension.NeedsRebuild2 == 0) ||
+                MessageBox.Show("Save and rebuild document?",
                 "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced |
                         (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+                    logger.Info("Saving part");
                     modeldoc.Save3(options, 0, 0);
                 }
+
                 PartExportForm exportForm = new PartExportForm(iSwApp);
+                logger.Info("Showing part");
                 exportForm.Show();
             }
         }
 
-        private URDFExporter loadConfigFile()
+        public void partURDFExporter()
         {
-            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-
-
-            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
-            string data="";
-            foreach (Object obj in objects)
+            try
             {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att = 
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        Parameter param = att.GetParameter("data");
-                        data = param.GetStringValue();
-                    }
-                }
-              
+                this.SetupPartExporter();
             }
-            if (!data.Equals(""))
+            catch (Exception e)
             {
-                URDFExporter Exporter;
-
-                XmlSerializer serializer = new XmlSerializer(typeof(URDFExporter));
-                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                Exporter = (URDFExporter)serializer.Deserialize(textReader);
-                textReader.Close();
-
-                return Exporter;
+                logger.Error("Excoption caught setting up export form", e);
+                MessageBox.Show("An exception occured setting up the export form, please email your maintainer with the log file found at " + Logger.GetFileName());
             }
-            return null;
         }
-
+        
         public void FlyoutCallback()
         {
             FlyoutGroup flyGroup = iCmdMgr.GetFlyoutGroup(flyoutGroupID);
@@ -393,7 +388,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error("Attaching SW events failed", e);
                 return false;
             }
         }
@@ -413,7 +408,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                logger.Error("Attaching SW events failed", e);
                 return false;
             }
 
@@ -538,13 +533,8 @@ namespace SW2URDF
         {
             return 0;
         }
-
-
-
-
+        
         #endregion
-
-
     }
 
 }

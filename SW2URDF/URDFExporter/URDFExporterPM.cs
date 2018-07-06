@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -45,6 +46,7 @@ namespace SW2URDF
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
+        private static readonly log4net.ILog logger = Logger.GetLogger();
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
 
@@ -142,7 +144,6 @@ namespace SW2URDF
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
 
-
             #region Create and instantiate components of PM page
             //Set the variables for the page
             PageTitle = "URDF Exporter";
@@ -161,10 +162,21 @@ namespace SW2URDF
             else
             {
                 //If the page is not created
-                System.Windows.Forms.MessageBox.Show("An error occurred while attempting to create the " + "PropertyManager Page");
+                logger.Error("An error occurred while attempting to create the PropertyManager Page\nError: " + longerrors);
+                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
             #endregion
+        }
+
+        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        {
+            logger.Warn("Exception encountered in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), e.Exception);
+        }
+
+        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
 
         #region Implemented Property Manager Page Handler Methods
@@ -175,8 +187,7 @@ namespace SW2URDF
             pm_Selection.SetSelectionFocus();
         }
 
-        // Called when a PropertyManagerPageButton is pressed. In our case, that's only the export button for now
-        void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
+        private void onButtonPress(int Id)
         {
             if (Id == Button_export_ID) //If the export button was pressed
             {
@@ -204,28 +215,54 @@ namespace SW2URDF
                     }
                     else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
                     {
+                        logger.Warn("Resolving components failed. Warning user to do so on their own");
                         MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
                     }
                     else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
                     {
+                        logger.Warn("Components were not resolved by user");
                         MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
                     }
                 }
+            }
+        }
+
+        // Called when a PropertyManagerPageButton is pressed. In our case, that's only the export button for now
+        void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
+        {
+            try
+            {
+                onButtonPress(Id);
+            }
+            catch (Exception e)
+            {
+                logger.Error("Exception caught handling button press " + Id, e);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
         }
 
         void IPropertyManagerPage2Handler9.OnClose(int Reason)
         {
-            if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
+            try
             {
-                saveActiveNode();
-            }
+                if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
+                {
+                    logger.Info("Configuration canceled");
+                    saveActiveNode();
+                }
 
-            else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
+                else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
+                {
+                    logger.Info("Configuration saved");
+                    saveActiveNode();
+                    saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
+                }
+            }
+            catch (Exception e)
             {
-                saveActiveNode();
-                saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
+                logger.Error("Exception caught on close ", e);
+                System.Windows.Forms.MessageBox.Show("There was a problem closing the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -259,7 +296,6 @@ namespace SW2URDF
             {
                 LinkNode node = (LinkNode)tree.SelectedNode;
                 createNewNodes(node);
-                //updateNodeNames((LinkNode)tree.Nodes[0]);
             }
         }
 
@@ -303,11 +339,19 @@ namespace SW2URDF
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
         private void tree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (!automaticallySwitched && e.Node != null)
+            try
             {
-                switchActiveNodes((LinkNode)e.Node);
+                if (!automaticallySwitched && e.Node != null)
+                {
+                    switchActiveNodes((LinkNode)e.Node);
+                }
+                automaticallySwitched = false;
             }
-            automaticallySwitched = false;
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view AfterSelect ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // Captures which node was right clicked
@@ -335,50 +379,98 @@ namespace SW2URDF
         // The callback for the configuration page context menu 'Add Child' option
         void addChild_Click(object sender, EventArgs e)
         {
-            createNewNodes(rightClickedNode, 1);
+            try
+            {
+                createNewNodes(rightClickedNode, 1);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view add child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // The callback for the configuration page context menu 'Remove Child' option
         void removeChild_Click(object sender, EventArgs e)
         {
-            LinkNode parent = (LinkNode)rightClickedNode.Parent;
-            parent.Nodes.Remove(rightClickedNode);
+            try
+            {
+                LinkNode parent = (LinkNode)rightClickedNode.Parent;
+                parent.Nodes.Remove(rightClickedNode);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view remove child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         // The callback for the configuration page context menu 'Rename Child' option
         // This isn't really working right now, so the option was deactivated from the context menu
         void renameChild_Click(object sender, EventArgs e)
         {
-            tree.SelectedNode = rightClickedNode;
-            tree.LabelEdit = true;
-            rightClickedNode.BeginEdit();
-            pm_Page.SetFocus(dotNet_tree);
+            try
+            {
+                tree.SelectedNode = rightClickedNode;
+                tree.LabelEdit = true;
+                rightClickedNode.BeginEdit();
+                pm_Page.SetFocus(dotNet_tree);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view rename child ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
 
         private void tree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
         {
-            tree.DoDragDrop(e.Item, DragDropEffects.Move);
-
+            try
+            { 
+                tree.DoDragDrop(e.Item, DragDropEffects.Move);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
         private void tree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
         {
-            // Retrieve the client coordinates of the mouse position.
-            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+            try
+            { 
+                // Retrieve the client coordinates of the mouse position.
+                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
 
-            // Select the node at the mouse position.
-            tree.SelectedNode = tree.GetNodeAt(targetPoint);
-            e.Effect = DragDropEffects.Move;
+                // Select the node at the mouse position.
+                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                e.Effect = DragDropEffects.Move;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag Over ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
         private void tree_DragEnter(object sender, DragEventArgs e)
         {
-            // Retrieve the client coordinates of the mouse position.
-            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+            try
+            { 
+                // Retrieve the client coordinates of the mouse position.
+                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
 
-            // Select the node at the mouse position.
-            tree.SelectedNode = tree.GetNodeAt(targetPoint);
-            e.Effect = DragDropEffects.Move;
+                // Select the node at the mouse position.
+                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                e.Effect = DragDropEffects.Move;
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view DragEnter ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            }
         }
-        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+
+        private void doDragDrop(DragEventArgs e)
         {
             // Retrieve the client coordinates of the drop location.
             Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
@@ -460,6 +552,19 @@ namespace SW2URDF
                 draggedNode.Remove();
                 targetNode.Nodes.Add(draggedNode);
                 targetNode.ExpandAll();
+            }
+        }
+
+        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        {
+            try
+            {
+                doDragDrop(e);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Exception caught on tree view Drag Drop ", ex);
+                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         #endregion
@@ -691,166 +796,129 @@ namespace SW2URDF
         // if you choose not to implement it, but it gets regularly called anyway
         void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnCheckboxCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxEditChanged(int Id, string Text)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnComboboxEditChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxSelectionChanged(int Id, int Item)
         {
-
-            //throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnComboboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupCheck(int Id, bool Checked)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnGroupCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupExpand(int Id, bool Expanded)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnGroupExpand called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxSelectionChanged(int Id, int Item)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnListboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnNextPage()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnNextPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         void IPropertyManagerPage2Handler9.OnOptionCheck(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnOptionCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItem(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPopupMenuItem called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItemUpdate(int Id, ref int retval)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPopupMenuItemUpdate called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnPreview()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPreview called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         bool IPropertyManagerPage2Handler9.OnPreviousPage()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPreviousPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         void IPropertyManagerPage2Handler9.OnRedo()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnRedo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutCreated(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSelectionboxCalloutCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutDestroyed(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSelectionboxCalloutDestroyed called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
 
         void IPropertyManagerPage2Handler9.OnSliderPositionChanged(int Id, double Value)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSliderPositionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSliderTrackingCompleted(int Id, double Value)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSliderTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
+
         bool IPropertyManagerPage2Handler9.OnTabClicked(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnTabClicked called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
-
 
         void IPropertyManagerPage2Handler9.OnUndo()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnUndo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnWhatsNew()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnWhatsNew called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxRMBUp(int Id, int PosX, int PosY)
         {
-            throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnListboxRMBUp called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnNumberBoxTrackingCompleted(int Id, double Value)
         {
-            //throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnNumberBoxTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
         void IPropertyManagerPage2Handler9.AfterClose()
         {
-            //throw new Exception("The method or operation is not implemented.");
+            logger.Info("AfterClose called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
         {
-            throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnActiveXControlCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return 0;
         }
         #endregion
-
-
     }
 
 }

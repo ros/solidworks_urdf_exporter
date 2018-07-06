@@ -226,7 +226,7 @@ namespace SW2URDF
 
             if (parent != null)
             {
-                System.Diagnostics.Debug.WriteLine("Creating joint " + child.name);
+                logger.Info("Creating joint " + child.name);
                 createJoint(parent, child, node);
             }
 
@@ -696,35 +696,35 @@ namespace SW2URDF
                                                                            out L2Status, out LDir2);
                 if (RPoint1 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
+                    logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
                 }
                 else {
-                    System.Diagnostics.Debug.WriteLine("R1: " + R1Status + ", " + R1DirStatus);
+                    logger.Info("R1: " + R1Status + ", " + R1DirStatus);
                 }
 
                 if (RPoint2 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2.get_IArrayData());
+                    logger.Info("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2.get_IArrayData());
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("R2: " + R2Status + ", " + R2DirStatus);
+                    logger.Info("R2: " + R2Status + ", " + R2DirStatus);
                 }
                 if (LDir1 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status + ", "  + LDir1.get_IArrayData());
+                    logger.Info("L1: " + L1Status + ", "  + LDir1.get_IArrayData());
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("L1: " + L1Status);
+                    logger.Info("L1: " + L1Status);
                 }
                 if (LDir2 != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("L2: " + ", " + LDir2.get_IArrayData());
+                    logger.Info("L2: " + ", " + LDir2.get_IArrayData());
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("L2: " + L2Status);
+                    logger.Info("L2: " + L2Status);
                 }
 
                 DOFs = remainingDOFs;
@@ -1046,23 +1046,23 @@ namespace SW2URDF
         //This method adds in the limits from a limit mate, to make a joint a revolute joint. It really needs to checked for correctness.
         public void addLimits(joint Joint, List<Mate2> limitMates, Component2 parentComponent, Component2 childComponent)
         {
-            System.Diagnostics.Debug.WriteLine("Parent SW Component: " + parentComponent.Name2);
-            System.Diagnostics.Debug.WriteLine("Child SW Component: " + childComponent.Name2);
+            logger.Info("Parent SW Component: " + parentComponent.Name2);
+            logger.Info("Child SW Component: " + childComponent.Name2);
             // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
             foreach (Mate2 swMate in limitMates)
             {
-                System.Diagnostics.Debug.WriteLine("Determining limit mate eligibility ");
+                logger.Info("Determining limit mate eligibility ");
                 List<Component2> entities = new List<Component2>();
                 for (int i = 0; i < swMate.GetMateEntityCount(); i++)
                 {
                     MateEntity2 entity = swMate.MateEntity(i);
                     entities.Add(entity.ReferenceComponent);
-                    System.Diagnostics.Debug.WriteLine("Adding component entity: " + entity.ReferenceComponent.Name2);
+                    logger.Info("Adding component entity: " + entity.ReferenceComponent.Name2);
 
                     Component2 parent = entity.ReferenceComponent.GetParent();
                     while (parent != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("Adding component entity: " + parent.Name2);
+                        logger.Info("Adding component entity: " + parent.Name2);
                         entities.Add(parent);
                         parent = parent.GetParent();
                         
@@ -1151,7 +1151,7 @@ namespace SW2URDF
         {
             foreach (Component2 comp in components)
             {
-                System.Diagnostics.Debug.WriteLine("Unfixing component " + comp.GetID());
+                logger.Info("Unfixing component " + comp.GetID());
             }
 
             Common.selectComponents(ActiveSWModel, components, true);
@@ -1210,12 +1210,12 @@ namespace SW2URDF
         //Used to fix components to estimate the degree of freedom.
         private List<Component2> fixComponents(link parent)
         {
-            System.Diagnostics.Debug.WriteLine("Fixing components for " + parent.name);
+            logger.Info("Fixing components for " + parent.name);
             List<Component2> componentsToFix = getParentAncestorComponents(parent);
             List<Component2> componentsToUnfix = new List<Component2>();
             foreach (Component2 comp in componentsToFix)
             {
-                System.Diagnostics.Debug.WriteLine("Fixing " + comp.GetID());
+                logger.Info("Fixing " + comp.GetID());
                 bool isFixed = comp.IsFixed();
                 if (!comp.IsFixed())
                 {
@@ -1223,7 +1223,7 @@ namespace SW2URDF
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Component " + comp.GetID() + " is already fixed");
+                    logger.Info("Component " + comp.GetID() + " is already fixed");
                 }
 
             }

@@ -538,6 +538,7 @@ namespace SW2URDF
                     {
                         Parameter param = att.GetParameter("data");
                         data = param.GetStringValue();
+                        logger.Info("URDF Configuration found\n" + data);
                     }
                 }
 
@@ -555,6 +556,7 @@ namespace SW2URDF
 
             if (basenode == null)
             {
+                logger.Info("Starting new configuration");
                 basenode = createEmptyNode(null);
             }
             addDocMenu(basenode);
