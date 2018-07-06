@@ -54,8 +54,8 @@ namespace SW2URDF
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
-            Application.ThreadException += new ThreadExceptionEventHandler(this.exceptionHandler);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.unhandledException);
+            Application.ThreadException += new ThreadExceptionEventHandler(this.ExceptionHandler);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.UnhandledException);
             InitializeComponent();
             swApp = iSwApp;
             BaseNode = node;
@@ -93,13 +93,13 @@ namespace SW2URDF
             saveConfigurationAttributeDef.Register();
         }
 
-        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
             logger.Error("Exception encountered in Assembly export form", e.Exception);
             System.Windows.Forms.MessageBox.Show("There was a problem with the export form: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
         }
 
-        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (System.Exception)e.ExceptionObject;
             logger.Error("Unhandled exception in Assembly Export form", ex);
@@ -107,40 +107,37 @@ namespace SW2URDF
         }
 
         //Joint form configuration controls
-        private void AssemblyExportForm_Load(object sender, EventArgs e)
+        private void AssemblyExportFormLoad(object sender, EventArgs e)
         {
-            fillJointTree();
+            FillJointTree();
         }
 
-        private void button_joint_next_Click(object sender, EventArgs e)
+        private void ButtonJointNextClick(object sender, EventArgs e)
         {
             if (!(previouslySelectedNode == null || previouslySelectedNode.Link.Joint == null))
             {
-                 saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
+                 SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             previouslySelectedNode = null; // Need to clear this for the link properties page
-            //treeView_linkProperties.Nodes.Clear();
-            //Exporter.mRobot = createRobotFromTreeView(treeView_jointtree);
-            //fillTreeViewFromRobot(Exporter.mRobot, treeView_linkProperties);
-
+            
             while (treeView_jointtree.Nodes.Count > 0)
             {
                 LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
-            changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            ChangeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
 
-            fillLinkTree();
+            FillLinkTree();
             panel_link_properties.Visible = true;
             this.Focus();
         }
 
-        private void button_joint_cancel_Click(object sender, EventArgs e)
+        private void Button_Joint_Cancel_Click(object sender, EventArgs e)
         {
             if (previouslySelectedNode != null)
             {
-                saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
+                SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             while (treeView_jointtree.Nodes.Count > 0)
             {
@@ -148,74 +145,77 @@ namespace SW2URDF
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
-            saveConfigTree(ActiveSWModel, BaseNode, true);
+            SaveConfigTree(ActiveSWModel, BaseNode, true);
             this.Close();
         }
 
-        private void button_links_cancel_Click(object sender, EventArgs e)
+        private void Button_Links_Cancel_Click(object sender, EventArgs e)
         {
             if (previouslySelectedNode != null)
             {
-                saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
+                SaveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
-            saveConfigTree(ActiveSWModel, BaseNode, true);
+            SaveConfigTree(ActiveSWModel, BaseNode, true);
             this.Close();
         }
 
-        private void button_links_previous_Click(object sender, EventArgs e)
+        private void Button_Links_Previous_Click(object sender, EventArgs e)
         {
             LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
             if (node != null)
             {
-                saveLinkDataFromPropertyBoxes(node.Link);
+                SaveLinkDataFromPropertyBoxes(node.Link);
             }
             previouslySelectedNode = null;
-            changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
-            fillJointTree();
+            ChangeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            FillJointTree();
             panel_link_properties.Visible = false;
         }
 
-        private void button_links_finish_Click(object sender, EventArgs e)
+        private void ButtonLinksFinishClick(object sender, EventArgs e)
         {
-            finish_export(true);
+            FinishExport(true);
         }
 
-        private void button_links_export_urdf_only_Click(object sender, EventArgs e)
+        private void ButtonLinksExportUrdfOnlyClick(object sender, EventArgs e)
         {
-            finish_export(false);
+            FinishExport(false);
         }
 
-        private void finish_export(bool exportSTL)
+        private void FinishExport(bool exportSTL)
         {
             logger.Info("Completing URDF export");
-            saveConfigTree(ActiveSWModel, BaseNode, false);
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.RestoreDirectory = true;
-            saveFileDialog1.InitialDirectory = Exporter.mSavePath;
-            saveFileDialog1.FileName = Exporter.mPackageName;
+            SaveConfigTree(ActiveSWModel, BaseNode, false);
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog
+            {
+                RestoreDirectory = true,
+                InitialDirectory = Exporter.SavePath,
+                FileName = Exporter.PackageName
+            };
+
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                Exporter.mSavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
-                Exporter.mPackageName = Path.GetFileName(saveFileDialog1.FileName);
+                Exporter.SavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
+                Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);
                 LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
                 if (node != null)
                 {
-                    saveLinkDataFromPropertyBoxes(node.Link);
+                    SaveLinkDataFromPropertyBoxes(node.Link);
                 }
-                Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
+                Exporter.URDFRobot = CreateRobotFromTreeView(treeView_linkProperties);
 
-                Exporter.exportRobot(exportSTL);
+                Exporter.ExportRobot(exportSTL);
                 this.Close();
             }
         }
         
-        private void treeView_linkProperties_AfterSelect(object sender, TreeViewEventArgs e)
+        private void TreeViewLinkPropertiesAfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
             Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null)
             {
-                saveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
+                SaveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
                 previouslySelectedNode.NodeFont = fontRegular;
             }
             LinkNode node = (LinkNode)e.Node;
@@ -240,228 +240,35 @@ namespace SW2URDF
                     component.Select4(true, data, false);
                 }
             }
-            fillLinkPropertyBoxes(node.Link);
+            FillLinkPropertyBoxes(node.Link);
             treeView_linkProperties.Focus();
             previouslySelectedNode = node;
         }
 
         #region Link Properties Controls Handlers
-
-        private void textBox_inertial_origin_x_TextChanged(object sender, EventArgs e)
+        private void ButtonTextureBrowseClick(object sender, EventArgs e)
         {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog
+            {
+                RestoreDirectory = true
+            };
 
-        }
-
-        private void textBox_inertial_origin_y_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_inertial_origin_z_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_inertial_origin_roll_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_inertial_origin_pitch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_inertial_origin_yaw_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_ixx_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_ixy_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_ixz_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_iyy_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_iyz_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_izz_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_mass_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_x_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_y_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_z_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_roll_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_pitch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_visual_origin_yaw_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBox_materials_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void domainUpDown_red_SelectedItemChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void domainUpDown_green_SelectedItemChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void domainUpDown_blue_SelectedItemChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void domainUpDown_alpha_SelectedItemChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_texture_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button_texturebrowse_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            openFileDialog1.RestoreDirectory = true;
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 textBox_texture.Text = openFileDialog1.FileName;
             }
         }
-
-        private void textBox_collision_origin_x_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_collision_origin_y_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_collision_origin_z_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_collision_origin_roll_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_collision_origin_pitch_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_collision_origin_yaw_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void radioButton3_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void radioButton4_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_name_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox_save_as_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button_savename_browse_Click(object sender, EventArgs e)
-        {
-
-        }
-
+        
         #endregion
 
         #region Joint Properties Controls Handlers
-        private void label_damping_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void treeView_jointtree_AfterSelect(object sender, TreeViewEventArgs e)
+        private void TreeViewJointtreeAfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
             Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
-            if (previouslySelectedNode != null && !previouslySelectedNode.isBaseNode)
+            if (previouslySelectedNode != null && !previouslySelectedNode.IsBaseNode)
             {
-                saveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
+                SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             if (previouslySelectedNode != null)
             {
@@ -486,18 +293,18 @@ namespace SW2URDF
             }
             node.NodeFont = fontBold;
             node.Text = node.Text;
-            fillJointPropertyBoxes(node.Link.Joint);
+            FillJointPropertyBoxes(node.Link.Joint);
             previouslySelectedNode = node;
         }
 
-        private void comboBox_axis_SelectedIndexChanged(object sender, EventArgs e)
+        private void ComboBoxAxisSelectedIndexChanged(object sender, EventArgs e)
         {
             if (!AutoUpdatingForm)
             {
                 if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
                 {
-                    double[] Axis = Exporter.estimateAxis(comboBox_axis.Text);
-                    Exporter.localizeAxis(Axis, comboBox_origin.Text);
+                    double[] Axis = Exporter.EstimateAxis(comboBox_axis.Text);
+                    Exporter.LocalizeAxis(Axis, comboBox_origin.Text);
                     textBox_axis_x.Text = Axis[0].ToString("G5");
                     textBox_axis_y.Text = Axis[1].ToString("G5");
                     textBox_axis_z.Text = Axis[2].ToString("G5");

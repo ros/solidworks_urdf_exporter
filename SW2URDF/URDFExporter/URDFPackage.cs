@@ -243,7 +243,7 @@ namespace SW2URDF
             }
         }
 
-        public void createConfigYAML(String[] jointNames)
+        public void CreateConfigYAML(String[] jointNames)
         {
             using (StreamWriter file = new StreamWriter(windowsConfigYAML))
             {

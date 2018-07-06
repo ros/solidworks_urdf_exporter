@@ -30,22 +30,27 @@ namespace SW2URDF
 
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
-            PatternLayout patternLayout = new PatternLayout();
-
             // This ConversionPattern is slow because any location-based parameter in log4net is slow. If it becomes an issue
             // this might have to be wrapped into a compile time macro
-            patternLayout.ConversionPattern = "%date %-5level %filename: %line - %message%newline";
+            PatternLayout patternLayout = new PatternLayout()
+            {
+                ConversionPattern = "%date %-5level %filename: %line - %message%newline"
+            };
+
             patternLayout.AddConverter("filename", typeof(FileNamePatternConverter));
             patternLayout.ActivateOptions();
 
-            RollingFileAppender roller = new RollingFileAppender();
-            roller.AppendToFile = false;
-            roller.File = @"C:\\sw2urdf_logs\\sw2urdf.log";
-            roller.Layout = patternLayout;
-            roller.MaxSizeRollBackups = 5;
-            roller.MaximumFileSize = "10MB";
-            roller.RollingStyle = RollingFileAppender.RollingMode.Size;
-            roller.StaticLogFileName = true;
+            RollingFileAppender roller = new RollingFileAppender
+            {
+                AppendToFile = false,
+                File = @"C:\\sw2urdf_logs\\sw2urdf.log",
+                Layout = patternLayout,
+                MaxSizeRollBackups = 5,
+                MaximumFileSize = "10MB",
+                RollingStyle = RollingFileAppender.RollingMode.Size,
+                StaticLogFileName = true
+            };
+
             roller.ActivateOptions();
             hierarchy.Root.AddAppender(roller);
 

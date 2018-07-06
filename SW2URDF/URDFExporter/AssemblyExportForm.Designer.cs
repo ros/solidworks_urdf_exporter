@@ -199,7 +199,7 @@
             this.button_links_export_urdf_only.TabIndex = 94;
             this.button_links_export_urdf_only.Text = "Export URDF Only...";
             this.button_links_export_urdf_only.UseVisualStyleBackColor = true;
-            this.button_links_export_urdf_only.Click += new System.EventHandler(this.button_links_export_urdf_only_Click);
+            this.button_links_export_urdf_only.Click += new System.EventHandler(this.ButtonLinksExportUrdfOnlyClick);
             // 
             // label2
             // 
@@ -232,7 +232,7 @@
             this.button_links_finish.TabIndex = 91;
             this.button_links_finish.Text = "Export All...";
             this.button_links_finish.UseVisualStyleBackColor = true;
-            this.button_links_finish.Click += new System.EventHandler(this.button_links_finish_Click);
+            this.button_links_finish.Click += new System.EventHandler(this.ButtonLinksFinishClick);
             // 
             // button_links_previous
             // 
@@ -244,7 +244,7 @@
             this.button_links_previous.TabIndex = 90;
             this.button_links_previous.Text = "Previous";
             this.button_links_previous.UseVisualStyleBackColor = true;
-            this.button_links_previous.Click += new System.EventHandler(this.button_links_previous_Click);
+            this.button_links_previous.Click += new System.EventHandler(this.Button_Links_Previous_Click);
             // 
             // button_links_cancel
             // 
@@ -256,7 +256,7 @@
             this.button_links_cancel.TabIndex = 89;
             this.button_links_cancel.Text = "Cancel";
             this.button_links_cancel.UseVisualStyleBackColor = true;
-            this.button_links_cancel.Click += new System.EventHandler(this.button_links_cancel_Click);
+            this.button_links_cancel.Click += new System.EventHandler(this.Button_Links_Cancel_Click);
             // 
             // groupBox5
             // 
@@ -692,7 +692,7 @@
             this.button_texturebrowse.TabIndex = 59;
             this.button_texturebrowse.Text = "Browse...";
             this.button_texturebrowse.UseVisualStyleBackColor = true;
-            this.button_texturebrowse.Click += new System.EventHandler(this.button_texturebrowse_Click);
+            this.button_texturebrowse.Click += new System.EventHandler(this.ButtonTextureBrowseClick);
             // 
             // label28
             // 
@@ -728,7 +728,6 @@
             this.comboBox_materials.Name = "comboBox_materials";
             this.comboBox_materials.Size = new System.Drawing.Size(180, 28);
             this.comboBox_materials.TabIndex = 48;
-            this.comboBox_materials.SelectedIndexChanged += new System.EventHandler(this.comboBox_materials_SelectedIndexChanged);
             // 
             // label26
             // 
@@ -913,7 +912,7 @@
             this.treeView_linkProperties.Name = "treeView_linkProperties";
             this.treeView_linkProperties.Size = new System.Drawing.Size(698, 872);
             this.treeView_linkProperties.TabIndex = 74;
-            this.treeView_linkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_linkProperties_AfterSelect);
+            this.treeView_linkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewLinkPropertiesAfterSelect);
             // 
             // button_joint_next
             // 
@@ -925,7 +924,7 @@
             this.button_joint_next.TabIndex = 162;
             this.button_joint_next.Text = "Next";
             this.button_joint_next.UseVisualStyleBackColor = true;
-            this.button_joint_next.Click += new System.EventHandler(this.button_joint_next_Click);
+            this.button_joint_next.Click += new System.EventHandler(this.ButtonJointNextClick);
             // 
             // button_joint_cancel
             // 
@@ -937,7 +936,7 @@
             this.button_joint_cancel.TabIndex = 160;
             this.button_joint_cancel.Text = "Cancel";
             this.button_joint_cancel.UseVisualStyleBackColor = true;
-            this.button_joint_cancel.Click += new System.EventHandler(this.button_joint_cancel_Click);
+            this.button_joint_cancel.Click += new System.EventHandler(this.Button_Joint_Cancel_Click);
             // 
             // label7
             // 
@@ -1507,7 +1506,7 @@
             this.treeView_jointtree.Name = "treeView_jointtree";
             this.treeView_jointtree.Size = new System.Drawing.Size(690, 872);
             this.treeView_jointtree.TabIndex = 163;
-            this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView_jointtree_AfterSelect);
+            this.treeView_jointtree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewJointtreeAfterSelect);
             // 
             // comboBox_axis
             // 
@@ -1518,7 +1517,7 @@
             this.comboBox_axis.Name = "comboBox_axis";
             this.comboBox_axis.Size = new System.Drawing.Size(700, 28);
             this.comboBox_axis.TabIndex = 224;
-            this.comboBox_axis.SelectedIndexChanged += new System.EventHandler(this.comboBox_axis_SelectedIndexChanged);
+            this.comboBox_axis.SelectedIndexChanged += new System.EventHandler(this.ComboBoxAxisSelectedIndexChanged);
             // 
             // comboBox_origin
             // 
@@ -1648,7 +1647,7 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
-            this.Load += new System.EventHandler(this.AssemblyExportForm_Load);
+            this.Load += new System.EventHandler(this.AssemblyExportFormLoad);
             this.panel_link_properties.ResumeLayout(false);
             this.panel_link_properties.PerformLayout();
             this.groupBox5.ResumeLayout(false);

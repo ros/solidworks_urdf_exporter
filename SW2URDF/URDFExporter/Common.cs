@@ -35,7 +35,7 @@ namespace SW2URDF
     public static class Common
     {
         //Selects the components of a link. Helps highlight when the associated node is selected from the tree
-        public static void selectComponents(ModelDoc2 model, link Link, bool clearSelection, int mark = -1)
+        public static void selectComponents(ModelDoc2 model, Link Link, bool clearSelection, int mark = -1)
         {
             if (clearSelection)
             {
@@ -52,7 +52,7 @@ namespace SW2URDF
             {
                 selectComponents(model, Link.SWcomponents, false);
             }
-            foreach (link child in Link.Children)
+            foreach (Link child in Link.Children)
             {
                 selectComponents(model, child, false, mark);
             }
@@ -132,7 +132,7 @@ namespace SW2URDF
         }
 
         //Shows the components in the link
-        public static void showComponents(ModelDoc2 model, link Link)
+        public static void showComponents(ModelDoc2 model, Link Link)
         {
             selectComponents(model, Link, true);
             model.ShowComponent2();
@@ -140,7 +140,7 @@ namespace SW2URDF
         }
 
         //Hides the components from a link
-        public static void hideComponents(ModelDoc2 model, link Link)
+        public static void hideComponents(ModelDoc2 model, Link Link)
         {
             selectComponents(model, Link, true);
             model.HideComponent2();
@@ -153,10 +153,10 @@ namespace SW2URDF
             model.HideComponent2();
         }
 
-        public static int getCount(link Link)
+        public static int getCount(Link Link)
         {
             int count = 1;
-            foreach (link child in Link.Children)
+            foreach (Link child in Link.Children)
             {
                 count += getCount(child);
             }
@@ -211,7 +211,7 @@ namespace SW2URDF
 
 
         //Converts the SW component references to PIDs
-        public static void saveSWComponents(ModelDoc2 model, link Link)
+        public static void saveSWComponents(ModelDoc2 model, Link Link)
         {
             model.ClearSelection2(true);
             byte[] PID = saveSWComponent(model, Link.SWMainComponent);
@@ -221,7 +221,7 @@ namespace SW2URDF
             }
             Link.SWComponentPIDs = saveSWComponents(model, Link.SWcomponents);
 
-            foreach (link Child in Link.Children)
+            foreach (Link Child in Link.Children)
             {
                 saveSWComponents(model, Child);
             }
@@ -253,11 +253,11 @@ namespace SW2URDF
 
 
         // Converts the PIDs to actual references to the components and proceeds recursively through the child links
-        public static void loadSWComponents(ModelDoc2 model, link Link)
+        public static void loadSWComponents(ModelDoc2 model, Link Link)
         {
             Link.SWMainComponent = loadSWComponent(model, Link.SWMainComponentPID);
             Link.SWcomponents = loadSWComponents(model, Link.SWComponentPIDs);
-            foreach (link Child in Link.Children)
+            foreach (Link Child in Link.Children)
             {
                 loadSWComponents(model, Child);
             }

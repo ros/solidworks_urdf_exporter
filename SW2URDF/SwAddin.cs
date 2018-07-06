@@ -177,18 +177,18 @@ namespace SW2URDF
         #region ISwAddin Implementation
         public SwAddin()
         {
-            Application.ThreadException += new ThreadExceptionEventHandler(this.exceptionHandler);
+            Application.ThreadException += new ThreadExceptionEventHandler(this.ExceptionHandler);
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.unhandledException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.UnhandledException);
             Logger.Setup();
         }
 
-        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
             logger.Warn("Exception encountered in Assembly export form", e.Exception);
         }
 
-        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
@@ -302,7 +302,7 @@ namespace SW2URDF
         {
             URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
             logger.Info("Loading config tree");
-            pm.loadConfigTree();
+            pm.LoadConfigTree();
             logger.Info("Showing property manager");
             pm.Show();
         }
@@ -329,7 +329,7 @@ namespace SW2URDF
             }
         }
 
-        public void partURDFExporter()
+        public void PartURDFExporter()
         {
             try
             {

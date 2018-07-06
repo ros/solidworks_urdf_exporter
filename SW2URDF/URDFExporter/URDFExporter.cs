@@ -70,16 +70,16 @@ namespace SW2URDF
         [XmlIgnore]
         public MathUtility swMath;
         [XmlIgnore]
-        public Object swMathPID
+        public Object SWMathPID
         { get; set; }
 
-        public robot mRobot
+        public Robot URDFRobot
         { get; set; }
-        public string mPackageName
+        public string PackageName
         { get; set; }
-        public string mSavePath
+        public string SavePath
         { get; set; }
-        public List<link> mLinks
+        public List<Link> Links
         { get; set; }
 
         #endregion
@@ -87,14 +87,14 @@ namespace SW2URDF
         // Constructor for SW2URDF Exporter class
         public URDFExporter(ISldWorks iSldWorksApp)
         {
-            constructExporter(iSldWorksApp);
+            ConstructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
-            mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
-            mPackageName = ActiveSWModel.GetTitle();
+            SavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            PackageName = ActiveSWModel.GetTitle();
             
         }
 
-        private void constructExporter(ISldWorks iSldWorksApp)
+        private void ConstructExporter(ISldWorks iSldWorksApp)
         {
             iSwApp = iSldWorksApp;
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
@@ -104,19 +104,19 @@ namespace SW2URDF
         #region Export Methods
 
         // Beginning method for exporting the full package
-        public void exportRobot(bool exportSTL = true)
+        public void ExportRobot(bool exportSTL = true)
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
-            int progressBarBound = Common.getCount(mRobot.BaseLink);
+            int progressBarBound = Common.getCount(URDFRobot.BaseLink);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
-            logger.Info("Creating package directories with name " + mPackageName + " and save path " + mSavePath);
-            URDFPackage package = new URDFPackage(mPackageName, mSavePath);
+            logger.Info("Creating package directories with name " + PackageName + " and save path " + SavePath);
+            URDFPackage package = new URDFPackage(PackageName, SavePath);
             package.createDirectories();
-            mRobot.name = mPackageName;
-            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".urdf";
+            URDFRobot.Name = PackageName;
+            string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
@@ -125,31 +125,31 @@ namespace SW2URDF
 
             //Create Config joint names, not sure how this is used...
             logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
-            package.createConfigYAML(mRobot.getJointNames(false));
+            package.CreateConfigYAML(URDFRobot.GetJointNames(false));
 
             //Creating package.xml file
             logger.Info("Creating package.xml at " + windowsPackageXMLFileName);
             PackageXMLWriter packageXMLWriter = new PackageXMLWriter(windowsPackageXMLFileName);
-            PackageXML packageXML = new PackageXML(mPackageName);
-            packageXML.writeElement(packageXMLWriter);
+            PackageXML packageXML = new PackageXML(PackageName);
+            packageXML.WriteElement(packageXMLWriter);
 
             //Creating RVIZ launch file
-            Rviz rviz = new Rviz(mPackageName, mRobot.name + ".urdf");
+            Rviz rviz = new Rviz(PackageName, URDFRobot.Name + ".urdf");
             logger.Info("Creating RVIZ launch file in " + package.WindowsLaunchDirectory);
-            rviz.writeFiles(package.WindowsLaunchDirectory);
+            rviz.WriteFiles(package.WindowsLaunchDirectory);
 
             //Creating Gazebo launch file
-            Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, mRobot.name + ".urdf");
+            Gazebo gazebo = new Gazebo(this.URDFRobot.Name, this.PackageName, URDFRobot.Name + ".urdf");
             logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
-            gazebo.writeFile(package.WindowsLaunchDirectory);
+            gazebo.WriteFile(package.WindowsLaunchDirectory);
 
 
             //Customizing STL preferences to how I want them
             logger.Info("Saving existing STL preferences");
-            saveUserPreferences();
+            SaveUserPreferences();
 
             logger.Info("Modifying STL preferences");
-            setSTLExportPreferences();
+            SetSTLExportPreferences();
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
@@ -159,11 +159,11 @@ namespace SW2URDF
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
 
-            string filename = exportFiles(mRobot.BaseLink, package, 0, exportSTL);
+            string filename = ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL);
 
             logger.Info("Beginning individual files export");
-            mRobot.BaseLink.Visual.Geometry.Mesh.filename = filename;
-            mRobot.BaseLink.Collision.Geometry.Mesh.filename = filename;
+            URDFRobot.BaseLink.Visual.Geometry.Mesh.Filename = filename;
+            URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = filename;
 
             logger.Info("Showing all components except previously hidden components");
             Common.showAllComponents(ActiveSWModel, hiddenComponents);
@@ -171,32 +171,32 @@ namespace SW2URDF
 
             logger.Info("Writing URDF file to " + windowsURDFFileName);
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
-            mRobot.writeURDF(uWriter.writer);
+            URDFRobot.WriteURDF(uWriter.writer);
 
             logger.Info("Copying log file");
-            copyLogFile(package);
+            CopyLogFile(package);
 
             logger.Info("Resetting STL preferences");
-            resetUserPreferences();
+            ResetUserPreferences();
             progressBar.End();
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string exportFiles(link Link, URDFPackage package, int count, bool exportSTL = true)
+        public string ExportFiles(Link Link, URDFPackage package, int count, bool exportSTL = true)
         {
             progressBar.UpdateProgress(count);
-            progressBar.UpdateTitle("Exporting mesh: " + Link.name);
-            logger.Info("Exporting link: " + Link.name);
+            progressBar.UpdateTitle("Exporting mesh: " + Link.Name);
+            logger.Info("Exporting link: " + Link.Name);
             // Iterate through each child and export its files
-            logger.Info("Link " + Link.name + " has " + Link.Children.Count + " children");
-            foreach (link child in Link.Children)
+            logger.Info("Link " + Link.Name + " has " + Link.Children.Count + " children");
+            foreach (Link child in Link.Children)
             {
                 count += 1;
                 if (!child.isFixedFrame)
                 {
-                    string filename = exportFiles(child, package, count, exportSTL);
-                    child.Visual.Geometry.Mesh.filename = filename;
-                    child.Collision.Geometry.Mesh.filename = filename;
+                    string filename = ExportFiles(child, package, count, exportSTL);
+                    child.Visual.Geometry.Mesh.Filename = filename;
+                    child.Collision.Geometry.Mesh.Filename = filename;
                 }
             }
             
@@ -205,7 +205,7 @@ namespace SW2URDF
             {
                 if (System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
                 {
-                    Link.Visual.Material.Texture.filename = 
+                    Link.Visual.Material.Texture.Filename = 
                         package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
                     string textureSavePath = 
                         package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
@@ -214,19 +214,19 @@ namespace SW2URDF
             }
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
-            string linkName = Link.name.Replace('/', '_');
+            string linkName = Link.Name.Replace('/', '_');
             string meshFileName = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
             // Export STL
             if (exportSTL)
             {
-                saveSTL(Link, windowsMeshFileName);
+                SaveSTL(Link, windowsMeshFileName);
             }
 
             return meshFileName;
         }
 
-        private void saveSTL(link Link, string windowsMeshFileName)
+        private void SaveSTL(Link Link, string windowsMeshFileName)
         {
             int errors = 0;
             int warnings = 0;
@@ -235,7 +235,7 @@ namespace SW2URDF
             coordsysName =
                 (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
                 ? Link.CoordSysName : Link.Joint.CoordinateSystemName;
-            logger.Info(Link.name + ": Exporting STL with coordinate frame " + coordsysName);
+            logger.Info(Link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
             ModelDoc2 ActiveDoc = ActiveSWModel;
@@ -244,7 +244,7 @@ namespace SW2URDF
             string ConfigurationName = "";
             string DisplayStateName = "";
             Component2 geoComponent = default(Component2);
-            logger.Info(Link.name + ": Reference geometry name " + names["component"]);
+            logger.Info(Link.Name + ": Reference geometry name " + names["component"]);
             if (names["component"].Length > 0)
             {
                 foreach (Component2 comp in Link.SWcomponents)
@@ -272,7 +272,7 @@ namespace SW2URDF
             }
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-            setLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
+            SetLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFileName);
             ActiveDoc.Extension.SaveAs(windowsMeshFileName, 
@@ -288,38 +288,38 @@ namespace SW2URDF
             }
 
 
-            correctSTLMesh(windowsMeshFileName);
+            CorrectSTLMesh(windowsMeshFileName);
         }
 
         
         // Used only by the part exporter
-        public void exportLink(bool zIsUp)
+        public void ExportLink(bool zIsUp)
         {
             
-            createBaseRefOrigin(zIsUp);
+            CreateBaseRefOrigin(zIsUp);
             MathTransform coordSysTransform = 
                 ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
-            Matrix<double> GlobalTransform = ops.getTransformation(coordSysTransform);
+            Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
 
-            localizeLink(mRobot.BaseLink, GlobalTransform);
+            LocalizeLink(URDFRobot.BaseLink, GlobalTransform);
 
             //Creating package directories
-            URDFPackage package = new URDFPackage(mPackageName, mSavePath);
+            URDFPackage package = new URDFPackage(PackageName, SavePath);
             package.createDirectories();
-            string meshFileName = package.MeshesDirectory + mRobot.BaseLink.name + ".STL";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + mRobot.BaseLink.name + ".STL";
-            string windowsURDFFileName = package.WindowsRobotsDirectory + mRobot.name + ".urdf";
+            string meshFileName = package.MeshesDirectory + URDFRobot.BaseLink.Name + ".STL";
+            string windowsMeshFileName = package.WindowsMeshesDirectory + URDFRobot.BaseLink.Name + ".STL";
+            string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
             string windowsManifestFileName = package.WindowsPackageDirectory + "manifest.xml";
 
             //Creating manifest file
             PackageXMLWriter manifestWriter = new PackageXMLWriter(windowsManifestFileName);
-            PackageXML Manifest = new PackageXML(mRobot.name);
-            Manifest.writeElement(manifestWriter);
+            PackageXML Manifest = new PackageXML(URDFRobot.Name);
+            Manifest.WriteElement(manifestWriter);
 
             //Customizing STL preferences to how I want them
-            saveUserPreferences();
-            setSTLExportPreferences();
-            setLinkSpecificSTLPreferences("", mRobot.BaseLink.STLQualityFine, ActiveSWModel);
+            SaveUserPreferences();
+            SetSTLExportPreferences();
+            SetLinkSpecificSTLPreferences("", URDFRobot.BaseLink.STLQualityFine, ActiveSWModel);
             int errors = 0;
             int warnings = 0;
 
@@ -327,30 +327,30 @@ namespace SW2URDF
 
             ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, 
                 (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
-            mRobot.BaseLink.Visual.Geometry.Mesh.filename = meshFileName;
-            mRobot.BaseLink.Collision.Geometry.Mesh.filename = meshFileName;
+            URDFRobot.BaseLink.Visual.Geometry.Mesh.Filename = meshFileName;
+            URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = meshFileName;
 
-            correctSTLMesh(windowsMeshFileName);
+            CorrectSTLMesh(windowsMeshFileName);
 
-            mRobot.BaseLink.Visual.Material.Texture.filename = 
-                package.TexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
+            URDFRobot.BaseLink.Visual.Material.Texture.Filename = 
+                package.TexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);
             string textureSavePath = 
-                package.WindowsTexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
-            if (mRobot.BaseLink.Visual.Material.Texture.wFilename != "")
+                package.WindowsTexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);
+            if (URDFRobot.BaseLink.Visual.Material.Texture.wFilename != "")
             {
-                System.IO.File.Copy(mRobot.BaseLink.Visual.Material.Texture.wFilename, textureSavePath, true);
+                System.IO.File.Copy(URDFRobot.BaseLink.Visual.Material.Texture.wFilename, textureSavePath, true);
             }
 
             //Writing URDF to file
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             //mRobot.addLink(mLink);
-            mRobot.writeURDF(uWriter.writer);
+            URDFRobot.WriteURDF(uWriter.writer);
 
-            resetUserPreferences();
+            ResetUserPreferences();
         }
 
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
-        public void correctSTLMesh(string filename)
+        public void CorrectSTLMesh(string filename)
         {
             logger.Info("Removing SW header in STL file");
             FileStream fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -360,7 +360,7 @@ namespace SW2URDF
         }
         #endregion
 
-        private void copyLogFile(URDFPackage package)
+        private void CopyLogFile(URDFPackage package)
         {
             string destination = package.WindowsPackageDirectory + "export.log";
             string log_filename = Logger.GetFileName();
@@ -383,7 +383,7 @@ namespace SW2URDF
         #region STL Preference shuffling
 
         //Saves the preferences that the user had setup so that I can change them and revert back to their configuration
-        public void saveUserPreferences()
+        public void SaveUserPreferences()
         {
             logger.Info("Saving users preferences");
             mBinary = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat);
@@ -397,7 +397,7 @@ namespace SW2URDF
         }
 
         //This is how the STL export preferences need to be to properly export
-        public void setSTLExportPreferences()
+        public void SetSTLExportPreferences()
         {
             logger.Info("Setting STL preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, true);
@@ -411,7 +411,7 @@ namespace SW2URDF
         }
 
         //This resets the user preferences back to what they were.
-        public void resetUserPreferences()
+        public void ResetUserPreferences()
         {
             logger.Info("Returning STL preferences to user preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, mBinary);
@@ -425,7 +425,7 @@ namespace SW2URDF
         }
 
         //If the user selected something specific for a particular link, that is handled here.
-        public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
+        public void SetLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
         {
             doc.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, 
                 (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);

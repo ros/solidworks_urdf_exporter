@@ -26,13 +26,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using SolidWorks.Interop.sldworks;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
@@ -57,7 +57,7 @@ namespace SW2URDF
     {
         protected static readonly log4net.ILog logger = Logger.GetLogger();
         public URDFElement() { }
-        public void writeURDF(XmlWriter writer)
+        public void WriteURDF(XmlWriter writer)
         {
         }
 
@@ -66,7 +66,7 @@ namespace SW2URDF
 
     public class Attribute
     {
-        string USStringFormat = "en-US";
+        private readonly string USStringFormat = "en-US";
         public bool isRequired;
         public string type;
         public object value;
@@ -76,7 +76,7 @@ namespace SW2URDF
             type = "";
             isRequired = false;
         }
-        public void writeURDF(XmlWriter writer)
+        public void WriteURDF(XmlWriter writer)
         {
             string value_string = "";
             if (value.GetType() == typeof(double[]))
@@ -118,72 +118,72 @@ namespace SW2URDF
     }
 
     //The base URDF element, a robot
-    public class robot : URDFElement
+    public class Robot : URDFElement
     {
-        public link BaseLink;
-        private Attribute Name;
-        public string name
+        public Link BaseLink;
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
 
 
-        public robot()
+        public Robot()
         {
-            BaseLink = new link(null);
+            BaseLink = new Link(null);
             isRequired = true;
-            Name = new Attribute();
-            Name.isRequired = true;
-            Name.type = "name";
+            NameAttribute = new Attribute();
+            NameAttribute.isRequired = true;
+            NameAttribute.type = "name";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartDocument();
             writer.WriteStartElement("robot");
-            Name.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
 
-            BaseLink.writeURDF(writer);
+            BaseLink.WriteURDF(writer);
 
             writer.WriteEndElement();
             writer.WriteEndDocument();
             writer.Close();
         }
 
-        internal string[] getJointNames(bool includeFixed)
+        internal string[] GetJointNames(bool includeFixed)
         {
-            return this.BaseLink.getJointNames(includeFixed);
+            return this.BaseLink.GetJointNames(includeFixed);
         }
     }
 
     //The link class, it contains many other elements not found in the URDF.
-    public class link : URDFElement
+    public class Link : URDFElement
     {
-        public link Parent;
-        public List<link> Children;
-        private Attribute Name;
-        public string name
+        public Link Parent;
+        public List<Link> Children;
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
 
-        public inertial Inertial;
-        public visual Visual;
-        public collision Collision;
-        public joint Joint;
+        public Inertial Inertial;
+        public Visual Visual;
+        public Collision Collision;
+        public Joint Joint;
         public bool STLQualityFine;
         public bool isIncomplete;
         public bool isFixedFrame;
@@ -196,57 +196,57 @@ namespace SW2URDF
         public List<byte[]> SWComponentPIDs;
         public byte[] SWMainComponentPID;
 
-        public link(link parent)
+        public Link(Link parent)
         {
             Parent = parent;
-            Children = new List<link>();
+            Children = new List<Link>();
             SWcomponents = new List<Component2>();
-            Name = new Attribute();
-            Name.isRequired = true;
-            Name.type = "name";
+            NameAttribute = new Attribute();
+            NameAttribute.isRequired = true;
+            NameAttribute.type = "name";
             isRequired = true;
             isFixedFrame = true;
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("link");
-            Name.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
 
             if (Inertial != null)
             {
-                Inertial.writeURDF(writer);
+                Inertial.WriteURDF(writer);
             }
             if (Visual != null)
             {
-                Visual.writeURDF(writer);
+                Visual.WriteURDF(writer);
             }
             if (Collision != null)
             {
-                Collision.writeURDF(writer);
+                Collision.WriteURDF(writer);
             }
 
             writer.WriteEndElement();
-            if (Joint != null && Joint.name != null)
+            if (Joint != null && Joint.Name != null)
             {
-                Joint.writeURDF(writer);
+                Joint.WriteURDF(writer);
             }
 
-            foreach (link child in Children)
+            foreach (Link child in Children)
             {
-                child.writeURDF(writer);
+                child.WriteURDF(writer);
             }
         }
 
-        public String[] getJointNames(bool includeFixed)
+        public String[] GetJointNames(bool includeFixed)
         {
             List<String> names = new List<string>();
 
-            if (Joint != null && (includeFixed || Joint.type != "fixed")) {
-                names.Add(Joint.name);
+            if (Joint != null && (includeFixed || Joint.Type != "fixed")) {
+                names.Add(Joint.Name);
             }
-            foreach (link child in Children)
+            foreach (Link child in Children)
             {
-                names.AddRange(child.getJointNames(includeFixed));
+                names.AddRange(child.GetJointNames(includeFixed));
             }
 
             return names.ToArray();
@@ -278,23 +278,23 @@ namespace SW2URDF
             Nodes = new List<SerialNode>();
             if (node.Link == null)
             {
-                linkName = node.linkName;
-                jointName = node.jointName;
-                axisName = node.axisName;
-                coordsysName = node.coordsysName;
+                linkName = node.LinkName;
+                jointName = node.JointName;
+                axisName = node.AxisName;
+                coordsysName = node.CoordsysName;
                 componentPIDs = node.ComponentPIDs;
-                jointType = node.jointType;
-                isBaseNode = node.isBaseNode;
-                isIncomplete = node.isIncomplete;
+                jointType = node.JointType;
+                isBaseNode = node.IsBaseNode;
+                isIncomplete = node.IsIncomplete;
             }
             else
             {
-                linkName = (string)node.Link.name;
+                linkName = (string)node.Link.Name;
                 
                 componentPIDs = node.ComponentPIDs;
                 if (node.Link.Joint != null)
                 {
-                    jointName = (string)node.Link.Joint.name;
+                    jointName = (string)node.Link.Joint.Name;
 
                     if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
                     {
@@ -305,15 +305,15 @@ namespace SW2URDF
                         axisName = node.Link.Joint.AxisName;
                     }
                     coordsysName = node.Link.Joint.CoordinateSystemName;
-                    jointType = (string)node.Link.Joint.type;
+                    jointType = (string)node.Link.Joint.Type;
                 }
                 else
                 {
-                    coordsysName = node.coordsysName;
+                    coordsysName = node.CoordsysName;
                 }
 
-                isBaseNode = node.isBaseNode;
-                isIncomplete = node.isIncomplete;
+                isBaseNode = node.IsBaseNode;
+                isIncomplete = node.IsIncomplete;
             }
             //Proceed recursively through the nodes
             foreach (LinkNode child in node.Nodes)
@@ -325,145 +325,145 @@ namespace SW2URDF
 
 
     //The inertial element of a link
-    public class inertial : URDFElement
+    public class Inertial : URDFElement
     {
-        public origin Origin;
-        public mass Mass;
-        public inertia Inertia;
+        public Origin Origin;
+        public Mass Mass;
+        public Inertia Inertia;
 
-        public inertial()
+        public Inertial()
         {
-            Origin = new origin();
-            Mass = new mass();
-            Inertia = new inertia();
+            Origin = new Origin();
+            Mass = new Mass();
+            Inertia = new Inertia();
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("inertial");
 
-            Origin.writeURDF(writer);
-            Mass.writeURDF(writer);
-            Inertia.writeURDF(writer);
+            Origin.WriteURDF(writer);
+            Mass.WriteURDF(writer);
+            Inertia.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
     }
 
     //The Origin element, used in several other elements
-    public class origin : URDFElement
+    public class Origin : URDFElement
     {
-        private Attribute XYZ;
-        private Attribute RPY;
+        private Attribute XYZAttribute;
+        private Attribute RPYAttribute;
         
-        public double[] xyz
+        public double[] XYZ
         {
             get
             {
-                return (double[])XYZ.value;
+                return (double[])XYZAttribute.value;
             }
             set
             {
-                XYZ.value = value;
+                XYZAttribute.value = value;
             }
         }
         public double X
         {
             get
             {
-                return xyz[0];
+                return XYZ[0];
             }
             set
             {
-                xyz[0] = value;
+                XYZ[0] = value;
             }
         }
         public double Y
         {
             get
             {
-                return xyz[1];
+                return XYZ[1];
             }
             set
             {
-                xyz[1] = value;
+                XYZ[1] = value;
             }
         }
         public double Z
         {
             get
             {
-                return xyz[2];
+                return XYZ[2];
             }
             set
             {
-                xyz[2] = value;
+                XYZ[2] = value;
             }
         }
 
-        public double[] rpy
+        public double[] RPY
         {
             get
             {
-                return (double[])RPY.value;
+                return (double[])RPYAttribute.value;
             }
             set
             {
-                RPY.value = value;
+                RPYAttribute.value = value;
             }
         }
         public double Roll
         {
             get
             {
-                return rpy[0];
+                return RPY[0];
             }
             set
             {
-                rpy[0] = value;
+                RPY[0] = value;
             }
         }
         public double Pitch
         {
             get
             {
-                return rpy[1];
+                return RPY[1];
             }
             set
             {
-                rpy[1] = value;
+                RPY[1] = value;
             }
         }
         public double Yaw
         {
             get
             {
-                return rpy[2];
+                return RPY[2];
             }
             set
             {
-                rpy[2] = value;
+                RPY[2] = value;
             }
         }
 
         public bool isCustomized;
-        public origin()
+        public Origin()
         {
             isCustomized = false;
-            XYZ = new Attribute();
-            RPY = new Attribute();
-            XYZ.type = "xyz";
-            RPY.type = "rpy";            
+            XYZAttribute = new Attribute();
+            RPYAttribute = new Attribute();
+            XYZAttribute.type = "xyz";
+            RPYAttribute.type = "rpy";            
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("origin");
-            XYZ.writeURDF(writer);
-            RPY.writeURDF(writer);
+            XYZAttribute.WriteURDF(writer);
+            RPYAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
-        public void fillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw, string format)
+        public void FillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw, string format)
         {
-            if (XYZ.value != null)
+            if (XYZAttribute.value != null)
             {
                 box_x.Text = X.ToString(format);
                 box_y.Text = Y.ToString(format);
@@ -474,7 +474,7 @@ namespace SW2URDF
                 box_x.Text = ""; box_y.Text = ""; box_z.Text = "";
             }
 
-            if (RPY.value != null)
+            if (RPYAttribute.value != null)
             {
                 box_roll.Text = Roll.ToString(format);
                 box_pitch.Text = Pitch.ToString(format);
@@ -486,12 +486,12 @@ namespace SW2URDF
             }
         }
 
-        public void update(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw)
+        public void Update(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw)
         {
             double value;
             if (box_x.Text == "" && box_y.Text == "" && box_z.Text == "")
             {
-                xyz = null;
+                XYZ = null;
             }
             else
             {
@@ -502,7 +502,7 @@ namespace SW2URDF
 
             if (box_roll.Text == "" && box_pitch.Text == "" && box_yaw.Text == "")
             {
-                rpy = null;
+                RPY = null;
             }
             else
             {
@@ -515,512 +515,402 @@ namespace SW2URDF
     }
 
     //mass element, belongs to the inertial element
-    public class mass : URDFElement
+    public class Mass : URDFElement
     {
-        private Attribute Value;
-        public double value
+        private Attribute ValueAttribute;
+        public double Value
         {
             get
             {
-                return (double)Value.value;
+                return (double)ValueAttribute.value;
             }
             set
             {
-                Value.value = value;
+                ValueAttribute.value = value;
             }
         }
-        public mass()
+        public Mass()
         {
-            Value = new Attribute();
-            Value.type = "value";
-            Value.isRequired = true;
-            value = 0.0;
+            ValueAttribute = new Attribute();
+            ValueAttribute.type = "value";
+            ValueAttribute.isRequired = true;
+            Value = 0.0;
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("mass");
-            Value.writeURDF(writer);
+            ValueAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
-        public void fillBoxes(TextBox box, string format)
+        public void FillBoxes(TextBox box, string format)
         {
-            if (Value != null)
+            if (ValueAttribute != null)
             {
-                box.Text = value.ToString(format);
+                box.Text = Value.ToString(format);
             }
             else
             {
                 box.Text = "0";
             }
         }
-        public void update(TextBox box)
+        public void Update(TextBox box)
         {
-            double tmp;
-            value = (Double.TryParse(box.Text, out tmp)) ? tmp : 0;
+            Value = (Double.TryParse(box.Text, out double tmp)) ? tmp : 0;
         }
     }
 
     //Inertia element, which means moment of inertia. In the inertial element
-    public class inertia : URDFElement
+    public class Inertia : URDFElement
     {
-        private Attribute Ixx;
-        public double ixx
-        {
-            get
-            {
-                return (double)Ixx.value;
-            }
-            set
-            {
-                Ixx.value = value;
-            }
-        }
-        private Attribute Ixy;
-        public double ixy
-        {
-            get
-            {
-                return (double)Ixy.value;
-            }
-            set
-            {
-                Ixy.value = value;
-            }
-        }
-        private Attribute Ixz;
-        public double ixz
-        {
-            get
-            {
-                return (double)Ixz.value;
-            }
-            set
-            {
-                Ixz.value = value;
-            }
-        }
-        private Attribute Iyy;
-        public double iyy
-        {
-            get
-            {
-                return (double)Iyy.value;
-            }
-            set
-            {
-                Iyy.value = value;
-            }
-        }
-        private Attribute Iyz;
-        public double iyz
-        {
-            get
-            {
-                return (double)Iyz.value;
-            }
-            set
-            {
-                Iyz.value = value;
-            }
-        }
-        private Attribute Izz;
-        public double izz
-        {
-            get
-            {
-                return (double)Izz.value;
-            }
-            set
-            {
-                Izz.value = value;
-            }
-        }
-
-        private double[] moment;
-
-        public double[] Moment
-        {
-            get
-            {
-                return moment;
-            }
-        }
-
-        /*
+        private Attribute IxxAttribute;
         public double Ixx
         {
             get
             {
-                return moment[0];
+                return (double)IxxAttribute.value;
             }
             set
             {
-                moment[0] = value;
+                IxxAttribute.value = value;
             }
         }
+        private Attribute IxyAttribute;
         public double Ixy
         {
             get
             {
-                return moment[1];
+                return (double)IxyAttribute.value;
             }
             set
             {
-                moment[1] = value;
+                IxyAttribute.value = value;
             }
         }
+        private Attribute IxzAttribute;
         public double Ixz
         {
             get
             {
-                return moment[2];
+                return (double)IxzAttribute.value;
             }
             set
             {
-                moment[2] = value;
+                IxzAttribute.value = value;
             }
         }
-        public double Iyx
-        {
-            get
-            {
-                return moment[3];
-            }
-            set
-            {
-                moment[3] = value;
-            }
-        }
+        private Attribute IyyAttribute;
         public double Iyy
         {
             get
             {
-                return moment[4];
+                return (double)IyyAttribute.value;
             }
             set
             {
-                moment[4] = value;
+                IyyAttribute.value = value;
             }
         }
+        private Attribute IyzAttribute;
         public double Iyz
         {
             get
             {
-                return moment[5];
+                return (double)IyzAttribute.value;
             }
             set
             {
-                moment[5] = value;
+                IyzAttribute.value = value;
             }
         }
-        public double Izx
-        {
-            get
-            {
-                return moment[6];
-            }
-            set
-            {
-                moment[6] = value;
-            }
-        }
-        public double Izy
-        {
-            get
-            {
-                return moment[7];
-            }
-            set
-            {
-                moment[7] = value;
-            }
-        }
+        private Attribute IzzAttribute;
         public double Izz
         {
             get
             {
-                return moment[8];
+                return (double)IzzAttribute.value;
             }
             set
             {
-                moment[8] = value;
+                IzzAttribute.value = value;
             }
         }
-        */
-        public inertia()
+
+        public double[] Moment { get; private set; }
+        
+        public Inertia()
         {
-            moment = new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            Ixx = new Attribute();
-            Ixy = new Attribute();
-            Ixz = new Attribute();
-            Iyy = new Attribute();
-            Iyz = new Attribute();
-            Izz = new Attribute();
+            Moment = new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            IxxAttribute = new Attribute();
+            IxyAttribute = new Attribute();
+            IxzAttribute = new Attribute();
+            IyyAttribute = new Attribute();
+            IyzAttribute = new Attribute();
+            IzzAttribute = new Attribute();
                 
-            Ixx.isRequired = true;
-            Ixx.type = "ixx";
-            ixx = 0.0;
-            Ixy.isRequired = true;
-            Ixy.type = "ixy";
-            ixy = 0.0;
-            Ixz.isRequired = true;
-            Ixz.type = "ixz";
-            ixz = 0.0;
-            Iyy.isRequired = true;
-            Iyy.type = "iyy";
-            iyy = 0.0;
-            Iyz.isRequired = true;
-            Iyz.type = "iyz";
-            iyz = 0.0;
-            Izz.isRequired = true;
-            Izz.type = "izz";
-            izz = 0.0;
+            IxxAttribute.isRequired = true;
+            IxxAttribute.type = "ixx";
+            Ixx = 0.0;
+            IxyAttribute.isRequired = true;
+            IxyAttribute.type = "ixy";
+            Ixy = 0.0;
+            IxzAttribute.isRequired = true;
+            IxzAttribute.type = "ixz";
+            Ixz = 0.0;
+            IyyAttribute.isRequired = true;
+            IyyAttribute.type = "iyy";
+            Iyy = 0.0;
+            IyzAttribute.isRequired = true;
+            IyzAttribute.type = "iyz";
+            Iyz = 0.0;
+            IzzAttribute.isRequired = true;
+            IzzAttribute.type = "izz";
+            Izz = 0.0;
         }
-        public void setMomentMatrix(double[] array)
+        public void SetMomentMatrix(double[] array)
         {
-            moment = array;
-            ixx = Moment[0];
-            ixy = -Moment[1];
-            ixz = -Moment[2];
-            iyy = Moment[4];
-            iyz = -Moment[5];
-            izz = Moment[8];
+            Moment = array;
+            Ixx = Moment[0];
+            Ixy = -Moment[1];
+            Ixz = -Moment[2];
+            Iyy = Moment[4];
+            Iyz = -Moment[5];
+            Izz = Moment[8];
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("inertia");
-            Ixx.writeURDF(writer);
-            Ixy.writeURDF(writer);
-            Ixz.writeURDF(writer);
-            Iyy.writeURDF(writer);
-            Iyz.writeURDF(writer);
-            Izz.writeURDF(writer);
+            IxxAttribute.WriteURDF(writer);
+            IxyAttribute.WriteURDF(writer);
+            IxzAttribute.WriteURDF(writer);
+            IyyAttribute.WriteURDF(writer);
+            IyzAttribute.WriteURDF(writer);
+            IzzAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz, string format)
+        public void FillBoxes(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz, string format)
         {
-            box_ixx.Text = ixx.ToString(format);
-            box_ixy.Text = ixy.ToString(format);
-            box_ixz.Text = ixz.ToString(format);
-            box_iyy.Text = iyy.ToString(format);
-            box_iyz.Text = iyz.ToString(format);
-            box_izz.Text = izz.ToString(format);
+            box_ixx.Text = Ixx.ToString(format);
+            box_ixy.Text = Ixy.ToString(format);
+            box_ixz.Text = Ixz.ToString(format);
+            box_iyy.Text = Iyy.ToString(format);
+            box_iyz.Text = Iyz.ToString(format);
+            box_izz.Text = Izz.ToString(format);
         }
 
-        public void update(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz)
+        public void Update(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz)
         {
-            double value;
-            ixx = (Double.TryParse(box_ixx.Text, out value)) ? value : 0;
-            ixy = (Double.TryParse(box_ixy.Text, out value)) ? value : 0;
-            ixz = (Double.TryParse(box_ixz.Text, out value)) ? value : 0;
-            iyy = (Double.TryParse(box_iyy.Text, out value)) ? value : 0;
-            iyz = (Double.TryParse(box_iyz.Text, out value)) ? value : 0;
-            izz = (Double.TryParse(box_izz.Text, out value)) ? value : 0;
+            double value = 0;
+            Ixx = (Double.TryParse(box_ixx.Text, out value)) ? value : 0;
+            Ixy = (Double.TryParse(box_ixy.Text, out value)) ? value : 0;
+            Ixz = (Double.TryParse(box_ixz.Text, out value)) ? value : 0;
+            Iyy = (Double.TryParse(box_iyy.Text, out value)) ? value : 0;
+            Iyz = (Double.TryParse(box_iyz.Text, out value)) ? value : 0;
+            Izz = (Double.TryParse(box_izz.Text, out value)) ? value : 0;
         }
     }
 
     //The visual element of a link
-    public class visual : URDFElement
+    public class Visual : URDFElement
     {
-        public origin Origin;
-        public geometry Geometry;
-        public material Material;
-        public visual()
+        public Origin Origin;
+        public Geometry Geometry;
+        public Material Material;
+        public Visual()
         {
-            Origin = new origin();
-            Geometry = new geometry();
-            Material = new material();
+            Origin = new Origin();
+            Geometry = new Geometry();
+            Material = new Material();
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("visual");
 
-            Origin.writeURDF(writer);
-            Geometry.writeURDF(writer);
-            Material.writeURDF(writer);
+            Origin.WriteURDF(writer);
+            Geometry.WriteURDF(writer);
+            Material.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
     }
 
     //The geometry element the visual element
-    public class geometry : URDFElement
+    public class Geometry : URDFElement
     {
-        public mesh Mesh;
-        public geometry()
+        public Mesh Mesh;
+        public Geometry()
         {
-            Mesh = new mesh();
+            Mesh = new Mesh();
             isRequired = true;
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("geometry");
 
-            Mesh.writeURDF(writer);
+            Mesh.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
     }
 
     //The mesh element of the geometry element. This contains only a filename location of the mesh.
-    public class mesh : URDFElement
+    public class Mesh : URDFElement
     {
-        private Attribute Filename;
-        public string filename
+        private Attribute FilenameAttribute;
+        public string Filename
         {
             get
             {
-                return (string)Filename.value;
+                return (string)FilenameAttribute.value;
             }
             set
             {
-                Filename.value = value;
+                FilenameAttribute.value = value;
             }
         }
-        public mesh()
+        public Mesh()
         {
-            Filename = new Attribute();
-            Filename.isRequired = true;
-            Filename.type = "filename";
+            FilenameAttribute = new Attribute();
+            FilenameAttribute.isRequired = true;
+            FilenameAttribute.type = "filename";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("mesh");
-            Filename.writeURDF(writer);
+            FilenameAttribute.WriteURDF(writer);
             writer.WriteEndElement(); //mesh
         }
     }
 
     //The material element of the visual element. 
-    public class material : URDFElement
+    public class Material : URDFElement
     {
-        public color Color;
-        public texture Texture;
-        private Attribute Name;
-        public string name
+        public Color Color;
+        public Texture Texture;
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
 
-        public material()
+        public Material()
         {
-            Color = new color();
-            Texture = new texture();
-            Name = new Attribute();
-            Name.value = "";
-            Name.isRequired = true;
-            Name.type = "name";
+            Color = new Color();
+            Texture = new Texture();
+            NameAttribute = new Attribute();
+            NameAttribute.value = "";
+            NameAttribute.isRequired = true;
+            NameAttribute.type = "name";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("material");
-            Name.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
 
-            Color.writeURDF(writer);
-            Texture.writeURDF(writer);
+            Color.WriteURDF(writer);
+            Texture.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(ComboBox box, string format)
+        public void FillBoxes(ComboBox box, string format)
         {
-            box.Text = name;
+            box.Text = Name;
         }
     }
 
     //The color element of the material element. Contains a single RGBA.
-    public class color : URDFElement
+    public class Color : URDFElement
     {
-        private Attribute RGBA;
-        public double[] rgba
+        private Attribute RGBAAttribute;
+        public double[] RGBA
         {
             get
             {
-                return (double[])RGBA.value;
+                return (double[])RGBAAttribute.value;
             }
             set
             {
-                RGBA.value = value;
+                RGBAAttribute.value = value;
             }
         }
         public double Red
         {
             get
             {
-                return rgba[0];
+                return RGBA[0];
             }
             set
             {
-                rgba[0] = value;
+                RGBA[0] = value;
             }
         }
         public double Green
         {
             get
             {
-                return rgba[1];
+                return RGBA[1];
             }
             set
             {
-                rgba[1] = value;
+                RGBA[1] = value;
             }
         }
         public double Blue
         {
             get
             {
-                return rgba[2];
+                return RGBA[2];
             }
             set
             {
-                rgba[2] = value;
+                RGBA[2] = value;
             }
         }
         public double Alpha
         {
             get
             {
-                return rgba[3];
+                return RGBA[3];
             }
             set
             {
-                rgba[3] = value;
+                RGBA[3] = value;
             }
         }
          
 
-        public color()
+        public Color()
         {
-            RGBA = new Attribute();
-            RGBA.isRequired = true;
-            RGBA.type = "rgba";
-            rgba = new double[4] { 1, 1, 1, 1 };
+            RGBAAttribute = new Attribute();
+            RGBAAttribute.isRequired = true;
+            RGBAAttribute.type = "rgba";
+            RGBA = new double[4] { 1, 1, 1, 1 };
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("color");
-            RGBA.writeURDF(writer);
+            RGBAAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha, string format)
+        public void FillBoxes(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha, string format)
         {
-            double[] rgba = (double[])RGBA.value;
+            double[] rgba = (double[])RGBAAttribute.value;
             box_red.Text = Red.ToString(format);
             box_green.Text = Green.ToString(format);
             box_blue.Text = Blue.ToString(format);
             box_alpha.Text = Alpha.ToString(format);
         }
 
-        public void update(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha)
+        public void Update(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha)
         {
             double value;
             Red = (Double.TryParse(box_red.Text, out value)) ? value : 0;
@@ -1031,312 +921,312 @@ namespace SW2URDF
     }
 
     //The texture element of the material element. 
-    public class texture : URDFElement
+    public class Texture : URDFElement
     {
-        private Attribute Filename;
-        public string filename
+        private Attribute FilenameAttribute;
+        public string Filename
         {
             get
             {
-                return (string)Filename.value;
+                return (string)FilenameAttribute.value;
             }
             set
             {
-                Filename.value = value;
+                FilenameAttribute.value = value;
             }
         }
         public string wFilename;
-        public texture()
+        public Texture()
         {
             wFilename = "";
             isRequired = false;
-            Filename = new Attribute();
-            Filename.isRequired = true;
-            filename = "";
-            Filename.type = "filename";
+            FilenameAttribute = new Attribute();
+            FilenameAttribute.isRequired = true;
+            Filename = "";
+            FilenameAttribute.type = "filename";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             if (wFilename != "")
             {
                 writer.WriteStartElement("texture");
-                Filename.writeURDF(writer);
+                FilenameAttribute.WriteURDF(writer);
                 writer.WriteEndElement();
             }
         }
     }
 
     //The collision element of a link.
-    public class collision : URDFElement
+    public class Collision : URDFElement
     {
-        public origin Origin;
-        public geometry Geometry;
+        public Origin Origin;
+        public Geometry Geometry;
 
-        public collision()
+        public Collision()
         {
-            Origin = new origin();
-            Geometry = new geometry();
+            Origin = new Origin();
+            Geometry = new Geometry();
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("collision");
 
-            Origin.writeURDF(writer);
-            Geometry.writeURDF(writer);
+            Origin.WriteURDF(writer);
+            Geometry.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
     }
 
     //The joint class. There is one for every link but the base link
-    public class joint : URDFElement
+    public class Joint : URDFElement
     {
-        private Attribute Name;
-        public string name
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
-        private Attribute Type;
-        public string type
+        private Attribute TypeAttribute;
+        public string Type
         {
             get
             {
-                return (string)Type.value;
+                return (string)TypeAttribute.value;
             }
             set
             {
-                Type.value = value;
+                TypeAttribute.value = value;
             }
         }
-        public origin Origin;
-        public parent_link Parent;
-        public child_link Child;
-        public axis Axis;
-        public limit Limit;
-        public calibration Calibration;
-        public dynamics Dynamics;
-        public safety_controller Safety;
+        public Origin Origin;
+        public ParentLink Parent;
+        public ChildLink Child;
+        public Axis Axis;
+        public Limit Limit;
+        public Calibration Calibration;
+        public Dynamics Dynamics;
+        public SafetyController Safety;
         public string CoordinateSystemName;
         public string AxisName;
 
-        public joint()
+        public Joint()
         {
-            Origin = new origin();
-            Parent = new parent_link();
-            Child = new child_link();
-            Axis = new axis();
-            Name = new Attribute();
-            Name.isRequired = true;
-            Name.type = "name";
-            name = "";
-            Type = new Attribute();
-            Type.isRequired = true;
-            Type.type = "type";
+            Origin = new Origin();
+            Parent = new ParentLink();
+            Child = new ChildLink();
+            Axis = new Axis();
+            NameAttribute = new Attribute();
+            NameAttribute.isRequired = true;
+            NameAttribute.type = "name";
+            Name = "";
+            TypeAttribute = new Attribute();
+            TypeAttribute.isRequired = true;
+            TypeAttribute.type = "type";
             
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("joint");
-            Name.writeURDF(writer);
-            Type.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
+            TypeAttribute.WriteURDF(writer);
             //writer.WriteAttributeString("name", "joint_" + name);
             //writer.WriteAttributeString("type", type);
 
-            Origin.writeURDF(writer);
-            Parent.writeURDF(writer);
-            Child.writeURDF(writer);
-            Axis.writeURDF(writer);
+            Origin.WriteURDF(writer);
+            Parent.WriteURDF(writer);
+            Child.WriteURDF(writer);
+            Axis.WriteURDF(writer);
             if (Limit != null)
             {
-                Limit.writeURDF(writer);
+                Limit.WriteURDF(writer);
             }
             if (Calibration != null)
             {
-                Calibration.writeURDF(writer);
+                Calibration.WriteURDF(writer);
             }
             if (Dynamics != null)
             {
-                Dynamics.writeURDF(writer);
+                Dynamics.WriteURDF(writer);
             }
             if (Safety != null)
             {
-                Safety.writeURDF(writer);
+                Safety.WriteURDF(writer);
             }
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_name, ComboBox box_type)
+        public void FillBoxes(TextBox box_name, ComboBox box_type)
         {
-            box_name.Text = name;
-            box_type.Text = type;
+            box_name.Text = Name;
+            box_type.Text = Type;
         }
 
-        public void update(TextBox box_name, ComboBox box_type)
+        public void Update(TextBox box_name, ComboBox box_type)
         {
-            name = box_name.Text;
-            type = box_type.Text;
+            Name = box_name.Text;
+            Type = box_type.Text;
         }
     }
 
     //parent_link element of a joint. 
-    public class parent_link : URDFElement
+    public class ParentLink : URDFElement
     {
-        private Attribute Name;
-        public string name
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
-        public parent_link()
+        public ParentLink()
         {
             isRequired = true;
-            Name = new Attribute();
-            Name.isRequired = true;
-            Name.type = "link";
-            name = "";
+            NameAttribute = new Attribute();
+            NameAttribute.isRequired = true;
+            NameAttribute.type = "link";
+            Name = "";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("parent");
-            Name.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
             writer.WriteEndElement();
 
         }
-        public void fillBoxes(Label box)
+        public void FillBoxes(Label box)
         {
-            box.Text = name;
+            box.Text = Name;
         }
-        public void update(Label box)
+        public void Update(Label box)
         {
-            name = box.Text;
+            Name = box.Text;
         }
     }
 
     //The child link element
-    public class child_link : URDFElement
+    public class ChildLink : URDFElement
     {
-        private Attribute Name;
-        public string name
+        private Attribute NameAttribute;
+        public string Name
         {
             get
             {
-                return (string)Name.value;
+                return (string)NameAttribute.value;
             }
             set
             {
-                Name.value = value;
+                NameAttribute.value = value;
             }
         }
-        public child_link()
+        public ChildLink()
         {
             isRequired = true;
-            Name = new Attribute();
-            Name.type = "link";
-            Name.isRequired = true;
-            name = "";
+            NameAttribute = new Attribute();
+            NameAttribute.type = "link";
+            NameAttribute.isRequired = true;
+            Name = "";
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("child");
-            Name.writeURDF(writer);
+            NameAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
-        public void fillBoxes(Label box)
+        public void FillBoxes(Label box)
         {
-            box.Text = name;
+            box.Text = Name;
         }
-        public void update(Label box)
+        public void Update(Label box)
         {
-            name = box.Text;
+            Name = box.Text;
         }
 
 
     }
 
     //The axis element of a joint.
-    public class axis : URDFElement
+    public class Axis : URDFElement
     {
-        private Attribute XYZ;
-        public double[] xyz
+        private Attribute XYZAttribute;
+        public double[] XYZ
         {
             get
             {
-                return (double[])XYZ.value;
+                return (double[])XYZAttribute.value;
             }
             set
             {
-                XYZ.value = value;
+                XYZAttribute.value = value;
             }
         }
         public double X
         {
             get
             {
-                return xyz[0];
+                return XYZ[0];
             }
             set
             {
-                xyz[0] = value;
+                XYZ[0] = value;
             }
         }
         public double Y
         {
             get
             {
-                return xyz[1];
+                return XYZ[1];
             }
             set
             {
-                xyz[1] = value;
+                XYZ[1] = value;
             }
         }
         public double Z
         {
             get
             {
-                return xyz[2];
+                return XYZ[2];
             }
             set
             {
-                xyz[2] = value;
+                XYZ[2] = value;
             }
         }
 
-        public axis()
+        public Axis()
         {
-            XYZ = new Attribute();
-            XYZ.isRequired = true;
-            XYZ.type = "xyz";
-            xyz = new double[] { 0, 0, 0 };
+            XYZAttribute = new Attribute();
+            XYZAttribute.isRequired = true;
+            XYZAttribute.type = "xyz";
+            XYZ = new double[] { 0, 0, 0 };
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("axis");
-            XYZ.writeURDF(writer);
+            XYZAttribute.WriteURDF(writer);
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, string format)
+        public void FillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, string format)
         {
             box_x.Text = X.ToString(format);
             box_y.Text = Y.ToString(format);
             box_z.Text = Z.ToString(format);
         }
 
-        public void update(TextBox box_x, TextBox box_y, TextBox box_z)
+        public void Update(TextBox box_x, TextBox box_y, TextBox box_z)
         {
             double value;
             X = (Double.TryParse(box_x.Text, out value)) ? value : 0;
@@ -1346,468 +1236,468 @@ namespace SW2URDF
     }
 
     //The limit element of a joint.
-    public class limit : URDFElement
+    public class Limit : URDFElement
     {
-        private Attribute Lower;
-        private Attribute Upper;
-        private Attribute Effort;
-        private Attribute Velocity;
+        private Attribute LowerAttribute;
+        private Attribute UpperAttribute;
+        private Attribute EffortAttribute;
+        private Attribute VelocityAttribute;
 
-        public double lower
+        public double Lower
         {
             get
             {
-                return (double)Lower.value;
+                return (double)LowerAttribute.value;
             }
             set
             {
-                if (Lower == null)
+                if (LowerAttribute == null)
                 {
-                    Lower = new Attribute();
-                    Lower.type = "lower";
+                    LowerAttribute = new Attribute();
+                    LowerAttribute.type = "lower";
                 }
-                Lower.value = value;
+                LowerAttribute.value = value;
             }
         }
-        public double upper
+        public double Upper
         {
             get
             {
-                return (double)Upper.value;
+                return (double)UpperAttribute.value;
             }
             set
             {
-                if (Upper == null)
+                if (UpperAttribute == null)
                 {
-                    Upper = new Attribute();
-                    Upper.type = "upper";
+                    UpperAttribute = new Attribute();
+                    UpperAttribute.type = "upper";
                 }
-                Upper.value = value;
+                UpperAttribute.value = value;
             }
         }
-        public double effort
+        public double Effort
         {
             get
             {
-                return (double)Effort.value;
+                return (double)EffortAttribute.value;
             }
             set
             {
-                Effort.value = value;
+                EffortAttribute.value = value;
             }
         }
-        public double velocity
+        public double Velocity
         {
             get
             {
-                return (double)Velocity.value;
+                return (double)VelocityAttribute.value;
             }
             set
             {
-                Velocity.value = value;
+                VelocityAttribute.value = value;
             }
         }
-        public limit()
+        public Limit()
         {
-            Effort = new Attribute();
-            Velocity = new Attribute();
-            Effort.isRequired = true;
-            Velocity.isRequired = true;
-            Effort.type = "effort";
-            Velocity.type = "velocity";
-            Effort.value = 0.0;
-            Velocity.value = 0.0;
+            EffortAttribute = new Attribute();
+            VelocityAttribute = new Attribute();
+            EffortAttribute.isRequired = true;
+            VelocityAttribute.isRequired = true;
+            EffortAttribute.type = "effort";
+            VelocityAttribute.type = "velocity";
+            EffortAttribute.value = 0.0;
+            VelocityAttribute.value = 0.0;
 
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("limit");
-            if (Lower != null)
+            if (LowerAttribute != null)
             {
-                Lower.writeURDF(writer);
+                LowerAttribute.WriteURDF(writer);
             }
-            if (Upper != null)
+            if (UpperAttribute != null)
             {
-                Upper.writeURDF(writer);
+                UpperAttribute.WriteURDF(writer);
             }
-            if (Effort != null)
+            if (EffortAttribute != null)
             {
-                Effort.writeURDF(writer);
+                EffortAttribute.WriteURDF(writer);
             }
-            if (Velocity != null)
+            if (VelocityAttribute != null)
             {
-                Velocity.writeURDF(writer);
+                VelocityAttribute.WriteURDF(writer);
             }
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity, string format)
+        public void FillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity, string format)
         {
-            if (Lower != null)
+            if (LowerAttribute != null)
             {
-                box_lower.Text = lower.ToString(format);
+                box_lower.Text = Lower.ToString(format);
             }
 
-            if (Upper != null)
+            if (UpperAttribute != null)
             {
-                box_upper.Text = upper.ToString(format);
+                box_upper.Text = Upper.ToString(format);
             }
 
-            box_effort.Text = effort.ToString(format);
-            box_velocity.Text = velocity.ToString(format);
+            box_effort.Text = Effort.ToString(format);
+            box_velocity.Text = Velocity.ToString(format);
         }
 
-        public void setValues(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity)
+        public void SetValues(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity)
         {
             double value;
             if (box_lower.Text == "")
             {
-                Lower = null;
+                LowerAttribute = null;
             }
             else
             {
-                lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
+                Lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
             if (box_upper.Text == "")
             {
-                Upper = null;
+                UpperAttribute = null;
             }
             else
             {
-                upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
+                Upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
-            effort = (Double.TryParse(box_effort.Text, out value)) ? value : 0;
-            velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
+            Effort = (Double.TryParse(box_effort.Text, out value)) ? value : 0;
+            Velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
 
         }
     }
 
     //The calibration element of a joint.
-    public class calibration : URDFElement
+    public class Calibration : URDFElement
     {
-        private Attribute Rising;
-        public double rising
+        private Attribute RisingAttribute;
+        public double Rising
         {
             get
             {
-                return (double)Rising.value;
+                return (double)RisingAttribute.value;
             }
             set
             {
-                if (Rising == null)
+                if (RisingAttribute == null)
                 {
-                    Rising = new Attribute();
-                    Rising.type = "rising";
+                    RisingAttribute = new Attribute();
+                    RisingAttribute.type = "rising";
                 }
-                Rising.value = value;
+                RisingAttribute.value = value;
             }
         }
-        private Attribute Falling;
-        public double falling
+        private Attribute FallingAttribute;
+        public double Falling
         {
             get
             {
-                return (double)Falling.value;
+                return (double)FallingAttribute.value;
             }
             set
             {
-                if (Falling == null)
+                if (FallingAttribute == null)
                 {
-                    Falling = new Attribute();
-                    Falling.type = "falling";
+                    FallingAttribute = new Attribute();
+                    FallingAttribute.type = "falling";
                 }
                     
-                Falling.value = value;
+                FallingAttribute.value = value;
             }
         }
 
-        public calibration()
+        public Calibration()
         {
 
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("calibration");
-            if (Rising != null)
+            if (RisingAttribute != null)
             {
-                Rising.writeURDF(writer);
+                RisingAttribute.WriteURDF(writer);
             }
-            if (Falling != null)
+            if (FallingAttribute != null)
             {
-                Falling.writeURDF(writer);
+                FallingAttribute.WriteURDF(writer);
             }
             writer.WriteEndElement();
         }
-        public void fillBoxes(TextBox box_rising, TextBox box_falling, string format)
+        public void FillBoxes(TextBox box_rising, TextBox box_falling, string format)
         {
-            if (Rising != null)
+            if (RisingAttribute != null)
             {
-                box_rising.Text = rising.ToString(format);
+                box_rising.Text = Rising.ToString(format);
             }
 
-            if (Falling != null)
+            if (FallingAttribute != null)
             {
-                box_falling.Text = falling.ToString(format);
+                box_falling.Text = Falling.ToString(format);
             }
         }
 
-        public void setValues(TextBox box_rising, TextBox box_falling)
+        public void SetValues(TextBox box_rising, TextBox box_falling)
         {
             double value;
             if (box_rising.Text == "")
             {
-                Rising = null;
+                RisingAttribute = null;
             }
             else
             {
-                rising = (Double.TryParse(box_rising.Text, out value)) ? value : 0;
+                Rising = (Double.TryParse(box_rising.Text, out value)) ? value : 0;
             }
             if (box_falling.Text == "")
             {
-                Falling = null;
+                FallingAttribute = null;
             }
             else
             {
-                falling = (Double.TryParse(box_falling.Text, out value)) ? value : 0;
+                Falling = (Double.TryParse(box_falling.Text, out value)) ? value : 0;
             }
         }
     }
 
     //The dynamics element of a joint.
-    public class dynamics : URDFElement
+    public class Dynamics : URDFElement
     {
-        private Attribute Damping;
-        public double damping
+        private Attribute DampingAttribute;
+        public double Damping
         {
             get
             {
-                return (double)Damping.value;
+                return (double)DampingAttribute.value;
             }
             set
             {
-                if (Damping == null)
+                if (DampingAttribute == null)
                 {
-                    Damping = new Attribute();
-                    Damping.type = "damping";
+                    DampingAttribute = new Attribute();
+                    DampingAttribute.type = "damping";
                 }
-                Damping.value = value;
+                DampingAttribute.value = value;
             }
         }
-        private Attribute Friction;
-        public double friction
+        private Attribute FrictionAttribute;
+        public double Friction
         {
             get
             {
-                return (double)Friction.value;
+                return (double)FrictionAttribute.value;
             }
             set
             {
-                if (Friction == null)
+                if (FrictionAttribute == null)
                 {
-                    Friction = new Attribute();
-                    Friction.type = "friction";
+                    FrictionAttribute = new Attribute();
+                    FrictionAttribute.type = "friction";
                 }
-                Friction.value = value;
+                FrictionAttribute.value = value;
             }
         }
 
-        public dynamics()
+        public Dynamics()
         {
 
         }
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("dynamics");
-            if (Damping != null)
+            if (DampingAttribute != null)
             {
-                Damping.writeURDF(writer);
+                DampingAttribute.WriteURDF(writer);
             }
-            if (Friction != null)
+            if (FrictionAttribute != null)
             {
-                Friction.writeURDF(writer);
+                FrictionAttribute.WriteURDF(writer);
             }
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_damping, TextBox box_friction, string format)
+        public void FillBoxes(TextBox box_damping, TextBox box_friction, string format)
         {
-            if (Damping != null)
+            if (DampingAttribute != null)
             {
-                box_damping.Text = damping.ToString(format);
+                box_damping.Text = Damping.ToString(format);
             }
-            if (Friction != null)
+            if (FrictionAttribute != null)
             {
-                box_friction.Text = friction.ToString(format);
+                box_friction.Text = Friction.ToString(format);
             }
         }
 
-        public void setValues(TextBox box_damping, TextBox box_friction)
+        public void SetValues(TextBox box_damping, TextBox box_friction)
         {
             double value;
             if (box_damping.Text == "")
             {
-                Damping = null;
+                DampingAttribute = null;
             }
             else
             {
-                damping = (Double.TryParse(box_damping.Text, out value)) ? value : 0;
+                Damping = (Double.TryParse(box_damping.Text, out value)) ? value : 0;
             }
             if (box_friction.Text == "")
             {
-                Friction = null;
+                FrictionAttribute = null;
             }
             else
             {
-                friction = (Double.TryParse(box_friction.Text, out value)) ? value : 0;
+                Friction = (Double.TryParse(box_friction.Text, out value)) ? value : 0;
             }
         }
     }
 
     //The safety_controller element of a joint.
-    public class safety_controller : URDFElement
+    public class SafetyController : URDFElement
     {
-        private Attribute Soft_lower;
-        public double soft_lower
+        private Attribute SoftLowerAttribute;
+        public double SoftLower
         {
             get
             {
-                return (double)Soft_lower.value;
+                return (double)SoftLowerAttribute.value;
             }
             set
             {
-                if (Soft_lower == null)
+                if (SoftLowerAttribute == null)
                 {
-                    Soft_lower = new Attribute();
-                    Soft_lower.type = "soft_lower";
+                    SoftLowerAttribute = new Attribute();
+                    SoftLowerAttribute.type = "soft_lower";
                 }
-                Soft_lower.value = value;
+                SoftLowerAttribute.value = value;
             }
         }
-        private Attribute Soft_upper;
-        public double soft_upper
+        private Attribute SoftUpperAttribute;
+        public double SoftUpper
         {
             get
             {
-                return (double)Soft_upper.value;
+                return (double)SoftUpperAttribute.value;
             }
             set
             {
-                if (Soft_upper == null)
+                if (SoftUpperAttribute == null)
                 {
-                    Soft_upper = new Attribute();
-                    Soft_upper.type = "soft_upper";
+                    SoftUpperAttribute = new Attribute();
+                    SoftUpperAttribute.type = "soft_upper";
                 }
-                Soft_upper.value = value;
+                SoftUpperAttribute.value = value;
             }
         }
-        private Attribute K_position;
-        public double k_position
+        private Attribute KPositionAttribute;
+        public double KPosition
         {
             get
             {
-                return (double)K_position.value;
+                return (double)KPositionAttribute.value;
             }
             set
             {
-                if (K_position == null)
+                if (KPositionAttribute == null)
                 {
-                    K_position = new Attribute();
-                    K_position.type = "k_position";
+                    KPositionAttribute = new Attribute();
+                    KPositionAttribute.type = "k_position";
                 }
-                K_position.value = value;
+                KPositionAttribute.value = value;
             }
         }
-        private Attribute K_velocity;
-        public double k_velocity
+        private Attribute KVelocityAttribute;
+        public double KVelocity
         {
             get
             {
-                return (double)K_velocity.value;
+                return (double)KVelocityAttribute.value;
             }
             set
             {
-                K_velocity.value = value;
+                KVelocityAttribute.value = value;
             }
         }
-        public safety_controller()
+        public SafetyController()
         {
-            K_velocity = new Attribute();
-            K_velocity.type = "k_velocity";
-            K_velocity.isRequired = true;
+            KVelocityAttribute = new Attribute();
+            KVelocityAttribute.type = "k_velocity";
+            KVelocityAttribute.isRequired = true;
         }
 
-        new public void writeURDF(XmlWriter writer)
+        new public void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("safety_controller");
-            if (Soft_upper != null)
+            if (SoftUpperAttribute != null)
             {
-                Soft_upper.writeURDF(writer);
+                SoftUpperAttribute.WriteURDF(writer);
             }
-            if (Soft_lower != null)
+            if (SoftLowerAttribute != null)
             {
-                Soft_lower.writeURDF(writer);
+                SoftLowerAttribute.WriteURDF(writer);
             }
-            if (K_position != null)
+            if (KPositionAttribute != null)
             {
-                K_position.writeURDF(writer);
+                KPositionAttribute.WriteURDF(writer);
             }
-            K_velocity.writeURDF(writer);
+            KVelocityAttribute.WriteURDF(writer);
 
             writer.WriteEndElement();
         }
 
-        public void fillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity, string format)
+        public void FillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity, string format)
         {
-            if (Soft_lower != null)
+            if (SoftLowerAttribute != null)
             {
-                box_lower.Text = soft_lower.ToString(format);
+                box_lower.Text = SoftLower.ToString(format);
             }
 
-            if (Soft_upper != null)
+            if (SoftUpperAttribute != null)
             {
-                box_upper.Text = soft_upper.ToString(format);
+                box_upper.Text = SoftUpper.ToString(format);
             }
 
-            if (K_position != null)
+            if (KPositionAttribute != null)
             {
-                box_position.Text = k_position.ToString(format);
+                box_position.Text = KPosition.ToString(format);
             }
 
-            box_velocity.Text = k_velocity.ToString(format);
+            box_velocity.Text = KVelocity.ToString(format);
             
         }
 
-        public void setValues(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity)
+        public void SetValues(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity)
         {
             double value;
             if (box_lower.Text == "")
             {
-                Soft_lower = null;
+                SoftLowerAttribute = null;
             }
             else
             {
-                soft_lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
+                SoftLower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
             }
 
             if (box_upper.Text == "")
             {
-                Soft_upper = null;
+                SoftUpperAttribute = null;
             }
             else
             {
-                soft_upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
+                SoftUpper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
             }
 
             if (box_position.Text == "")
             {
-                K_position = null;
+                KPositionAttribute = null;
             }
             else
             {
-                k_position = (Double.TryParse(box_position.Text, out value)) ? value : 0;   
+                KPosition = (Double.TryParse(box_position.Text, out value)) ? value : 0;   
             }
-            k_velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
+            KVelocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
         }
     }
     
@@ -1832,7 +1722,7 @@ namespace SW2URDF
     public class PackageElement
     {
         public PackageElement() { }
-        public void writeElement() { }
+        public void WriteElement() { }
     }
 
     //Top level class for the package XML file.
@@ -1855,17 +1745,17 @@ namespace SW2URDF
  
             license = new License("BSD");
         }
-        public void writeElement(PackageXMLWriter mWriter)
+        public void WriteElement(PackageXMLWriter mWriter)
         {
             XmlWriter writer = mWriter.writer;
             writer.WriteStartDocument();
             writer.WriteStartElement("package");
 
-            description.writeElement(writer);
+            description.WriteElement(writer);
             
-            author.writeElement(writer);
-            license.writeElement(writer);
-            dependencies.writeElement(writer);
+            author.WriteElement(writer);
+            license.WriteElement(writer);
+            dependencies.WriteElement(writer);
 
             writer.WriteStartElement("export");
 
@@ -1883,9 +1773,9 @@ namespace SW2URDF
     //description element of the manifest file
     public class Description : PackageElement
     {
-        private string name;
-        private string brief;
-        private string longDescription;
+        private readonly string name;
+        private readonly string brief;
+        private readonly string longDescription;
         public Description(string name)
         {
             this.name = name;
@@ -1893,7 +1783,7 @@ namespace SW2URDF
             this.longDescription = "This package contains configuration data, 3D models and launch files\r\n" +
                                     "for " + name + " robot";
         }
-        public void writeElement(XmlWriter writer)
+        public void WriteElement(XmlWriter writer)
         {
             writer.WriteStartElement("name");
             writer.WriteString(name);
@@ -1920,14 +1810,14 @@ namespace SW2URDF
     //The depend element of the manifest file
     public class Dependencies : PackageElement
     {
-        private string[] buildTool;
-        private string[] build_exec;
+        private readonly string[] buildTool;
+        private readonly string[] build_exec;
         public Dependencies(String[] buildTool, String[] build_exec)
         {
             this.buildTool = buildTool;
             this.build_exec = build_exec;
         }
-        public void writeElement(XmlWriter writer)
+        public void WriteElement(XmlWriter writer)
         {
             foreach (String depend in buildTool) {
                 writer.WriteStartElement("buildtool_depend");
@@ -1947,12 +1837,12 @@ namespace SW2URDF
     //The author element of the manifest file
     public class Author : PackageElement
     {
-        private string name;
+        private readonly string name;
         public Author(string name)
         {
             this.name = name;
         }
-        public void writeElement(XmlWriter writer)
+        public void WriteElement(XmlWriter writer)
         {
             writer.WriteStartElement("author");
             writer.WriteString(name);
@@ -1967,12 +1857,12 @@ namespace SW2URDF
     //The license element of the manifest file
     public class License : PackageElement
     {
-        private string lic;
+        private readonly string lic;
         public License(string lic)
         {
             this.lic = lic;
         }
-        public void writeElement(XmlWriter writer)
+        public void WriteElement(XmlWriter writer)
         {
             writer.WriteStartElement("license");
             writer.WriteString(lic);
@@ -1987,29 +1877,29 @@ namespace SW2URDF
     //from the TreeView itself.
     public class LinkNode : TreeNode
     {
-        public link Link
+        public Link Link
         { get; set; }
-        public string linkName
+        public string LinkName
         { get; set; }
-        public string jointName
+        public string JointName
         { get; set; }
-        public string axisName
+        public string AxisName
         { get; set; }
-        public string coordsysName
+        public string CoordsysName
         { get; set; }
         public List<Component2> Components
         { get; set; }
         public List<byte[]> ComponentPIDs
         { get; set; }
-        public string jointType
+        public string JointType
         { get; set; }
-        public bool isBaseNode
+        public bool IsBaseNode
         { get; set; }
-        public bool isIncomplete
+        public bool IsIncomplete
         { get; set; }
-        public bool needsSaving
+        public bool NeedsSaving
         { get; set; }
-        public string whyIncomplete
+        public string WhyIncomplete
         { get; set; }
 
         public LinkNode()
@@ -2018,17 +1908,17 @@ namespace SW2URDF
 
         public LinkNode(SerialNode node)
         {
-            linkName = node.linkName;
-            jointName = node.jointName;
-            axisName = node.axisName;
-            coordsysName = node.coordsysName;
+            LinkName = node.linkName;
+            JointName = node.jointName;
+            AxisName = node.axisName;
+            CoordsysName = node.coordsysName;
             ComponentPIDs = node.componentPIDs;
-            jointType = node.jointType;
-            isBaseNode = node.isBaseNode;
-            isIncomplete = node.isIncomplete;
+            JointType = node.jointType;
+            IsBaseNode = node.isBaseNode;
+            IsIncomplete = node.isIncomplete;
 
-            Name = linkName;
-            Text = linkName;
+            Name = LinkName;
+            Text = LinkName;
 
             foreach (SerialNode child in node.Nodes)
             {

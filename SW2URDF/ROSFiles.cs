@@ -40,37 +40,37 @@ namespace SW2URDF
 
 
 
-    public abstract class launchElement
+    public abstract class LaunchElement
     {
-        public abstract void writeFile(XmlWriter writer);
+        public abstract void WriteFile(XmlWriter writer);
     }
 
-    public class launchComment : launchElement
+    public class LaunchComment : LaunchElement
     {
-        string commentString;
-        public launchComment(string comment)
+        private readonly string commentString;
+        public LaunchComment(string comment)
         {
             this.commentString = comment;
         }
 
-        public override void writeFile(XmlWriter writer)
+        public override void WriteFile(XmlWriter writer)
         {
             writer.WriteComment(this.commentString);
         }
     }
 
-    public class launchArg : launchElement
+    public class LaunchArg : LaunchElement
     {
-        string argName;
-        string argDefault;
+        private readonly string argName;
+        private readonly string argDefault;
 
-        public launchArg(string name, string def = "")
+        public LaunchArg(string name, string def = "")
         {
             this.argName = name;
             this.argDefault = def;
         }
 
-        public override void writeFile(XmlWriter writer)
+        public override void WriteFile(XmlWriter writer)
         {
             writer.WriteStartElement("arg");
             writer.WriteAttributeString("name", this.argName);
@@ -82,20 +82,20 @@ namespace SW2URDF
         }
     }
 
-    public class launchParam : launchElement
+    public class LaunchParam : LaunchElement
     {
-        string paramName;
-        string paramValue;
-        string paramTextFile;
+        private readonly string paramName;
+        private readonly string paramValue;
+        private readonly string paramTextFile;
 
-        public launchParam(string name, string value = "", string textfile = "")
+        public LaunchParam(string name, string value = "", string textfile = "")
         {
             this.paramName = name;
             this.paramValue = value;
             this.paramTextFile = textfile;
         }
 
-        public override void writeFile(XmlWriter writer)
+        public override void WriteFile(XmlWriter writer)
         {
             writer.WriteStartElement("param");
             writer.WriteAttributeString("name", this.paramName);
@@ -113,15 +113,15 @@ namespace SW2URDF
         }
     }
 
-    public class launchNode : launchElement
+    public class LaunchNode : LaunchElement
     {
-        string nodeName;
-        string nodePkg;
-        string nodeType;
-        string nodeArgs;
-        string nodeOutput;
-        bool nodeRespawn;
-        public launchNode(string name, string pkg, string type, string args="", string output="", bool respawn=false)
+        private readonly string nodeName;
+        private readonly string nodePkg;
+        private readonly string nodeType;
+        private readonly string nodeArgs;
+        private readonly string nodeOutput;
+        private readonly bool nodeRespawn;
+        public LaunchNode(string name, string pkg, string type, string args="", string output="", bool respawn=false)
         {
             this.nodeName = name;
             this.nodePkg = pkg;
@@ -131,7 +131,7 @@ namespace SW2URDF
             this.nodeRespawn = respawn;
         }
 
-        public override void writeFile(XmlWriter writer)
+        public override void WriteFile(XmlWriter writer)
         {
             writer.WriteStartElement("node");
             writer.WriteAttributeString("name", this.nodeName);
@@ -157,15 +157,15 @@ namespace SW2URDF
         }
     }
 
-    public class launchInclude : launchElement
+    public class LaunchInclude : LaunchElement
     {
-        string includeFile;
-        public launchInclude(string file)
+        private readonly string includeFile;
+        public LaunchInclude(string file)
         {
             this.includeFile = file;
         }
 
-        public override void writeFile(XmlWriter writer)
+        public override void WriteFile(XmlWriter writer)
         {
             writer.WriteStartElement("include");
             writer.WriteAttributeString("file", this.includeFile);
@@ -176,41 +176,44 @@ namespace SW2URDF
 
     public class Gazebo
     {
-        string package;
-        string robotURDF;
-        string model;
-        List<launchElement> elements;
+        private readonly string package;
+        private readonly string robotURDF;
+        private readonly string model;
+        private readonly List<LaunchElement> elements;
         
         public Gazebo(string modelName, string packageName, string URDFName)
         {
-            this.elements = new List<launchElement>();
+            this.elements = new List<LaunchElement>();
             this.model = modelName;
             this.package = packageName;
             this.robotURDF = URDFName;
 
-            this.elements.Add(new launchInclude("$(find gazebo_ros)/launch/empty_world.launch"));
-            this.elements.Add(new launchNode("tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
-            this.elements.Add(new launchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + this.package + ")/urdf/" + this.robotURDF + " -urdf -model " + this.model, "screen"));
-            this.elements.Add(new launchNode("fake_joint_calibration", "rostopic", "rostopic", "pub /calibrated std_msgs/Bool true"));
+            this.elements.Add(new LaunchInclude("$(find gazebo_ros)/launch/empty_world.launch"));
+            this.elements.Add(new LaunchNode("tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
+            this.elements.Add(new LaunchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + this.package + ")/urdf/" + this.robotURDF + " -urdf -model " + this.model, "screen"));
+            this.elements.Add(new LaunchNode("fake_joint_calibration", "rostopic", "rostopic", "pub /calibrated std_msgs/Bool true"));
         }
 
-        public void writeFile(string dir)
+        public void WriteFile(string dir)
         {
             XmlWriter writer;
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Encoding = new UTF8Encoding(false);
-            settings.OmitXmlDeclaration = true;
-            settings.Indent = true;
-            settings.NewLineOnAttributes = true;
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(false),
+                OmitXmlDeclaration = true,
+                Indent = true,
+                NewLineOnAttributes = true
+            };
+
             string displayLaunch = dir + @"gazebo.launch";
             writer = XmlWriter.Create(displayLaunch, settings);
 
             writer.WriteStartDocument();
             writer.WriteStartElement("launch");
 
-            foreach (launchElement element in this.elements)
+            foreach (LaunchElement element in this.elements)
             {
-                element.writeFile(writer);
+                element.WriteFile(writer);
             }
 
             writer.WriteEndElement();
@@ -221,44 +224,46 @@ namespace SW2URDF
 
     public class Rviz
     {
-        string package;
-        string robotURDF;
-        List<launchElement> elements;
+        private readonly string package;
+        private readonly string robotURDF;
+        private readonly List<LaunchElement> elements;
         public Rviz(string packageName, string URDFName)
         {
             package = packageName;
             robotURDF = URDFName;
 
-            this.elements = new List<launchElement>();
-
-            this.elements.Add(new launchArg("model"));
-            this.elements.Add(new launchArg("gui", "False"));
-
-            this.elements.Add(new launchParam("robot_description", "", "$(find " + package + ")/urdf/" + robotURDF));
-            this.elements.Add(new launchParam("use_gui", "$(arg gui)"));
-
-            this.elements.Add(new launchNode("joint_state_publisher", "joint_state_publisher", "joint_state_publisher"));
-            this.elements.Add(new launchNode("robot_state_publisher", "robot_state_publisher", "state_publisher"));
-            this.elements.Add(new launchNode("rviz", "rviz", "rviz", "-d $(find " + this.package + ")/urdf.rviz"));
+            this.elements = new List<LaunchElement>
+            {
+                new LaunchArg("model"),
+                new LaunchArg("gui", "False"),
+                new LaunchParam("robot_description", "", "$(find " + package + ")/urdf/" + robotURDF),
+                new LaunchParam("use_gui", "$(arg gui)"),
+                new LaunchNode("joint_state_publisher", "joint_state_publisher", "joint_state_publisher"),
+                new LaunchNode("robot_state_publisher", "robot_state_publisher", "state_publisher"),
+                new LaunchNode("rviz", "rviz", "rviz", "-d $(find " + this.package + ")/urdf.rviz")
+            };
         }
 
-        public void writeFiles(string dir)
+        public void WriteFiles(string dir)
         {
             XmlWriter writer;
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Encoding = new UTF8Encoding(false);
-            settings.OmitXmlDeclaration = true;
-            settings.Indent = true;
-            settings.NewLineOnAttributes = true;
+            XmlWriterSettings settings = new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(false),
+                OmitXmlDeclaration = true,
+                Indent = true,
+                NewLineOnAttributes = true
+            };
+
             string displayLaunch = dir + @"display.launch";
             writer = XmlWriter.Create(displayLaunch, settings);
 
             writer.WriteStartDocument();
             writer.WriteStartElement("launch");
 
-            foreach (launchElement element in this.elements)
+            foreach (LaunchElement element in this.elements)
             {
-                element.writeFile(writer);
+                element.WriteFile(writer);
             }
 
             writer.WriteEndElement();

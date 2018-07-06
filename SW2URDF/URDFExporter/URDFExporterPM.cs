@@ -52,8 +52,8 @@ namespace SW2URDF
 
         public URDFExporter Exporter;
         public LinkNode previouslySelectedNode;
-        public link previouslySelectedLink;
-        public List<link> linksToVisit;
+        public Link previouslySelectedLink;
+        public List<Link> linksToVisit;
         public LinkNode rightClickedNode;
         private ContextMenuStrip docMenu;
         //General objects required for the PropertyManager page
@@ -83,7 +83,7 @@ namespace SW2URDF
         PropertyManagerPageLabel pm_Label_GlobalCoordsys;
 
         PropertyManagerPageWindowFromHandle pm_tree;
-        public TreeView tree
+        public TreeView Tree
         { get; set; }
         bool automaticallySwitched = false;
 
@@ -127,10 +127,10 @@ namespace SW2URDF
             swApp = swAppPtr;
             ActiveSWModel = swApp.ActiveDoc;
             Exporter = new URDFExporter(swApp);
-            Exporter.mRobot = new robot();
-            Exporter.mRobot.name = ActiveSWModel.GetTitle();
+            Exporter.URDFRobot = new Robot();
+            Exporter.URDFRobot.Name = ActiveSWModel.GetTitle();
 
-            linksToVisit = new List<link>();
+            linksToVisit = new List<Link>();
             docMenu = new ContextMenuStrip();
 
             string PageTitle = null;
@@ -156,7 +156,7 @@ namespace SW2URDF
             //Make sure that the page was created properly
             if (longerrors == (int)swPropertyManagerPageStatus_e.swPropertyManagerPage_Okay)
             {
-                setupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
+                SetupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
             }
 
             else
@@ -169,12 +169,12 @@ namespace SW2URDF
             #endregion
         }
 
-        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
             logger.Warn("Exception encountered in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), e.Exception);
         }
 
-        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
@@ -187,12 +187,12 @@ namespace SW2URDF
             pm_Selection.SetSelectionFocus();
         }
 
-        private void onButtonPress(int Id)
+        private void OnButtonPress(int Id)
         {
             if (Id == Button_export_ID) //If the export button was pressed
             {
-                saveActiveNode();
-                if (checkIfNamesAreUnique((LinkNode)tree.Nodes[0]) && checkNodesComplete(tree)) // Only if everything is A-OK, then do we proceed.
+                SaveActiveNode();
+                if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
                 {
                     pm_Page.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -204,11 +204,11 @@ namespace SW2URDF
                     if (result == (int)swComponentResolveStatus_e.swResolveOk)
                     {
                         // Builds the links and joints from the PMPage configuration
-                        LinkNode BaseNode = (LinkNode)tree.Nodes[0];
+                        LinkNode BaseNode = (LinkNode)Tree.Nodes[0];
                         automaticallySwitched = true;
-                        tree.Nodes.Remove(BaseNode);
+                        Tree.Nodes.Remove(BaseNode);
 
-                        Exporter.createRobotFromTreeView(BaseNode);
+                        Exporter.CreateRobotFromTreeView(BaseNode);
                         AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
                         exportForm.Exporter = Exporter;
                         exportForm.Show();
@@ -232,7 +232,7 @@ namespace SW2URDF
         {
             try
             {
-                onButtonPress(Id);
+                OnButtonPress(Id);
             }
             catch (Exception e)
             {
@@ -249,14 +249,14 @@ namespace SW2URDF
                 if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
                 {
                     logger.Info("Configuration canceled");
-                    saveActiveNode();
+                    SaveActiveNode();
                 }
 
                 else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
                 {
                     logger.Info("Configuration saved");
-                    saveActiveNode();
-                    saveConfigTree(ActiveSWModel, (LinkNode)tree.Nodes[0], false);
+                    SaveActiveNode();
+                    SaveConfigTree(ActiveSWModel, (LinkNode)Tree.Nodes[0], false);
                 }
             }
             catch (Exception e)
@@ -294,8 +294,8 @@ namespace SW2URDF
         {
             if (Id == NumBox_ChildCount_ID)
             {
-                LinkNode node = (LinkNode)tree.SelectedNode;
-                createNewNodes(node);
+                LinkNode node = (LinkNode)Tree.SelectedNode;
+                CreateNewNodes(node);
             }
         }
 
@@ -320,7 +320,7 @@ namespace SW2URDF
         {
             if (Id == TextBox_LinkNameID)
             {
-                LinkNode node = (LinkNode)tree.SelectedNode;
+                LinkNode node = (LinkNode)Tree.SelectedNode;
                 node.Text = pm_TextBox_LinkName.Text;
                 node.Name = pm_TextBox_LinkName.Text;
             }
@@ -337,13 +337,13 @@ namespace SW2URDF
 
         #region TreeView handler methods
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
-        private void tree_AfterSelect(object sender, TreeViewEventArgs e)
+        private void TreeAfterSelect(object sender, TreeViewEventArgs e)
         {
             try
             {
                 if (!automaticallySwitched && e.Node != null)
                 {
-                    switchActiveNodes((LinkNode)e.Node);
+                    SwitchActiveNodes((LinkNode)e.Node);
                 }
                 automaticallySwitched = false;
             }
@@ -355,13 +355,13 @@ namespace SW2URDF
         }
 
         // Captures which node was right clicked
-        private void tree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        private void TreeNodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             rightClickedNode = (LinkNode)e.Node;
         }
 
         //When a keyboard key is pressed on the tree
-        void tree_KeyDown(object sender, KeyEventArgs e)
+        void TreeKeyDown(object sender, KeyEventArgs e)
         {
             if (rightClickedNode.IsEditing)
             {
@@ -377,11 +377,11 @@ namespace SW2URDF
         }
 
         // The callback for the configuration page context menu 'Add Child' option
-        void addChild_Click(object sender, EventArgs e)
+        void AddChildClick(object sender, EventArgs e)
         {
             try
             {
-                createNewNodes(rightClickedNode, 1);
+                CreateNewNodes(rightClickedNode, 1);
             }
             catch (Exception ex)
             {
@@ -391,7 +391,7 @@ namespace SW2URDF
         }
 
         // The callback for the configuration page context menu 'Remove Child' option
-        void removeChild_Click(object sender, EventArgs e)
+        void RemoveChildClick(object sender, EventArgs e)
         {
             try
             {
@@ -407,12 +407,12 @@ namespace SW2URDF
 
         // The callback for the configuration page context menu 'Rename Child' option
         // This isn't really working right now, so the option was deactivated from the context menu
-        void renameChild_Click(object sender, EventArgs e)
+        void RenameChildClick(object sender, EventArgs e)
         {
             try
             {
-                tree.SelectedNode = rightClickedNode;
-                tree.LabelEdit = true;
+                Tree.SelectedNode = rightClickedNode;
+                Tree.LabelEdit = true;
                 rightClickedNode.BeginEdit();
                 pm_Page.SetFocus(dotNet_tree);
             }
@@ -423,11 +423,11 @@ namespace SW2URDF
             }
         }
 
-        private void tree_ItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
+        private void TreeItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
         {
             try
             { 
-                tree.DoDragDrop(e.Item, DragDropEffects.Move);
+                Tree.DoDragDrop(e.Item, DragDropEffects.Move);
             }
             catch (Exception ex)
             {
@@ -435,15 +435,15 @@ namespace SW2URDF
                 System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-        private void tree_DragOver(object sender, System.Windows.Forms.DragEventArgs e)
+        private void TreeDragOver(object sender, System.Windows.Forms.DragEventArgs e)
         {
             try
             { 
                 // Retrieve the client coordinates of the mouse position.
-                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+                Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
 
                 // Select the node at the mouse position.
-                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                Tree.SelectedNode = Tree.GetNodeAt(targetPoint);
                 e.Effect = DragDropEffects.Move;
             }
             catch (Exception ex)
@@ -452,15 +452,15 @@ namespace SW2URDF
                 System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-        private void tree_DragEnter(object sender, DragEventArgs e)
+        private void TreeDragEnter(object sender, DragEventArgs e)
         {
             try
             { 
                 // Retrieve the client coordinates of the mouse position.
-                Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+                Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
 
                 // Select the node at the mouse position.
-                tree.SelectedNode = tree.GetNodeAt(targetPoint);
+                Tree.SelectedNode = Tree.GetNodeAt(targetPoint);
                 e.Effect = DragDropEffects.Move;
             }
             catch (Exception ex)
@@ -470,13 +470,13 @@ namespace SW2URDF
             }
         }
 
-        private void doDragDrop(DragEventArgs e)
+        private void DoDragDrop(DragEventArgs e)
         {
             // Retrieve the client coordinates of the drop location.
-            Point targetPoint = tree.PointToClient(new Point(e.X, e.Y));
+            Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
 
             // Retrieve the node at the drop location.
-            LinkNode targetNode = (LinkNode)tree.GetNodeAt(targetPoint);
+            LinkNode targetNode = (LinkNode)Tree.GetNodeAt(targetPoint);
 
             LinkNode draggedNode;
             // Retrieve the node that was dragged.
@@ -501,16 +501,16 @@ namespace SW2URDF
             if (targetNode == null)
             {
                 // If for some reason the tree is empty
-                if (tree.Nodes.Count == 0)
+                if (Tree.Nodes.Count == 0)
                 {
                     draggedNode.Remove();
-                    tree.Nodes.Add(draggedNode);
-                    tree.ExpandAll();
+                    Tree.Nodes.Add(draggedNode);
+                    Tree.ExpandAll();
                     return;
                 }
                 else
                 {
-                    targetNode = (LinkNode)tree.TopNode;
+                    targetNode = (LinkNode)Tree.TopNode;
                     draggedNode.Remove();
                     targetNode.Nodes.Add(draggedNode);
                     targetNode.ExpandAll();
@@ -541,7 +541,7 @@ namespace SW2URDF
                         newParent.Nodes.Add(newChild); // 
                         if (sameGrandparent == null)
                         {
-                            tree.Nodes.Add(newParent);
+                            Tree.Nodes.Add(newParent);
                         }
                         else
                         {
@@ -555,11 +555,11 @@ namespace SW2URDF
             }
         }
 
-        private void tree_DragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        private void TreeDragDrop(object sender, System.Windows.Forms.DragEventArgs e)
         {
             try
             {
-                doDragDrop(e);
+                DoDragDrop(e);
             }
             catch (Exception ex)
             {
@@ -570,7 +570,7 @@ namespace SW2URDF
         #endregion
 
         //A method that sets up the Property Manager Page
-        private void setupPropertyManagerPage(ref string caption, ref string tip, ref long options, ref int controlType, ref int alignment)
+        private void SetupPropertyManagerPage(ref string caption, ref string tip, ref long options, ref int controlType, ref int alignment)
         {
             //Begin adding the controls to the page
             //Create the group box
@@ -756,35 +756,35 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_tree = pm_Page.AddControl(dotNet_tree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
             pm_tree.Height = 163;
-            tree = new TreeView();
-            tree.Height = 163;
-            tree.Visible = true;
-            tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(tree_AfterSelect);
-            tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(tree_NodeMouseClick);
-            tree.KeyDown += new System.Windows.Forms.KeyEventHandler(tree_KeyDown);
-            tree.DragDrop += new DragEventHandler(tree_DragDrop);
-            tree.DragOver += new DragEventHandler(tree_DragOver);
-            tree.DragEnter += new DragEventHandler(tree_DragEnter);
-            tree.ItemDrag += new ItemDragEventHandler(tree_ItemDrag);
-            tree.AllowDrop = true;
-            pm_tree.SetWindowHandlex64(tree.Handle.ToInt64());
+            Tree = new TreeView();
+            Tree.Height = 163;
+            Tree.Visible = true;
+            Tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(TreeAfterSelect);
+            Tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(TreeNodeMouseClick);
+            Tree.KeyDown += new System.Windows.Forms.KeyEventHandler(TreeKeyDown);
+            Tree.DragDrop += new DragEventHandler(TreeDragDrop);
+            Tree.DragOver += new DragEventHandler(TreeDragOver);
+            Tree.DragEnter += new DragEventHandler(TreeDragEnter);
+            Tree.ItemDrag += new ItemDragEventHandler(TreeItemDrag);
+            Tree.AllowDrop = true;
+            pm_tree.SetWindowHandlex64(Tree.Handle.ToInt64());
 
             ToolStripMenuItem addChild = new ToolStripMenuItem();
             ToolStripMenuItem removeChild = new ToolStripMenuItem();
             //ToolStripMenuItem renameChild = new ToolStripMenuItem();
             addChild.Text = "Add Child Link";
-            addChild.Click += new System.EventHandler(this.addChild_Click);
+            addChild.Click += new System.EventHandler(this.AddChildClick);
 
             removeChild.Text = "Remove";
-            removeChild.Click += new System.EventHandler(this.removeChild_Click);
+            removeChild.Click += new System.EventHandler(this.RemoveChildClick);
             //renameChild.Text = "Rename";
             //renameChild.Click += new System.EventHandler(this.renameChild_Click);
            //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
             docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild});
-            LinkNode node = createEmptyNode(null);
+            LinkNode node = CreateEmptyNode(null);
             node.ContextMenuStrip = docMenu;
-            tree.Nodes.Add(node);
-            tree.SelectedNode = tree.Nodes[0];
+            Tree.Nodes.Add(node);
+            Tree.SelectedNode = Tree.Nodes[0];
             pm_Selection.SetSelectionFocus();
             pm_Page.SetFocus(dotNet_tree);
             //updateNodeNames(tree);

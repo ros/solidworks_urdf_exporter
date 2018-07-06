@@ -41,12 +41,12 @@ namespace SW2URDF
     public partial class AssemblyExportForm : Form
     {
                 //From the link, this method fills the property boxes on the Link Properties page
-        public void fillLinkPropertyBoxes(link Link)
+        public void FillLinkPropertyBoxes(Link Link)
         {
-            fillBlank(linkBoxes);
+            FillBlank(linkBoxes);
             if (!Link.isFixedFrame)
             {
-                Link.Visual.Origin.fillBoxes(textBox_visual_origin_x,
+                Link.Visual.Origin.FillBoxes(textBox_visual_origin_x,
                                              textBox_visual_origin_y,
                                              textBox_visual_origin_z,
                                              textBox_visual_origin_roll,
@@ -54,7 +54,7 @@ namespace SW2URDF
                                              textBox_visual_origin_yaw,
                                              "G5");
 
-                Link.Inertial.Origin.fillBoxes(textBox_inertial_origin_x,
+                Link.Inertial.Origin.FillBoxes(textBox_inertial_origin_x,
                                                textBox_inertial_origin_y,
                                                textBox_inertial_origin_z,
                                                textBox_inertial_origin_roll,
@@ -62,9 +62,9 @@ namespace SW2URDF
                                                textBox_inertial_origin_yaw,
                                                "G5");
 
-                Link.Inertial.Mass.fillBoxes(textBox_mass, "G5");
+                Link.Inertial.Mass.FillBoxes(textBox_mass, "G5");
 
-                Link.Inertial.Inertia.fillBoxes(textBox_ixx,
+                Link.Inertial.Inertia.FillBoxes(textBox_ixx,
                                                 textBox_ixy,
                                                 textBox_ixz,
                                                 textBox_iyy,
@@ -72,10 +72,10 @@ namespace SW2URDF
                                                 textBox_izz,
                                                 "G5");
 
-                Link.Visual.Material.fillBoxes(comboBox_materials, "G5");
+                Link.Visual.Material.FillBoxes(comboBox_materials, "G5");
                 textBox_texture.Text = Link.Visual.Material.Texture.wFilename;
 
-                Link.Visual.Material.Color.fillBoxes(domainUpDown_red,
+                Link.Visual.Material.Color.FillBoxes(domainUpDown_red,
                                                      domainUpDown_green,
                                                      domainUpDown_blue,
                                                      domainUpDown_alpha,
@@ -87,19 +87,19 @@ namespace SW2URDF
         }
 
         //Fills the property boxes on the joint properties page
-        public void fillJointPropertyBoxes(joint Joint)
+        public void FillJointPropertyBoxes(Joint Joint)
         {
-            fillBlank(jointBoxes);
+            FillBlank(jointBoxes);
             AutoUpdatingForm = true;
             if (Joint != null) //For the base_link or if none is selected
             {
-                Joint.fillBoxes(textBox_joint_name, comboBox_joint_type);
-                Joint.Parent.fillBoxes(label_parent);
-                Joint.Child.fillBoxes(label_child);
+                Joint.FillBoxes(textBox_joint_name, comboBox_joint_type);
+                Joint.Parent.FillBoxes(label_parent);
+                Joint.Child.FillBoxes(label_child);
 
                 //G5: Maximum decimal places to use (not counting exponential notation) is 5
 
-                Joint.Origin.fillBoxes(textBox_joint_x, 
+                Joint.Origin.FillBoxes(textBox_joint_x, 
                                        textBox_joint_y, 
                                        textBox_joint_z, 
                                        textBox_joint_roll, 
@@ -107,11 +107,11 @@ namespace SW2URDF
                                        textBox_joint_yaw, 
                                        "G5");
 
-                Joint.Axis.fillBoxes(textBox_axis_x, textBox_axis_y, textBox_axis_z, "G5");
+                Joint.Axis.FillBoxes(textBox_axis_x, textBox_axis_y, textBox_axis_z, "G5");
 
                 if (Joint.Limit != null)
                 {
-                    Joint.Limit.fillBoxes(textBox_limit_lower,
+                    Joint.Limit.FillBoxes(textBox_limit_lower,
                                           textBox_limit_upper,
                                           textBox_limit_effort,
                                           textBox_limit_velocity,
@@ -120,21 +120,21 @@ namespace SW2URDF
 
                 if (Joint.Calibration != null)
                 {
-                    Joint.Calibration.fillBoxes(textBox_calibration_rising,
+                    Joint.Calibration.FillBoxes(textBox_calibration_rising,
                                                 textBox_calibration_falling,
                                                 "G5");
                 }
 
                 if (Joint.Dynamics != null)
                 {
-                    Joint.Dynamics.fillBoxes(textBox_damping,
+                    Joint.Dynamics.FillBoxes(textBox_damping,
                                              textBox_friction,
                                              "G5");
                 }
 
                 if (Joint.Safety != null)
                 {
-                    Joint.Safety.fillBoxes(textBox_soft_lower,
+                    Joint.Safety.FillBoxes(textBox_soft_lower,
                                            textBox_soft_upper,
                                            textBox_k_position,
                                            textBox_k_velocity,
@@ -142,7 +142,7 @@ namespace SW2URDF
                 }
             }
 
-            if (Joint != null && (Joint.type == "revolute" || Joint.type == "continuous"))
+            if (Joint != null && (Joint.Type == "revolute" || Joint.Type == "continuous"))
             {
                 label_lower_limit.Text = "lower (rad)";
                 label_limit_upper.Text = "upper (rad)";
@@ -155,7 +155,7 @@ namespace SW2URDF
                 label_kposition.Text = "k position";
                 label_kvelocity.Text = "k velocity";
             }
-            else if (Joint != null && Joint.type == "prismatic")
+            else if (Joint != null && Joint.Type == "prismatic")
             {
                 label_lower_limit.Text = "lower (m)";
                 label_limit_upper.Text = "upper (m)";
@@ -196,7 +196,7 @@ namespace SW2URDF
             
         }
 
-        public void fillBlank(Control[] boxes)
+        public void FillBlank(Control[] boxes)
         {
             foreach (Control box in boxes)
             {
@@ -205,37 +205,37 @@ namespace SW2URDF
         }
 
         //Converts the text boxes back into values for the link
-        public void saveLinkDataFromPropertyBoxes(link Link)
+        public void SaveLinkDataFromPropertyBoxes(Link Link)
         {
             if (!Link.isFixedFrame)
             {
-                Link.Inertial.Origin.update(textBox_inertial_origin_x,
+                Link.Inertial.Origin.Update(textBox_inertial_origin_x,
                                             textBox_inertial_origin_y,
                                             textBox_inertial_origin_z,
                                             textBox_inertial_origin_roll,
                                             textBox_inertial_origin_pitch,
                                             textBox_inertial_origin_yaw);
 
-                Link.Visual.Origin.update(textBox_visual_origin_x,
+                Link.Visual.Origin.Update(textBox_visual_origin_x,
                                           textBox_visual_origin_y,
                                           textBox_visual_origin_z,
                                           textBox_visual_origin_roll,
                                           textBox_visual_origin_pitch,
                                           textBox_visual_origin_yaw);
 
-                Link.Inertial.Mass.update(textBox_mass);
+                Link.Inertial.Mass.Update(textBox_mass);
 
-                Link.Inertial.Inertia.update(textBox_ixx,
+                Link.Inertial.Inertia.Update(textBox_ixx,
                                              textBox_ixy,
                                              textBox_ixz,
                                              textBox_iyy,
                                              textBox_iyz,
                                              textBox_izz);
 
-                Link.Visual.Material.name = comboBox_materials.Text;
+                Link.Visual.Material.Name = comboBox_materials.Text;
                 Link.Visual.Material.Texture.wFilename = textBox_texture.Text;
 
-                Link.Visual.Material.Color.update(domainUpDown_red,
+                Link.Visual.Material.Color.Update(domainUpDown_red,
                                                   domainUpDown_green,
                                                   domainUpDown_blue,
                                                   domainUpDown_alpha);
@@ -245,39 +245,39 @@ namespace SW2URDF
         }
 
         //Saves data from text boxes back into a joint
-        public void saveJointDataFromPropertyBoxes(joint Joint)
+        public void SaveJointDataFromPropertyBoxes(Joint Joint)
         {
-            Joint.update(textBox_joint_name, comboBox_joint_type);
+            Joint.Update(textBox_joint_name, comboBox_joint_type);
 
-            Joint.Parent.update(label_parent);
-            Joint.Child.update(label_child);
+            Joint.Parent.Update(label_parent);
+            Joint.Child.Update(label_child);
 
             Joint.CoordinateSystemName = comboBox_origin.Text;
             Joint.AxisName = comboBox_axis.Text;
 
-            Joint.Origin.update(textBox_joint_x, 
+            Joint.Origin.Update(textBox_joint_x, 
                                 textBox_joint_y, 
                                 textBox_joint_z, 
                                 textBox_joint_roll, 
                                 textBox_joint_pitch, 
                                 textBox_joint_yaw);
 
-            Joint.Axis.update(textBox_axis_x, 
+            Joint.Axis.Update(textBox_axis_x, 
                               textBox_axis_y, 
                               textBox_axis_z);
 
             if (textBox_limit_lower.Text == "" && textBox_limit_upper.Text == "" && textBox_limit_effort.Text == "" && textBox_limit_velocity.Text == "")
             {
-                if (Joint.type == "prismatic" || Joint.type == "revolute")
+                if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
                     if (Joint.Limit == null)
                     {
-                        Joint.Limit = new limit();
+                        Joint.Limit = new Limit();
                     }
                     else
                     {
-                        Joint.Limit.effort = 0;
-                        Joint.Limit.velocity = 0;
+                        Joint.Limit.Effort = 0;
+                        Joint.Limit.Velocity = 0;
                     }
                 }
                 else
@@ -289,9 +289,9 @@ namespace SW2URDF
             {
                 if (Joint.Limit == null)
                 {
-                    Joint.Limit = new limit();
+                    Joint.Limit = new Limit();
                 }
-                Joint.Limit.setValues(textBox_limit_lower, 
+                Joint.Limit.SetValues(textBox_limit_lower, 
                                    textBox_limit_upper, 
                                    textBox_limit_effort, 
                                    textBox_limit_velocity);
@@ -305,9 +305,9 @@ namespace SW2URDF
             {
                 if (Joint.Calibration == null)
                 {
-                    Joint.Calibration = new calibration();
+                    Joint.Calibration = new Calibration();
                 }
-                Joint.Calibration.setValues(textBox_calibration_rising, 
+                Joint.Calibration.SetValues(textBox_calibration_rising, 
                                          textBox_calibration_falling);
             }
 
@@ -319,9 +319,9 @@ namespace SW2URDF
             {
                 if (Joint.Dynamics == null)
                 {
-                    Joint.Dynamics = new dynamics();
+                    Joint.Dynamics = new Dynamics();
                 }
-                Joint.Dynamics.setValues(textBox_damping, 
+                Joint.Dynamics.SetValues(textBox_damping, 
                                       textBox_friction);
             }
 
@@ -333,9 +333,9 @@ namespace SW2URDF
             {
                 if (Joint.Safety == null)
                 {
-                    Joint.Safety = new safety_controller();
+                    Joint.Safety = new SafetyController();
                 }
-                Joint.Safety.setValues(textBox_soft_lower, 
+                Joint.Safety.SetValues(textBox_soft_lower, 
                                     textBox_soft_upper, 
                                     textBox_k_position, 
                                     textBox_k_velocity);
@@ -344,30 +344,30 @@ namespace SW2URDF
         }
 
         //Fills either TreeView from the URDF robot
-        public void fillTreeViewFromRobot(robot Robot, TreeView tree)
+        public void FillTreeViewFromRobot(Robot Robot, TreeView tree)
         {
             
             LinkNode baseNode = new LinkNode();
-            link baseLink = Robot.BaseLink;
-            baseNode.Name = baseLink.name;
-            baseNode.Text = baseLink.name;
+            Link baseLink = Robot.BaseLink;
+            baseNode.Name = baseLink.Name;
+            baseNode.Text = baseLink.Name;
             baseNode.Link = baseLink;
-            baseNode.isBaseNode = true;
-            baseNode.linkName = baseLink.name;
+            baseNode.IsBaseNode = true;
+            baseNode.LinkName = baseLink.Name;
             baseNode.Components = baseLink.SWcomponents;
-            baseNode.coordsysName = "Origin_global";
-            baseNode.isIncomplete = false;
+            baseNode.CoordsysName = "Origin_global";
+            baseNode.IsIncomplete = false;
             
-            foreach (link child in baseLink.Children)
+            foreach (Link child in baseLink.Children)
             {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child));
+                baseNode.Nodes.Add(CreateLinkNodeFromLink(child));
             }
             tree.Nodes.Add(baseNode);
             tree.ExpandAll();
         }
 
         //Fills specifically the joint TreeView
-        public void fillJointTree()
+        public void FillJointTree()
         {
             treeView_jointtree.Nodes.Clear();
 
@@ -376,54 +376,56 @@ namespace SW2URDF
                 LinkNode node = (LinkNode)BaseNode.FirstNode;
                 BaseNode.Nodes.Remove(node);
                 treeView_jointtree.Nodes.Add(node);
-                updateNodeText(node, true);
+                UpdateNodeText(node, true);
             }
             treeView_jointtree.ExpandAll();
         }
 
-        public void fillLinkTree()
+        public void FillLinkTree()
         {
             treeView_linkProperties.Nodes.Clear();
             treeView_linkProperties.Nodes.Add(BaseNode);
-            updateNodeText(BaseNode, false);
+            UpdateNodeText(BaseNode, false);
             treeView_linkProperties.ExpandAll();
         }
 
-        public void updateNodeText(LinkNode node, bool useJointName)
+        public void UpdateNodeText(LinkNode node, bool useJointName)
         {
             if (useJointName)
             {
-                node.Text = node.Link.Joint.name;
+                node.Text = node.Link.Joint.Name;
             }
             else
             {
-                node.Text = node.Link.name;
+                node.Text = node.Link.Name;
             }
             foreach(LinkNode child in node.Nodes)
             {
-                updateNodeText(child, useJointName);
+                UpdateNodeText(child, useJointName);
             }
         }
 
         //Converts a Link to a LinkNode
-        public LinkNode createLinkNodeFromLink(link Link)
+        public LinkNode CreateLinkNodeFromLink(Link Link)
         {
-            LinkNode node = new LinkNode();
-            node.Name = Link.name;
-            node.Text = Link.name;
-            node.Link = Link;
-            node.isBaseNode = false;
-            node.linkName = Link.name;
-            node.jointName = Link.Joint.name;
-            node.Components = Link.SWcomponents;
-            node.coordsysName = Link.Joint.CoordinateSystemName;
-            node.axisName = Link.Joint.AxisName;
-            node.jointType = Link.Joint.type;
-            node.isIncomplete = false;
-
-            foreach (link child in Link.Children)
+            LinkNode node = new LinkNode
             {
-                node.Nodes.Add(createLinkNodeFromLink(child));
+                Name = Link.Name,
+                Text = Link.Name,
+                Link = Link,
+                IsBaseNode = false,
+                LinkName = Link.Name,
+                JointName = Link.Joint.Name,
+                Components = Link.SWcomponents,
+                CoordsysName = Link.Joint.CoordinateSystemName,
+                AxisName = Link.Joint.AxisName,
+                JointType = Link.Joint.Type,
+                IsIncomplete = false
+            };
+
+            foreach (Link child in Link.Children)
+            {
+                node.Nodes.Add(CreateLinkNodeFromLink(child));
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
 
@@ -432,24 +434,24 @@ namespace SW2URDF
         }
 
         //Converts a TreeView back into a robot
-        public robot createRobotFromTreeView(TreeView tree)
+        public Robot CreateRobotFromTreeView(TreeView tree)
         {
             //TODO: This needs to properly handle the new differences between the trees.
-            robot Robot = Exporter.mRobot;
-            Robot.BaseLink = createLinkFromLinkNode((LinkNode)tree.Nodes[0]);
-            Robot.name = Exporter.mRobot.name;
+            Robot Robot = Exporter.URDFRobot;
+            Robot.BaseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Robot.Name = Exporter.URDFRobot.Name;
             return Robot;
         }
 
         //Converts a LinkNode into a Link
-        public link createLinkFromLinkNode(LinkNode node)
+        public Link CreateLinkFromLinkNode(LinkNode node)
         {
-            link Link = node.Link;
+            Link Link = node.Link;
             Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
 
-                link childLink = createLinkFromLinkNode(child);
+                Link childLink = CreateLinkFromLinkNode(child);
                 Link.Children.Add(childLink); // Recreates the children of each embedded link
 
             }
@@ -457,7 +459,7 @@ namespace SW2URDF
         }
 
 
-        public void saveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
             string oldData = "";
@@ -495,7 +497,7 @@ namespace SW2URDF
                 if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute(swApp, "URDF Export Configuration");
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = CreateSWSaveAttribute(swApp, "URDF Export Configuration");
                     param = saveExporterAttribute.GetParameter("data");
                     param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("name");
@@ -508,7 +510,7 @@ namespace SW2URDF
             }
         }
 
-        private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(ISldWorks iSwApp, string name)
+        private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(ISldWorks iSwApp, string name)
         {
             int Options = 0;
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
@@ -532,12 +534,12 @@ namespace SW2URDF
             return saveExporterAttribute;
         }
 
-        public void changeAllNodeFont(LinkNode node, Font font)
+        public void ChangeAllNodeFont(LinkNode node, Font font)
         {
             node.NodeFont = font;
             foreach (LinkNode child in node.Nodes)
             {
-                changeAllNodeFont(child, font);
+                ChangeAllNodeFont(child, font);
             }
         }
     }

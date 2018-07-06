@@ -34,11 +34,11 @@ using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
-    public static class ops
+    public static class MathOps
     {
         public static double epsilon = 1e-15;
         // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
-        public static Matrix str2mat(string S)
+        public static Matrix StringToMatrix(string S)
         {
             
             S = S.Trim(new char[] { '[', ']', ' ' });
@@ -53,11 +53,9 @@ namespace SW2URDF
                 string[] columns = rows[i].Split(' ');
                 if (columns.Length == columnCount)
                 {
-                    double value;
                     for (int j = 0; j < columnCount; j++)
                     {
-
-                        m[i, j] = (Double.TryParse(columns[j], out value)) ? value : 0;
+                        m[i, j] = (Double.TryParse(columns[j], out double value)) ? value : 0;
                     }
                 }
             }
@@ -65,7 +63,7 @@ namespace SW2URDF
         }
 
         // Convert a math.net Numerics Matrix into a MATLAB type string representation
-        public static string mat2str(Matrix m)
+        public static string MatrixToString(Matrix m)
         {
             string s = "";
             for (int i = 0; i < m.RowCount; i++)
@@ -84,14 +82,14 @@ namespace SW2URDF
         }
 
         // Concatenates two vectors together. Why doesn't math.net numerics have this functionality
-        public static Vector vectorCat(Vector v1, Vector v2)
+        public static Vector ConcatenateVectors(Vector v1, Vector v2)
         {
             Vector vec = new DenseVector(v1.Count + v2.Count);
             v1.CopyTo(vec, 0, 0, v1.Count);
             v2.CopyTo(vec, 0, v1.Count, v2.Count);
             return vec;
         }
-        public static Vector vectorCat(Vector v1, Vector v2, Vector v3, Vector v4)
+        public static Vector ConcatenateVectors(Vector v1, Vector v2, Vector v3, Vector v4)
         {
             Vector vec = new DenseVector(v1.Count + v2.Count + v3.Count + v4.Count);
             v1.CopyTo(vec, 0, 0, v1.Count);
@@ -101,12 +99,12 @@ namespace SW2URDF
             return vec;
         }
 
-        public static T max<T>(T d1, T d2, T d3) where T: System.IComparable<T>
+        public static T Max<T>(T d1, T d2, T d3) where T: System.IComparable<T>
         {
-            return max(new T[] { d1, d2, d3 });
+            return Max(new T[] { d1, d2, d3 });
         }
 
-        public static T max<T>(T[] array) where T: IComparable<T>
+        public static T Max<T>(T[] array) where T: IComparable<T>
         {
             T result = default(T);
             if (array.Length > 0)
@@ -120,22 +118,22 @@ namespace SW2URDF
             return result;
         }
 
-        public static T max<T>(T t1, T t2) where T : System.IComparable<T>
+        public static T Max<T>(T t1, T t2) where T : System.IComparable<T>
         {
-            return max(new T[] { t1, t2 });
+            return Max(new T[] { t1, t2 });
         }
 
-        public static T min<T>(T t1, T t2) where T : System.IComparable<T>
+        public static T Min<T>(T t1, T t2) where T : System.IComparable<T>
         {
-            return min(new T[] { t1, t2 });
+            return Min(new T[] { t1, t2 });
         }
 
-        public static T min<T>(T d1, T d2, T d3) where T: System.IComparable<T>
+        public static T Min<T>(T d1, T d2, T d3) where T: System.IComparable<T>
         {
-            return min(new T[] { d1, d2, d3 });
+            return Min(new T[] { d1, d2, d3 });
         }
 
-        public static T min<T>(T[] array) where T: System.IComparable<T>
+        public static T Min<T>(T[] array) where T: System.IComparable<T>
         {
             T result = default(T);
             if (array.Length > 0)
@@ -149,7 +147,7 @@ namespace SW2URDF
             return result;
         }
 
-        public static T envelope<T>(T value, T min, T max) where T : System.IComparable<T>
+        public static T Envelope<T>(T value, T min, T max) where T : System.IComparable<T>
         {
             if (Comparer<T>.Default.Compare(value, max) > 0)
             {
@@ -166,17 +164,17 @@ namespace SW2URDF
         }
 
         // This set of methods finds the bottom-most one in a column vector from a matrix.
-        public static int findLeadingOneinVector(Vector v)
+        public static int FindLeadingOneinVector(Vector v)
         {
-            return findLeadingOneinVector(v, 0, v.Count);
+            return FindLeadingOneinVector(v, 0, v.Count);
         }
         // Sets a lower bound in case this vector only has values thare are to the right of other leading ones
-        public static int findLeadingOneinVector(Vector v, int lowerBound)
+        public static int FindLeadingOneinVector(Vector v, int lowerBound)
         {
-            return findLeadingOneinVector(v, lowerBound, v.Count);
+            return FindLeadingOneinVector(v, lowerBound, v.Count);
         }
         // Sets an upper bound to reduce the number of computations. I.E in a rref matrix the 1 should be on or above the diagonal
-        public static int findLeadingOneinVector(Vector v, int lowerBound, int upperBound)
+        public static int FindLeadingOneinVector(Vector v, int lowerBound, int upperBound)
         {
             // If the upperBound is less than the lowerBound, the vector is searched backwards (to help speed up computation in some cases)
             if (upperBound < lowerBound)
@@ -204,11 +202,11 @@ namespace SW2URDF
         }
 
         // Inserts the vector into the first empty row of a matrix (if the column count matches)
-        public static Matrix addVectorToMatrix(Matrix m, Vector v)
+        public static Matrix AddVectorToMatrix(Matrix m, Vector v)
         {
             if (m.ColumnCount == v.Count)
             {
-                int row = firstEmptyRow(m);
+                int row = FirstEmptyRow(m);
                 if (row != -1)
                 {
                     m.SetRow(row, v);
@@ -218,7 +216,7 @@ namespace SW2URDF
         }
 
         // Finds the first empty (all entries are 0) row in a matrix. Returns -1 if no row is non-zero
-        public static int firstEmptyRow(Matrix m)
+        public static int FirstEmptyRow(Matrix m)
         {
             for (int i = 0; i < m.RowCount; i++)
             {
@@ -240,13 +238,13 @@ namespace SW2URDF
             return -1;
         }
 
-        public static Vector<double> projectLineToPlane(Vector<double> normal, Vector<double> line)
+        public static Vector<double> ProjectLineToPlane(Vector<double> normal, Vector<double> line)
         {
-            return crossProduct3(normal, crossProduct3(line, normal));
+            return CrossProduct3(normal, CrossProduct3(line, normal));
 
         }
 
-        public static double[] closestPointOnLineToPoint(double[] point, double[] line, double[] pointOnLine)
+        public static double[] ClosestPointOnLineToPoint(double[] point, double[] line, double[] pointOnLine)
         {
             if (point.Length != line.Length || point.Length != pointOnLine.Length)
             {
@@ -270,16 +268,16 @@ namespace SW2URDF
         }
 
 
-        public static double[] closestPointOnLineWithinBox(double X_min, double X_max, double Y_min, double Y_max, double Z_min, double Z_max, double[] line, double[] pointOnLine)
+        public static double[] ClosestPointOnLineWithinBox(double X_min, double X_max, double Y_min, double Y_max, double Z_min, double Z_max, double[] line, double[] pointOnLine)
         {
             if (pointOnLine[0] > X_min && pointOnLine[0] < X_max && pointOnLine[1] > Y_min && pointOnLine[1] < Y_max && pointOnLine[2] > Z_min && pointOnLine[2] < Z_max)
             {
                 return pointOnLine;
             }
-            double[] point1 = closestPointOnLineToPoint(new double[] { X_max, Y_max, Z_max }, line, pointOnLine);
-            double[] point2 = closestPointOnLineToPoint(new double[] { X_min, Y_min, Z_min }, line, pointOnLine);
+            double[] point1 = ClosestPointOnLineToPoint(new double[] { X_max, Y_max, Z_max }, line, pointOnLine);
+            double[] point2 = ClosestPointOnLineToPoint(new double[] { X_min, Y_min, Z_min }, line, pointOnLine);
 
-            if (distance2(pointOnLine, point1) < distance2(pointOnLine, point2))
+            if (Distance2(pointOnLine, point1) < Distance2(pointOnLine, point2))
             {
                 return point1;
             }
@@ -289,7 +287,7 @@ namespace SW2URDF
             }
             
         }
-        public static Vector<double> crossProduct3(Vector<double> v1, Vector<double> v2)
+        public static Vector<double> CrossProduct3(Vector<double> v1, Vector<double> v2)
         {
             Vector<double> v = new DenseVector(v1.Count);
             if (v1.Count == 3 && v2.Count == 3)
@@ -302,7 +300,7 @@ namespace SW2URDF
 
         }
 
-        public static Matrix eig(Matrix<double> m)
+        public static Matrix Eig(Matrix<double> m)
         {
             if (m == null)
             {
@@ -320,12 +318,12 @@ namespace SW2URDF
             return n;
         }
 
-        public static bool equals(Matrix<double> m1, Matrix<double> m2)
+        public static bool Equals(Matrix<double> m1, Matrix<double> m2)
         {
-            return equals(m1, m2, Double.Epsilon);
+            return Equals(m1, m2, Double.Epsilon);
 
         }
-        public static bool equals(Matrix<double> m1, Matrix<double> m2, double epsilon)
+        public static bool Equals(Matrix<double> m1, Matrix<double> m2, double epsilon)
         {
             if (m1.RowCount != m2.RowCount)
             {
@@ -347,11 +345,11 @@ namespace SW2URDF
             }
             return true;
         }
-        public static bool equals(Vector<double> v1, Vector<double> v2)
+        public static bool Equals(Vector<double> v1, Vector<double> v2)
         {
-            return equals(v1, v2, Double.Epsilon);
+            return Equals(v1, v2, Double.Epsilon);
         }
-        public static bool equals(Vector<double> v1, Vector<double> v2, double epsilon)
+        public static bool Equals(Vector<double> v1, Vector<double> v2, double epsilon)
         {
             if (v1.Count != v2.Count)
             {
@@ -367,19 +365,19 @@ namespace SW2URDF
             return true;
         }
 
-        public static double[] getXYZ(Matrix<double> m)
+        public static double[] GetXYZ(Matrix<double> m)
         {
             double[] XYZ = new double[3];
             XYZ[0] = m[0, 3]; XYZ[1] = m[1, 3]; XYZ[2] = m[2, 3];
             return XYZ;
         }
-        public static double[] getXYZ(MathTransform transform)
+        public static double[] GetXYZ(MathTransform transform)
         {
             double[] XYZ = new double[3];
             XYZ[0] = transform.ArrayData[9]; XYZ[1] = transform.ArrayData[10]; XYZ[2] = transform.ArrayData[11];
             return XYZ;
         }
-        public static double[] getRPY(Matrix<double> m)
+        public static double[] GetRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
             double x, y;
@@ -402,12 +400,12 @@ namespace SW2URDF
 
             return new double[] {roll, pitch, yaw};
         }
-        public static double[] getRPY(MathTransform transform)
+        public static double[] GetRPY(MathTransform transform)
         {
-            Matrix m = getRotationMatrix(transform);
-            return getRPY(m);
+            Matrix m = GetRotationMatrix(transform);
+            return GetRPY(m);
         }
-        public static Matrix<double> getRotation(double[] RPY)
+        public static Matrix<double> GetRotation(double[] RPY)
         {
             Matrix<double> RX = DenseMatrix.Identity(4);
             Matrix<double> RY = DenseMatrix.Identity(4);
@@ -419,19 +417,19 @@ namespace SW2URDF
 
             return RZ * RY * RX;
         }
-        public static Matrix<double> getTranslation(double[] XYZ)
+        public static Matrix<double> GetTranslation(double[] XYZ)
         {
             Matrix<double> m = DenseMatrix.Identity(4);
             m[0, 3] = XYZ[0]; m[1, 3] = XYZ[1]; m[2, 3] = XYZ[2];
             return m;
         }
-        public static Matrix<double> getTransformation(double[] XYZ, double[] RPY)
+        public static Matrix<double> GetTransformation(double[] XYZ, double[] RPY)
         {
-            Matrix<double> translation = getTranslation(XYZ);
-            Matrix<double> rotation = getRotation(RPY);
+            Matrix<double> translation = GetTranslation(XYZ);
+            Matrix<double> rotation = GetRotation(RPY);
             return translation * rotation;
         }
-        public static Matrix getRotationMatrix(MathTransform transform)
+        public static Matrix GetRotationMatrix(MathTransform transform)
         {
             var rot = new DenseMatrix(3);
             for (int i = 0; i < 3; i++)
@@ -440,13 +438,13 @@ namespace SW2URDF
             return rot;
         }
 
-        public static Matrix<double> getTransformation(Vector<double> translationVector, Vector<double> rotationVector, double angle)
+        public static Matrix<double> GetTransformation(Vector<double> translationVector, Vector<double> rotationVector, double angle)
         {
             Matrix<double> transform = DenseMatrix.Identity(4);
 
             return transform;
         }
-        public static Matrix<double> getTransformation(MathTransform transform)
+        public static Matrix<double> GetTransformation(MathTransform transform)
         {
             Matrix<double> m = new DenseMatrix(4);
 
@@ -467,7 +465,7 @@ namespace SW2URDF
             return m;
         }
 
-        public static double[] pnorm(double[] array, double power)
+        public static double[] PNorm(double[] array, double power)
         {
             double magnitude = 0;
             for (int i = 0; i < array.Length; i++)
@@ -485,12 +483,12 @@ namespace SW2URDF
             return array;
         }
 
-        public static double distance(double[] array1, double[] array2)
+        public static double Distance(double[] array1, double[] array2)
         {
-            return Math.Sqrt(distance2(array1, array2));
+            return Math.Sqrt(Distance2(array1, array2));
         }
 
-        public static double distance2(double[] array1, double[] array2)
+        public static double Distance2(double[] array1, double[] array2)
         {
             double sqrdmag = 0;
             for (int i = 0; i < array1.Length; i++)
@@ -501,7 +499,7 @@ namespace SW2URDF
             return sqrdmag;
         }
 
-        public static void threshold(double[] array, double min_value)
+        public static void Threshold(double[] array, double min_value)
         {
             for (int i = 0; i < array.Length; i++)
             {
@@ -510,7 +508,7 @@ namespace SW2URDF
 
         }
 
-        public static double sum(double[] vec)
+        public static double Sum(double[] vec)
         {
             double s = 0.0;
             foreach (double d in vec)
@@ -520,7 +518,7 @@ namespace SW2URDF
             return s;
         }
 
-        public static double[] flip(double[] vec)
+        public static double[] Flip(double[] vec)
         {
             double[] flipped = new double[vec.Length];
             for (int i = 0; i < vec.Length; i++)
