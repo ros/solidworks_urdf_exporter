@@ -76,7 +76,6 @@ namespace SW2URDF
             linkBoxes = new Control[] {
                 textBox_inertial_origin_x, textBox_inertial_origin_y, textBox_inertial_origin_z, textBox_inertial_origin_roll, textBox_inertial_origin_pitch, textBox_inertial_origin_yaw,
                 textBox_visual_origin_x, textBox_visual_origin_y, textBox_visual_origin_z, textBox_visual_origin_roll, textBox_visual_origin_pitch, textBox_visual_origin_yaw,
-                textBox_collision_origin_x, textBox_collision_origin_y, textBox_collision_origin_z, textBox_collision_origin_roll, textBox_collision_origin_pitch, textBox_collision_origin_yaw,
                 textBox_ixx, textBox_ixy, textBox_ixz, textBox_iyy, textBox_iyz, textBox_izz,
                 textBox_mass, 
                 domainUpDown_red, domainUpDown_green, domainUpDown_blue, domainUpDown_alpha,
@@ -506,6 +505,6 @@ namespace SW2URDF
             }
         }
         #endregion
-        
+
     }
 }

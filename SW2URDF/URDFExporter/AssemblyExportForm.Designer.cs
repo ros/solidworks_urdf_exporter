@@ -30,29 +30,12 @@
         {
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.panel_link_properties = new System.Windows.Forms.Panel();
+            this.button_links_export_urdf_only = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.button_links_finish = new System.Windows.Forms.Button();
             this.button_links_previous = new System.Windows.Forms.Button();
             this.button_links_cancel = new System.Windows.Forms.Button();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.radioButton4 = new System.Windows.Forms.RadioButton();
-            this.radioButton3 = new System.Windows.Forms.RadioButton();
-            this.label27 = new System.Windows.Forms.Label();
-            this.label35 = new System.Windows.Forms.Label();
-            this.label40 = new System.Windows.Forms.Label();
-            this.textBox_collision_origin_yaw = new System.Windows.Forms.TextBox();
-            this.textBox_collision_origin_pitch = new System.Windows.Forms.TextBox();
-            this.textBox_collision_origin_roll = new System.Windows.Forms.TextBox();
-            this.label43 = new System.Windows.Forms.Label();
-            this.label37 = new System.Windows.Forms.Label();
-            this.label42 = new System.Windows.Forms.Label();
-            this.label38 = new System.Windows.Forms.Label();
-            this.label41 = new System.Windows.Forms.Label();
-            this.label39 = new System.Windows.Forms.Label();
-            this.textBox_collision_origin_x = new System.Windows.Forms.TextBox();
-            this.textBox_collision_origin_y = new System.Windows.Forms.TextBox();
-            this.textBox_collision_origin_z = new System.Windows.Forms.TextBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label15 = new System.Windows.Forms.Label();
             this.textBox_ixx = new System.Windows.Forms.TextBox();
@@ -184,9 +167,7 @@
             this.label67 = new System.Windows.Forms.Label();
             this.label69 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.button_links_export_urdf_only = new System.Windows.Forms.Button();
             this.panel_link_properties.SuspendLayout();
-            this.groupBox3.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.SuspendLayout();
@@ -199,7 +180,6 @@
             this.panel_link_properties.Controls.Add(this.button_links_finish);
             this.panel_link_properties.Controls.Add(this.button_links_previous);
             this.panel_link_properties.Controls.Add(this.button_links_cancel);
-            this.panel_link_properties.Controls.Add(this.groupBox3);
             this.panel_link_properties.Controls.Add(this.groupBox5);
             this.panel_link_properties.Controls.Add(this.groupBox4);
             this.panel_link_properties.Controls.Add(this.treeView_linkProperties);
@@ -210,6 +190,16 @@
             this.panel_link_properties.Size = new System.Drawing.Size(1610, 1058);
             this.panel_link_properties.TabIndex = 222;
             this.panel_link_properties.Visible = false;
+            // 
+            // button_links_export_urdf_only
+            // 
+            this.button_links_export_urdf_only.Location = new System.Drawing.Point(1294, 1005);
+            this.button_links_export_urdf_only.Name = "button_links_export_urdf_only";
+            this.button_links_export_urdf_only.Size = new System.Drawing.Size(175, 35);
+            this.button_links_export_urdf_only.TabIndex = 94;
+            this.button_links_export_urdf_only.Text = "Export URDF Only...";
+            this.button_links_export_urdf_only.UseVisualStyleBackColor = true;
+            this.button_links_export_urdf_only.Click += new System.EventHandler(this.button_links_export_urdf_only_Click);
             // 
             // label2
             // 
@@ -268,199 +258,6 @@
             this.button_links_cancel.UseVisualStyleBackColor = true;
             this.button_links_cancel.Click += new System.EventHandler(this.button_links_cancel_Click);
             // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.radioButton4);
-            this.groupBox3.Controls.Add(this.radioButton3);
-            this.groupBox3.Controls.Add(this.label27);
-            this.groupBox3.Controls.Add(this.label35);
-            this.groupBox3.Controls.Add(this.label40);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_yaw);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_pitch);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_roll);
-            this.groupBox3.Controls.Add(this.label43);
-            this.groupBox3.Controls.Add(this.label37);
-            this.groupBox3.Controls.Add(this.label42);
-            this.groupBox3.Controls.Add(this.label38);
-            this.groupBox3.Controls.Add(this.label41);
-            this.groupBox3.Controls.Add(this.label39);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_x);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_y);
-            this.groupBox3.Controls.Add(this.textBox_collision_origin_z);
-            this.groupBox3.Location = new System.Drawing.Point(740, 785);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox3.Size = new System.Drawing.Size(852, 205);
-            this.groupBox3.TabIndex = 73;
-            this.groupBox3.TabStop = false;
-            // 
-            // radioButton4
-            // 
-            this.radioButton4.AutoSize = true;
-            this.radioButton4.Location = new System.Drawing.Point(363, 131);
-            this.radioButton4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.radioButton4.Name = "radioButton4";
-            this.radioButton4.Size = new System.Drawing.Size(65, 24);
-            this.radioButton4.TabIndex = 73;
-            this.radioButton4.Text = "Fine";
-            this.radioButton4.UseVisualStyleBackColor = true;
-            this.radioButton4.Visible = false;
-            // 
-            // radioButton3
-            // 
-            this.radioButton3.AutoSize = true;
-            this.radioButton3.Checked = true;
-            this.radioButton3.Location = new System.Drawing.Point(363, 78);
-            this.radioButton3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(85, 24);
-            this.radioButton3.TabIndex = 72;
-            this.radioButton3.TabStop = true;
-            this.radioButton3.Text = "Course";
-            this.radioButton3.UseVisualStyleBackColor = true;
-            this.radioButton3.Visible = false;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(352, 35);
-            this.label27.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(155, 20);
-            this.label27.TabIndex = 71;
-            this.label27.Text = "Collision Mesh Detail";
-            this.label27.Visible = false;
-            // 
-            // label35
-            // 
-            this.label35.AutoSize = true;
-            this.label35.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label35.Location = new System.Drawing.Point(6, 0);
-            this.label35.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label35.Name = "label35";
-            this.label35.Size = new System.Drawing.Size(82, 20);
-            this.label35.TabIndex = 67;
-            this.label35.Text = "Collision";
-            // 
-            // label40
-            // 
-            this.label40.AutoSize = true;
-            this.label40.Location = new System.Drawing.Point(9, 35);
-            this.label40.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label40.Name = "label40";
-            this.label40.Size = new System.Drawing.Size(77, 20);
-            this.label40.TabIndex = 56;
-            this.label40.Text = "Origin (m)";
-            // 
-            // textBox_collision_origin_yaw
-            // 
-            this.textBox_collision_origin_yaw.Location = new System.Drawing.Point(224, 154);
-            this.textBox_collision_origin_yaw.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_yaw.Name = "textBox_collision_origin_yaw";
-            this.textBox_collision_origin_yaw.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_yaw.TabIndex = 62;
-            // 
-            // textBox_collision_origin_pitch
-            // 
-            this.textBox_collision_origin_pitch.Location = new System.Drawing.Point(224, 114);
-            this.textBox_collision_origin_pitch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_pitch.Name = "textBox_collision_origin_pitch";
-            this.textBox_collision_origin_pitch.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_pitch.TabIndex = 61;
-            // 
-            // textBox_collision_origin_roll
-            // 
-            this.textBox_collision_origin_roll.Location = new System.Drawing.Point(224, 74);
-            this.textBox_collision_origin_roll.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_roll.Name = "textBox_collision_origin_roll";
-            this.textBox_collision_origin_roll.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_roll.TabIndex = 60;
-            // 
-            // label43
-            // 
-            this.label43.AutoSize = true;
-            this.label43.Location = new System.Drawing.Point(172, 154);
-            this.label43.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label43.Name = "label43";
-            this.label43.Size = new System.Drawing.Size(40, 20);
-            this.label43.TabIndex = 59;
-            this.label43.Text = "Yaw";
-            // 
-            // label37
-            // 
-            this.label37.AutoSize = true;
-            this.label37.Location = new System.Drawing.Point(39, 74);
-            this.label37.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label37.Name = "label37";
-            this.label37.Size = new System.Drawing.Size(16, 20);
-            this.label37.TabIndex = 53;
-            this.label37.Text = "x";
-            // 
-            // label42
-            // 
-            this.label42.AutoSize = true;
-            this.label42.Location = new System.Drawing.Point(168, 114);
-            this.label42.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label42.Name = "label42";
-            this.label42.Size = new System.Drawing.Size(44, 20);
-            this.label42.TabIndex = 58;
-            this.label42.Text = "Pitch";
-            // 
-            // label38
-            // 
-            this.label38.AutoSize = true;
-            this.label38.Location = new System.Drawing.Point(39, 114);
-            this.label38.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label38.Name = "label38";
-            this.label38.Size = new System.Drawing.Size(16, 20);
-            this.label38.TabIndex = 54;
-            this.label38.Text = "y";
-            // 
-            // label41
-            // 
-            this.label41.AutoSize = true;
-            this.label41.Location = new System.Drawing.Point(177, 74);
-            this.label41.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label41.Name = "label41";
-            this.label41.Size = new System.Drawing.Size(36, 20);
-            this.label41.TabIndex = 57;
-            this.label41.Text = "Roll";
-            // 
-            // label39
-            // 
-            this.label39.AutoSize = true;
-            this.label39.Location = new System.Drawing.Point(39, 162);
-            this.label39.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label39.Name = "label39";
-            this.label39.Size = new System.Drawing.Size(17, 20);
-            this.label39.TabIndex = 55;
-            this.label39.Text = "z";
-            // 
-            // textBox_collision_origin_x
-            // 
-            this.textBox_collision_origin_x.Location = new System.Drawing.Point(66, 74);
-            this.textBox_collision_origin_x.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_x.Name = "textBox_collision_origin_x";
-            this.textBox_collision_origin_x.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_x.TabIndex = 50;
-            // 
-            // textBox_collision_origin_y
-            // 
-            this.textBox_collision_origin_y.Location = new System.Drawing.Point(66, 114);
-            this.textBox_collision_origin_y.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_y.Name = "textBox_collision_origin_y";
-            this.textBox_collision_origin_y.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_y.TabIndex = 51;
-            // 
-            // textBox_collision_origin_z
-            // 
-            this.textBox_collision_origin_z.Location = new System.Drawing.Point(66, 154);
-            this.textBox_collision_origin_z.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox_collision_origin_z.Name = "textBox_collision_origin_z";
-            this.textBox_collision_origin_z.Size = new System.Drawing.Size(96, 26);
-            this.textBox_collision_origin_z.TabIndex = 52;
-            // 
             // groupBox5
             // 
             this.groupBox5.Controls.Add(this.label15);
@@ -497,7 +294,7 @@
             this.groupBox5.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox5.Size = new System.Drawing.Size(852, 246);
+            this.groupBox5.Size = new System.Drawing.Size(852, 300);
             this.groupBox5.TabIndex = 71;
             this.groupBox5.TabStop = false;
             // 
@@ -514,7 +311,7 @@
             // 
             // textBox_ixx
             // 
-            this.textBox_ixx.Location = new System.Drawing.Point(410, 71);
+            this.textBox_ixx.Location = new System.Drawing.Point(410, 90);
             this.textBox_ixx.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_ixx.Name = "textBox_ixx";
             this.textBox_ixx.Size = new System.Drawing.Size(96, 26);
@@ -522,7 +319,7 @@
             // 
             // textBox_ixz
             // 
-            this.textBox_ixz.Location = new System.Drawing.Point(708, 71);
+            this.textBox_ixz.Location = new System.Drawing.Point(708, 90);
             this.textBox_ixz.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_ixz.Name = "textBox_ixz";
             this.textBox_ixz.Size = new System.Drawing.Size(96, 26);
@@ -530,7 +327,7 @@
             // 
             // textBox_inertial_origin_x
             // 
-            this.textBox_inertial_origin_x.Location = new System.Drawing.Point(66, 75);
+            this.textBox_inertial_origin_x.Location = new System.Drawing.Point(66, 90);
             this.textBox_inertial_origin_x.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_x.Name = "textBox_inertial_origin_x";
             this.textBox_inertial_origin_x.Size = new System.Drawing.Size(96, 26);
@@ -539,7 +336,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(178, 82);
+            this.label16.Location = new System.Drawing.Point(178, 97);
             this.label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(38, 20);
@@ -548,7 +345,7 @@
             // 
             // textBox_inertial_origin_yaw
             // 
-            this.textBox_inertial_origin_yaw.Location = new System.Drawing.Point(225, 155);
+            this.textBox_inertial_origin_yaw.Location = new System.Drawing.Point(225, 170);
             this.textBox_inertial_origin_yaw.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_yaw.Name = "textBox_inertial_origin_yaw";
             this.textBox_inertial_origin_yaw.Size = new System.Drawing.Size(96, 26);
@@ -557,7 +354,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(670, 71);
+            this.label11.Location = new System.Drawing.Point(670, 90);
             this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(30, 20);
@@ -567,7 +364,7 @@
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(9, 206);
+            this.label12.Location = new System.Drawing.Point(10, 247);
             this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(84, 20);
@@ -576,7 +373,7 @@
             // 
             // textBox_iyy
             // 
-            this.textBox_iyy.Location = new System.Drawing.Point(554, 111);
+            this.textBox_iyy.Location = new System.Drawing.Point(554, 130);
             this.textBox_iyy.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_iyy.Name = "textBox_iyy";
             this.textBox_iyy.Size = new System.Drawing.Size(96, 26);
@@ -584,7 +381,7 @@
             // 
             // textBox_inertial_origin_pitch
             // 
-            this.textBox_inertial_origin_pitch.Location = new System.Drawing.Point(225, 115);
+            this.textBox_inertial_origin_pitch.Location = new System.Drawing.Point(225, 130);
             this.textBox_inertial_origin_pitch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_pitch.Name = "textBox_inertial_origin_pitch";
             this.textBox_inertial_origin_pitch.Size = new System.Drawing.Size(96, 26);
@@ -593,7 +390,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(39, 75);
+            this.label13.Location = new System.Drawing.Point(39, 90);
             this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(17, 20);
@@ -603,7 +400,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(372, 71);
+            this.label14.Location = new System.Drawing.Point(372, 90);
             this.label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(29, 20);
@@ -612,7 +409,7 @@
             // 
             // textBox_inertial_origin_roll
             // 
-            this.textBox_inertial_origin_roll.Location = new System.Drawing.Point(225, 75);
+            this.textBox_inertial_origin_roll.Location = new System.Drawing.Point(225, 90);
             this.textBox_inertial_origin_roll.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_roll.Name = "textBox_inertial_origin_roll";
             this.textBox_inertial_origin_roll.Size = new System.Drawing.Size(96, 26);
@@ -620,7 +417,7 @@
             // 
             // textBox_inertial_origin_y
             // 
-            this.textBox_inertial_origin_y.Location = new System.Drawing.Point(66, 115);
+            this.textBox_inertial_origin_y.Location = new System.Drawing.Point(66, 130);
             this.textBox_inertial_origin_y.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_y.Name = "textBox_inertial_origin_y";
             this.textBox_inertial_origin_y.Size = new System.Drawing.Size(96, 26);
@@ -629,7 +426,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(39, 115);
+            this.label17.Location = new System.Drawing.Point(39, 130);
             this.label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(17, 20);
@@ -639,7 +436,7 @@
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(670, 157);
+            this.label18.Location = new System.Drawing.Point(670, 176);
             this.label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(31, 20);
@@ -648,7 +445,7 @@
             // 
             // textBox_iyz
             // 
-            this.textBox_iyz.Location = new System.Drawing.Point(708, 111);
+            this.textBox_iyz.Location = new System.Drawing.Point(708, 130);
             this.textBox_iyz.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_iyz.Name = "textBox_iyz";
             this.textBox_iyz.Size = new System.Drawing.Size(96, 26);
@@ -677,7 +474,7 @@
             // label45
             // 
             this.label45.AutoSize = true;
-            this.label45.Location = new System.Drawing.Point(170, 122);
+            this.label45.Location = new System.Drawing.Point(170, 137);
             this.label45.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label45.Name = "label45";
             this.label45.Size = new System.Drawing.Size(47, 20);
@@ -687,7 +484,7 @@
             // label46
             // 
             this.label46.AutoSize = true;
-            this.label46.Location = new System.Drawing.Point(174, 162);
+            this.label46.Location = new System.Drawing.Point(174, 177);
             this.label46.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label46.Name = "label46";
             this.label46.Size = new System.Drawing.Size(40, 20);
@@ -696,7 +493,7 @@
             // 
             // textBox_inertial_origin_z
             // 
-            this.textBox_inertial_origin_z.Location = new System.Drawing.Point(66, 155);
+            this.textBox_inertial_origin_z.Location = new System.Drawing.Point(66, 170);
             this.textBox_inertial_origin_z.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_inertial_origin_z.Name = "textBox_inertial_origin_z";
             this.textBox_inertial_origin_z.Size = new System.Drawing.Size(96, 26);
@@ -705,7 +502,7 @@
             // label47
             // 
             this.label47.AutoSize = true;
-            this.label47.Location = new System.Drawing.Point(39, 155);
+            this.label47.Location = new System.Drawing.Point(39, 170);
             this.label47.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label47.Name = "label47";
             this.label47.Size = new System.Drawing.Size(18, 20);
@@ -715,7 +512,7 @@
             // label48
             // 
             this.label48.AutoSize = true;
-            this.label48.Location = new System.Drawing.Point(670, 115);
+            this.label48.Location = new System.Drawing.Point(670, 134);
             this.label48.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label48.Name = "label48";
             this.label48.Size = new System.Drawing.Size(30, 20);
@@ -725,7 +522,7 @@
             // label49
             // 
             this.label49.AutoSize = true;
-            this.label49.Location = new System.Drawing.Point(516, 117);
+            this.label49.Location = new System.Drawing.Point(516, 136);
             this.label49.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label49.Name = "label49";
             this.label49.Size = new System.Drawing.Size(29, 20);
@@ -734,7 +531,7 @@
             // 
             // textBox_ixy
             // 
-            this.textBox_ixy.Location = new System.Drawing.Point(554, 71);
+            this.textBox_ixy.Location = new System.Drawing.Point(554, 90);
             this.textBox_ixy.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_ixy.Name = "textBox_ixy";
             this.textBox_ixy.Size = new System.Drawing.Size(96, 26);
@@ -742,7 +539,7 @@
             // 
             // textBox_izz
             // 
-            this.textBox_izz.Location = new System.Drawing.Point(708, 151);
+            this.textBox_izz.Location = new System.Drawing.Point(708, 170);
             this.textBox_izz.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_izz.Name = "textBox_izz";
             this.textBox_izz.Size = new System.Drawing.Size(96, 26);
@@ -751,7 +548,7 @@
             // label50
             // 
             this.label50.AutoSize = true;
-            this.label50.Location = new System.Drawing.Point(516, 71);
+            this.label50.Location = new System.Drawing.Point(516, 90);
             this.label50.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label50.Name = "label50";
             this.label50.Size = new System.Drawing.Size(29, 20);
@@ -760,7 +557,7 @@
             // 
             // textBox_mass
             // 
-            this.textBox_mass.Location = new System.Drawing.Point(98, 206);
+            this.textBox_mass.Location = new System.Drawing.Point(98, 247);
             this.textBox_mass.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_mass.Name = "textBox_mass";
             this.textBox_mass.Size = new System.Drawing.Size(96, 26);
@@ -799,18 +596,18 @@
             this.groupBox4.Controls.Add(this.label23);
             this.groupBox4.Controls.Add(this.textBox_visual_origin_y);
             this.groupBox4.Controls.Add(this.label30);
-            this.groupBox4.Location = new System.Drawing.Point(740, 389);
+            this.groupBox4.Location = new System.Drawing.Point(740, 462);
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox4.Size = new System.Drawing.Size(852, 386);
+            this.groupBox4.Size = new System.Drawing.Size(852, 508);
             this.groupBox4.TabIndex = 72;
             this.groupBox4.TabStop = false;
             // 
             // radioButton_fine
             // 
             this.radioButton_fine.AutoSize = true;
-            this.radioButton_fine.Location = new System.Drawing.Point(363, 145);
+            this.radioButton_fine.Location = new System.Drawing.Point(152, 285);
             this.radioButton_fine.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.radioButton_fine.Name = "radioButton_fine";
             this.radioButton_fine.Size = new System.Drawing.Size(65, 24);
@@ -822,7 +619,7 @@
             // 
             this.radioButton_course.AutoSize = true;
             this.radioButton_course.Checked = true;
-            this.radioButton_course.Location = new System.Drawing.Point(363, 94);
+            this.radioButton_course.Location = new System.Drawing.Point(29, 285);
             this.radioButton_course.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.radioButton_course.Name = "radioButton_course";
             this.radioButton_course.Size = new System.Drawing.Size(85, 24);
@@ -834,7 +631,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(352, 51);
+            this.label10.Location = new System.Drawing.Point(10, 245);
             this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(140, 20);
@@ -871,7 +668,7 @@
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(12, 306);
+            this.label34.Location = new System.Drawing.Point(10, 424);
             this.label34.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label34.Name = "label34";
             this.label34.Size = new System.Drawing.Size(62, 20);
@@ -888,7 +685,7 @@
             // 
             // button_texturebrowse
             // 
-            this.button_texturebrowse.Location = new System.Drawing.Point(596, 328);
+            this.button_texturebrowse.Location = new System.Drawing.Point(596, 460);
             this.button_texturebrowse.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_texturebrowse.Name = "button_texturebrowse";
             this.button_texturebrowse.Size = new System.Drawing.Size(112, 35);
@@ -900,7 +697,7 @@
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(9, 228);
+            this.label28.Location = new System.Drawing.Point(10, 335);
             this.label28.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(109, 20);
@@ -917,7 +714,7 @@
             // 
             // textBox_texture
             // 
-            this.textBox_texture.Location = new System.Drawing.Point(24, 332);
+            this.textBox_texture.Location = new System.Drawing.Point(24, 464);
             this.textBox_texture.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox_texture.Name = "textBox_texture";
             this.textBox_texture.Size = new System.Drawing.Size(526, 26);
@@ -926,11 +723,12 @@
             // comboBox_materials
             // 
             this.comboBox_materials.FormattingEnabled = true;
-            this.comboBox_materials.Location = new System.Drawing.Point(20, 255);
+            this.comboBox_materials.Location = new System.Drawing.Point(24, 375);
             this.comboBox_materials.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comboBox_materials.Name = "comboBox_materials";
             this.comboBox_materials.Size = new System.Drawing.Size(180, 28);
             this.comboBox_materials.TabIndex = 48;
+            this.comboBox_materials.SelectedIndexChanged += new System.EventHandler(this.comboBox_materials_SelectedIndexChanged);
             // 
             // label26
             // 
@@ -1079,7 +877,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(6, 51);
+            this.label23.Location = new System.Drawing.Point(10, 51);
             this.label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(77, 20);
@@ -1773,16 +1571,6 @@
             this.label4.TabIndex = 230;
             this.label4.Text = "Entries that are blank will not be written to URDF.";
             // 
-            // button_links_export_urdf_only
-            // 
-            this.button_links_export_urdf_only.Location = new System.Drawing.Point(1294, 1005);
-            this.button_links_export_urdf_only.Name = "button_links_export_urdf_only";
-            this.button_links_export_urdf_only.Size = new System.Drawing.Size(175, 35);
-            this.button_links_export_urdf_only.TabIndex = 94;
-            this.button_links_export_urdf_only.Text = "Export URDF Only...";
-            this.button_links_export_urdf_only.UseVisualStyleBackColor = true;
-            this.button_links_export_urdf_only.Click += new System.EventHandler(this.button_links_export_urdf_only_Click);
-            // 
             // AssemblyExportForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1863,8 +1651,6 @@
             this.Load += new System.EventHandler(this.AssemblyExportForm_Load);
             this.panel_link_properties.ResumeLayout(false);
             this.panel_link_properties.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.groupBox4.ResumeLayout(false);
@@ -1883,24 +1669,6 @@
         private System.Windows.Forms.Button button_links_finish;
         private System.Windows.Forms.Button button_links_previous;
         private System.Windows.Forms.Button button_links_cancel;
-        private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.RadioButton radioButton4;
-        private System.Windows.Forms.RadioButton radioButton3;
-        private System.Windows.Forms.Label label27;
-        private System.Windows.Forms.Label label35;
-        private System.Windows.Forms.Label label40;
-        private System.Windows.Forms.TextBox textBox_collision_origin_yaw;
-        private System.Windows.Forms.TextBox textBox_collision_origin_pitch;
-        private System.Windows.Forms.TextBox textBox_collision_origin_roll;
-        private System.Windows.Forms.Label label43;
-        private System.Windows.Forms.Label label37;
-        private System.Windows.Forms.Label label42;
-        private System.Windows.Forms.Label label38;
-        private System.Windows.Forms.Label label41;
-        private System.Windows.Forms.Label label39;
-        private System.Windows.Forms.TextBox textBox_collision_origin_x;
-        private System.Windows.Forms.TextBox textBox_collision_origin_y;
-        private System.Windows.Forms.TextBox textBox_collision_origin_z;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox textBox_ixx;

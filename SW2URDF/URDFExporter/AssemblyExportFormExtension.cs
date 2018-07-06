@@ -46,14 +46,6 @@ namespace SW2URDF
             fillBlank(linkBoxes);
             if (!Link.isFixedFrame)
             {
-                Link.Collision.Origin.fillBoxes(textBox_collision_origin_x,
-                                                textBox_collision_origin_y,
-                                                textBox_collision_origin_z,
-                                                textBox_collision_origin_roll,
-                                                textBox_collision_origin_pitch,
-                                                textBox_collision_origin_yaw,
-                                                "G5");
-
                 Link.Visual.Origin.fillBoxes(textBox_visual_origin_x,
                                              textBox_visual_origin_y,
                                              textBox_visual_origin_z,
@@ -230,13 +222,6 @@ namespace SW2URDF
                                           textBox_visual_origin_roll,
                                           textBox_visual_origin_pitch,
                                           textBox_visual_origin_yaw);
-
-                Link.Collision.Origin.update(textBox_collision_origin_x,
-                                             textBox_collision_origin_y,
-                                             textBox_collision_origin_z,
-                                             textBox_collision_origin_roll,
-                                             textBox_collision_origin_pitch,
-                                             textBox_collision_origin_yaw);
 
                 Link.Inertial.Mass.update(textBox_mass);
 
