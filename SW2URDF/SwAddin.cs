@@ -291,7 +291,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                logger.Error("An exception was caught when trying setup assembly exporter", e);
+                logger.Error("An exception was caught when trying to setup the assembly exporter", e);
                 System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
