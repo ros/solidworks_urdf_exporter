@@ -30,6 +30,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -49,9 +50,12 @@ namespace SW2URDF
         Control[] linkBoxes;
         LinkNode BaseNode;
         public AttributeDef saveConfigurationAttributeDef;
+        private static readonly log4net.ILog logger = Logger.GetLogger();
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
+            Application.ThreadException += new ThreadExceptionEventHandler(this.exceptionHandler);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.unhandledException);
             InitializeComponent();
             swApp = iSwApp;
             BaseNode = node;
@@ -90,6 +94,19 @@ namespace SW2URDF
             saveConfigurationAttributeDef.Register();
         }
 
+        private void exceptionHandler(object sender, ThreadExceptionEventArgs e)
+        {
+            logger.Error("Exception encountered in Assembly export form", e.Exception);
+            System.Windows.Forms.MessageBox.Show("There was a problem with the export form: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+        }
+
+        private void unhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Exception ex = (System.Exception)e.ExceptionObject;
+            logger.Error("Unhandled exception in Assembly Export form", ex);
+            System.Windows.Forms.MessageBox.Show("There was a problem with the export form: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+        }
+
         //Joint form configuration controls
         private void AssemblyExportForm_Load(object sender, EventArgs e)
         {
@@ -114,6 +131,7 @@ namespace SW2URDF
                 BaseNode.Nodes.Add(node);
             }
             changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+
             fillLinkTree();
             panel_link_properties.Visible = true;
             this.Focus();
@@ -163,6 +181,7 @@ namespace SW2URDF
 
         private void button_links_finish_Click(object sender, EventArgs e)
         {
+            logger.Info("Completing URDF export");
             saveConfigTree(ActiveSWModel, BaseNode, false);
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.RestoreDirectory = true;
