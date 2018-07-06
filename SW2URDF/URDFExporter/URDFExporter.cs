@@ -198,11 +198,7 @@ namespace SW2URDF
                     child.Collision.Geometry.Mesh.filename = filename;
                 }
             }
-            if (Link.Children.Count == 0)
-            {
-                throw new SystemException("I'm an exception");
-            }
-
+            
             // Copy the texture file (if it was specified) to the textures directory
             if (!Link.isFixedFrame && Link.Visual.Material.Texture.wFilename != "")
             {
@@ -363,16 +359,14 @@ namespace SW2URDF
         private void copyLogFile(URDFPackage package)
         {
             string destination = package.WindowsPackageDirectory + "export.log";
-
             string log_filename = Logger.GetFileName();
 
             if (log_filename != null)
             {
                 if (!File.Exists(log_filename))
                 {
-
                     System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + log_filename +
-                        ", but it was not found. Please contact your developer with this error message.");
+                        ", but it was not found. Please contact your maintainer with this error message.");
                 }
                 else
                 {

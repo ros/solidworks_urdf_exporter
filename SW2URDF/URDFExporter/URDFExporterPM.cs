@@ -144,7 +144,6 @@ namespace SW2URDF
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
 
-
             #region Create and instantiate components of PM page
             //Set the variables for the page
             PageTitle = "URDF Exporter";
@@ -157,16 +156,7 @@ namespace SW2URDF
             //Make sure that the page was created properly
             if (longerrors == (int)swPropertyManagerPageStatus_e.swPropertyManagerPage_Okay)
             {
-                try
-                {
-                    setupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
-                }
-                catch (Exception ex)
-                {
-                    logger.Error("Exception caught while setting up property mananger", ex);
-                    System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
-
-                }
+                setupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
             }
 
             else
@@ -806,166 +796,129 @@ namespace SW2URDF
         // if you choose not to implement it, but it gets regularly called anyway
         void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnCheckboxCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxEditChanged(int Id, string Text)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnComboboxEditChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxSelectionChanged(int Id, int Item)
         {
-
-            //throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnComboboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupCheck(int Id, bool Checked)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnGroupCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupExpand(int Id, bool Expanded)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnGroupExpand called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxSelectionChanged(int Id, int Item)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnListboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnNextPage()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnNextPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         void IPropertyManagerPage2Handler9.OnOptionCheck(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnOptionCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItem(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPopupMenuItem called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItemUpdate(int Id, ref int retval)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPopupMenuItemUpdate called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnPreview()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPreview called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         bool IPropertyManagerPage2Handler9.OnPreviousPage()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnPreviousPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
 
         void IPropertyManagerPage2Handler9.OnRedo()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnRedo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutCreated(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSelectionboxCalloutCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutDestroyed(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSelectionboxCalloutDestroyed called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
 
         void IPropertyManagerPage2Handler9.OnSliderPositionChanged(int Id, double Value)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSliderPositionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSliderTrackingCompleted(int Id, double Value)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnSliderTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
+
         bool IPropertyManagerPage2Handler9.OnTabClicked(int Id)
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnTabClicked called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return true;
         }
-
 
         void IPropertyManagerPage2Handler9.OnUndo()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnUndo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnWhatsNew()
         {
-
-            throw new Exception("The method or operation is not implemented.");
-
+            logger.Info("OnWhatsNew called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxRMBUp(int Id, int PosX, int PosY)
         {
-            throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnListboxRMBUp called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnNumberBoxTrackingCompleted(int Id, double Value)
         {
-            //throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnNumberBoxTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
         void IPropertyManagerPage2Handler9.AfterClose()
         {
-            //throw new Exception("The method or operation is not implemented.");
+            logger.Info("AfterClose called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
         {
-            throw new Exception("The method or operation is not implemented.");
+            logger.Info("OnActiveXControlCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            return 0;
         }
         #endregion
-
-
     }
 
 }

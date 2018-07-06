@@ -55,6 +55,7 @@ namespace SW2URDF
     //Not sure why I have a class that everything else inherits from that is empty. But maybe we'll want to add things to it
     public class URDFElement
     {
+        protected static readonly log4net.ILog logger = Logger.GetLogger();
         public URDFElement() { }
         public void writeURDF(XmlWriter writer)
         {
@@ -1814,6 +1815,7 @@ namespace SW2URDF
     public class PackageXMLWriter
     {
         public XmlWriter writer;
+        private readonly static log4net.ILog logger = Logger.GetLogger();
         public PackageXMLWriter(string savePath)
         {
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -1821,7 +1823,7 @@ namespace SW2URDF
             settings.OmitXmlDeclaration = true;
             settings.Indent = true;
             settings.NewLineOnAttributes = false;
-            System.Diagnostics.Debug.WriteLine("Creating package.xml at " + savePath);
+            logger.Info("Creating package.xml at " + savePath);
             writer = XmlWriter.Create(savePath, settings);
         }
     }
@@ -1918,7 +1920,6 @@ namespace SW2URDF
     //The depend element of the manifest file
     public class Dependencies : PackageElement
     {
-        private string package;
         private string[] buildTool;
         private string[] build_exec;
         public Dependencies(String[] buildTool, String[] build_exec)

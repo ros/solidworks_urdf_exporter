@@ -77,10 +77,6 @@ namespace SW2URDF
         SolidWorks.Interop.sldworks.SldWorks SwEventPtr = null;
         #endregion
 
-        #region Property Manager Variables
-        #endregion
-
-
         // Public Properties
         public ISldWorks SwApp
         {
@@ -99,7 +95,6 @@ namespace SW2URDF
         #endregion
 
         #region SolidWorks Registration
-
         [ComRegisterFunctionAttribute]
         public static void RegisterFunction(Type t)
         {
@@ -176,7 +171,6 @@ namespace SW2URDF
                 System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-
         #endregion
 
         #region ISwAddin Implementation
@@ -197,7 +191,6 @@ namespace SW2URDF
         {
             logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
-
 
         public bool ConnectToSW(object ThisSW, int cookie)
         {
@@ -258,39 +251,10 @@ namespace SW2URDF
             iSwApp.RemoveMenu((int)swDocumentTypes_e.swDocPART, "Export as URDF@&File", "");
             logger.Info("Removing part export from file menu");
         }
-
-        public bool CompareIDs(int[] storedIDs, int[] addinIDs)
-        {
-            List<int> storedList = new List<int>(storedIDs);
-            List<int> addinList = new List<int>(addinIDs);
-
-            addinList.Sort();
-            storedList.Sort();
-
-            if (addinList.Count != storedList.Count)
-            {
-                return false;
-            }
-            else
-            {
-
-                for (int i = 0; i < addinList.Count; i++)
-                {
-                    if (addinList[i] != storedList[i])
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
         #endregion
-
         #region UI Callbacks
 
-
-        public void assemblyURDFExporter()
+        public void setupAssemblyExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
             logger.Info("Assembly export called for file " + modeldoc.GetTitle());
@@ -305,26 +269,30 @@ namespace SW2URDF
                 saveAndRebuild = true;
                 logger.Info("A rebuild is required");
             }
-            if (saveAndRebuild || 
-                MessageBox.Show("The SW to URDF exporter requires saving and/or rebuilding before continuing", 
+            if (saveAndRebuild ||
+                MessageBox.Show("The SW to URDF exporter requires saving and/or rebuilding before continuing",
                 "Save and rebuild document?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced |
                         (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                 logger.Info("Saving assembly");
                 modeldoc.Save3(options, 0, 0);
-                
 
                 logger.Info("Opening property manager");
-                try
-                {
-                    setupPropertyManager();
-                }
-                catch (Exception e)
-                {
-                    logger.Error("An exception was caught when trying setup property mananger", e);
-                    System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
-                }
+                setupPropertyManager();
+            }
+        }
+
+        public void assemblyURDFExporter()
+        {
+            try
+            {
+                setupAssemblyExporter();
+            }
+            catch (Exception e)
+            {
+                logger.Error("An exception was caught when trying setup assembly exporter", e);
+                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -336,77 +304,42 @@ namespace SW2URDF
             logger.Info("Showing property manager");
             pm.Show();
         }
-        public void partURDFExporter()
+
+        public void setupPartExporter()
         {
             logger.Info("Part export called");
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-            if ((modeldoc.Extension.NeedsRebuild2 == 0) || 
-                MessageBox.Show("Save and rebuild document?", 
+            if ((modeldoc.Extension.NeedsRebuild2 == 0) ||
+                MessageBox.Show("Save and rebuild document?",
                 "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
-                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced | 
+                    int options = (int)swSaveAsOptions_e.swSaveAsOptions_SaveReferenced |
                         (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
                     logger.Info("Saving part");
                     modeldoc.Save3(options, 0, 0);
                 }
-                try
-                {
-                    PartExportForm exportForm = new PartExportForm(iSwApp);
-                    logger.Info("Showing part");
-                    exportForm.Show();
-                }
-                catch (Exception e)
-                {
-                    logger.Error("Excoption caught setting up export form", e);
-                    MessageBox.Show("An exception occured setting up the export form, please email your maintainer with the logfile found at " + Logger.GetFileName());
-                }
-                
-                
+
+                PartExportForm exportForm = new PartExportForm(iSwApp);
+                logger.Info("Showing part");
+                exportForm.Show();
             }
         }
 
-        private URDFExporter loadConfigFile()
+        public void partURDFExporter()
         {
-            logger.Info("Attempting to load config file");
-            ModelDoc2 modeldoc = iSwApp.ActiveDoc;
-
-            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
-            logger.Info("Retrieved " + objects.Length + " features for component");
-            string data="";
-            foreach (Object obj in objects)
+            try
             {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att = 
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        Parameter param = att.GetParameter("data");
-                        data = param.GetStringValue();
-                        logger.Info("URDF export config \n " + data);
-                    }
-                }
-              
+                setupPartExporter();
             }
-            if (!data.Equals(""))
+            catch (Exception e)
             {
-                logger.Info("Config data was not empty, deserializing");
-                URDFExporter Exporter;
-
-                XmlSerializer serializer = new XmlSerializer(typeof(URDFExporter));
-                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                Exporter = (URDFExporter)serializer.Deserialize(textReader);
-                textReader.Close();
-
-                return Exporter;
+                logger.Error("Excoption caught setting up export form", e);
+                MessageBox.Show("An exception occured setting up the export form, please email your maintainer with the log file found at " + Logger.GetFileName());
             }
-            return null;
         }
-
+        
         public void FlyoutCallback()
         {
             FlyoutGroup flyGroup = iCmdMgr.GetFlyoutGroup(flyoutGroupID);
@@ -598,13 +531,8 @@ namespace SW2URDF
         {
             return 0;
         }
-
-
-
-
+        
         #endregion
-
-
     }
 
 }
