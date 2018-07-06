@@ -134,13 +134,14 @@ namespace SW2URDF
             catch (System.NullReferenceException nl)
             {
                 logger.Error("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"", nl);
-                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                System.Windows.Forms.MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
+                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
-
             catch (System.Exception e)
             {
                 logger.Error(e.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                System.Windows.Forms.MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
+                    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -238,9 +239,9 @@ namespace SW2URDF
         #region UI Methods
         public void AddCommandMgr() 
         {
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "assemblyURDFExporter", "", "Export assembly as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
             logger.Info("Adding Assembly export to file menu");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "partURDFExporter", "", "Export part as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "PartURDFExporter", "", "Export part as URDF file", "");
             logger.Info("Adding Part export to file menu");
         }
 
@@ -254,7 +255,7 @@ namespace SW2URDF
         #endregion
         #region UI Callbacks
 
-        public void setupAssemblyExporter()
+        public void SetupAssemblyExporter()
         {
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
             logger.Info("Assembly export called for file " + modeldoc.GetTitle());
@@ -279,24 +280,25 @@ namespace SW2URDF
                 modeldoc.Save3(options, 0, 0);
 
                 logger.Info("Opening property manager");
-                setupPropertyManager();
+                this.SetupPropertyManager();
             }
         }
 
-        public void assemblyURDFExporter()
+        public void AssemblyURDFExporter()
         {
             try
             {
-                setupAssemblyExporter();
+                this.SetupAssemblyExporter();
             }
             catch (Exception e)
             {
                 logger.Error("An exception was caught when trying to setup the assembly exporter", e);
-                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \n\"" + 
+                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
-        public void setupPropertyManager()
+        public void SetupPropertyManager()
         {
             URDFExporterPM pm = new URDFExporterPM((SldWorks)iSwApp);
             logger.Info("Loading config tree");
@@ -305,7 +307,7 @@ namespace SW2URDF
             pm.Show();
         }
 
-        public void setupPartExporter()
+        public void SetupPartExporter()
         {
             logger.Info("Part export called");
             ModelDoc2 modeldoc = iSwApp.ActiveDoc;
@@ -331,7 +333,7 @@ namespace SW2URDF
         {
             try
             {
-                setupPartExporter();
+                this.SetupPartExporter();
             }
             catch (Exception e)
             {

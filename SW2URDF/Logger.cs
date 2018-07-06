@@ -31,8 +31,10 @@ namespace SW2URDF
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
             PatternLayout patternLayout = new PatternLayout();
-            patternLayout.ConversionPattern = "%date %-5level %filename: %line - %message%newline"; // Slower
-            //patternLayout.ConversionPattern = "%date %-5level %logger %file: $line - %message%newline"; // Faster, apparently
+
+            // This ConversionPattern is slow because any location-based parameter in log4net is slow. If it becomes an issue
+            // this might have to be wrapped into a compile time macro
+            patternLayout.ConversionPattern = "%date %-5level %filename: %line - %message%newline";
             patternLayout.AddConverter("filename", typeof(FileNamePatternConverter));
             patternLayout.ActivateOptions();
 
