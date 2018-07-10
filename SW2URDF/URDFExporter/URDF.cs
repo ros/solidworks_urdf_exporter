@@ -724,7 +724,7 @@ namespace SW2URDF
 
         public void SetMomentMatrix(double[] array)
         {
-            Moment = array;
+            Moment = (double[])array.Clone();
             Ixx = Moment[0];
             Ixy = -Moment[1];
             Ixz = -Moment[2];
