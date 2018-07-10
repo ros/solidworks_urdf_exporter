@@ -164,12 +164,14 @@ namespace SW2URDF
             catch (System.NullReferenceException nl)
             {
                 logger.Error("There was a problem unregistering this dll: " + nl.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + 
+                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
             catch (System.Exception e)
             {
                 logger.Error("There was a problem unregistering this dll: " + e.Message);
-                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                System.Windows.Forms.MessageBox.Show("There was a problem unregistering this dll: \n\"" + 
+                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         #endregion
@@ -190,7 +192,8 @@ namespace SW2URDF
 
         private void unhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
+            logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " + 
+                Logger.GetFileName(), (System.Exception)e.ExceptionObject);
         }
 
         public bool ConnectToSW(object ThisSW, int cookie)
@@ -239,9 +242,11 @@ namespace SW2URDF
         #region UI Methods
         public void AddCommandMgr() 
         {
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File", 
+                10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
             logger.Info("Adding Assembly export to file menu");
-            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 10, "PartURDFExporter", "", "Export part as URDF file", "");
+            iSwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File", 
+                10, "PartURDFExporter", "", "Export part as URDF file", "");
             logger.Info("Adding Part export to file menu");
         }
 
@@ -338,7 +343,8 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Excoption caught setting up export form", e);
-                MessageBox.Show("An exception occured setting up the export form, please email your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("An exception occured setting up the export form, please email your " + 
+                    "maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         
