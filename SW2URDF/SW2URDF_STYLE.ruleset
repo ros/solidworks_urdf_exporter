@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="SW2URDF_STYLE" ToolsVersion="15.0">
-  <Include Path="sw2urdf.ruleset" Action="Default" />
-  <Include Path="sw2urdf1.ruleset" Action="Default" />
-  <Include Path="sw2urdf2.ruleset" Action="Default" />
-  <Include Path="sw2urdf3.ruleset" Action="Default" />
-</RuleSet>
