@@ -1,12 +1,13 @@
-﻿using log4net;
-using log4net.Repository.Hierarchy;
-using log4net.Core;
-using log4net.Appender;
-using log4net.Layout;
-using System;
-using System.Linq;
-using log4net.Layout.Pattern;
+﻿using System;
 using System.IO;
+using System.Linq;
+
+using log4net;
+using log4net.Appender;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Layout.Pattern;
+using log4net.Repository.Hierarchy;
 
 namespace SW2URDF
 {
@@ -21,6 +22,7 @@ namespace SW2URDF
     public class Logger
     {
         private static bool Initialized = false;
+
         public static void Setup()
         {
             if (Initialized)

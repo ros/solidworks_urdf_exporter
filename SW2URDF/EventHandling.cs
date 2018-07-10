@@ -1,8 +1,6 @@
 /*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,12 +21,12 @@ THE SOFTWARE.
 */
 
 using System.Collections;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
-
     public class DocumentEventHandler
     {
         protected ISldWorks iSwApp;
@@ -88,7 +82,6 @@ namespace SW2URDF
             {
                 return false;
             }
-
 
             object[] keys = new object[numKeys];
 
@@ -219,10 +212,8 @@ namespace SW2URDF
             ModelDoc2 modDoc = (ModelDoc2)componentModel;
             swComponentSuppressionState_e newState = (swComponentSuppressionState_e)newCompState;
 
-
             switch (newState)
             {
-
                 case swComponentSuppressionState_e.swComponentFullyResolved:
                     {
                         if ((modDoc != null) && !swAddin.OpenDocs.Contains(modDoc))
@@ -243,10 +234,13 @@ namespace SW2URDF
 
                 case swComponentSuppressionState_e.swComponentSuppressed:
                     break;
+
                 case swComponentSuppressionState_e.swComponentLightweight:
                     break;
+
                 case swComponentSuppressionState_e.swComponentFullyLightweight:
                     break;
+
                 default:
                     break;
             }
@@ -258,7 +252,6 @@ namespace SW2URDF
             ComponentStateChange(componentModel, (short)swComponentSuppressionState_e.swComponentResolved);
             return 0;
         }
-
 
         public int ComponentStateChangeNotify2(object componentModel, string CompName, short oldCompState, short newCompState)
         {
@@ -285,10 +278,6 @@ namespace SW2URDF
 
             return ComponentStateChange(modDoc);
         }
-
-
-
-
     }
 
     public class DrawingEventHandler : DocumentEventHandler
@@ -375,6 +364,7 @@ namespace SW2URDF
 
                 case (int)swDestroyNotifyType_e.swDestroyNotifyDestroy:
                     return 0;
+
                 default:
                     return 0;
             }
@@ -385,5 +375,4 @@ namespace SW2URDF
             return 0;
         }
     }
-
 }

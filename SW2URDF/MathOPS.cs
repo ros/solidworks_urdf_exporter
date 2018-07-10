@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,8 +22,10 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
+
 using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
@@ -37,10 +33,10 @@ namespace SW2URDF
     public static class MathOps
     {
         public static double epsilon = 1e-15;
+
         // Convert a MATLAB type string representation of a matrix into a math.net numerics Matrix. Convenient for reading from text files
         public static Matrix StringToMatrix(string S)
         {
-            
             S = S.Trim(new char[] { '[', ']', ' ' });
             string[] rows = S.Split(';');
             int rowCount = rows.Length;
@@ -89,6 +85,7 @@ namespace SW2URDF
             v2.CopyTo(vec, 0, v1.Count, v2.Count);
             return vec;
         }
+
         public static Vector ConcatenateVectors(Vector v1, Vector v2, Vector v3, Vector v4)
         {
             Vector vec = new DenseVector(v1.Count + v2.Count + v3.Count + v4.Count);
@@ -99,12 +96,12 @@ namespace SW2URDF
             return vec;
         }
 
-        public static T Max<T>(T d1, T d2, T d3) where T: IComparable<T>
+        public static T Max<T>(T d1, T d2, T d3) where T : IComparable<T>
         {
             return Max(new T[] { d1, d2, d3 });
         }
 
-        public static T Max<T>(T[] array) where T: IComparable<T>
+        public static T Max<T>(T[] array) where T : IComparable<T>
         {
             T result = default(T);
             if (array.Length > 0)
@@ -128,12 +125,12 @@ namespace SW2URDF
             return Min(new T[] { t1, t2 });
         }
 
-        public static T Min<T>(T d1, T d2, T d3) where T: IComparable<T>
+        public static T Min<T>(T d1, T d2, T d3) where T : IComparable<T>
         {
             return Min(new T[] { d1, d2, d3 });
         }
 
-        public static T Min<T>(T[] array) where T: IComparable<T>
+        public static T Min<T>(T[] array) where T : IComparable<T>
         {
             T result = default(T);
             if (array.Length > 0)
@@ -168,11 +165,13 @@ namespace SW2URDF
         {
             return FindLeadingOneinVector(v, 0, v.Count);
         }
+
         // Sets a lower bound in case this vector only has values thare are to the right of other leading ones
         public static int FindLeadingOneinVector(Vector v, int lowerBound)
         {
             return FindLeadingOneinVector(v, lowerBound, v.Count);
         }
+
         // Sets an upper bound to reduce the number of computations. I.E in a rref matrix the 1 should be on or above the diagonal
         public static int FindLeadingOneinVector(Vector v, int lowerBound, int upperBound)
         {
@@ -233,7 +232,6 @@ namespace SW2URDF
                 {
                     return i;
                 }
-
             }
             return -1;
         }
@@ -241,7 +239,6 @@ namespace SW2URDF
         public static Vector<double> ProjectLineToPlane(Vector<double> normal, Vector<double> line)
         {
             return CrossProduct3(normal, CrossProduct3(line, normal));
-
         }
 
         public static double[] ClosestPointOnLineToPoint(double[] point, double[] line, double[] pointOnLine)
@@ -255,7 +252,7 @@ namespace SW2URDF
             double numerator = 0;
             for (int i = 0; i < point.Length; i++)
             {
-                denominator += line[i]*line[i];
+                denominator += line[i] * line[i];
                 numerator += line[i] * (point[i] - pointOnLine[i]);
             }
             double k = numerator / denominator;
@@ -266,7 +263,6 @@ namespace SW2URDF
             }
             return result;
         }
-
 
         public static double[] ClosestPointOnLineWithinBox(double X_min, double X_max, double Y_min, double Y_max, double Z_min, double Z_max, double[] line, double[] pointOnLine)
         {
@@ -285,8 +281,8 @@ namespace SW2URDF
             {
                 return point2;
             }
-            
         }
+
         public static Vector<double> CrossProduct3(Vector<double> v1, Vector<double> v2)
         {
             Vector<double> v = new DenseVector(v1.Count);
@@ -297,7 +293,6 @@ namespace SW2URDF
                 v[2] = v1[0] * v2[1] - v1[1] * v2[0];
             }
             return v;
-
         }
 
         public static Matrix Eig(Matrix<double> m)
@@ -321,8 +316,8 @@ namespace SW2URDF
         public static bool Equals(Matrix<double> m1, Matrix<double> m2)
         {
             return Equals(m1, m2, Double.Epsilon);
-
         }
+
         public static bool Equals(Matrix<double> m1, Matrix<double> m2, double epsilon)
         {
             if (m1.RowCount != m2.RowCount)
@@ -345,10 +340,12 @@ namespace SW2URDF
             }
             return true;
         }
+
         public static bool Equals(Vector<double> v1, Vector<double> v2)
         {
             return Equals(v1, v2, Double.Epsilon);
         }
+
         public static bool Equals(Vector<double> v1, Vector<double> v2, double epsilon)
         {
             if (v1.Count != v2.Count)
@@ -371,40 +368,43 @@ namespace SW2URDF
             XYZ[0] = m[0, 3]; XYZ[1] = m[1, 3]; XYZ[2] = m[2, 3];
             return XYZ;
         }
+
         public static double[] GetXYZ(MathTransform transform)
         {
             double[] XYZ = new double[3];
             XYZ[0] = transform.ArrayData[9]; XYZ[1] = transform.ArrayData[10]; XYZ[2] = transform.ArrayData[11];
             return XYZ;
         }
+
         public static double[] GetRPY(Matrix<double> m)
         {
             double roll, pitch, yaw;
             double x, y;
             x = Math.Min(1.0, Math.Abs(m[2, 0])) * Math.Sign(m[2, 0]);
             y = Math.Min(1.0, Math.Abs(m[0, 2])) * Math.Sign(m[0, 2]);
-            if (Math.Abs(m[2,0]) >= 1.0)
+            if (Math.Abs(m[2, 0]) >= 1.0)
             {
                 // Gimbol Lock
                 pitch = -Math.Asin(x);
                 roll = Math.Acos(y);
                 yaw = 0;
             }
-            else 
+            else
             {
-                pitch = -Math.Asin(m[2,0]);
-                roll =  Math.Atan2(m[2,1] , m[2,2]);
-                yaw =   Math.Atan2(m[1,0] , m[0,0]);
-            
+                pitch = -Math.Asin(m[2, 0]);
+                roll = Math.Atan2(m[2, 1], m[2, 2]);
+                yaw = Math.Atan2(m[1, 0], m[0, 0]);
             }
 
-            return new double[] {roll, pitch, yaw};
+            return new double[] { roll, pitch, yaw };
         }
+
         public static double[] GetRPY(MathTransform transform)
         {
             Matrix m = GetRotationMatrix(transform);
             return GetRPY(m);
         }
+
         public static Matrix<double> GetRotation(double[] RPY)
         {
             Matrix<double> RX = DenseMatrix.Identity(4);
@@ -417,18 +417,21 @@ namespace SW2URDF
 
             return RZ * RY * RX;
         }
+
         public static Matrix<double> GetTranslation(double[] XYZ)
         {
             Matrix<double> m = DenseMatrix.Identity(4);
             m[0, 3] = XYZ[0]; m[1, 3] = XYZ[1]; m[2, 3] = XYZ[2];
             return m;
         }
+
         public static Matrix<double> GetTransformation(double[] XYZ, double[] RPY)
         {
             Matrix<double> translation = GetTranslation(XYZ);
             Matrix<double> rotation = GetRotation(RPY);
             return translation * rotation;
         }
+
         public static Matrix GetRotationMatrix(MathTransform transform)
         {
             var rot = new DenseMatrix(3);
@@ -449,6 +452,7 @@ namespace SW2URDF
 
             return transform;
         }
+
         public static Matrix<double> GetTransformation(MathTransform transform)
         {
             Matrix<double> m = new DenseMatrix(4);
@@ -532,9 +536,6 @@ namespace SW2URDF
                 flipped[i] = -vec[i];
             }
             return flipped;
-
         }
-
-            
     }
 }

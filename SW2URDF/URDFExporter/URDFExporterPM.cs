@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -33,19 +27,19 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
 
 namespace SW2URDF
 {
-
     [ComVisible(true)]
-
     [Serializable]
     public sealed partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
+
         private static readonly log4net.ILog logger = Logger.GetLogger();
         public SldWorks swApp;
         public ModelDoc2 ActiveSWModel;
@@ -83,8 +77,10 @@ namespace SW2URDF
         private PropertyManagerPageLabel pm_Label_GlobalCoordsys;
 
         private PropertyManagerPageWindowFromHandle pm_tree;
+
         public TreeView Tree
         { get; set; }
+
         private bool automaticallySwitched = false;
 
         //Each object in the page needs a unique ID
@@ -114,7 +110,7 @@ namespace SW2URDF
         private const int ID_GlobalCoordsys = 24;
         private const int ID_Label_GlobalCoordsys = 25;
 
-        #endregion
+        #endregion class variables
 
         public void Show()
         {
@@ -145,6 +141,7 @@ namespace SW2URDF
             ActiveSWModel.ShowConfiguration2("URDF Export");
 
             #region Create and instantiate components of PM page
+
             //Set the variables for the page
             PageTitle = "URDF Exporter";
             //options = (int)swPropertyManagerButtonTypes_e.swPropertyManager_OkayButton + (int)swPropertyManagerButtonTypes_e.swPropertyManager_CancelButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_LockedPage + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_PushpinButton;
@@ -158,7 +155,6 @@ namespace SW2URDF
             {
                 SetupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
             }
-
             else
             {
                 //If the page is not created
@@ -166,7 +162,7 @@ namespace SW2URDF
                 MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
-            #endregion
+            #endregion Create and instantiate components of PM page
         }
 
         private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
@@ -239,7 +235,6 @@ namespace SW2URDF
                 logger.Error("Exception caught handling button press " + Id, e);
                 MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
-
         }
 
         void IPropertyManagerPage2Handler9.OnClose(int Reason)
@@ -251,7 +246,6 @@ namespace SW2URDF
                     logger.Info("Configuration canceled");
                     SaveActiveNode();
                 }
-
                 else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
                 {
                     logger.Info("Configuration saved");
@@ -269,7 +263,6 @@ namespace SW2URDF
         void IPropertyManagerPage2Handler9.OnGainedFocus(int Id)
         {
         }
-
 
         bool IPropertyManagerPage2Handler9.OnHelp()
         {
@@ -331,11 +324,10 @@ namespace SW2URDF
             return 0;
         }
 
-
-        #endregion
-
+        #endregion Implemented Property Manager Page Handler Methods
 
         #region TreeView handler methods
+
         // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
         private void TreeAfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -426,7 +418,7 @@ namespace SW2URDF
         private void TreeItemDrag(object sender, ItemDragEventArgs e)
         {
             try
-            { 
+            {
                 Tree.DoDragDrop(e.Item, DragDropEffects.Move);
             }
             catch (Exception ex)
@@ -435,10 +427,11 @@ namespace SW2URDF
                 MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
+
         private void TreeDragOver(object sender, DragEventArgs e)
         {
             try
-            { 
+            {
                 // Retrieve the client coordinates of the mouse position.
                 Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
 
@@ -452,10 +445,11 @@ namespace SW2URDF
                 MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
+
         private void TreeDragEnter(object sender, DragEventArgs e)
         {
             try
-            { 
+            {
                 // Retrieve the client coordinates of the mouse position.
                 Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
 
@@ -538,7 +532,7 @@ namespace SW2URDF
                         LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
                         newParent.Remove(); // Remove the target node from the tree
                         newChild.Remove();  // Remove the dragged node from the tree
-                        newParent.Nodes.Add(newChild); // 
+                        newParent.Nodes.Add(newChild); //
                         if (sameGrandparent == null)
                         {
                             Tree.Nodes.Add(newParent);
@@ -567,7 +561,8 @@ namespace SW2URDF
                 MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-        #endregion
+
+        #endregion TreeView handler methods
 
         //A method that sets up the Property Manager Page
         private void SetupPropertyManagerPage(ref string caption, ref string tip, ref long options, ref int controlType, ref int alignment)
@@ -608,7 +603,6 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_TextBox_LinkName = (PropertyManagerPageTextbox)pm_Group.AddControl(TextBox_LinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
-
             //Create the joint name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Joint Name";
@@ -633,7 +627,6 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_Label_GlobalCoordsys = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
             caption = "Global Origin Coordinate System Name";
@@ -643,8 +636,6 @@ namespace SW2URDF
             pm_ComboBox_GlobalCoordsys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
             pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
-
-
             //Create the ref coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Reference Coordinate System";
@@ -652,7 +643,6 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = 0;
             pm_Label_CoordSys = (PropertyManagerPageLabel)pm_Group.AddControl(Label_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-
 
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -671,7 +661,6 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_Label_Axes = (PropertyManagerPageLabel)pm_Group.AddControl(Label_Axes_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
             // Create pull down menu for axes
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
             caption = "Reference Axis Name";
@@ -689,7 +678,6 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
             pm_Label_JointType = (PropertyManagerPageLabel)pm_Group.AddControl(Label_Axes_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-
             // Create pull down menu for joint type
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
             caption = "Joint type";
@@ -699,7 +687,6 @@ namespace SW2URDF
             pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
             pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
             pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
-
 
             //Create the selection box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -782,8 +769,8 @@ namespace SW2URDF
             removeChild.Click += new EventHandler(RemoveChildClick);
             //renameChild.Text = "Rename";
             //renameChild.Click += new System.EventHandler(this.renameChild_Click);
-           //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
-            docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild});
+            //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });
+            docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild });
             LinkNode node = CreateEmptyNode(null);
             node.ContextMenuStrip = docMenu;
             Tree.Nodes.Add(node);
@@ -793,8 +780,8 @@ namespace SW2URDF
             //updateNodeNames(tree);
         }
 
-
         #region Not implemented handler methods
+
         // These methods are still active. The exceptions that are thrown only cause the debugger to pause. Comment out the exception
         // if you choose not to implement it, but it gets regularly called anyway
         void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
@@ -875,7 +862,6 @@ namespace SW2URDF
             logger.Info("OnSelectionboxCalloutDestroyed called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
-
         void IPropertyManagerPage2Handler9.OnSliderPositionChanged(int Id, double Value)
         {
             logger.Info("OnSliderPositionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
@@ -911,6 +897,7 @@ namespace SW2URDF
         {
             logger.Info("OnNumberBoxTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
         }
+
         void IPropertyManagerPage2Handler9.AfterClose()
         {
             logger.Info("AfterClose called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
@@ -921,7 +908,7 @@ namespace SW2URDF
             logger.Info("OnActiveXControlCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
             return 0;
         }
-        #endregion
-    }
 
+        #endregion Not implemented handler methods
+    }
 }

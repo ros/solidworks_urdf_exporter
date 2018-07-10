@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,13 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Generic;
+
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
@@ -137,7 +133,6 @@ namespace SW2URDF
             double[] moment = linkLocalMomentInertia.ToRowWiseArray();
             Link.Inertial.Inertia.SetMomentMatrix(moment);
 
-
             Link.Collision.Origin.SetXYZ(MathOps.GetXYZ(localCollisionTransform));
             Link.Collision.Origin.SetRPY(MathOps.GetRPY(localCollisionTransform));
 
@@ -189,7 +184,6 @@ namespace SW2URDF
             Link Link;
             if (node.IsBaseNode)
             {
-
                 CreateBaseLinkFromComponents(node);
                 Link = URDFRobot.BaseLink;
             }
@@ -310,7 +304,7 @@ namespace SW2URDF
             return bodies.ToArray();
         }
 
-        #endregion
+        #endregion SW to Robot and link methods
 
         #region Joint methods
 
@@ -518,7 +512,6 @@ namespace SW2URDF
             MathTransform parentTransform = GetCoordinateSystemTransform(parentCoordsysName);
             double[] parentRPY = MathOps.GetRPY(parentTransform);
 
-
             Matrix<double> ParentJointGlobalTransform = MathOps.GetTransformation(parentTransform);
             MathTransform coordsysTransform = GetCoordinateSystemTransform(Joint.CoordinateSystemName);
             double[] coordsysRPY = MathOps.GetRPY(coordsysTransform);
@@ -527,7 +520,6 @@ namespace SW2URDF
             Matrix<double> ChildJointGlobalTransform = MathOps.GetTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
             double[] globalRPY = MathOps.GetRPY(ChildJointOrigin);
-
 
             //Localize the axis to the Link's coordinate system.
             Joint.Axis.SetXYZ(LocalizeAxis(Joint.Axis.GetXYZ(), Joint.CoordinateSystemName));
@@ -538,7 +530,6 @@ namespace SW2URDF
             Joint.Origin.SetRPY(MathOps.GetRPY(ChildJointOrigin));
             Joint.Origin.SetRPY(MathOps.Threshold(Joint.Origin.GetRPY(), 0.00001));
         }
-
 
         // Funny method I created that inserts a RefAxis and then finds the reference to it.
         public Feature InsertAxis(SketchSegment axis)
@@ -633,7 +624,6 @@ namespace SW2URDF
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
-
             }
             // Return an array of objects representing the sketch items that were just inserted, as well as the actual locations of those objecs (aids selection).
             return new object[] { OriginPoint, XAxis, YAxis, Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0], Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
@@ -666,7 +656,6 @@ namespace SW2URDF
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
-
             }
             return RotAxis;
         }
@@ -683,8 +672,7 @@ namespace SW2URDF
             Boolean success = false;
             if (child.SWMainComponent != null)
             {
-                
-                // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
+                // The wonderful undocumented API call I found to get the degrees of freedom in a joint.
                 // https://forum.solidworks.com/thread/57414
                 int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out int R1Status, out MathPoint RPoint1, out int R1DirStatus, out MathVector RDir1,
                                                                            out int R2Status, out MathPoint RPoint2, out int R2DirStatus, out MathVector RDir2,
@@ -694,7 +682,8 @@ namespace SW2URDF
                 {
                     logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
                 }
-                else {
+                else
+                {
                     logger.Info("R1: " + R1Status + ", " + R1DirStatus);
                 }
 
@@ -708,7 +697,7 @@ namespace SW2URDF
                 }
                 if (LDir1 != null)
                 {
-                    logger.Info("L1: " + L1Status + ", "  + LDir1.get_IArrayData());
+                    logger.Info("L1: " + L1Status + ", " + LDir1.get_IArrayData());
                 }
                 else
                 {
@@ -724,7 +713,6 @@ namespace SW2URDF
                 }
 
                 DOFs = remainingDOFs;
-
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.Type = "fixed";
@@ -844,7 +832,6 @@ namespace SW2URDF
         //This doesn't seem to get the right values for the estimatedAxis. Check the actual values
         public double[] EstimateAxis(string axisName)
         {
-
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
 
@@ -857,7 +844,6 @@ namespace SW2URDF
             string axisName = axisStr;
             RefAxis axis = default(RefAxis);
             MathTransform ComponentTransform = default(MathTransform);
-
 
             if (axisStr.Contains("<") && axisStr.Contains(">"))
             {
@@ -976,7 +962,7 @@ namespace SW2URDF
 
                 //Get all components in an assembly
                 object[] components = assyDoc.GetComponents(false);
-                
+
                 // If there are no components in an assembly, this object will be null.
                 if (components != null)
                 {
@@ -1036,7 +1022,6 @@ namespace SW2URDF
                     {
                         featureNames.Add(feat.Name + " <" + key + ">");
                     }
-                    
                 }
             }
             return featureNames;
@@ -1064,25 +1049,21 @@ namespace SW2URDF
                         logger.Info("Adding component entity: " + parent.Name2);
                         entities.Add(parent);
                         parent = parent.GetParent();
-                        
                     }
-
-                    
-
                 }
 
-                if (entities.Contains(parentComponent) && entities.Contains(childComponent)) {
+                if (entities.Contains(parentComponent) && entities.Contains(childComponent))
+                {
                     // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
                     if ((Joint.Type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
                         (Joint.Type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
                     {
                         Joint.Limit = new Limit();
 
-                        // Unclear if flipped is the right thing we want to be checking here. 
+                        // Unclear if flipped is the right thing we want to be checking here.
                         // From a sample size of 1, in SolidWorks it appears that an aligned and anti-aligned mates are NOT flipped...
                         if (!swMate.Flipped)
                         {
-                            
                             Joint.Limit.Upper = -swMate.MinimumVariation; // Reverse mate directions, for some reason
                             Joint.Limit.Lower = -swMate.MaximumVariation;
                         }
@@ -1122,7 +1103,7 @@ namespace SW2URDF
                     }
                 }
             }
-            
+
             foreach (Mate2 swMate in limitMates)
             {
                 ModelDoc2 doc = component.GetModelDoc2();
@@ -1204,7 +1185,6 @@ namespace SW2URDF
             return components;
         }
 
-
         //Used to fix components to estimate the degree of freedom.
         private List<Component2> FixComponents(Link parent)
         {
@@ -1223,13 +1203,13 @@ namespace SW2URDF
                 {
                     logger.Info("Component " + comp.GetID() + " is already fixed");
                 }
-
             }
             Common.SelectComponents(ActiveSWModel, componentsToFix, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.FixComponent();
             return componentsToUnfix;
         }
-        #endregion
+
+        #endregion Joint methods
     }
 }

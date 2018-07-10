@@ -64,10 +64,8 @@
     <Rule Id="IDE0015" Action="Warning" />
     <Rule Id="IDE0016" Action="Warning" />
     <Rule Id="IDE0016WithoutSuggestion" Action="Warning" />
-    <Rule Id="IDE0017" Action="Warning" />
-    <Rule Id="IDE0017WithoutSuggestion" Action="Warning" />
-    <Rule Id="IDE0018" Action="Warning" />
-    <Rule Id="IDE0018WithoutSuggestion" Action="Warning" />
+    <Rule Id="IDE0017" Action="None" />
+    <Rule Id="IDE0017WithoutSuggestion" Action="None" />
     <Rule Id="IDE0019" Action="Warning" />
     <Rule Id="IDE0019WithoutSuggestion" Action="Warning" />
     <Rule Id="IDE0020" Action="Warning" />

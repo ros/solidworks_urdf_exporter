@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,9 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-using SolidWorks.Interop.sldworks;
 using System.Collections.Generic;
 using System.Windows.Forms;
+
+using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {
@@ -91,7 +86,6 @@ namespace SW2URDF
             }
         }
 
-
         //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
         //remain hidden
         public static List<string> FindHiddenComponents(object[] varComp)
@@ -136,7 +130,6 @@ namespace SW2URDF
         {
             SelectComponents(model, Link, true);
             model.ShowComponent2();
-
         }
 
         //Hides the components from a link
@@ -208,8 +201,6 @@ namespace SW2URDF
             }
         }
 
-
-
         //Converts the SW component references to PIDs
         public static void SaveSWComponents(ModelDoc2 model, Link Link)
         {
@@ -250,7 +241,6 @@ namespace SW2URDF
             }
             return null;
         }
-
 
         // Converts the PIDs to actual references to the components and proceeds recursively through the child links
         public static void LoadSWComponents(ModelDoc2 model, Link Link)

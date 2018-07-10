@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,20 +21,21 @@ THE SOFTWARE.
 */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
-using System.Collections.Generic;
 
 namespace SW2URDF
 {
     //This source file contains all the non-handler methods for the assembly export form, the ones that are helpers.
     public partial class AssemblyExportForm : Form
     {
-                //From the link, this method fills the property boxes on the Link Properties page
+        //From the link, this method fills the property boxes on the Link Properties page
         public void FillLinkPropertyBoxes(Link Link)
         {
             FillBlank(linkBoxes);
@@ -99,12 +94,12 @@ namespace SW2URDF
 
                 //G5: Maximum decimal places to use (not counting exponential notation) is 5
 
-                Joint.Origin.FillBoxes(textBox_joint_x, 
-                                       textBox_joint_y, 
-                                       textBox_joint_z, 
-                                       textBox_joint_roll, 
-                                       textBox_joint_pitch, 
-                                       textBox_joint_yaw, 
+                Joint.Origin.FillBoxes(textBox_joint_x,
+                                       textBox_joint_y,
+                                       textBox_joint_z,
+                                       textBox_joint_roll,
+                                       textBox_joint_pitch,
+                                       textBox_joint_yaw,
                                        "G5");
 
                 Joint.Axis.FillBoxes(textBox_axis_x, textBox_axis_y, textBox_axis_z, "G5");
@@ -193,7 +188,6 @@ namespace SW2URDF
                 comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
             }
             AutoUpdatingForm = false;
-            
         }
 
         public void FillBlank(Control[] boxes)
@@ -255,15 +249,15 @@ namespace SW2URDF
             Joint.CoordinateSystemName = comboBox_origin.Text;
             Joint.AxisName = comboBox_axis.Text;
 
-            Joint.Origin.Update(textBox_joint_x, 
-                                textBox_joint_y, 
-                                textBox_joint_z, 
-                                textBox_joint_roll, 
-                                textBox_joint_pitch, 
+            Joint.Origin.Update(textBox_joint_x,
+                                textBox_joint_y,
+                                textBox_joint_z,
+                                textBox_joint_roll,
+                                textBox_joint_pitch,
                                 textBox_joint_yaw);
 
-            Joint.Axis.Update(textBox_axis_x, 
-                              textBox_axis_y, 
+            Joint.Axis.Update(textBox_axis_x,
+                              textBox_axis_y,
                               textBox_axis_z);
 
             if (String.IsNullOrWhiteSpace(textBox_limit_lower.Text) && String.IsNullOrWhiteSpace(textBox_limit_upper.Text) && String.IsNullOrWhiteSpace(textBox_limit_effort.Text) && String.IsNullOrWhiteSpace(textBox_limit_velocity.Text))
@@ -291,9 +285,9 @@ namespace SW2URDF
                 {
                     Joint.Limit = new Limit();
                 }
-                Joint.Limit.SetValues(textBox_limit_lower, 
-                                   textBox_limit_upper, 
-                                   textBox_limit_effort, 
+                Joint.Limit.SetValues(textBox_limit_lower,
+                                   textBox_limit_upper,
+                                   textBox_limit_effort,
                                    textBox_limit_velocity);
             }
 
@@ -307,7 +301,7 @@ namespace SW2URDF
                 {
                     Joint.Calibration = new Calibration();
                 }
-                Joint.Calibration.SetValues(textBox_calibration_rising, 
+                Joint.Calibration.SetValues(textBox_calibration_rising,
                                          textBox_calibration_falling);
             }
 
@@ -321,7 +315,7 @@ namespace SW2URDF
                 {
                     Joint.Dynamics = new Dynamics();
                 }
-                Joint.Dynamics.SetValues(textBox_damping, 
+                Joint.Dynamics.SetValues(textBox_damping,
                                       textBox_friction);
             }
 
@@ -335,18 +329,16 @@ namespace SW2URDF
                 {
                     Joint.Safety = new SafetyController();
                 }
-                Joint.Safety.SetValues(textBox_soft_lower, 
-                                    textBox_soft_upper, 
-                                    textBox_k_position, 
+                Joint.Safety.SetValues(textBox_soft_lower,
+                                    textBox_soft_upper,
+                                    textBox_k_position,
                                     textBox_k_velocity);
-
             }
         }
 
         //Fills either TreeView from the URDF robot
         public void FillTreeViewFromRobot(Robot Robot, TreeView tree)
         {
-            
             LinkNode baseNode = new LinkNode();
             Link baseLink = Robot.BaseLink;
             baseNode.Name = baseLink.Name;
@@ -357,7 +349,7 @@ namespace SW2URDF
             baseNode.Components = baseLink.SWcomponents;
             baseNode.CoordsysName = "Origin_global";
             baseNode.IsIncomplete = false;
-            
+
             foreach (Link child in baseLink.Children)
             {
                 baseNode.Nodes.Add(CreateLinkNodeFromLink(child));
@@ -399,7 +391,7 @@ namespace SW2URDF
             {
                 node.Text = node.Link.Name;
             }
-            foreach(LinkNode child in node.Nodes)
+            foreach (LinkNode child in node.Nodes)
             {
                 UpdateNodeText(child, useJointName);
             }
@@ -429,7 +421,6 @@ namespace SW2URDF
             }
             node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
 
-
             return node;
         }
 
@@ -450,14 +441,11 @@ namespace SW2URDF
             Link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
-
                 Link childLink = CreateLinkFromLinkNode(child);
                 Link.Children.Add(childLink); // Recreates the children of each embedded link
-
             }
             return Link;
         }
-
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
@@ -478,7 +466,6 @@ namespace SW2URDF
                     }
                 }
             }
-
 
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
             Common.RetrieveSWComponentPIDs(model, BaseNode);

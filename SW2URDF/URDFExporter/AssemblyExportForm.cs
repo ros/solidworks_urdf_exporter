@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -32,12 +26,12 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
-
     public partial class AssemblyExportForm : Form
     {
         private static readonly log4net.ILog logger = Logger.GetLogger();
@@ -53,7 +47,7 @@ namespace SW2URDF
         private Control[] jointBoxes;
         private Control[] linkBoxes;
         private LinkNode BaseNode;
-        
+
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
             Application.ThreadException += new ThreadExceptionEventHandler(ExceptionHandler);
@@ -64,7 +58,6 @@ namespace SW2URDF
             ActiveSWModel = swApp.ActiveDoc;
             Exporter = new URDFExporter(iSwApp);
             AutoUpdatingForm = false;
-
 
             jointBoxes = new Control[] {
                 textBox_joint_name, comboBox_axis, comboBox_joint_type,
@@ -79,7 +72,7 @@ namespace SW2URDF
                 textBox_inertial_origin_x, textBox_inertial_origin_y, textBox_inertial_origin_z, textBox_inertial_origin_roll, textBox_inertial_origin_pitch, textBox_inertial_origin_yaw,
                 textBox_visual_origin_x, textBox_visual_origin_y, textBox_visual_origin_z, textBox_visual_origin_roll, textBox_visual_origin_pitch, textBox_visual_origin_yaw,
                 textBox_ixx, textBox_ixy, textBox_ixz, textBox_iyy, textBox_iyz, textBox_izz,
-                textBox_mass, 
+                textBox_mass,
                 domainUpDown_red, domainUpDown_green, domainUpDown_blue, domainUpDown_alpha,
                 comboBox_materials,
                 textBox_texture
@@ -118,10 +111,10 @@ namespace SW2URDF
         {
             if (!(previouslySelectedNode == null || previouslySelectedNode.Link.Joint == null))
             {
-                 SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
+                SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
             previouslySelectedNode = null; // Need to clear this for the link properties page
-            
+
             while (treeView_jointtree.Nodes.Count > 0)
             {
                 LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
@@ -210,7 +203,7 @@ namespace SW2URDF
                 Close();
             }
         }
-        
+
         private void TreeViewLinkPropertiesAfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
@@ -223,11 +216,8 @@ namespace SW2URDF
             LinkNode node = (LinkNode)e.Node;
             node.NodeFont = fontBold;
             node.Text = node.Text;
-            ActiveSWModel.ClearSelection2(true);    
+            ActiveSWModel.ClearSelection2(true);
             SelectionMgr manager = ActiveSWModel.SelectionManager;
-
-
-
 
             SelectData data = manager.CreateSelectData();
             data.Mark = -1;
@@ -248,6 +238,7 @@ namespace SW2URDF
         }
 
         #region Link Properties Controls Handlers
+
         private void ButtonTextureBrowseClick(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog
@@ -260,10 +251,11 @@ namespace SW2URDF
                 textBox_texture.Text = openFileDialog1.FileName;
             }
         }
-        
-        #endregion
+
+        #endregion Link Properties Controls Handlers
 
         #region Joint Properties Controls Handlers
+
         private void TreeViewJointtreeAfterSelect(object sender, TreeViewEventArgs e)
         {
             Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
@@ -313,7 +305,7 @@ namespace SW2URDF
                 }
             }
         }
-        #endregion
 
+        #endregion Joint Properties Controls Handlers
     }
 }

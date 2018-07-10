@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -36,8 +30,6 @@ namespace SW2URDF
     {
     }
 
-
-
     public abstract class LaunchElement
     {
         public abstract void WriteFile(XmlWriter writer);
@@ -46,6 +38,7 @@ namespace SW2URDF
     public class LaunchComment : LaunchElement
     {
         private readonly string commentString;
+
         public LaunchComment(string comment)
         {
             commentString = comment;
@@ -119,7 +112,8 @@ namespace SW2URDF
         private readonly string nodeArgs;
         private readonly string nodeOutput;
         private readonly bool nodeRespawn;
-        public LaunchNode(string name, string pkg, string type, string args="", string output="", bool respawn=false)
+
+        public LaunchNode(string name, string pkg, string type, string args = "", string output = "", bool respawn = false)
         {
             nodeName = name;
             nodePkg = pkg;
@@ -158,6 +152,7 @@ namespace SW2URDF
     public class LaunchInclude : LaunchElement
     {
         private readonly string includeFile;
+
         public LaunchInclude(string file)
         {
             includeFile = file;
@@ -171,14 +166,13 @@ namespace SW2URDF
         }
     }
 
-
     public class Gazebo
     {
         private readonly string package;
         private readonly string robotURDF;
         private readonly string model;
         private readonly List<LaunchElement> elements;
-        
+
         public Gazebo(string modelName, string packageName, string URDFName)
         {
             elements = new List<LaunchElement>();
@@ -225,6 +219,7 @@ namespace SW2URDF
         private readonly string package;
         private readonly string robotURDF;
         private readonly List<LaunchElement> elements;
+
         public Rviz(string packageName, string URDFName)
         {
             package = packageName;
@@ -268,9 +263,5 @@ namespace SW2URDF
             writer.WriteEndDocument();
             writer.Close();
         }
-
-
     }
-
-
 }

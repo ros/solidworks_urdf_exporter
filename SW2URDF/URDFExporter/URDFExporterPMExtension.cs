@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,20 +22,20 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
-using System.Drawing;
 
 namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
-
         public AttributeDef saveConfigurationAttributeDef;
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
@@ -76,9 +70,9 @@ namespace SW2URDF
             string newData = stringWriter.ToString();
             if (oldData != newData)
             {
-                if (!warnUser || 
-                    (warnUser && 
-                    MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", 
+                if (!warnUser ||
+                    (warnUser &&
+                    MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration",
                     MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
@@ -94,8 +88,6 @@ namespace SW2URDF
                 }
             }
         }
- 
-
 
         //As nodes are created and destroyed, this menu gets called a lot. It basically just adds the context menu (right-click menu)
         // to the node
@@ -416,19 +408,19 @@ namespace SW2URDF
         //Generally these are deactivated for the base node
         private void EnableControls(bool enableJoints)
         {
-            PropertyManagerPageControl[] pm_joint_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_Label_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_Label_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_Label_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_JointType, 
+            PropertyManagerPageControl[] pm_joint_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName,
+                                                                                          (PropertyManagerPageControl)pm_Label_JointName,
+                                                                                          (PropertyManagerPageControl)pm_ComboBox_CoordSys,
+                                                                                          (PropertyManagerPageControl)pm_Label_CoordSys,
+                                                                                          (PropertyManagerPageControl)pm_ComboBox_Axes,
+                                                                                          (PropertyManagerPageControl)pm_Label_Axes,
+                                                                                          (PropertyManagerPageControl)pm_ComboBox_JointType,
                                                                                           (PropertyManagerPageControl)pm_Label_JointType };
 
-            PropertyManagerPageControl[] pm_GlobalOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_GlobalCoordsys, 
+            PropertyManagerPageControl[] pm_GlobalOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_GlobalCoordsys,
                                                                                                        (PropertyManagerPageControl)pm_Label_GlobalCoordsys};
 
-            PropertyManagerPageControl[] pm_JointOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
+            PropertyManagerPageControl[] pm_JointOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_CoordSys,
                                                                                                        (PropertyManagerPageControl)pm_Label_CoordSys};
 
             foreach (PropertyManagerPageControl control in pm_GlobalOrigin_controls)
@@ -459,8 +451,8 @@ namespace SW2URDF
         }
 
         // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
-        // and items are added to the selection box. 
-        // Because the PMPage closes before selections need to occur, this method is no longer used. 
+        // and items are added to the selection box.
+        // Because the PMPage closes before selections need to occur, this method is no longer used.
         private void SetGeneralFilters()
         {
             swSelectType_e[] filters = new swSelectType_e[15];
@@ -541,7 +533,6 @@ namespace SW2URDF
                         logger.Info("URDF Configuration found\n" + data);
                     }
                 }
-
             }
             LinkNode basenode = null;
             if (!String.IsNullOrWhiteSpace(data))
@@ -591,7 +582,6 @@ namespace SW2URDF
                 RetrieveSWComponentPIDs(node);
             }
         }
-
 
         public void MoveComponentsToFolder(LinkNode node)
         {
@@ -686,9 +676,7 @@ namespace SW2URDF
                         isFirst = false;
                     }
                     specificErrors += "\r\n";
-
                 }
-
             }
             displayInitialMessage = true;
             foreach (List<string> conflict in jointConflicts)
@@ -769,7 +757,6 @@ namespace SW2URDF
             }
         }
 
-
         private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(string name)
         {
             int Options = 0;
@@ -799,9 +786,8 @@ namespace SW2URDF
                         return att;
                     }
                 }
-
             }
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = 
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
                 saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
