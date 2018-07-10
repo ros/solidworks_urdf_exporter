@@ -226,16 +226,16 @@ namespace SW2URDF
             return meshFileName;
         }
 
-        private void SaveSTL(Link Link, string windowsMeshFileName)
+        private void SaveSTL(Link link, string windowsMeshFileName)
         {
             int errors = 0;
             int warnings = 0;
 
             string coordsysName = "";
             coordsysName =
-                (Link.Joint == null || Link.Joint.CoordinateSystemName == null)
-                ? Link.CoordSysName : Link.Joint.CoordinateSystemName;
-            logger.Info(Link.Name + ": Exporting STL with coordinate frame " + coordsysName);
+                (link.Joint == null || link.Joint.CoordinateSystemName == null)
+                ? link.CoordSysName : link.Joint.CoordinateSystemName;
+            logger.Info(link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
             ModelDoc2 ActiveDoc = ActiveSWModel;
@@ -244,10 +244,10 @@ namespace SW2URDF
             string ConfigurationName = "";
             string DisplayStateName = "";
             Component2 geoComponent = default(Component2);
-            logger.Info(Link.Name + ": Reference geometry name " + names["component"]);
+            logger.Info(link.Name + ": Reference geometry name " + names["component"]);
             if (names["component"].Length > 0)
             {
-                foreach (Component2 comp in Link.SWcomponents)
+                foreach (Component2 comp in link.SWcomponents)
                 {
                     if (comp.Name2 == names["component"])
                     {
@@ -268,11 +268,11 @@ namespace SW2URDF
 
             if (ComponentName.Length == 0)
             {
-                Common.showComponents(ActiveSWModel, Link.SWcomponents);
+                Common.showComponents(ActiveSWModel, link.SWcomponents);
             }
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-            SetLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
+            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFileName);
             ActiveDoc.Extension.SaveAs(windowsMeshFileName, 
@@ -284,7 +284,7 @@ namespace SW2URDF
             }
             else
             {
-                Common.hideComponents(ActiveSWModel, Link.SWcomponents);
+                Common.hideComponents(ActiveSWModel, link.SWcomponents);
             }
 
 
