@@ -220,13 +220,13 @@ namespace SW2URDF
             // Export STL
             if (exportSTL)
             {
-                saveSTL(Link, windowsMeshFileName);
+                SaveSTL(Link, windowsMeshFileName);
             }
 
             return meshFileName;
         }
 
-        private void saveSTL(link Link, string windowsMeshFileName)
+        private void SaveSTL(link Link, string windowsMeshFileName)
         {
             int errors = 0;
             int warnings = 0;

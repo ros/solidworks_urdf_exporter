@@ -634,9 +634,9 @@
             this.label10.Location = new System.Drawing.Point(10, 245);
             this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(140, 20);
+            this.label10.Size = new System.Drawing.Size(93, 20);
             this.label10.TabIndex = 66;
-            this.label10.Text = "Visual Mesh Detail";
+            this.label10.Text = "Mesh Detail";
             // 
             // label19
             // 
@@ -645,9 +645,9 @@
             this.label19.Location = new System.Drawing.Point(4, 0);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(61, 20);
+            this.label19.Size = new System.Drawing.Size(211, 20);
             this.label19.TabIndex = 62;
-            this.label19.Text = "Visual";
+            this.label19.Text = "Visual/Collision Meshes";
             // 
             // textBox_visual_origin_z
             // 
@@ -765,9 +765,9 @@
             this.label29.Location = new System.Drawing.Point(548, 51);
             this.label29.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(105, 20);
+            this.label29.Size = new System.Drawing.Size(46, 20);
             this.label29.TabIndex = 49;
-            this.label29.Text = "Custom Color";
+            this.label29.Text = "Color";
             // 
             // label25
             // 
