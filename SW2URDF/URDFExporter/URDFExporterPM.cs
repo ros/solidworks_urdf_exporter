@@ -40,10 +40,10 @@ using SolidWorks.Interop.swpublished;
 namespace SW2URDF
 {
 
-    [ComVisibleAttribute(true)]
+    [ComVisible(true)]
 
     [Serializable]
-    public partial class URDFExporterPM : PropertyManagerPage2Handler9
+    public sealed partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
         #region class variables
         private static readonly log4net.ILog logger = Logger.GetLogger();
@@ -56,63 +56,63 @@ namespace SW2URDF
         public List<Link> linksToVisit;
         public LinkNode rightClickedNode;
         private ContextMenuStrip docMenu;
+
         //General objects required for the PropertyManager page
 
-        PropertyManagerPage2 pm_Page;
-        PropertyManagerPageGroup pm_Group;
+        private PropertyManagerPage2 pm_Page;
+        private PropertyManagerPageGroup pm_Group;
+        private PropertyManagerPageSelectionbox pm_Selection;
+        private PropertyManagerPageButton pm_Button_export;
+        private PropertyManagerPageTextbox pm_TextBox_LinkName;
+        private PropertyManagerPageTextbox pm_TextBox_JointName;
+        private PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
+        private PropertyManagerPageCombobox pm_ComboBox_GlobalCoordsys;
+        private PropertyManagerPageCombobox pm_ComboBox_Axes;
+        private PropertyManagerPageCombobox pm_ComboBox_CoordSys;
+        private PropertyManagerPageCombobox pm_ComboBox_JointType;
 
-        PropertyManagerPageSelectionbox pm_Selection;
-        PropertyManagerPageButton pm_Button_export;
-        PropertyManagerPageTextbox pm_TextBox_LinkName;
-        PropertyManagerPageTextbox pm_TextBox_JointName;
-        PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
-        PropertyManagerPageCombobox pm_ComboBox_GlobalCoordsys;
-        PropertyManagerPageCombobox pm_ComboBox_Axes;
-        PropertyManagerPageCombobox pm_ComboBox_CoordSys;
-        PropertyManagerPageCombobox pm_ComboBox_JointType;
+        private PropertyManagerPageLabel pm_Label_LinkName;
+        private PropertyManagerPageLabel pm_Label_JointName;
+        private PropertyManagerPageLabel pm_Label_Selection;
+        private PropertyManagerPageLabel pm_Label_ChildCount;
+        private PropertyManagerPageLabel pm_Label_ParentLink;
+        private PropertyManagerPageLabel pm_Label_ParentLinkLabel;
+        private PropertyManagerPageLabel pm_Label_Axes;
+        private PropertyManagerPageLabel pm_Label_CoordSys;
+        private PropertyManagerPageLabel pm_Label_JointType;
+        private PropertyManagerPageLabel pm_Label_GlobalCoordsys;
 
-        PropertyManagerPageLabel pm_Label_LinkName;
-        PropertyManagerPageLabel pm_Label_JointName;
-        PropertyManagerPageLabel pm_Label_Selection;
-        PropertyManagerPageLabel pm_Label_ChildCount;
-        PropertyManagerPageLabel pm_Label_ParentLink;
-        PropertyManagerPageLabel pm_Label_ParentLinkLabel;
-        PropertyManagerPageLabel pm_Label_Axes;
-        PropertyManagerPageLabel pm_Label_CoordSys;
-        PropertyManagerPageLabel pm_Label_JointType;
-        PropertyManagerPageLabel pm_Label_GlobalCoordsys;
-
-        PropertyManagerPageWindowFromHandle pm_tree;
+        private PropertyManagerPageWindowFromHandle pm_tree;
         public TreeView Tree
         { get; set; }
-        bool automaticallySwitched = false;
+        private bool automaticallySwitched = false;
 
         //Each object in the page needs a unique ID
 
-        const int GroupID = 1;
-        const int TextBox_LinkNameID = 2;
-        const int SelectionID = 3;
-        const int ComboID = 4;
-        const int ListID = 5;
-        const int Button_save_ID = 6;
-        const int NumBox_ChildCount_ID = 7;
-        const int Label_LinkName_ID = 8;
-        const int Label_Selection_ID = 9;
-        const int Label_ChildCount_ID = 10;
-        const int Label_ParentLink_ID = 11;
-        const int Label_ParentLinkLabel_ID = 12;
-        const int TextBox_JointNameID = 13;
-        const int Label_JointName_ID = 14;
-        const int dotNet_tree = 16;
-        const int Button_export_ID = 17;
-        const int ComboBox_Axes_ID = 18;
-        const int ComboBox_CoordSys_ID = 19;
-        const int Label_Axes_ID = 20;
-        const int Label_CoordSys_ID = 21;
-        const int ComboBox_JointType_ID = 22;
-        const int Label_JointType_ID = 23;
-        const int ID_GlobalCoordsys = 24;
-        const int ID_Label_GlobalCoordsys = 25;
+        private const int GroupID = 1;
+        private const int TextBox_LinkNameID = 2;
+        private const int SelectionID = 3;
+        private const int ComboID = 4;
+        private const int ListID = 5;
+        private const int Button_save_ID = 6;
+        private const int NumBox_ChildCount_ID = 7;
+        private const int Label_LinkName_ID = 8;
+        private const int Label_Selection_ID = 9;
+        private const int Label_ChildCount_ID = 10;
+        private const int Label_ParentLink_ID = 11;
+        private const int Label_ParentLinkLabel_ID = 12;
+        private const int TextBox_JointNameID = 13;
+        private const int Label_JointName_ID = 14;
+        private const int dotNet_tree = 16;
+        private const int Button_export_ID = 17;
+        private const int ComboBox_Axes_ID = 18;
+        private const int ComboBox_CoordSys_ID = 19;
+        private const int Label_Axes_ID = 20;
+        private const int Label_CoordSys_ID = 21;
+        private const int ComboBox_JointType_ID = 22;
+        private const int Label_JointType_ID = 23;
+        private const int ID_GlobalCoordsys = 24;
+        private const int ID_Label_GlobalCoordsys = 25;
 
         #endregion
 
@@ -163,7 +163,7 @@ namespace SW2URDF
             {
                 //If the page is not created
                 logger.Error("An error occurred while attempting to create the PropertyManager Page\nError: " + longerrors);
-                System.Windows.Forms.MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
             #endregion
@@ -176,7 +176,7 @@ namespace SW2URDF
 
         private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (System.Exception)e.ExceptionObject);
+            logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (Exception)e.ExceptionObject);
         }
 
         #region Implemented Property Manager Page Handler Methods
@@ -237,7 +237,7 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Exception caught handling button press " + Id, e);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
         }
@@ -262,7 +262,7 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Exception caught on close ", e);
-                System.Windows.Forms.MessageBox.Show("There was a problem closing the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem closing the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -350,7 +350,7 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view AfterSelect ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -361,7 +361,7 @@ namespace SW2URDF
         }
 
         //When a keyboard key is pressed on the tree
-        void TreeKeyDown(object sender, KeyEventArgs e)
+        private void TreeKeyDown(object sender, KeyEventArgs e)
         {
             if (rightClickedNode.IsEditing)
             {
@@ -377,7 +377,7 @@ namespace SW2URDF
         }
 
         // The callback for the configuration page context menu 'Add Child' option
-        void AddChildClick(object sender, EventArgs e)
+        private void AddChildClick(object sender, EventArgs e)
         {
             try
             {
@@ -386,12 +386,12 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view add child ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
         // The callback for the configuration page context menu 'Remove Child' option
-        void RemoveChildClick(object sender, EventArgs e)
+        private void RemoveChildClick(object sender, EventArgs e)
         {
             try
             {
@@ -401,13 +401,13 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view remove child ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
         // The callback for the configuration page context menu 'Rename Child' option
         // This isn't really working right now, so the option was deactivated from the context menu
-        void RenameChildClick(object sender, EventArgs e)
+        private void RenameChildClick(object sender, EventArgs e)
         {
             try
             {
@@ -419,11 +419,11 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view rename child ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
-        private void TreeItemDrag(object sender, System.Windows.Forms.ItemDragEventArgs e)
+        private void TreeItemDrag(object sender, ItemDragEventArgs e)
         {
             try
             { 
@@ -432,10 +432,10 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
-        private void TreeDragOver(object sender, System.Windows.Forms.DragEventArgs e)
+        private void TreeDragOver(object sender, DragEventArgs e)
         {
             try
             { 
@@ -449,7 +449,7 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag Over ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         private void TreeDragEnter(object sender, DragEventArgs e)
@@ -466,7 +466,7 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view DragEnter ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -555,7 +555,7 @@ namespace SW2URDF
             }
         }
 
-        private void TreeDragDrop(object sender, System.Windows.Forms.DragEventArgs e)
+        private void TreeDragDrop(object sender, DragEventArgs e)
         {
             try
             {
@@ -564,7 +564,7 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag Drop ", ex);
-                System.Windows.Forms.MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
         #endregion
@@ -756,12 +756,15 @@ namespace SW2URDF
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             pm_tree = pm_Page.AddControl(dotNet_tree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
             pm_tree.Height = 163;
-            Tree = new TreeView();
-            Tree.Height = 163;
-            Tree.Visible = true;
-            Tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(TreeAfterSelect);
-            Tree.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(TreeNodeMouseClick);
-            Tree.KeyDown += new System.Windows.Forms.KeyEventHandler(TreeKeyDown);
+            Tree = new TreeView
+            {
+                Height = 163,
+                Visible = true
+            };
+
+            Tree.AfterSelect += new TreeViewEventHandler(TreeAfterSelect);
+            Tree.NodeMouseClick += new TreeNodeMouseClickEventHandler(TreeNodeMouseClick);
+            Tree.KeyDown += new KeyEventHandler(TreeKeyDown);
             Tree.DragDrop += new DragEventHandler(TreeDragDrop);
             Tree.DragOver += new DragEventHandler(TreeDragOver);
             Tree.DragEnter += new DragEventHandler(TreeDragEnter);
@@ -773,10 +776,10 @@ namespace SW2URDF
             ToolStripMenuItem removeChild = new ToolStripMenuItem();
             //ToolStripMenuItem renameChild = new ToolStripMenuItem();
             addChild.Text = "Add Child Link";
-            addChild.Click += new System.EventHandler(this.AddChildClick);
+            addChild.Click += new EventHandler(AddChildClick);
 
             removeChild.Text = "Remove";
-            removeChild.Click += new System.EventHandler(this.RemoveChildClick);
+            removeChild.Click += new EventHandler(RemoveChildClick);
             //renameChild.Text = "Rename";
             //renameChild.Click += new System.EventHandler(this.renameChild_Click);
            //docMenu.Items.AddRange(new ToolStripMenuItem[] { addChild, removeChild, renameChild });

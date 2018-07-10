@@ -34,10 +34,6 @@ using SolidWorks.Interop.swconst;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using MathNet.Numerics.LinearAlgebra.Generic;
-using log4net;
-using log4net.Repository.Hierarchy;
-using log4net.Appender;
-using System.Linq;
 
 namespace SW2URDF
 {
@@ -79,8 +75,7 @@ namespace SW2URDF
         { get; set; }
         public string SavePath
         { get; set; }
-        public List<Link> Links
-        { get; set; }
+        public readonly List<Link> Links;
 
         #endregion
 
@@ -108,20 +103,20 @@ namespace SW2URDF
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
-            int progressBarBound = Common.getCount(URDFRobot.BaseLink);
+            int progressBarBound = Common.GetCount(URDFRobot.BaseLink);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
             logger.Info("Creating package directories with name " + PackageName + " and save path " + SavePath);
             URDFPackage package = new URDFPackage(PackageName, SavePath);
-            package.createDirectories();
+            package.CreateDirectories();
             URDFRobot.Name = PackageName;
             string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
             logger.Info("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
-            package.createCMakeLists();
+            package.CreateCMakeLists();
 
             //Create Config joint names, not sure how this is used...
             logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
@@ -139,7 +134,7 @@ namespace SW2URDF
             rviz.WriteFiles(package.WindowsLaunchDirectory);
 
             //Creating Gazebo launch file
-            Gazebo gazebo = new Gazebo(this.URDFRobot.Name, this.PackageName, URDFRobot.Name + ".urdf");
+            Gazebo gazebo = new Gazebo(URDFRobot.Name, PackageName, URDFRobot.Name + ".urdf");
             logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
             gazebo.WriteFile(package.WindowsLaunchDirectory);
 
@@ -153,7 +148,7 @@ namespace SW2URDF
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            List<string> hiddenComponents = Common.findHiddenComponents(assyDoc.GetComponents(false));
+            List<string> hiddenComponents = Common.FindHiddenComponents(assyDoc.GetComponents(false));
             logger.Info("Found " + hiddenComponents.Count + " hidden components " + String.Join(", ", hiddenComponents));
             logger.Info("Hiding all components");
             ActiveSWModel.Extension.SelectAll();
@@ -166,7 +161,7 @@ namespace SW2URDF
             URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = filename;
 
             logger.Info("Showing all components except previously hidden components");
-            Common.showAllComponents(ActiveSWModel, hiddenComponents);
+            Common.ShowAllComponents(ActiveSWModel, hiddenComponents);
             //Writing URDF to file
 
             logger.Info("Writing URDF file to " + windowsURDFFileName);
@@ -201,15 +196,15 @@ namespace SW2URDF
             }
             
             // Copy the texture file (if it was specified) to the textures directory
-            if (!Link.isFixedFrame && Link.Visual.Material.Texture.wFilename != "")
+            if (!Link.isFixedFrame && !String.IsNullOrWhiteSpace(Link.Visual.Material.Texture.wFilename))
             {
-                if (System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
+                if (File.Exists(Link.Visual.Material.Texture.wFilename))
                 {
                     Link.Visual.Material.Texture.Filename = 
                         package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
                     string textureSavePath = 
                         package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
-                    System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
+                    File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
                 }
             }
 
@@ -268,7 +263,7 @@ namespace SW2URDF
 
             if (ComponentName.Length == 0)
             {
-                Common.showComponents(ActiveSWModel, link.SWcomponents);
+                Common.ShowComponents(ActiveSWModel, link.SWcomponents);
             }
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
@@ -284,7 +279,7 @@ namespace SW2URDF
             }
             else
             {
-                Common.hideComponents(ActiveSWModel, link.SWcomponents);
+                Common.HideComponents(ActiveSWModel, link.SWcomponents);
             }
 
 
@@ -305,7 +300,7 @@ namespace SW2URDF
 
             //Creating package directories
             URDFPackage package = new URDFPackage(PackageName, SavePath);
-            package.createDirectories();
+            package.CreateDirectories();
             string meshFileName = package.MeshesDirectory + URDFRobot.BaseLink.Name + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + URDFRobot.BaseLink.Name + ".STL";
             string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
@@ -336,9 +331,9 @@ namespace SW2URDF
                 package.TexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);
             string textureSavePath = 
                 package.WindowsTexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);
-            if (URDFRobot.BaseLink.Visual.Material.Texture.wFilename != "")
+            if (!String.IsNullOrWhiteSpace(URDFRobot.BaseLink.Visual.Material.Texture.wFilename))
             {
-                System.IO.File.Copy(URDFRobot.BaseLink.Visual.Material.Texture.wFilename, textureSavePath, true);
+                File.Copy(URDFRobot.BaseLink.Visual.Material.Texture.wFilename, textureSavePath, true);
             }
 
             //Writing URDF to file
@@ -375,7 +370,7 @@ namespace SW2URDF
                 else
                 {
                     logger.Info("Copying " + log_filename + " to " + destination);
-                    System.IO.File.Copy(log_filename, destination);
+                    File.Copy(log_filename, destination);
                 }
             }
         }

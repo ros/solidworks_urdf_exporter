@@ -12,7 +12,7 @@ namespace SW2URDF
 {
     public class FileNamePatternConverter : PatternLayoutConverter
     {
-        override protected void Convert(TextWriter writer, LoggingEvent loggingEvent)
+        protected override void Convert(TextWriter writer, LoggingEvent loggingEvent)
         {
             writer.Write(Path.GetFileName(loggingEvent.LocationInformation.FileName));
         }
@@ -60,17 +60,17 @@ namespace SW2URDF
 
             hierarchy.Root.Level = Level.Info;
             hierarchy.Configured = true;
-            Logger.Initialized = true;
-            var logger = log4net.LogManager.GetLogger(
+            Initialized = true;
+            var logger = LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
             logger.Info("\n" + String.Concat(Enumerable.Repeat("-", 80)));
             logger.Info("Logging commencing for SW2URDF exporter");
         }
 
-        public static log4net.ILog GetLogger()
+        public static ILog GetLogger()
         {
-            Logger.Setup();
-            return log4net.LogManager.GetLogger(
+            Setup();
+            return LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         }
 

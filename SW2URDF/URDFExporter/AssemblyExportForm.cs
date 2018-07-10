@@ -40,22 +40,24 @@ namespace SW2URDF
 
     public partial class AssemblyExportForm : Form
     {
-        ISldWorks swApp;
-        ModelDoc2 ActiveSWModel;
-        private StringBuilder NewNodeMap = new StringBuilder(128);
-        public URDFExporter Exporter;
-        LinkNode previouslySelectedNode;
-        public bool AutoUpdatingForm;
-        Control[] jointBoxes;
-        Control[] linkBoxes;
-        LinkNode BaseNode;
-        public AttributeDef saveConfigurationAttributeDef;
         private static readonly log4net.ILog logger = Logger.GetLogger();
 
+        public URDFExporter Exporter;
+        public bool AutoUpdatingForm;
+        public AttributeDef saveConfigurationAttributeDef;
+
+        private ISldWorks swApp;
+        private ModelDoc2 ActiveSWModel;
+        private StringBuilder NewNodeMap = new StringBuilder(128);
+        private LinkNode previouslySelectedNode;
+        private Control[] jointBoxes;
+        private Control[] linkBoxes;
+        private LinkNode BaseNode;
+        
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
-            Application.ThreadException += new ThreadExceptionEventHandler(this.ExceptionHandler);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(this.UnhandledException);
+            Application.ThreadException += new ThreadExceptionEventHandler(ExceptionHandler);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledException);
             InitializeComponent();
             swApp = iSwApp;
             BaseNode = node;
@@ -96,14 +98,14 @@ namespace SW2URDF
         private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
             logger.Error("Exception encountered in Assembly export form", e.Exception);
-            System.Windows.Forms.MessageBox.Show("There was a problem with the export form: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            MessageBox.Show("There was a problem with the export form: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
         }
 
         private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Exception ex = (System.Exception)e.ExceptionObject;
+            Exception ex = (Exception)e.ExceptionObject;
             logger.Error("Unhandled exception in Assembly Export form", ex);
-            System.Windows.Forms.MessageBox.Show("There was a problem with the export form: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            MessageBox.Show("There was a problem with the export form: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
         }
 
         //Joint form configuration controls
@@ -126,11 +128,11 @@ namespace SW2URDF
                 treeView_jointtree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
-            ChangeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            ChangeAllNodeFont(BaseNode, new Font(treeView_jointtree.Font, FontStyle.Regular));
 
             FillLinkTree();
             panel_link_properties.Visible = true;
-            this.Focus();
+            Focus();
         }
 
         private void Button_Joint_Cancel_Click(object sender, EventArgs e)
@@ -146,7 +148,7 @@ namespace SW2URDF
                 BaseNode.Nodes.Add(node);
             }
             SaveConfigTree(ActiveSWModel, BaseNode, true);
-            this.Close();
+            Close();
         }
 
         private void Button_Links_Cancel_Click(object sender, EventArgs e)
@@ -156,7 +158,7 @@ namespace SW2URDF
                 SaveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
             }
             SaveConfigTree(ActiveSWModel, BaseNode, true);
-            this.Close();
+            Close();
         }
 
         private void Button_Links_Previous_Click(object sender, EventArgs e)
@@ -167,7 +169,7 @@ namespace SW2URDF
                 SaveLinkDataFromPropertyBoxes(node.Link);
             }
             previouslySelectedNode = null;
-            ChangeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
+            ChangeAllNodeFont(BaseNode, new Font(treeView_jointtree.Font, FontStyle.Regular));
             FillJointTree();
             panel_link_properties.Visible = false;
         }
@@ -205,7 +207,7 @@ namespace SW2URDF
                 Exporter.URDFRobot = CreateRobotFromTreeView(treeView_linkProperties);
 
                 Exporter.ExportRobot(exportSTL);
-                this.Close();
+                Close();
             }
         }
         
@@ -301,10 +303,10 @@ namespace SW2URDF
         {
             if (!AutoUpdatingForm)
             {
-                if (!(comboBox_origin.Text == "" || comboBox_axis.Text == ""))
+                if (!(String.IsNullOrWhiteSpace(comboBox_origin.Text) || String.IsNullOrWhiteSpace(comboBox_axis.Text)))
                 {
                     double[] Axis = Exporter.EstimateAxis(comboBox_axis.Text);
-                    Exporter.LocalizeAxis(Axis, comboBox_origin.Text);
+                    Axis = Exporter.LocalizeAxis(Axis, comboBox_origin.Text);
                     textBox_axis_x.Text = Axis[0].ToString("G5");
                     textBox_axis_y.Text = Axis[1].ToString("G5");
                     textBox_axis_z.Text = Axis[2].ToString("G5");

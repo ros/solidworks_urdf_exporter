@@ -99,7 +99,7 @@ namespace SW2URDF
             return vec;
         }
 
-        public static T Max<T>(T d1, T d2, T d3) where T: System.IComparable<T>
+        public static T Max<T>(T d1, T d2, T d3) where T: IComparable<T>
         {
             return Max(new T[] { d1, d2, d3 });
         }
@@ -118,22 +118,22 @@ namespace SW2URDF
             return result;
         }
 
-        public static T Max<T>(T t1, T t2) where T : System.IComparable<T>
+        public static T Max<T>(T t1, T t2) where T : IComparable<T>
         {
             return Max(new T[] { t1, t2 });
         }
 
-        public static T Min<T>(T t1, T t2) where T : System.IComparable<T>
+        public static T Min<T>(T t1, T t2) where T : IComparable<T>
         {
             return Min(new T[] { t1, t2 });
         }
 
-        public static T Min<T>(T d1, T d2, T d3) where T: System.IComparable<T>
+        public static T Min<T>(T d1, T d2, T d3) where T: IComparable<T>
         {
             return Min(new T[] { d1, d2, d3 });
         }
 
-        public static T Min<T>(T[] array) where T: System.IComparable<T>
+        public static T Min<T>(T[] array) where T: IComparable<T>
         {
             T result = default(T);
             if (array.Length > 0)
@@ -147,7 +147,7 @@ namespace SW2URDF
             return result;
         }
 
-        public static T Envelope<T>(T value, T min, T max) where T : System.IComparable<T>
+        public static T Envelope<T>(T value, T min, T max) where T : IComparable<T>
         {
             if (Comparer<T>.Default.Compare(value, max) > 0)
             {
@@ -433,8 +433,13 @@ namespace SW2URDF
         {
             var rot = new DenseMatrix(3);
             for (int i = 0; i < 3; i++)
+            {
                 for (int j = 0; j < 3; j++)
+                {
                     rot.At(i, j, transform.ArrayData[i + 3 * j]);
+                }
+            }
+
             return rot;
         }
 
@@ -499,13 +504,14 @@ namespace SW2URDF
             return sqrdmag;
         }
 
-        public static void Threshold(double[] array, double min_value)
+        public static double[] Threshold(double[] array, double min_value)
         {
+            double[] result = (double[])array.Clone();
             for (int i = 0; i < array.Length; i++)
             {
-                array[i] = (Math.Abs(array[i]) >= min_value) ? array[i] : 0;
+                result[i] = (Math.Abs(array[i]) >= min_value) ? array[i] : 0;
             }
-
+            return result;
         }
 
         public static double Sum(double[] vec)

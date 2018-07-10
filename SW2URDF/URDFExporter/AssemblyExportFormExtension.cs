@@ -188,7 +188,7 @@ namespace SW2URDF
             List<string> axesNames = Exporter.FindRefGeoNames("RefAxis");
             comboBox_axis.Items.AddRange(axesNames.ToArray());
             comboBox_origin.SelectedIndex = comboBox_origin.FindStringExact(Joint.CoordinateSystemName);
-            if (Joint.AxisName != "")
+            if (String.IsNullOrWhiteSpace(Joint.AxisName))
             {
                 comboBox_axis.SelectedIndex = comboBox_axis.FindStringExact(Joint.AxisName);
             }
@@ -266,7 +266,7 @@ namespace SW2URDF
                               textBox_axis_y, 
                               textBox_axis_z);
 
-            if (textBox_limit_lower.Text == "" && textBox_limit_upper.Text == "" && textBox_limit_effort.Text == "" && textBox_limit_velocity.Text == "")
+            if (String.IsNullOrWhiteSpace(textBox_limit_lower.Text) && String.IsNullOrWhiteSpace(textBox_limit_upper.Text) && String.IsNullOrWhiteSpace(textBox_limit_effort.Text) && String.IsNullOrWhiteSpace(textBox_limit_velocity.Text))
             {
                 if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
@@ -297,7 +297,7 @@ namespace SW2URDF
                                    textBox_limit_velocity);
             }
 
-            if (textBox_calibration_rising.Text == "" && textBox_calibration_falling.Text == "")
+            if (String.IsNullOrWhiteSpace(textBox_calibration_rising.Text) && String.IsNullOrWhiteSpace(textBox_calibration_falling.Text))
             {
                 Joint.Calibration = null;
             }
@@ -311,7 +311,7 @@ namespace SW2URDF
                                          textBox_calibration_falling);
             }
 
-            if (textBox_friction.Text == "" && textBox_damping.Text == "")
+            if (String.IsNullOrWhiteSpace(textBox_friction.Text) && String.IsNullOrWhiteSpace(textBox_damping.Text))
             {
                 Joint.Dynamics = null;
             }
@@ -325,7 +325,7 @@ namespace SW2URDF
                                       textBox_friction);
             }
 
-            if (textBox_soft_lower.Text == "" && textBox_soft_upper.Text == "" && textBox_k_position.Text == "" && textBox_k_velocity.Text == "")
+            if (String.IsNullOrWhiteSpace(textBox_soft_lower.Text) && String.IsNullOrWhiteSpace(textBox_soft_upper.Text) && String.IsNullOrWhiteSpace(textBox_k_position.Text) && String.IsNullOrWhiteSpace(textBox_k_velocity.Text))
             {
                 Joint.Safety = null;
             }
@@ -481,7 +481,7 @@ namespace SW2URDF
 
 
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
-            Common.retrieveSWComponentPIDs(model, BaseNode);
+            Common.RetrieveSWComponentPIDs(model, BaseNode);
             SerialNode sNode = new SerialNode(BaseNode);
 
             StringWriter stringWriter;

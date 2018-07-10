@@ -135,7 +135,7 @@ namespace SW2URDF
             box.CurrentSelection = 0;
 
             // Cycles through the menu items until it finds what its looking for, it finds blank strings, or itemtext is null
-            while (itemtext != null && itemtext != "" && itemtext != item)
+            while (String.IsNullOrWhiteSpace(itemtext) && itemtext != item)
             {
                 // Gets the item text at index in a pull-down menu. No way to now how many items are in the combobox
                 itemtext = box.get_ItemText(i);
@@ -188,7 +188,7 @@ namespace SW2URDF
             {
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
-            int itemsCount = Common.getCount(Tree.Nodes);
+            int itemsCount = Common.GetCount(Tree.Nodes);
             int itemHeight = 1 + itemsCount * Tree.ItemHeight;
             int min = 163;
             int max = 600;
@@ -228,7 +228,7 @@ namespace SW2URDF
         // This method runs through first the child nodes of the selected node to see if there are more to visit
         // then it runs through the nodes top to bottom to find the next to visit. Returns the node if one is found
         // otherwise it returns null.
-        public LinkNode FindNextLinkToVisit(System.Windows.Forms.TreeView tree)
+        public LinkNode FindNextLinkToVisit(TreeView tree)
         {
             // First check if SelectedNode has any nodes to visit
             if (tree.SelectedNode != null)
@@ -263,7 +263,7 @@ namespace SW2URDF
         {
             node.WhyIncomplete = "";
             node.IsIncomplete = false;
-            if (node.LinkName.Equals(""))
+            if (String.IsNullOrWhiteSpace(node.LinkName))
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
@@ -279,7 +279,7 @@ namespace SW2URDF
                 node.WhyIncomplete += "        The origin reference coordinate system cannot be automatically generated\r\n";
                 node.WhyIncomplete += "        without components. Either select an origin or at least one component.";
             }
-            if (node.JointName == "" && !node.IsBaseNode)
+            if (String.IsNullOrWhiteSpace(node.JointName) && !node.IsBaseNode)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
@@ -308,7 +308,7 @@ namespace SW2URDF
         {
             //Calls the recursive function starting with the base_link node and retrieves a string identifying the incomplete nodes
             string incompleteNodes = CheckNodesComplete((LinkNode)tree.Nodes[0], "");
-            if (incompleteNodes != "")
+            if (!String.IsNullOrWhiteSpace(incompleteNodes))
             {
                 MessageBox.Show("The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
                 return false;
@@ -333,7 +333,7 @@ namespace SW2URDF
                 {
                     previouslySelectedNode.CoordsysName = pm_ComboBox_GlobalCoordsys.get_ItemText(-1);
                 }
-                Common.getSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, pm_Selection.Mark);
+                Common.GetSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, pm_Selection.Mark);
             }
         }
 
@@ -375,7 +375,7 @@ namespace SW2URDF
             pm_NumberBox_ChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.selectComponents(ActiveSWModel, node.Components, true, pm_Selection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Components, true, pm_Selection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)
@@ -449,7 +449,7 @@ namespace SW2URDF
         }
 
         //Only allows components to be selected for the PMPage selection box
-        void SetComponentFilters()
+        private void SetComponentFilters()
         {
             swSelectType_e[] filters = new swSelectType_e[1];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
@@ -461,7 +461,7 @@ namespace SW2URDF
         // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
         // and items are added to the selection box. 
         // Because the PMPage closes before selections need to occur, this method is no longer used. 
-        void SetGeneralFilters()
+        private void SetGeneralFilters()
         {
             swSelectType_e[] filters = new swSelectType_e[15];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
@@ -544,13 +544,13 @@ namespace SW2URDF
 
             }
             LinkNode basenode = null;
-            if (!data.Equals(""))
+            if (!String.IsNullOrWhiteSpace(data))
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
                 SerialNode node = (SerialNode)serializer.Deserialize(textReader);
                 basenode = new LinkNode(node);
-                Common.loadSWComponents(ActiveSWModel, basenode);
+                Common.LoadSWComponents(ActiveSWModel, basenode);
                 textReader.Close();
             }
 

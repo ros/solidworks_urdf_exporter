@@ -27,7 +27,6 @@ THE SOFTWARE.
 */
 
 using System;
-using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using SolidWorks.Interop.sldworks;
@@ -125,12 +124,12 @@ namespace SW2URDF
             Exporter.URDFRobot.BaseLink.STLQualityFine = radioButton_fine.Checked;
 
             Exporter.ExportLink(checkBox_rotate.Checked);
-            this.Close();
+            Close();
         }
 
         private void ButtonCancelClick(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void PartExportFormLoad(object sender, EventArgs e)
