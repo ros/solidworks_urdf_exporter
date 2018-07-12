@@ -23,7 +23,6 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
 
@@ -239,14 +238,14 @@ namespace SW2URDF
 
             if (!child.isFixedFrame)
             {
-                //selectComponents(components, true);
-                IMassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+                List<Body2> bodies = GetBodies(components);
+                MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
                 swMass.SetCoordinateSystem(jointTransform);
 
-                Body2[] bodies = GetBodies(components);
-                bool addedBodies = swMass.AddBodies(bodies);
+                bool bRet = swMass.AddBodies(bodies.ToArray());
+
+                double[] moment = (double[])swMass.GetMomentOfInertia((int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
                 child.Inertial.Mass.Value = swMass.Mass;
-                double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
                 child.Inertial.Inertia.SetMomentMatrix(moment);
 
                 double[] centerOfMass = swMass.CenterOfMass;
@@ -275,33 +274,36 @@ namespace SW2URDF
                 child.Collision.Origin.SetRPY(new double[] { 0, 0, 0 });
             }
 
-            //ActiveSWModel.ClearSelection2(true);
             return child;
         }
 
-        public Body2[] GetBodies(List<Component2> components)
+        public List<Body2> GetBodies(List<Component2> components)
         {
+            object bodyInfo = null;
             List<Body2> bodies = new List<Body2>();
             foreach (Component2 comp in components)
             {
-                ModelDoc2 modeldoc = comp.GetModelDoc2();
-                if (modeldoc != null && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
+                object[] componentBodies = (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
+                if (componentBodies != null)
                 {
-                    object[] assyObjs = comp.GetChildren();
-                    List<Component2> assyComponents = Array.ConvertAll(assyObjs, assyObj => (Component2)assyObj).ToList();
-                    bodies.AddRange(GetBodies(assyComponents));
-                }
-                else
-                {
-                    object[] objs = comp.GetBodies3((int)swBodyType_e.swAllBodies, out object BodiesInfo);
-                    if (objs != null)
+                    foreach (Body2 obj in componentBodies)
                     {
-                        bodies.AddRange(Array.ConvertAll(objs, obj => (Body2)obj));
+                        bodies.Add(obj);
                     }
                 }
+                object[] children = comp.GetChildren();
+                if (children != null)
+                {
+                    List<Component2> childComponents = new List<Component2>();
+                    foreach (Component2 child in children)
+                    {
+                        childComponents.Add(child);
+                    }
+                    bodies.AddRange(GetBodies(childComponents));
+                }
             }
-
-            return bodies.ToArray();
+            return bodies;
         }
 
         #endregion SW to Robot and link methods
@@ -868,25 +870,34 @@ namespace SW2URDF
                     }
                 }
             }
+            //Calculate!
+            double[] axisParams;
+            double[] xyz = new double[3];
+
             bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
             {
                 Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
                 axis = (RefAxis)feat.GetSpecificFeature2();
+
+                // GetRefAxisParams returns {startX, startY, startZ, endX, endY, endZ}
+                axisParams = axis.GetRefAxisParams();
+                xyz[0] = axisParams[0] - axisParams[3];
+                xyz[1] = axisParams[1] - axisParams[4];
+                xyz[2] = axisParams[2] - axisParams[5];
+
+                // Normalize and cleanup
+                xyz = MathOps.PNorm(xyz, 2);
+                if (MathOps.Sum(xyz) < 0.0)
+                {
+                    xyz = MathOps.Flip(xyz);
+                }
+
+                // Transform to proper coordinates
+                GlobalAxis(xyz, ComponentTransform);
             }
-            //Calculate!
-            double[] axisParams;
-            double[] XYZ = new double[3];
-            axisParams = axis.GetRefAxisParams();
-            XYZ[0] = axisParams[0] - axisParams[3];
-            XYZ[1] = axisParams[1] - axisParams[4];
-            XYZ[2] = axisParams[2] - axisParams[5];
-            XYZ = MathOps.PNorm(XYZ, 2);
-            if (MathOps.Sum(XYZ) < 0.0)
-            {
-                XYZ = MathOps.Flip(XYZ);
-            }
-            return GlobalAxis(XYZ, ComponentTransform);
+
+            return xyz;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
