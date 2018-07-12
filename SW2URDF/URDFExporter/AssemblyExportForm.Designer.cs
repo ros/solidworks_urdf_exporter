@@ -193,9 +193,9 @@
             // 
             // button_links_export_urdf_only
             // 
-            this.button_links_export_urdf_only.Location = new System.Drawing.Point(1294, 1005);
+            this.button_links_export_urdf_only.Location = new System.Drawing.Point(1139, 1005);
             this.button_links_export_urdf_only.Name = "button_links_export_urdf_only";
-            this.button_links_export_urdf_only.Size = new System.Drawing.Size(175, 35);
+            this.button_links_export_urdf_only.Size = new System.Drawing.Size(225, 35);
             this.button_links_export_urdf_only.TabIndex = 94;
             this.button_links_export_urdf_only.Text = "Export URDF Only...";
             this.button_links_export_urdf_only.UseVisualStyleBackColor = true;
@@ -225,19 +225,21 @@
             // button_links_finish
             // 
             this.button_links_finish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_links_finish.Location = new System.Drawing.Point(1479, 1005);
+            this.button_links_finish.Location = new System.Drawing.Point(1374, 1005);
             this.button_links_finish.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_links_finish.Name = "button_links_finish";
-            this.button_links_finish.Size = new System.Drawing.Size(112, 35);
+            this.button_links_finish.Size = new System.Drawing.Size(225, 35);
             this.button_links_finish.TabIndex = 91;
-            this.button_links_finish.Text = "Export All...";
+            this.button_links_finish.Text = "Export URDF and Meshes...";
             this.button_links_finish.UseVisualStyleBackColor = true;
             this.button_links_finish.Click += new System.EventHandler(this.button_links_finish_Click);
             // 
             // button_links_previous
             // 
-            this.button_links_previous.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_links_previous.Location = new System.Drawing.Point(1027, 1005);
+            this.button_links_previous.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+
+            this.button_links_previous.Location = new System.Drawing.Point(962, 1005);
             this.button_links_previous.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_links_previous.Name = "button_links_previous";
             this.button_links_previous.Size = new System.Drawing.Size(112, 35);
@@ -248,7 +250,9 @@
             // 
             // button_links_cancel
             // 
-            this.button_links_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button_links_cancel.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+
             this.button_links_cancel.Location = new System.Drawing.Point(18, 1005);
             this.button_links_cancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button_links_cancel.Name = "button_links_cancel";
@@ -645,9 +649,9 @@
             this.label19.Location = new System.Drawing.Point(4, 0);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(211, 20);
+            this.label19.Size = new System.Drawing.Size(247, 20);
             this.label19.TabIndex = 62;
-            this.label19.Text = "Visual/Collision Meshes";
+            this.label19.Text = "Visual and Collision Meshes";
             // 
             // textBox_visual_origin_z
             // 
@@ -671,9 +675,9 @@
             this.label34.Location = new System.Drawing.Point(10, 424);
             this.label34.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(62, 20);
+            this.label34.Size = new System.Drawing.Size(184, 20);
             this.label34.TabIndex = 60;
-            this.label34.Text = "Texture";
+            this.label34.Text = "Texture (Replaces Color)";
             // 
             // textBox_visual_origin_pitch
             // 

@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -41,20 +35,23 @@ using System.Linq;
 
 namespace SW2URDF
 {
-    // This class contains a long list of methods that are used throughout the export process. 
+    // This class contains a long list of methods that are used throughout the export process.
     // Methods for building links and joints are contained in here.
-    // Many of the methods are overloaded, but seek to reduce repeated code as much as possible 
+    // Many of the methods are overloaded, but seek to reduce repeated code as much as possible
     // (i.e. the overloaded methods call eachother).
     // These methods are used by the PartExportForm, the AssemblyExportForm and the PropertyManager Page
     public partial class URDFExporter
     {
         #region class variables
+
         private static readonly log4net.ILog logger = Logger.GetLogger();
-        
+
         [XmlIgnore]
         public ISldWorks iSwApp = null;
+
         [XmlIgnore]
         private bool mBinary;
+
         private bool mshowInfo;
         private bool mSTLPreview;
         private bool mTranslateToPositive;
@@ -67,22 +64,27 @@ namespace SW2URDF
 
         [XmlIgnore]
         public ModelDoc2 ActiveSWModel;
+
         [XmlIgnore]
         public MathUtility swMath;
+
         [XmlIgnore]
         public Object swMathPID
         { get; set; }
 
         public robot mRobot
         { get; set; }
+
         public string mPackageName
         { get; set; }
+
         public string mSavePath
         { get; set; }
+
         public List<link> mLinks
         { get; set; }
 
-        #endregion
+        #endregion class variables
 
         // Constructor for SW2URDF Exporter class
         public URDFExporter(ISldWorks iSldWorksApp)
@@ -91,7 +93,6 @@ namespace SW2URDF
             iSwApp.GetUserProgressBar(out progressBar);
             mSavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             mPackageName = ActiveSWModel.GetTitle();
-            
         }
 
         private void constructExporter(ISldWorks iSldWorksApp)
@@ -142,7 +143,6 @@ namespace SW2URDF
             Gazebo gazebo = new Gazebo(this.mRobot.name, this.mPackageName, mRobot.name + ".urdf");
             logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
             gazebo.writeFile(package.WindowsLaunchDirectory);
-
 
             //Customizing STL preferences to how I want them
             logger.Info("Saving existing STL preferences");
@@ -199,15 +199,15 @@ namespace SW2URDF
                     child.Collision.Geometry.Mesh.filename = filename;
                 }
             }
-            
+
             // Copy the texture file (if it was specified) to the textures directory
             if (!Link.isFixedFrame && Link.Visual.Material.Texture.wFilename != "")
             {
                 if (System.IO.File.Exists(Link.Visual.Material.Texture.wFilename))
                 {
-                    Link.Visual.Material.Texture.filename = 
+                    Link.Visual.Material.Texture.filename =
                         package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
-                    string textureSavePath = 
+                    string textureSavePath =
                         package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
                     System.IO.File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
                 }
@@ -275,7 +275,7 @@ namespace SW2URDF
             setLinkSpecificSTLPreferences(names["geo"], Link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName, 
+            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             if (ComponentName.Length > 0)
             {
@@ -287,17 +287,14 @@ namespace SW2URDF
                 Common.hideComponents(ActiveSWModel, Link.SWcomponents);
             }
 
-
             correctSTLMesh(windowsMeshFileName);
         }
 
-        
         // Used only by the part exporter
         public void exportLink(bool zIsUp)
         {
-            
             createBaseRefOrigin(zIsUp);
-            MathTransform coordSysTransform = 
+            MathTransform coordSysTransform =
                 ActiveSWModel.Extension.GetCoordinateSystemTransformByName("Origin_global");
             Matrix<double> GlobalTransform = ops.getTransformation(coordSysTransform);
 
@@ -325,16 +322,16 @@ namespace SW2URDF
 
             //Saving part as STL mesh
 
-            ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion, 
+            ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion,
                 (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             mRobot.BaseLink.Visual.Geometry.Mesh.filename = meshFileName;
             mRobot.BaseLink.Collision.Geometry.Mesh.filename = meshFileName;
 
             correctSTLMesh(windowsMeshFileName);
 
-            mRobot.BaseLink.Visual.Material.Texture.filename = 
+            mRobot.BaseLink.Visual.Material.Texture.filename =
                 package.TexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
-            string textureSavePath = 
+            string textureSavePath =
                 package.WindowsTexturesDirectory + Path.GetFileName(mRobot.BaseLink.Visual.Material.Texture.wFilename);
             if (mRobot.BaseLink.Visual.Material.Texture.wFilename != "")
             {
@@ -358,7 +355,8 @@ namespace SW2URDF
             fileStream.Write(emptyHeader, 0, emptyHeader.Length);
             fileStream.Close();
         }
-        #endregion
+
+        #endregion Export Methods
 
         private void copyLogFile(URDFPackage package)
         {
@@ -427,7 +425,7 @@ namespace SW2URDF
         //If the user selected something specific for a particular link, that is handled here.
         public void setLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
         {
-            doc.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem, 
+            doc.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem,
                 (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
             if (qualityFine)
             {
@@ -438,6 +436,7 @@ namespace SW2URDF
                 iSwApp.SetUserPreferenceIntegerValue((int)swUserPreferenceIntegerValue_e.swSTLQuality, (int)swSTLQuality_e.swSTLQuality_Coarse);
             }
         }
-        #endregion
+
+        #endregion STL Preference shuffling
     }
 }
