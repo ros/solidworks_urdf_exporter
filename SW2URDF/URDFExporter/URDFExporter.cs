@@ -87,6 +87,7 @@ namespace SW2URDF
         {
             ConstructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
+
             SavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             PackageName = ActiveSWModel.GetTitle();
         }
@@ -138,6 +139,7 @@ namespace SW2URDF
             //Creating Gazebo launch file
             Gazebo gazebo = new Gazebo(URDFRobot.Name, PackageName, URDFRobot.Name + ".urdf");
             logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
+
             gazebo.WriteFile(package.WindowsLaunchDirectory);
 
             //Customizing STL preferences to how I want them
@@ -202,6 +204,7 @@ namespace SW2URDF
                 if (File.Exists(Link.Visual.Material.Texture.wFilename))
                 {
                     Link.Visual.Material.Texture.Filename =
+
                         package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
                     string textureSavePath =
                         package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
