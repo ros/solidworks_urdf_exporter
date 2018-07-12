@@ -284,10 +284,7 @@ namespace SW2URDF
             List<Body2> bodies = new List<Body2>();
             foreach (Component2 comp in components)
             {
-                if (comp == null)
-                {
-                    throw new Exception("Component in list was null, this should be culled");
-                }
+                // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
                 object[] componentBodies = (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
                 if (componentBodies != null)
                 {
@@ -297,7 +294,7 @@ namespace SW2URDF
                     }
                 }
                 object[] children = comp.GetChildren();
-                if (children != null && children.Length > 0)
+                if (children != null)
                 {
                     List<Component2> childComponents = new List<Component2>();
                     foreach (Component2 child in children)
@@ -877,7 +874,7 @@ namespace SW2URDF
             }
             //Calculate!
             double[] axisParams;
-            double[] XYZ = new double[3];
+            double[] xyz = new double[3];
 
             bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
@@ -885,20 +882,24 @@ namespace SW2URDF
                 Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
                 axis = (RefAxis)feat.GetSpecificFeature2();
 
+                // GetRefAxisParams returns {startX, startY, startZ, endX, endY, endZ}
                 axisParams = axis.GetRefAxisParams();
-                XYZ[0] = axisParams[0] - axisParams[3];
-                XYZ[1] = axisParams[1] - axisParams[4];
-                XYZ[2] = axisParams[2] - axisParams[5];
+                xyz[0] = axisParams[0] - axisParams[3];
+                xyz[1] = axisParams[1] - axisParams[4];
+                xyz[2] = axisParams[2] - axisParams[5];
 
-                XYZ = ops.pnorm(XYZ, 2);
-                if (ops.sum(XYZ) < 0.0)
+                // Normalize and cleanup
+                xyz = ops.pnorm(xyz, 2);
+                if (ops.sum(xyz) < 0.0)
                 {
-                    XYZ = ops.flip(XYZ);
+                    xyz = ops.flip(xyz);
                 }
-                globalAxis(XYZ, ComponentTransform);
+
+                // Transform to proper coordinates
+                globalAxis(xyz, ComponentTransform);
             }
 
-            return XYZ;
+            return xyz;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
