@@ -80,23 +80,23 @@ namespace SW2URDF
 
         public void WriteURDF(XmlWriter writer)
         {
-            string value_string = "";
+            string valueString = "";
             if (value.GetType() == typeof(double[]))
             {
-                double[] value_array = (double[])value;
-                foreach (double d in value_array)
+                double[] valueArray = (double[])value;
+                foreach (double d in valueArray)
                 {
-                    value_string += d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
+                    valueString += d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
                 }
-                value_string = value_string.Trim();
+                valueString = valueString.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
-                value_string = ((Double)value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
+                valueString = ((Double)value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
             }
             else if (value.GetType() == typeof(string))
             {
-                value_string = (string)value;
+                valueString = (string)value;
             }
             else if (value != null)
             {
@@ -112,7 +112,7 @@ namespace SW2URDF
             }
             if (value != null)
             {
-                writer.WriteAttributeString(type, value_string);
+                writer.WriteAttributeString(type, valueString);
             }
         }
     }
@@ -499,54 +499,55 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw, string format)
+        public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll, TextBox boxPitch, TextBox boxYaw, string format)
         {
             if (XYZAttribute.value != null)
             {
-                box_x.Text = X.ToString(format);
-                box_y.Text = Y.ToString(format);
-                box_z.Text = Z.ToString(format);
+                boxX.Text = X.ToString(format);
+                boxY.Text = Y.ToString(format);
+                boxZ.Text = Z.ToString(format);
             }
             else
             {
-                box_x.Text = ""; box_y.Text = ""; box_z.Text = "";
+                boxX.Text = ""; boxY.Text = ""; boxZ.Text = "";
             }
 
             if (RPYAttribute.value != null)
             {
-                box_roll.Text = Roll.ToString(format);
-                box_pitch.Text = Pitch.ToString(format);
-                box_yaw.Text = Yaw.ToString(format);
+                boxRoll.Text = Roll.ToString(format);
+                boxPitch.Text = Pitch.ToString(format);
+                boxYaw.Text = Yaw.ToString(format);
             }
             else
             {
-                box_roll.Text = ""; box_pitch.Text = ""; box_yaw.Text = "";
+                boxRoll.Text = ""; boxPitch.Text = ""; boxYaw.Text = "";
             }
         }
 
-        public void Update(TextBox box_x, TextBox box_y, TextBox box_z, TextBox box_roll, TextBox box_pitch, TextBox box_yaw)
+        public void Update(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll, TextBox boxPitch, TextBox boxYaw
+            )
         {
             double value;
-            if (String.IsNullOrWhiteSpace(box_x.Text) && String.IsNullOrWhiteSpace(box_y.Text) && String.IsNullOrWhiteSpace(box_z.Text))
+            if (String.IsNullOrWhiteSpace(boxX.Text) && String.IsNullOrWhiteSpace(boxY.Text) && String.IsNullOrWhiteSpace(boxZ.Text))
             {
                 XYZ = null;
             }
             else
             {
-                X = (Double.TryParse(box_x.Text, out value)) ? value : 0;
-                Y = (Double.TryParse(box_y.Text, out value)) ? value : 0;
-                Z = (Double.TryParse(box_z.Text, out value)) ? value : 0;
+                X = (Double.TryParse(boxX.Text, out value)) ? value : 0;
+                Y = (Double.TryParse(boxY.Text, out value)) ? value : 0;
+                Z = (Double.TryParse(boxZ.Text, out value)) ? value : 0;
             }
 
-            if (String.IsNullOrWhiteSpace(box_roll.Text) && String.IsNullOrWhiteSpace(box_pitch.Text) && String.IsNullOrWhiteSpace(box_yaw.Text))
+            if (String.IsNullOrWhiteSpace(boxRoll.Text) && String.IsNullOrWhiteSpace(boxPitch.Text) && String.IsNullOrWhiteSpace(boxYaw.Text))
             {
                 RPY = null;
             }
             else
             {
-                Roll = (Double.TryParse(box_roll.Text, out value)) ? value : 0;
-                Pitch = (Double.TryParse(box_pitch.Text, out value)) ? value : 0;
-                Yaw = (Double.TryParse(box_yaw.Text, out value)) ? value : 0;
+                Roll = (Double.TryParse(boxRoll.Text, out value)) ? value : 0;
+                Pitch = (Double.TryParse(boxPitch.Text, out value)) ? value : 0;
+                Yaw = (Double.TryParse(boxYaw.Text, out value)) ? value : 0;
             }
         }
     }
@@ -745,25 +746,25 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz, string format)
+        public void FillBoxes(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz, TextBox boxIyy, TextBox boxIyz, TextBox boxIzz, string format)
         {
-            box_ixx.Text = Ixx.ToString(format);
-            box_ixy.Text = Ixy.ToString(format);
-            box_ixz.Text = Ixz.ToString(format);
-            box_iyy.Text = Iyy.ToString(format);
-            box_iyz.Text = Iyz.ToString(format);
-            box_izz.Text = Izz.ToString(format);
+            boxIxx.Text = Ixx.ToString(format);
+            boxIxy.Text = Ixy.ToString(format);
+            boxIxz.Text = Ixz.ToString(format);
+            boxIyy.Text = Iyy.ToString(format);
+            boxIyz.Text = Iyz.ToString(format);
+            boxIzz.Text = Izz.ToString(format);
         }
 
-        public void Update(TextBox box_ixx, TextBox box_ixy, TextBox box_ixz, TextBox box_iyy, TextBox box_iyz, TextBox box_izz)
+        public void Update(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz, TextBox boxIyy, TextBox boxIyz, TextBox boxIzz)
         {
             double value = 0;
-            Ixx = (Double.TryParse(box_ixx.Text, out value)) ? value : 0;
-            Ixy = (Double.TryParse(box_ixy.Text, out value)) ? value : 0;
-            Ixz = (Double.TryParse(box_ixz.Text, out value)) ? value : 0;
-            Iyy = (Double.TryParse(box_iyy.Text, out value)) ? value : 0;
-            Iyz = (Double.TryParse(box_iyz.Text, out value)) ? value : 0;
-            Izz = (Double.TryParse(box_izz.Text, out value)) ? value : 0;
+            Ixx = (Double.TryParse(boxIxx.Text, out value)) ? value : 0;
+            Ixy = (Double.TryParse(boxIxy.Text, out value)) ? value : 0;
+            Ixz = (Double.TryParse(boxIxz.Text, out value)) ? value : 0;
+            Iyy = (Double.TryParse(boxIyy.Text, out value)) ? value : 0;
+            Iyz = (Double.TryParse(boxIyz.Text, out value)) ? value : 0;
+            Izz = (Double.TryParse(boxIzz.Text, out value)) ? value : 0;
         }
 
         internal double[] GetMoment()
@@ -977,22 +978,22 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha, string format)
+        public void FillBoxes(DomainUpDown boxRed, DomainUpDown boxGreen, DomainUpDown boxBlue, DomainUpDown boxAlpha, string format)
         {
             double[] rgba = (double[])RGBAAttribute.value;
-            box_red.Text = Red.ToString(format);
-            box_green.Text = Green.ToString(format);
-            box_blue.Text = Blue.ToString(format);
-            box_alpha.Text = Alpha.ToString(format);
+            boxRed.Text = Red.ToString(format);
+            boxGreen.Text = Green.ToString(format);
+            boxBlue.Text = Blue.ToString(format);
+            boxAlpha.Text = Alpha.ToString(format);
         }
 
-        public void Update(DomainUpDown box_red, DomainUpDown box_green, DomainUpDown box_blue, DomainUpDown box_alpha)
+        public void Update(DomainUpDown boxRed, DomainUpDown boxGreen, DomainUpDown boxBlue, DomainUpDown boxAlpha)
         {
             double value;
-            Red = (Double.TryParse(box_red.Text, out value)) ? value : 0;
-            Green = (Double.TryParse(box_green.Text, out value)) ? value : 0;
-            Blue = (Double.TryParse(box_blue.Text, out value)) ? value : 0;
-            Alpha = (Double.TryParse(box_alpha.Text, out value)) ? value : 0;
+            Red = (Double.TryParse(boxRed.Text, out value)) ? value : 0;
+            Green = (Double.TryParse(boxGreen.Text, out value)) ? value : 0;
+            Blue = (Double.TryParse(boxBlue.Text, out value)) ? value : 0;
+            Alpha = (Double.TryParse(boxAlpha.Text, out value)) ? value : 0;
         }
     }
 
@@ -1147,16 +1148,16 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_name, ComboBox box_type)
+        public void FillBoxes(TextBox boxName, ComboBox boxType)
         {
-            box_name.Text = Name;
-            box_type.Text = Type;
+            boxName.Text = Name;
+            boxType.Text = Type;
         }
 
-        public void Update(TextBox box_name, ComboBox box_type)
+        public void Update(TextBox boxName, ComboBox boxType)
         {
-            Name = box_name.Text;
-            Type = box_type.Text;
+            Name = boxName.Text;
+            Type = boxType.Text;
         }
     }
 
@@ -1326,19 +1327,19 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_x, TextBox box_y, TextBox box_z, string format)
+        public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, string format)
         {
-            box_x.Text = X.ToString(format);
-            box_y.Text = Y.ToString(format);
-            box_z.Text = Z.ToString(format);
+            boxX.Text = X.ToString(format);
+            boxY.Text = Y.ToString(format);
+            boxZ.Text = Z.ToString(format);
         }
 
-        public void Update(TextBox box_x, TextBox box_y, TextBox box_z)
+        public void Update(TextBox boxX, TextBox boxY, TextBox boxZ)
         {
             double value;
-            X = (Double.TryParse(box_x.Text, out value)) ? value : 0;
-            Y = (Double.TryParse(box_y.Text, out value)) ? value : 0;
-            Z = (Double.TryParse(box_z.Text, out value)) ? value : 0;
+            X = (Double.TryParse(boxX.Text, out value)) ? value : 0;
+            Y = (Double.TryParse(boxY.Text, out value)) ? value : 0;
+            Z = (Double.TryParse(boxZ.Text, out value)) ? value : 0;
         }
     }
 
@@ -1442,44 +1443,44 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity, string format)
+        public void FillBoxes(TextBox boxLower, TextBox boxUpper, TextBox boxEffort, TextBox boxVelocity, string format)
         {
             if (LowerAttribute != null)
             {
-                box_lower.Text = Lower.ToString(format);
+                boxLower.Text = Lower.ToString(format);
             }
 
             if (UpperAttribute != null)
             {
-                box_upper.Text = Upper.ToString(format);
+                boxUpper.Text = Upper.ToString(format);
             }
 
-            box_effort.Text = Effort.ToString(format);
-            box_velocity.Text = Velocity.ToString(format);
+            boxEffort.Text = Effort.ToString(format);
+            boxVelocity.Text = Velocity.ToString(format);
         }
 
-        public void SetValues(TextBox box_lower, TextBox box_upper, TextBox box_effort, TextBox box_velocity)
+        public void SetValues(TextBox boxLower, TextBox boxUpper, TextBox boxEffort, TextBox boxVelocity)
         {
             double value;
-            if (String.IsNullOrWhiteSpace(box_lower.Text))
+            if (String.IsNullOrWhiteSpace(boxLower.Text))
             {
                 LowerAttribute = null;
             }
             else
             {
-                Lower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
+                Lower = (Double.TryParse(boxLower.Text, out value)) ? value : 0;
             }
-            if (String.IsNullOrWhiteSpace(box_upper.Text))
+            if (String.IsNullOrWhiteSpace(boxUpper.Text))
             {
                 UpperAttribute = null;
             }
             else
             {
-                Upper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
+                Upper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
             }
 
-            Effort = (Double.TryParse(box_effort.Text, out value)) ? value : 0;
-            Velocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
+            Effort = (Double.TryParse(boxEffort.Text, out value)) ? value : 0;
+            Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
         }
     }
 
@@ -1543,37 +1544,37 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_rising, TextBox box_falling, string format)
+        public void FillBoxes(TextBox boxRising, TextBox boxFalling, string format)
         {
             if (RisingAttribute != null)
             {
-                box_rising.Text = Rising.ToString(format);
+                boxRising.Text = Rising.ToString(format);
             }
 
             if (FallingAttribute != null)
             {
-                box_falling.Text = Falling.ToString(format);
+                boxFalling.Text = Falling.ToString(format);
             }
         }
 
-        public void SetValues(TextBox box_rising, TextBox box_falling)
+        public void SetValues(TextBox boxRising, TextBox boxFalling)
         {
             double value;
-            if (String.IsNullOrWhiteSpace(box_rising.Text))
+            if (String.IsNullOrWhiteSpace(boxRising.Text))
             {
                 RisingAttribute = null;
             }
             else
             {
-                Rising = (Double.TryParse(box_rising.Text, out value)) ? value : 0;
+                Rising = (Double.TryParse(boxRising.Text, out value)) ? value : 0;
             }
-            if (String.IsNullOrWhiteSpace(box_falling.Text))
+            if (String.IsNullOrWhiteSpace(boxFalling.Text))
             {
                 FallingAttribute = null;
             }
             else
             {
-                Falling = (Double.TryParse(box_falling.Text, out value)) ? value : 0;
+                Falling = (Double.TryParse(boxFalling.Text, out value)) ? value : 0;
             }
         }
     }
@@ -1637,36 +1638,36 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_damping, TextBox box_friction, string format)
+        public void FillBoxes(TextBox boxDamping, TextBox boxFriction, string format)
         {
             if (DampingAttribute != null)
             {
-                box_damping.Text = Damping.ToString(format);
+                boxDamping.Text = Damping.ToString(format);
             }
             if (FrictionAttribute != null)
             {
-                box_friction.Text = Friction.ToString(format);
+                boxFriction.Text = Friction.ToString(format);
             }
         }
 
-        public void SetValues(TextBox box_damping, TextBox box_friction)
+        public void SetValues(TextBox boxDamping, TextBox boxFriction)
         {
             double value;
-            if (String.IsNullOrWhiteSpace(box_damping.Text))
+            if (String.IsNullOrWhiteSpace(boxDamping.Text))
             {
                 DampingAttribute = null;
             }
             else
             {
-                Damping = (Double.TryParse(box_damping.Text, out value)) ? value : 0;
+                Damping = (Double.TryParse(boxDamping.Text, out value)) ? value : 0;
             }
-            if (String.IsNullOrWhiteSpace(box_friction.Text))
+            if (String.IsNullOrWhiteSpace(boxFriction.Text))
             {
                 FrictionAttribute = null;
             }
             else
             {
-                Friction = (Double.TryParse(box_friction.Text, out value)) ? value : 0;
+                Friction = (Double.TryParse(boxFriction.Text, out value)) ? value : 0;
             }
         }
     }
@@ -1772,56 +1773,56 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity, string format)
+        public void FillBoxes(TextBox boxLower, TextBox boxUpper, TextBox boxPosition, TextBox boxVelocity, string format)
         {
             if (SoftLowerAttribute != null)
             {
-                box_lower.Text = SoftLower.ToString(format);
+                boxLower.Text = SoftLower.ToString(format);
             }
 
             if (SoftUpperAttribute != null)
             {
-                box_upper.Text = SoftUpper.ToString(format);
+                boxUpper.Text = SoftUpper.ToString(format);
             }
 
             if (KPositionAttribute != null)
             {
-                box_position.Text = KPosition.ToString(format);
+                boxPosition.Text = KPosition.ToString(format);
             }
 
-            box_velocity.Text = KVelocity.ToString(format);
+            boxVelocity.Text = KVelocity.ToString(format);
         }
 
-        public void SetValues(TextBox box_lower, TextBox box_upper, TextBox box_position, TextBox box_velocity)
+        public void SetValues(TextBox boxLower, TextBox boxUpper, TextBox boxPosition, TextBox boxVelocity)
         {
             double value;
-            if (String.IsNullOrWhiteSpace(box_lower.Text))
+            if (String.IsNullOrWhiteSpace(boxLower.Text))
             {
                 SoftLowerAttribute = null;
             }
             else
             {
-                SoftLower = (Double.TryParse(box_lower.Text, out value)) ? value : 0;
+                SoftLower = (Double.TryParse(boxLower.Text, out value)) ? value : 0;
             }
 
-            if (String.IsNullOrWhiteSpace(box_upper.Text))
+            if (String.IsNullOrWhiteSpace(boxUpper.Text))
             {
                 SoftUpperAttribute = null;
             }
             else
             {
-                SoftUpper = (Double.TryParse(box_upper.Text, out value)) ? value : 0;
+                SoftUpper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
             }
 
-            if (String.IsNullOrWhiteSpace(box_position.Text))
+            if (String.IsNullOrWhiteSpace(boxPosition.Text))
             {
                 KPositionAttribute = null;
             }
             else
             {
-                KPosition = (Double.TryParse(box_position.Text, out value)) ? value : 0;
+                KPosition = (Double.TryParse(boxPosition.Text, out value)) ? value : 0;
             }
-            KVelocity = (Double.TryParse(box_velocity.Text, out value)) ? value : 0;
+            KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
         }
     }
 
@@ -1944,12 +1945,12 @@ namespace SW2URDF
     public class Dependencies : PackageElement
     {
         private readonly string[] buildTool;
-        private readonly string[] build_exec;
+        private readonly string[] buildExec;
 
-        public Dependencies(String[] buildTool, String[] build_exec)
+        public Dependencies(String[] buildTool, String[] buildExec)
         {
             this.buildTool = buildTool;
-            this.build_exec = build_exec;
+            this.buildExec = buildExec;
         }
 
         public void WriteElement(XmlWriter writer)
@@ -1961,7 +1962,7 @@ namespace SW2URDF
                 writer.WriteEndElement();
             }
 
-            foreach (String depend in build_exec)
+            foreach (String depend in buildExec)
             {
                 writer.WriteStartElement("depend");
                 writer.WriteString(depend);

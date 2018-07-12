@@ -407,17 +407,17 @@ namespace SW2URDF
             SketchSegment xaxis = (SketchSegment)sketchEntities[1];
             SketchSegment yaxis = (SketchSegment)sketchEntities[2];
 
-            double origin_X = (double)sketchEntities[3]; //OriginPoint X
-            double origin_Y = (double)sketchEntities[4];
-            double origin_Z = (double)sketchEntities[5];
+            double originX = (double)sketchEntities[3]; //OriginPoint X
+            double originY = (double)sketchEntities[4];
+            double originZ = (double)sketchEntities[5];
 
-            double xAxis_X = (double)sketchEntities[6];
-            double xAxis_Y = (double)sketchEntities[7];
-            double xAxis_Z = (double)sketchEntities[8];
+            double xAxisX = (double)sketchEntities[6];
+            double xAxisY = (double)sketchEntities[7];
+            double xAxisZ = (double)sketchEntities[8];
 
-            double yAxis_X = (double)sketchEntities[9];
-            double yAxis_Y = (double)sketchEntities[10];
-            double yAxis_Z = (double)sketchEntities[11];
+            double yAxisX = (double)sketchEntities[9];
+            double yAxisY = (double)sketchEntities[10];
+            double yAxisZ = (double)sketchEntities[11];
 
             IFeature coordinates = default(IFeature);
             ActiveSWModel.ClearSelection2(true);
@@ -433,7 +433,7 @@ namespace SW2URDF
             }
             if (!SelectedOrigin)
             {
-                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", origin_X, origin_Y, origin_Z, true, 1, null, 0);
+                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", originX, originY, originZ, true, 1, null, 0);
             }
 
             // Second, select the xaxis
@@ -444,7 +444,7 @@ namespace SW2URDF
             }
             if (!SelectedXAxis)
             {
-                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xAxis_X, xAxis_Y, xAxis_Z, true, 2, null, 0);
+                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xAxisX, xAxisY, xAxisZ, true, 2, null, 0);
             }
 
             // Third, select the yaxis
@@ -455,7 +455,7 @@ namespace SW2URDF
             }
             if (!SelectedYAxis)
             {
-                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yAxis_X, yAxis_Y, yAxis_Z, true, 4, null, 0);
+                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yAxisX, yAxisY, yAxisZ, true, 4, null, 0);
             }
 
             //From the selected items, insert a coordinate system.
@@ -777,12 +777,12 @@ namespace SW2URDF
             {
                 string componentStr = "";
                 string CoordinateSystemNameUnTrimmed = "";
-                int index_first = CoordinateSystemName.IndexOf('<');
-                int index_last = CoordinateSystemName.IndexOf('>', index_first);
-                if (index_last > index_first)
+                int indexFirst = CoordinateSystemName.IndexOf('<');
+                int indexLast = CoordinateSystemName.IndexOf('>', indexFirst);
+                if (indexLast > indexFirst)
                 {
-                    componentStr = CoordinateSystemName.Substring(index_first + 1, index_last - index_first - 1);
-                    CoordinateSystemNameUnTrimmed = CoordinateSystemName.Substring(0, index_first);
+                    componentStr = CoordinateSystemName.Substring(indexFirst + 1, indexLast - indexFirst - 1);
+                    CoordinateSystemNameUnTrimmed = CoordinateSystemName.Substring(0, indexFirst);
                     CoordinateSystemName = CoordinateSystemNameUnTrimmed.Trim();
                 }
                 AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -803,26 +803,26 @@ namespace SW2URDF
 
         public void MoveOrigin(Link parent, Link nonLocalizedChild)
         {
-            double X_max = Double.MinValue; double Y_max = Double.MinValue; double Z_max = Double.MinValue;
-            double X_min = Double.MaxValue; double Y_min = Double.MaxValue; double Z_min = Double.MaxValue;
+            double xMax = Double.MinValue; double yMax = Double.MinValue; double zMax = Double.MinValue;
+            double xMin = Double.MaxValue; double yMin = Double.MaxValue; double zMin = Double.MaxValue;
             double[] points;
 
             foreach (Component2 comp in nonLocalizedChild.SWcomponents)
             {
                 points = comp.GetBox(false, false); // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
-                X_max = MathOps.Max(points[0], points[3], X_max);
-                Y_max = MathOps.Max(points[1], points[4], Y_max);
-                Z_max = MathOps.Max(points[2], points[5], Z_max);
-                X_min = MathOps.Min(points[0], points[3], X_min);
-                Y_min = MathOps.Min(points[1], points[4], Y_min);
-                Z_min = MathOps.Min(points[2], points[5], Z_min);
+                xMax = MathOps.Max(points[0], points[3], xMax);
+                yMax = MathOps.Max(points[1], points[4], yMax);
+                zMax = MathOps.Max(points[2], points[5], zMax);
+                xMin = MathOps.Min(points[0], points[3], xMin);
+                yMin = MathOps.Min(points[1], points[4], yMin);
+                zMin = MathOps.Min(points[2], points[5], zMin);
             }
             string coordsys = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
             MathTransform parentTransform = GetCoordinateSystemTransform(coordsys);
             double[] idealOrigin = MathOps.ClosestPointOnLineToPoint(MathOps.GetXYZ(parentTransform), nonLocalizedChild.Joint.Axis.GetXYZ(), nonLocalizedChild.Joint.Origin.GetXYZ());
 
             nonLocalizedChild.Joint.Origin.SetXYZ(
-                MathOps.ClosestPointOnLineWithinBox(X_min, X_max, Y_min, Y_max, Z_min, Z_max, nonLocalizedChild.Joint.Axis.GetXYZ(), idealOrigin));
+                MathOps.ClosestPointOnLineWithinBox(xMin, xMax, yMin, yMax, zMin, zMax, nonLocalizedChild.Joint.Axis.GetXYZ(), idealOrigin));
         }
 
         // Calculates the axis from a Reference Axis in the model
@@ -851,12 +851,12 @@ namespace SW2URDF
             {
                 string componentStr = "";
                 string CoordinateSystemNameUnTrimmed = "";
-                int index_first = axisStr.IndexOf('<');
-                int index_last = axisStr.IndexOf('>', index_first);
-                if (index_last > index_first)
+                int indexFirst = axisStr.IndexOf('<');
+                int indexLast = axisStr.IndexOf('>', indexFirst);
+                if (indexLast > indexFirst)
                 {
-                    componentStr = axisStr.Substring(index_first + 1, index_last - index_first - 1);
-                    CoordinateSystemNameUnTrimmed = axisStr.Substring(0, index_first);
+                    componentStr = axisStr.Substring(indexFirst + 1, indexLast - indexFirst - 1);
+                    CoordinateSystemNameUnTrimmed = axisStr.Substring(0, indexFirst);
                     axisName = CoordinateSystemNameUnTrimmed.Trim();
                 }
                 AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
@@ -997,12 +997,12 @@ namespace SW2URDF
             if (StringToParse.Contains("<") && StringToParse.Contains(">"))
             {
                 string RefGeoNameUnTrimmed = "";
-                int index_first = StringToParse.IndexOf('<');
-                int index_last = StringToParse.IndexOf('>', index_first);
-                if (index_last > index_first)
+                int indexFirst = StringToParse.IndexOf('<');
+                int indexLast = StringToParse.IndexOf('>', indexFirst);
+                if (indexLast > indexFirst)
                 {
-                    ComponentName = StringToParse.Substring(index_first + 1, index_last - index_first - 1);
-                    RefGeoNameUnTrimmed = StringToParse.Substring(0, index_first);
+                    ComponentName = StringToParse.Substring(indexFirst + 1, indexLast - indexFirst - 1);
+                    RefGeoNameUnTrimmed = StringToParse.Substring(0, indexFirst);
                     RefGeoName = RefGeoNameUnTrimmed.Trim();
                 }
             }

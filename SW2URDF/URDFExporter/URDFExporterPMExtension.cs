@@ -164,7 +164,7 @@ namespace SW2URDF
         // Determines how many nodes need to be built, and they are added to the current node
         private void CreateNewNodes(LinkNode CurrentlySelectedNode)
         {
-            int nodesToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
+            int nodesToBuild = (int)PMNumberBoxChildCount.Value - CurrentlySelectedNode.Nodes.Count;
             CreateNewNodes(CurrentlySelectedNode, nodesToBuild);
         }
 
@@ -187,7 +187,7 @@ namespace SW2URDF
 
             int height = MathOps.Envelope(itemHeight, min, max);
             Tree.Height = height;
-            pm_tree.Height = height;
+            PMTree.Height = height;
             currentNode.ExpandAll();
         }
 
@@ -313,19 +313,19 @@ namespace SW2URDF
         {
             if (previouslySelectedNode != null)
             {
-                previouslySelectedNode.LinkName = pm_TextBox_LinkName.Text;
+                previouslySelectedNode.LinkName = PMTextBoxLinkName.Text;
                 if (!previouslySelectedNode.IsBaseNode)
                 {
-                    previouslySelectedNode.JointName = pm_TextBox_JointName.Text;
-                    previouslySelectedNode.AxisName = pm_ComboBox_Axes.get_ItemText(-1);
-                    previouslySelectedNode.CoordsysName = pm_ComboBox_CoordSys.get_ItemText(-1);
-                    previouslySelectedNode.JointType = pm_ComboBox_JointType.get_ItemText(-1);
+                    previouslySelectedNode.JointName = PMTextBoxJointName.Text;
+                    previouslySelectedNode.AxisName = PMComboBoxAxes.get_ItemText(-1);
+                    previouslySelectedNode.CoordsysName = PMComboBoxCoordSys.get_ItemText(-1);
+                    previouslySelectedNode.JointType = PMComboBoxJointType.get_ItemText(-1);
                 }
                 else
                 {
-                    previouslySelectedNode.CoordsysName = pm_ComboBox_GlobalCoordsys.get_ItemText(-1);
+                    previouslySelectedNode.CoordsysName = PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
-                Common.GetSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, pm_Selection.Mark);
+                Common.GetSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
             }
         }
 
@@ -363,44 +363,44 @@ namespace SW2URDF
         //Sets all the controls in the Property Manager from the Selected Node
         public void FillPropertyManager(LinkNode node)
         {
-            pm_TextBox_LinkName.Text = node.LinkName;
-            pm_NumberBox_ChildCount.Value = node.Nodes.Count;
+            PMTextBoxLinkName.Text = node.LinkName;
+            PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.SelectComponents(ActiveSWModel, node.Components, true, pm_Selection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Components, true, PMSelection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)
             {
                 //Combobox needs to be blanked before de-activating
-                SelectComboBox(pm_ComboBox_GlobalCoordsys, "");
+                SelectComboBox(PMComboBoxGlobalCoordsys, "");
 
                 //Labels need to be activated before changing them
                 EnableControls(!node.IsBaseNode);
-                pm_TextBox_JointName.Text = node.JointName;
-                pm_Label_ParentLink.Caption = node.Parent.Name;
+                PMTextBoxJointName.Text = node.JointName;
+                PMLabelParentLink.Caption = node.Parent.Name;
 
-                UpdateComboBoxFromFeatures(pm_ComboBox_CoordSys, "CoordSys");
+                UpdateComboBoxFromFeatures(PMComboBoxCoordSys, "CoordSys");
                 //checkTransforms(ActiveSWModel);
 
-                UpdateComboBoxFromFeatures(pm_ComboBox_Axes, "RefAxis");
-                pm_ComboBox_Axes.AddItems("None");
-                SelectComboBox(pm_ComboBox_CoordSys, node.CoordsysName);
-                SelectComboBox(pm_ComboBox_Axes, node.AxisName);
-                SelectComboBox(pm_ComboBox_JointType, node.JointType);
+                UpdateComboBoxFromFeatures(PMComboBoxAxes, "RefAxis");
+                PMComboBoxAxes.AddItems("None");
+                SelectComboBox(PMComboBoxCoordSys, node.CoordsysName);
+                SelectComboBox(PMComboBoxAxes, node.AxisName);
+                SelectComboBox(PMComboBoxJointType, node.JointType);
             }
             else
             {
                 //Labels and text box have be blanked before de-activating them
-                pm_Label_ParentLink.Caption = " ";
-                SelectComboBox(pm_ComboBox_CoordSys, "");
-                SelectComboBox(pm_ComboBox_Axes, "");
-                SelectComboBox(pm_ComboBox_JointType, "");
+                PMLabelParentLink.Caption = " ";
+                SelectComboBox(PMComboBoxCoordSys, "");
+                SelectComboBox(PMComboBoxAxes, "");
+                SelectComboBox(PMComboBoxJointType, "");
 
                 //Activate controls before changing them
                 EnableControls(!node.IsBaseNode);
-                UpdateComboBoxFromFeatures(pm_ComboBox_GlobalCoordsys, "CoordSys");
-                SelectComboBox(pm_ComboBox_GlobalCoordsys, node.CoordsysName);
+                UpdateComboBoxFromFeatures(PMComboBoxGlobalCoordsys, "CoordSys");
+                SelectComboBox(PMComboBoxGlobalCoordsys, node.CoordsysName);
             }
         }
 
@@ -408,32 +408,32 @@ namespace SW2URDF
         //Generally these are deactivated for the base node
         private void EnableControls(bool enableJoints)
         {
-            PropertyManagerPageControl[] pm_joint_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName,
-                                                                                          (PropertyManagerPageControl)pm_Label_JointName,
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_CoordSys,
-                                                                                          (PropertyManagerPageControl)pm_Label_CoordSys,
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_Axes,
-                                                                                          (PropertyManagerPageControl)pm_Label_Axes,
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_JointType,
-                                                                                          (PropertyManagerPageControl)pm_Label_JointType };
+            PropertyManagerPageControl[] pmJointControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMTextBoxJointName,
+                                                                                          (PropertyManagerPageControl)PMLabelJointName,
+                                                                                          (PropertyManagerPageControl)PMComboBoxCoordSys,
+                                                                                          (PropertyManagerPageControl)PMLabelCoordSys,
+                                                                                          (PropertyManagerPageControl)PMComboBoxAxes,
+                                                                                          (PropertyManagerPageControl)PMLabelAxes,
+                                                                                          (PropertyManagerPageControl)PMComboBoxJointType,
+                                                                                          (PropertyManagerPageControl)PMLabelJointType };
 
-            PropertyManagerPageControl[] pm_GlobalOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_GlobalCoordsys,
-                                                                                                       (PropertyManagerPageControl)pm_Label_GlobalCoordsys};
+            PropertyManagerPageControl[] pmGlobalOriginControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMComboBoxGlobalCoordsys,
+                                                                                                       (PropertyManagerPageControl)PMLabelGlobalCoordsys};
 
-            PropertyManagerPageControl[] pm_JointOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_CoordSys,
-                                                                                                       (PropertyManagerPageControl)pm_Label_CoordSys};
+            PropertyManagerPageControl[] pmJointOriginControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMComboBoxCoordSys,
+                                                                                                       (PropertyManagerPageControl)PMLabelCoordSys};
 
-            foreach (PropertyManagerPageControl control in pm_GlobalOrigin_controls)
+            foreach (PropertyManagerPageControl control in pmGlobalOriginControls)
             {
                 control.Visible = !enableJoints; // Make the global origin controls visible when no joint controls are needed
                 control.Enabled = !enableJoints;
             }
-            foreach (PropertyManagerPageControl control in pm_JointOrigin_controls)
+            foreach (PropertyManagerPageControl control in pmJointOriginControls)
             {
                 control.Visible = enableJoints;
                 control.Enabled = enableJoints;
             }
-            foreach (PropertyManagerPageControl control in pm_joint_controls)
+            foreach (PropertyManagerPageControl control in pmJointControls)
             {
                 control.Enabled = enableJoints;
                 control.Visible = enableJoints;
@@ -447,7 +447,7 @@ namespace SW2URDF
             filters[0] = swSelectType_e.swSelCOMPONENTS;
             object filterObj = null;
             filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
+            PMSelection.SetSelectionFilters(filterObj);
         }
 
         // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
@@ -475,7 +475,7 @@ namespace SW2URDF
             object filterObj = null;
 
             filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
+            PMSelection.SetSelectionFilters(filterObj);
         }
 
         //Populates the TreeView with the organized links from the robot

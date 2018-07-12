@@ -264,14 +264,14 @@ namespace SW2URDF
             return result;
         }
 
-        public static double[] ClosestPointOnLineWithinBox(double X_min, double X_max, double Y_min, double Y_max, double Z_min, double Z_max, double[] line, double[] pointOnLine)
+        public static double[] ClosestPointOnLineWithinBox(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, double[] line, double[] pointOnLine)
         {
-            if (pointOnLine[0] > X_min && pointOnLine[0] < X_max && pointOnLine[1] > Y_min && pointOnLine[1] < Y_max && pointOnLine[2] > Z_min && pointOnLine[2] < Z_max)
+            if (pointOnLine[0] > xMin && pointOnLine[0] < xMax && pointOnLine[1] > yMin && pointOnLine[1] < yMax && pointOnLine[2] > zMin && pointOnLine[2] < zMax)
             {
                 return pointOnLine;
             }
-            double[] point1 = ClosestPointOnLineToPoint(new double[] { X_max, Y_max, Z_max }, line, pointOnLine);
-            double[] point2 = ClosestPointOnLineToPoint(new double[] { X_min, Y_min, Z_min }, line, pointOnLine);
+            double[] point1 = ClosestPointOnLineToPoint(new double[] { xMax, yMax, zMax }, line, pointOnLine);
+            double[] point2 = ClosestPointOnLineToPoint(new double[] { xMin, yMin, zMin }, line, pointOnLine);
 
             if (Distance2(pointOnLine, point1) < Distance2(pointOnLine, point2))
             {
@@ -508,12 +508,12 @@ namespace SW2URDF
             return sqrdmag;
         }
 
-        public static double[] Threshold(double[] array, double min_value)
+        public static double[] Threshold(double[] array, double minValue)
         {
             double[] result = (double[])array.Clone();
             for (int i = 0; i < array.Length; i++)
             {
-                result[i] = (Math.Abs(array[i]) >= min_value) ? array[i] : 0;
+                result[i] = (Math.Abs(array[i]) >= minValue) ? array[i] : 0;
             }
             return result;
         }

@@ -60,22 +60,22 @@ namespace SW2URDF
             AutoUpdatingForm = false;
 
             jointBoxes = new Control[] {
-                textBox_joint_name, comboBox_axis, comboBox_joint_type,
-                textBox_axis_x, textBox_axis_y, textBox_axis_z,
-                textBox_joint_x, textBox_joint_y, textBox_joint_z, textBox_joint_pitch, textBox_joint_roll, textBox_joint_yaw,
-                textBox_limit_lower, textBox_limit_upper, textBox_limit_effort, textBox_limit_velocity,
-                textBox_damping, textBox_friction,
-                textBox_calibration_falling, textBox_calibration_rising,
-                textBox_soft_lower, textBox_soft_upper, textBox_k_position, textBox_k_velocity
+                textBoxJointName, comboBoxAxis, comboBoxJointType,
+                textBoxAxisX, textBoxAxisY, textBoxAxisZ,
+                textBoxJointX, textBoxJointY, textBoxJointZ, textBoxJointPitch, textBoxJointRoll, textBoxJointYaw,
+                textBoxLimitLower, textBoxLimitUpper, textBoxLimitEffort, textBoxLimitVelocity,
+                textBoxDamping, textBoxFriction,
+                textBoxCalibrationFalling, textBoxCalibrationRising,
+                textBoxSoftLower, textBoxSoftUpper, textBoxKPosition, textBoxKVelocity
             };
             linkBoxes = new Control[] {
-                textBox_inertial_origin_x, textBox_inertial_origin_y, textBox_inertial_origin_z, textBox_inertial_origin_roll, textBox_inertial_origin_pitch, textBox_inertial_origin_yaw,
-                textBox_visual_origin_x, textBox_visual_origin_y, textBox_visual_origin_z, textBox_visual_origin_roll, textBox_visual_origin_pitch, textBox_visual_origin_yaw,
-                textBox_ixx, textBox_ixy, textBox_ixz, textBox_iyy, textBox_iyz, textBox_izz,
-                textBox_mass,
-                domainUpDown_red, domainUpDown_green, domainUpDown_blue, domainUpDown_alpha,
-                comboBox_materials,
-                textBox_texture
+                textBoxInertialOriginX, textBoxInertialOriginY, textBoxInertialOriginZ, textBoxInertialOriginRoll, textBoxInertialOriginPitch, textBoxInertialOriginYaw,
+                textBoxVisualOriginX, textBoxVisualOriginY, textBoxVisualOriginZ, textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
+                textBoxIxx, textBoxIxy, textBoxIxz, textBoxIyy, textBoxIyz, textBoxIzz,
+                textBoxMass,
+                domainUpDownRed, domainUpDownGreen, domainUpDownBlue, domainUpDownAlpha,
+                comboBoxMaterials,
+                textBoxTexture
             };
 
             saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
@@ -115,16 +115,16 @@ namespace SW2URDF
             }
             previouslySelectedNode = null; // Need to clear this for the link properties page
 
-            while (treeView_jointtree.Nodes.Count > 0)
+            while (treeViewJointTree.Nodes.Count > 0)
             {
-                LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
-                treeView_jointtree.Nodes.Remove(node);
+                LinkNode node = (LinkNode)treeViewJointTree.Nodes[0];
+                treeViewJointTree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
-            ChangeAllNodeFont(BaseNode, new Font(treeView_jointtree.Font, FontStyle.Regular));
+            ChangeAllNodeFont(BaseNode, new Font(treeViewJointTree.Font, FontStyle.Regular));
 
             FillLinkTree();
-            panel_link_properties.Visible = true;
+            panelLinkProperties.Visible = true;
             Focus();
         }
 
@@ -134,17 +134,17 @@ namespace SW2URDF
             {
                 SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
             }
-            while (treeView_jointtree.Nodes.Count > 0)
+            while (treeViewJointTree.Nodes.Count > 0)
             {
-                LinkNode node = (LinkNode)treeView_jointtree.Nodes[0];
-                treeView_jointtree.Nodes.Remove(node);
+                LinkNode node = (LinkNode)treeViewJointTree.Nodes[0];
+                treeViewJointTree.Nodes.Remove(node);
                 BaseNode.Nodes.Add(node);
             }
             SaveConfigTree(ActiveSWModel, BaseNode, true);
             Close();
         }
 
-        private void Button_Links_Cancel_Click(object sender, EventArgs e)
+        private void ButtonLinksCancelClick(object sender, EventArgs e)
         {
             if (previouslySelectedNode != null)
             {
@@ -154,17 +154,17 @@ namespace SW2URDF
             Close();
         }
 
-        private void Button_Links_Previous_Click(object sender, EventArgs e)
+        private void ButtonLinksPreviousClick(object sender, EventArgs e)
         {
-            LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+            LinkNode node = (LinkNode)treeViewLinkProperties.SelectedNode;
             if (node != null)
             {
                 SaveLinkDataFromPropertyBoxes(node.Link);
             }
             previouslySelectedNode = null;
-            ChangeAllNodeFont(BaseNode, new Font(treeView_jointtree.Font, FontStyle.Regular));
+            ChangeAllNodeFont(BaseNode, new Font(treeViewJointTree.Font, FontStyle.Regular));
             FillJointTree();
-            panel_link_properties.Visible = false;
+            panelLinkProperties.Visible = false;
         }
 
         private void ButtonLinksFinishClick(object sender, EventArgs e)
@@ -192,12 +192,12 @@ namespace SW2URDF
             {
                 Exporter.SavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
                 Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);
-                LinkNode node = (LinkNode)treeView_linkProperties.SelectedNode;
+                LinkNode node = (LinkNode)treeViewLinkProperties.SelectedNode;
                 if (node != null)
                 {
                     SaveLinkDataFromPropertyBoxes(node.Link);
                 }
-                Exporter.URDFRobot = CreateRobotFromTreeView(treeView_linkProperties);
+                Exporter.URDFRobot = CreateRobotFromTreeView(treeViewLinkProperties);
 
                 Exporter.ExportRobot(exportSTL);
                 Close();
@@ -206,8 +206,8 @@ namespace SW2URDF
 
         private void TreeViewLinkPropertiesAfterSelect(object sender, TreeViewEventArgs e)
         {
-            Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
-            Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
+            Font fontRegular = new Font(treeViewJointTree.Font, FontStyle.Regular);
+            Font fontBold = new Font(treeViewJointTree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null)
             {
                 SaveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
@@ -233,7 +233,7 @@ namespace SW2URDF
                 }
             }
             FillLinkPropertyBoxes(node.Link);
-            treeView_linkProperties.Focus();
+            treeViewLinkProperties.Focus();
             previouslySelectedNode = node;
         }
 
@@ -248,7 +248,7 @@ namespace SW2URDF
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                textBox_texture.Text = openFileDialog1.FileName;
+                textBoxTexture.Text = openFileDialog1.FileName;
             }
         }
 
@@ -258,8 +258,8 @@ namespace SW2URDF
 
         private void TreeViewJointtreeAfterSelect(object sender, TreeViewEventArgs e)
         {
-            Font fontRegular = new Font(treeView_jointtree.Font, FontStyle.Regular);
-            Font fontBold = new Font(treeView_jointtree.Font, FontStyle.Bold);
+            Font fontRegular = new Font(treeViewJointTree.Font, FontStyle.Regular);
+            Font fontBold = new Font(treeViewJointTree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null && !previouslySelectedNode.IsBaseNode)
             {
                 SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
@@ -295,13 +295,13 @@ namespace SW2URDF
         {
             if (!AutoUpdatingForm)
             {
-                if (!(String.IsNullOrWhiteSpace(comboBox_origin.Text) || String.IsNullOrWhiteSpace(comboBox_axis.Text)))
+                if (!(String.IsNullOrWhiteSpace(comboBoxOrigin.Text) || String.IsNullOrWhiteSpace(comboBoxAxis.Text)))
                 {
-                    double[] Axis = Exporter.EstimateAxis(comboBox_axis.Text);
-                    Axis = Exporter.LocalizeAxis(Axis, comboBox_origin.Text);
-                    textBox_axis_x.Text = Axis[0].ToString("G5");
-                    textBox_axis_y.Text = Axis[1].ToString("G5");
-                    textBox_axis_z.Text = Axis[2].ToString("G5");
+                    double[] Axis = Exporter.EstimateAxis(comboBoxAxis.Text);
+                    Axis = Exporter.LocalizeAxis(Axis, comboBoxOrigin.Text);
+                    textBoxAxisX.Text = Axis[0].ToString("G5");
+                    textBoxAxisY.Text = Axis[1].ToString("G5");
+                    textBoxAxisZ.Text = Axis[2].ToString("G5");
                 }
             }
         }

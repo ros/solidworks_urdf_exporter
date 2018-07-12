@@ -53,30 +53,30 @@ namespace SW2URDF
 
         //General objects required for the PropertyManager page
 
-        private PropertyManagerPage2 pm_Page;
-        private PropertyManagerPageGroup pm_Group;
-        private PropertyManagerPageSelectionbox pm_Selection;
-        private PropertyManagerPageButton pm_Button_export;
-        private PropertyManagerPageTextbox pm_TextBox_LinkName;
-        private PropertyManagerPageTextbox pm_TextBox_JointName;
-        private PropertyManagerPageNumberbox pm_NumberBox_ChildCount;
-        private PropertyManagerPageCombobox pm_ComboBox_GlobalCoordsys;
-        private PropertyManagerPageCombobox pm_ComboBox_Axes;
-        private PropertyManagerPageCombobox pm_ComboBox_CoordSys;
-        private PropertyManagerPageCombobox pm_ComboBox_JointType;
+        private PropertyManagerPage2 PMPage;
+        private PropertyManagerPageGroup PMGroup;
+        private PropertyManagerPageSelectionbox PMSelection;
+        private PropertyManagerPageButton PMButtonExport;
+        private PropertyManagerPageTextbox PMTextBoxLinkName;
+        private PropertyManagerPageTextbox PMTextBoxJointName;
+        private PropertyManagerPageNumberbox PMNumberBoxChildCount;
+        private PropertyManagerPageCombobox PMComboBoxGlobalCoordsys;
+        private PropertyManagerPageCombobox PMComboBoxAxes;
+        private PropertyManagerPageCombobox PMComboBoxCoordSys;
+        private PropertyManagerPageCombobox PMComboBoxJointType;
 
-        private PropertyManagerPageLabel pm_Label_LinkName;
-        private PropertyManagerPageLabel pm_Label_JointName;
-        private PropertyManagerPageLabel pm_Label_Selection;
-        private PropertyManagerPageLabel pm_Label_ChildCount;
-        private PropertyManagerPageLabel pm_Label_ParentLink;
-        private PropertyManagerPageLabel pm_Label_ParentLinkLabel;
-        private PropertyManagerPageLabel pm_Label_Axes;
-        private PropertyManagerPageLabel pm_Label_CoordSys;
-        private PropertyManagerPageLabel pm_Label_JointType;
-        private PropertyManagerPageLabel pm_Label_GlobalCoordsys;
+        private PropertyManagerPageLabel PMLabelLinkName;
+        private PropertyManagerPageLabel PMLabelJointName;
+        private PropertyManagerPageLabel PMLabelSelection;
+        private PropertyManagerPageLabel PMLabelChildCount;
+        private PropertyManagerPageLabel PMLabelParentLink;
+        private PropertyManagerPageLabel PMLabelParentLinkLabel;
+        private PropertyManagerPageLabel PMLabelAxes;
+        private PropertyManagerPageLabel PMLabelCoordSys;
+        private PropertyManagerPageLabel PMLabelJointType;
+        private PropertyManagerPageLabel PMLabelGlobalCoordsys;
 
-        private PropertyManagerPageWindowFromHandle pm_tree;
+        private PropertyManagerPageWindowFromHandle PMTree;
 
         public TreeView Tree
         { get; set; }
@@ -86,35 +86,35 @@ namespace SW2URDF
         //Each object in the page needs a unique ID
 
         private const int GroupID = 1;
-        private const int TextBox_LinkNameID = 2;
+        private const int TextBoxLinkNameID = 2;
         private const int SelectionID = 3;
         private const int ComboID = 4;
         private const int ListID = 5;
-        private const int Button_save_ID = 6;
-        private const int NumBox_ChildCount_ID = 7;
-        private const int Label_LinkName_ID = 8;
-        private const int Label_Selection_ID = 9;
-        private const int Label_ChildCount_ID = 10;
-        private const int Label_ParentLink_ID = 11;
-        private const int Label_ParentLinkLabel_ID = 12;
-        private const int TextBox_JointNameID = 13;
-        private const int Label_JointName_ID = 14;
-        private const int dotNet_tree = 16;
-        private const int Button_export_ID = 17;
-        private const int ComboBox_Axes_ID = 18;
-        private const int ComboBox_CoordSys_ID = 19;
-        private const int Label_Axes_ID = 20;
-        private const int Label_CoordSys_ID = 21;
-        private const int ComboBox_JointType_ID = 22;
-        private const int Label_JointType_ID = 23;
-        private const int ID_GlobalCoordsys = 24;
-        private const int ID_Label_GlobalCoordsys = 25;
+        private const int ButtonSaveID = 6;
+        private const int NumBoxChildCountID = 7;
+        private const int LabelLinkNameID = 8;
+        private const int LabelSelectionID = 9;
+        private const int LabelChildCountID = 10;
+        private const int LabelParentLinkID = 11;
+        private const int LabelParentLinkLabelID = 12;
+        private const int TextBoxJointNameID = 13;
+        private const int LabelJointNameID = 14;
+        private const int dotNetTree = 16;
+        private const int ButtonExportID = 17;
+        private const int ComboBoxAxesID = 18;
+        private const int ComboBoxCoordSysID = 19;
+        private const int LabelAxesID = 20;
+        private const int LabelCoordSysID = 21;
+        private const int ComboBoxJointTypeID = 22;
+        private const int LabelJointTypeID = 23;
+        private const int IDGlobalCoordsys = 24;
+        private const int IDLabelGlobalCoordsys = 25;
 
         #endregion class variables
 
         public void Show()
         {
-            pm_Page.Show2(0);
+            PMPage.Show2(0);
         }
 
         //The following runs when a new instance of the class is created
@@ -148,7 +148,7 @@ namespace SW2URDF
             options = (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_OkayButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_CancelButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_HandleKeystrokes;
 
             //Create the PropertyManager page
-            pm_Page = (PropertyManagerPage2)swApp.CreatePropertyManagerPage(PageTitle, (int)options, this, ref longerrors);
+            PMPage = (PropertyManagerPage2)swApp.CreatePropertyManagerPage(PageTitle, (int)options, this, ref longerrors);
 
             //Make sure that the page was created properly
             if (longerrors == (int)swPropertyManagerPageStatus_e.swPropertyManagerPage_Okay)
@@ -180,17 +180,17 @@ namespace SW2URDF
         void IPropertyManagerPage2Handler9.AfterActivation()
         {
             //Turns the selection box blue so that selected components are added to the PMPage selection box
-            pm_Selection.SetSelectionFocus();
+            PMSelection.SetSelectionFocus();
         }
 
         private void OnButtonPress(int Id)
         {
-            if (Id == Button_export_ID) //If the export button was pressed
+            if (Id == ButtonExportID) //If the export button was pressed
             {
                 SaveActiveNode();
                 if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
                 {
-                    pm_Page.Close(true); //It saves automatically when sending Okay as true;
+                    PMPage.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
                     //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
@@ -285,7 +285,7 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnNumberboxChanged(int Id, double Value)
         {
-            if (Id == NumBox_ChildCount_ID)
+            if (Id == NumBoxChildCountID)
             {
                 LinkNode node = (LinkNode)Tree.SelectedNode;
                 CreateNewNodes(node);
@@ -300,7 +300,7 @@ namespace SW2URDF
         void IPropertyManagerPage2Handler9.OnSelectionboxListChanged(int Id, int Count)
         {
             // Move focus to next selection box if right-mouse button pressed
-            pm_Page.SetCursor((int)swPropertyManagerPageCursors_e.swPropertyManagerPageCursors_Advance);
+            PMPage.SetCursor((int)swPropertyManagerPageCursors_e.swPropertyManagerPageCursors_Advance);
         }
 
         bool IPropertyManagerPage2Handler9.OnSubmitSelection(int Id, object Selection, int SelType, ref string ItemText)
@@ -311,11 +311,11 @@ namespace SW2URDF
 
         void IPropertyManagerPage2Handler9.OnTextboxChanged(int Id, string Text)
         {
-            if (Id == TextBox_LinkNameID)
+            if (Id == TextBoxLinkNameID)
             {
                 LinkNode node = (LinkNode)Tree.SelectedNode;
-                node.Text = pm_TextBox_LinkName.Text;
-                node.Name = pm_TextBox_LinkName.Text;
+                node.Text = PMTextBoxLinkName.Text;
+                node.Name = PMTextBoxLinkName.Text;
             }
         }
 
@@ -406,7 +406,7 @@ namespace SW2URDF
                 Tree.SelectedNode = rightClickedNode;
                 Tree.LabelEdit = true;
                 rightClickedNode.BeginEdit();
-                pm_Page.SetFocus(dotNet_tree);
+                PMPage.SetFocus(dotNetTree);
             }
             catch (Exception ex)
             {
@@ -516,16 +516,16 @@ namespace SW2URDF
                 // If dragging a node closer onto its ancestor do parent swapping kungfu
                 if (draggedNode.Level < targetNode.Level)
                 {
-                    int level_diff = targetNode.Level - draggedNode.Level;
-                    LinkNode ancestor_node = targetNode;
-                    for (int i = 0; i < level_diff; i++)
+                    int levelDiff = targetNode.Level - draggedNode.Level;
+                    LinkNode ancestorNode = targetNode;
+                    for (int i = 0; i < levelDiff; i++)
                     {
                         //Ascend up the target's node (new parent) parent tree the level difference to get the ancestoral node that is at the same level
                         //as the dragged node (the new child)
-                        ancestor_node = (LinkNode)ancestor_node.Parent;
+                        ancestorNode = (LinkNode)ancestorNode.Parent;
                     }
                     // If the dragged node is in the same line as the target node, then the real kungfu begins
-                    if (ancestor_node == draggedNode)
+                    if (ancestorNode == draggedNode)
                     {
                         LinkNode newParent = targetNode;
                         LinkNode newChild = draggedNode;
@@ -571,21 +571,21 @@ namespace SW2URDF
             //Create the group box
             caption = "Configure and Organize Links";
             options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
-            pm_Group = (PropertyManagerPageGroup)pm_Page.AddGroupBox(GroupID, caption, (int)options);
+            PMGroup = (PropertyManagerPageGroup)PMPage.AddGroupBox(GroupID, caption, (int)options);
 
             //Create the parent link label (static)
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Parent Link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_ParentLinkLabel = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, "");
+            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the parent link name label, the one that is updated
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_ParentLink = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, "");
+            PMLabelParentLink = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -593,7 +593,7 @@ namespace SW2URDF
             tip = "Enter the name of the link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_LinkName = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the link name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
@@ -601,7 +601,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the link";
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_TextBox_LinkName = (PropertyManagerPageTextbox)pm_Group.AddControl(TextBox_LinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            PMTextBoxLinkName = (PropertyManagerPageTextbox)PMGroup.AddControl(TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -609,7 +609,7 @@ namespace SW2URDF
             tip = "Enter the name of the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_JointName = (PropertyManagerPageLabel)pm_Group.AddControl(Label_JointName_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelJointName = (PropertyManagerPageLabel)PMGroup.AddControl(LabelJointNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
@@ -617,7 +617,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the joint";
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_TextBox_JointName = (PropertyManagerPageTextbox)pm_Group.AddControl(TextBox_LinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            PMTextBoxJointName = (PropertyManagerPageTextbox)PMGroup.AddControl(TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the global origin coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -625,7 +625,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_GlobalCoordsys = (PropertyManagerPageLabel)pm_Group.AddControl(ID_Label_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelGlobalCoordsys = (PropertyManagerPageLabel)PMGroup.AddControl(IDLabelGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -633,8 +633,8 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_GlobalCoordsys = (PropertyManagerPageCombobox)pm_Group.AddControl(ID_GlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_GlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxGlobalCoordsys = (PropertyManagerPageCombobox)PMGroup.AddControl(IDGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxGlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -642,7 +642,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = 0;
-            pm_Label_CoordSys = (PropertyManagerPageLabel)pm_Group.AddControl(Label_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelCoordSys = (PropertyManagerPageLabel)PMGroup.AddControl(LabelCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -650,8 +650,8 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = 0;
-            pm_ComboBox_CoordSys = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_CoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxCoordSys = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxCoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref axis label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -659,7 +659,7 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_Axes = (PropertyManagerPageLabel)pm_Group.AddControl(Label_Axes_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelAxes = (PropertyManagerPageLabel)PMGroup.AddControl(LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for axes
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -667,8 +667,8 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_Axes = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_Axes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxAxes = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxAxes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the joint type label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -676,7 +676,7 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_Label_JointType = (PropertyManagerPageLabel)pm_Group.AddControl(Label_Axes_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelJointType = (PropertyManagerPageLabel)PMGroup.AddControl(LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for joint type
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -684,9 +684,9 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_ComboBox_JointType = (PropertyManagerPageCombobox)pm_Group.AddControl(ComboBox_CoordSys_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_ComboBox_JointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
-            pm_ComboBox_JointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
+            PMComboBoxJointType = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxJointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxJointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
 
             //Create the selection box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -694,7 +694,7 @@ namespace SW2URDF
             tip = "Select components associated with this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_Selection = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create selection box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
@@ -702,18 +702,18 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             tip = "Select components associated with this link";
-            pm_Selection = (PropertyManagerPageSelectionbox)pm_Group.AddControl(SelectionID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMSelection = (PropertyManagerPageSelectionbox)PMGroup.AddControl(SelectionID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             swSelectType_e[] filters = new swSelectType_e[1];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
             object filterObj = null;
             filterObj = filters;
 
-            pm_Selection.AllowSelectInMultipleBoxes = true;
-            pm_Selection.SingleEntityOnly = false;
-            pm_Selection.AllowMultipleSelectOfSameEntity = false;
-            pm_Selection.Height = 50;
-            pm_Selection.SetSelectionFilters(filterObj);
+            PMSelection.AllowSelectInMultipleBoxes = true;
+            PMSelection.SingleEntityOnly = false;
+            PMSelection.AllowMultipleSelectOfSameEntity = false;
+            PMSelection.Height = 50;
+            PMSelection.SetSelectionFilters(filterObj);
 
             //Create the number box label
             //Create the link name text box label
@@ -722,7 +722,7 @@ namespace SW2URDF
             tip = "Enter the number of child links and they will be automatically added";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_Label_ChildCount = (PropertyManagerPageLabel)pm_Group.AddControl(Label_LinkName_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelChildCount = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the number box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
@@ -730,19 +730,19 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the number of child links and they will be automatically added";
             options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-            pm_NumberBox_ChildCount = pm_Group.AddControl(NumBox_ChildCount_ID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            pm_NumberBox_ChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
-            pm_NumberBox_ChildCount.Value = 0;
+            PMNumberBoxChildCount = PMGroup.AddControl(NumBoxChildCountID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMNumberBoxChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            PMNumberBoxChildCount.Value = 0;
 
             //pm_Button_save = pm_Group.AddControl(Button_save_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Build Link", 0, (int)options, "");
-            pm_Button_export = pm_Group.AddControl(Button_export_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
+            PMButtonExport = PMGroup.AddControl(ButtonExportID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
             caption = "Link Tree";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            pm_tree = pm_Page.AddControl(dotNet_tree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
-            pm_tree.Height = 163;
+            PMTree = PMPage.AddControl(dotNetTree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
+            PMTree.Height = 163;
             Tree = new TreeView
             {
                 Height = 163,
@@ -757,7 +757,7 @@ namespace SW2URDF
             Tree.DragEnter += new DragEventHandler(TreeDragEnter);
             Tree.ItemDrag += new ItemDragEventHandler(TreeItemDrag);
             Tree.AllowDrop = true;
-            pm_tree.SetWindowHandlex64(Tree.Handle.ToInt64());
+            PMTree.SetWindowHandlex64(Tree.Handle.ToInt64());
 
             ToolStripMenuItem addChild = new ToolStripMenuItem();
             ToolStripMenuItem removeChild = new ToolStripMenuItem();
@@ -775,8 +775,8 @@ namespace SW2URDF
             node.ContextMenuStrip = docMenu;
             Tree.Nodes.Add(node);
             Tree.SelectedNode = Tree.Nodes[0];
-            pm_Selection.SetSelectionFocus();
-            pm_Page.SetFocus(dotNet_tree);
+            PMSelection.SetSelectionFocus();
+            PMPage.SetFocus(dotNetTree);
             //updateNodeNames(tree);
         }
 
