@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,6 +23,8 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
@@ -137,7 +133,6 @@ namespace SW2URDF
             double[] moment = linkLocalMomentInertia.ToRowWiseArray();
             Link.Inertial.Inertia.setMomentMatrix(moment);
 
-
             Link.Collision.Origin.xyz = ops.getXYZ(localCollisionTransform);
             Link.Collision.Origin.rpy = ops.getRPY(localCollisionTransform);
 
@@ -189,7 +184,6 @@ namespace SW2URDF
             link Link;
             if (node.isBaseNode)
             {
-
                 createBaseLinkFromComponents(node);
                 Link = mRobot.BaseLink;
             }
@@ -245,14 +239,14 @@ namespace SW2URDF
 
             if (!child.isFixedFrame)
             {
-                //selectComponents(components, true);
-                IMassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+                List<Body2> bodies = GetBodies(components);
+                MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
                 swMass.SetCoordinateSystem(jointTransform);
 
-                Body2[] bodies = getBodies(components);
-                bool addedBodies = swMass.AddBodies(bodies);
+                bool bRet = swMass.AddBodies(bodies.ToArray());
+
+                double[] moment = (double[])swMass.GetMomentOfInertia((int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
                 child.Inertial.Mass.value = swMass.Mass;
-                double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
                 child.Inertial.Inertia.setMomentMatrix(moment);
 
                 double[] centerOfMass = swMass.CenterOfMass;
@@ -281,38 +275,39 @@ namespace SW2URDF
                 child.Collision.Origin.rpy = new double[] { 0, 0, 0 };
             }
 
-            //ActiveSWModel.ClearSelection2(true);
             return child;
         }
 
-        public Body2[] getBodies(List<Component2> components)
+        public List<Body2> GetBodies(List<Component2> components)
         {
+            object bodyInfo = null;
             List<Body2> bodies = new List<Body2>();
-            object BodiesInfo;
-            object[] objs;
             foreach (Component2 comp in components)
             {
-                ModelDoc2 modeldoc = comp.GetModelDoc2();
-                if (modeldoc != null && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+                // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
+                object[] componentBodies = (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
+                if (componentBodies != null)
                 {
-                    object[] assyObjs = comp.GetChildren();
-                    List<Component2> assyComponents = Array.ConvertAll(assyObjs, assyObj => (Component2)assyObj).ToList();
-                    bodies.AddRange(getBodies(assyComponents));
-                }
-                else
-                {
-                    objs = comp.GetBodies3((int)swBodyType_e.swAllBodies, out BodiesInfo);
-                    if (objs != null)
+                    foreach (Body2 obj in componentBodies)
                     {
-                        bodies.AddRange(Array.ConvertAll(objs, obj => (Body2)obj));
+                        bodies.Add(obj);
                     }
                 }
+                object[] children = comp.GetChildren();
+                if (children != null)
+                {
+                    List<Component2> childComponents = new List<Component2>();
+                    foreach (Component2 child in children)
+                    {
+                        childComponents.Add(child);
+                    }
+                    bodies.AddRange(GetBodies(childComponents));
+                }
             }
-
-            return bodies.ToArray();
+            return bodies;
         }
 
-        #endregion
+        #endregion SW to Robot and link methods
 
         #region Joint methods
 
@@ -520,7 +515,6 @@ namespace SW2URDF
             MathTransform parentTransform = getCoordinateSystemTransform(parentCoordsysName);
             double[] parentRPY = ops.getRPY(parentTransform);
 
-
             Matrix<double> ParentJointGlobalTransform = ops.getTransformation(parentTransform);
             MathTransform coordsysTransform = getCoordinateSystemTransform(Joint.CoordinateSystemName);
             double[] coordsysRPY = ops.getRPY(coordsysTransform);
@@ -529,7 +523,6 @@ namespace SW2URDF
             Matrix<double> ChildJointGlobalTransform = ops.getTransformation(coordsysTransform);
             Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
             double[] globalRPY = ops.getRPY(ChildJointOrigin);
-
 
             //Localize the axis to the Link's coordinate system.
             localizeAxis(Joint.Axis.xyz, Joint.CoordinateSystemName);
@@ -540,7 +533,6 @@ namespace SW2URDF
             Joint.Origin.rpy = ops.getRPY(ChildJointOrigin);
             ops.threshold(Joint.Origin.xyz, 0.00001);
         }
-
 
         // Funny method I created that inserts a RefAxis and then finds the reference to it.
         public Feature insertAxis(SketchSegment axis)
@@ -635,7 +627,6 @@ namespace SW2URDF
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
-
             }
             // Return an array of objects representing the sketch items that were just inserted, as well as the actual locations of those objecs (aids selection).
             return new object[] { OriginPoint, XAxis, YAxis, Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0], Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
@@ -668,7 +659,6 @@ namespace SW2URDF
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
-
             }
             return RotAxis;
         }
@@ -687,8 +677,7 @@ namespace SW2URDF
             Boolean success = false;
             if (child.SWMainComponent != null)
             {
-                
-                // The wonderful undocumented API call I found to get the degrees of freedom in a joint. 
+                // The wonderful undocumented API call I found to get the degrees of freedom in a joint.
                 // https://forum.solidworks.com/thread/57414
                 int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out R1Status, out RPoint1, out R1DirStatus, out RDir1,
                                                                            out R2Status, out RPoint2, out R2DirStatus, out RDir2,
@@ -698,7 +687,8 @@ namespace SW2URDF
                 {
                     logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
                 }
-                else {
+                else
+                {
                     logger.Info("R1: " + R1Status + ", " + R1DirStatus);
                 }
 
@@ -712,7 +702,7 @@ namespace SW2URDF
                 }
                 if (LDir1 != null)
                 {
-                    logger.Info("L1: " + L1Status + ", "  + LDir1.get_IArrayData());
+                    logger.Info("L1: " + L1Status + ", " + LDir1.get_IArrayData());
                 }
                 else
                 {
@@ -728,7 +718,6 @@ namespace SW2URDF
                 }
 
                 DOFs = remainingDOFs;
-
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.type = "fixed";
@@ -847,7 +836,6 @@ namespace SW2URDF
         //This doesn't seem to get the right values for the estimatedAxis. Check the actual values
         public double[] estimateAxis(string axisName)
         {
-
             //Select the axis
             ActiveSWModel.ClearSelection2(true);
 
@@ -860,7 +848,6 @@ namespace SW2URDF
             string axisName = axisStr;
             RefAxis axis = default(RefAxis);
             MathTransform ComponentTransform = default(MathTransform);
-
 
             if (axisStr.Contains("<") && axisStr.Contains(">"))
             {
@@ -885,26 +872,34 @@ namespace SW2URDF
                     }
                 }
             }
+            //Calculate!
+            double[] axisParams;
+            double[] xyz = new double[3];
+
             bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
             {
                 Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
                 axis = (RefAxis)feat.GetSpecificFeature2();
+
+                // GetRefAxisParams returns {startX, startY, startZ, endX, endY, endZ}
+                axisParams = axis.GetRefAxisParams();
+                xyz[0] = axisParams[0] - axisParams[3];
+                xyz[1] = axisParams[1] - axisParams[4];
+                xyz[2] = axisParams[2] - axisParams[5];
+
+                // Normalize and cleanup
+                xyz = ops.pnorm(xyz, 2);
+                if (ops.sum(xyz) < 0.0)
+                {
+                    xyz = ops.flip(xyz);
+                }
+
+                // Transform to proper coordinates
+                globalAxis(xyz, ComponentTransform);
             }
-            //Calculate!
-            double[] axisParams;
-            double[] XYZ = new double[3];
-            axisParams = axis.GetRefAxisParams();
-            XYZ[0] = axisParams[0] - axisParams[3];
-            XYZ[1] = axisParams[1] - axisParams[4];
-            XYZ[2] = axisParams[2] - axisParams[5];
-            XYZ = ops.pnorm(XYZ, 2);
-            if (ops.sum(XYZ) < 0.0)
-            {
-                XYZ = ops.flip(XYZ);
-            }
-            globalAxis(XYZ, ComponentTransform);
-            return XYZ;
+
+            return xyz;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
@@ -980,7 +975,7 @@ namespace SW2URDF
 
                 //Get all components in an assembly
                 object[] components = assyDoc.GetComponents(false);
-                
+
                 // If there are no components in an assembly, this object will be null.
                 if (components != null)
                 {
@@ -1065,25 +1060,21 @@ namespace SW2URDF
                         logger.Info("Adding component entity: " + parent.Name2);
                         entities.Add(parent);
                         parent = parent.GetParent();
-                        
                     }
-
-                    
-
                 }
 
-                if (entities.Contains(parentComponent) && entities.Contains(childComponent)) {
+                if (entities.Contains(parentComponent) && entities.Contains(childComponent))
+                {
                     // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
                     if ((Joint.type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
                         (Joint.type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
                     {
                         Joint.Limit = new limit();
 
-                        // Unclear if flipped is the right thing we want to be checking here. 
+                        // Unclear if flipped is the right thing we want to be checking here.
                         // From a sample size of 1, in SolidWorks it appears that an aligned and anti-aligned mates are NOT flipped...
                         if (!swMate.Flipped)
                         {
-                            
                             Joint.Limit.upper = -swMate.MinimumVariation; // Reverse mate directions, for some reason
                             Joint.Limit.lower = -swMate.MaximumVariation;
                         }
@@ -1124,7 +1115,7 @@ namespace SW2URDF
                     }
                 }
             }
-            
+
             foreach (Mate2 swMate in limitMates)
             {
                 ModelDoc2 doc = component.GetModelDoc2();
@@ -1206,7 +1197,6 @@ namespace SW2URDF
             return components;
         }
 
-
         //Used to fix components to estimate the degree of freedom.
         private List<Component2> fixComponents(link parent)
         {
@@ -1225,13 +1215,13 @@ namespace SW2URDF
                 {
                     logger.Info("Component " + comp.GetID() + " is already fixed");
                 }
-
             }
             Common.selectComponents(ActiveSWModel, componentsToFix, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.FixComponent();
             return componentsToUnfix;
         }
-        #endregion
+
+        #endregion Joint methods
     }
 }
