@@ -76,7 +76,6 @@ namespace SW2URDF
             linkBoxes = new Control[] {
                 textBox_inertial_origin_x, textBox_inertial_origin_y, textBox_inertial_origin_z, textBox_inertial_origin_roll, textBox_inertial_origin_pitch, textBox_inertial_origin_yaw,
                 textBox_visual_origin_x, textBox_visual_origin_y, textBox_visual_origin_z, textBox_visual_origin_roll, textBox_visual_origin_pitch, textBox_visual_origin_yaw,
-                textBox_collision_origin_x, textBox_collision_origin_y, textBox_collision_origin_z, textBox_collision_origin_roll, textBox_collision_origin_pitch, textBox_collision_origin_yaw,
                 textBox_ixx, textBox_ixy, textBox_ixz, textBox_iyy, textBox_iyz, textBox_izz,
                 textBox_mass, 
                 domainUpDown_red, domainUpDown_green, domainUpDown_blue, domainUpDown_alpha,
@@ -171,15 +170,22 @@ namespace SW2URDF
                 saveLinkDataFromPropertyBoxes(node.Link);
             }
             previouslySelectedNode = null;
-            //treeView_jointtree.Nodes.Clear();
-            //Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
-            //fillTreeViewFromRobot(Exporter.mRobot, treeView_jointtree);
             changeAllNodeFont(BaseNode, new System.Drawing.Font(treeView_jointtree.Font, FontStyle.Regular));
             fillJointTree();
             panel_link_properties.Visible = false;
         }
 
         private void button_links_finish_Click(object sender, EventArgs e)
+        {
+            finish_export(true);
+        }
+
+        private void button_links_export_urdf_only_Click(object sender, EventArgs e)
+        {
+            finish_export(false);
+        }
+
+        private void finish_export(bool exportSTL)
         {
             logger.Info("Completing URDF export");
             saveConfigTree(ActiveSWModel, BaseNode, false);
@@ -198,7 +204,7 @@ namespace SW2URDF
                 }
                 Exporter.mRobot = createRobotFromTreeView(treeView_linkProperties);
 
-                Exporter.exportRobot();
+                Exporter.exportRobot(exportSTL);
                 this.Close();
             }
         }
@@ -499,5 +505,6 @@ namespace SW2URDF
             }
         }
         #endregion
+
     }
 }
