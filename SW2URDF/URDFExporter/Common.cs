@@ -20,7 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Windows.Forms;
 using log4net;
 using SolidWorks.Interop.sldworks;
@@ -256,8 +258,6 @@ namespace SW2URDF
             Link.SWMainComponent = LoadSWComponent(model, Link.SWMainComponentPID);
             Link.SWcomponents = LoadSWComponents(model, Link.SWComponentPIDs);
             logger.Info("Loading components for " + Link.Name);
-            logger.Info("Main component ID " + Link.SWMainComponentPID);
-            logger.Info("Additional components " + string.Join("\n", Link.SWMainComponentPID));
 
             foreach (Link Child in Link.Children)
             {
@@ -291,7 +291,8 @@ namespace SW2URDF
             List<Component2> components = new List<Component2>();
             foreach (byte[] PID in PIDs)
             {
-                logger.Info("Loading component with PID " + PID);
+                string byteAsString = PIDToString(PID);
+                logger.Info("Loading component with PID " + byteAsString);
                 Component2 comp = LoadSWComponent(model, PID);
                 components.Add(comp);
                 logger.Info("Successfully loaded component " + comp.GetPathName());
@@ -303,40 +304,47 @@ namespace SW2URDF
         public static Component2 LoadSWComponent(ModelDoc2 model, byte[] PID)
         {
             int Errors = 0;
+            string byteAsString = PIDToString(PID);
             if (PID != null)
             {
                 return (Component2)model.Extension.GetObjectByPersistReference3(PID, out Errors);
             }
             else
             {
-                logger.Error("PID " + PID + " was null. Is the configuration corrupted?");
+                logger.Error("PID " + byteAsString + " was null. Is the configuration corrupted?");
             }
             if (Errors != 0)
             {
                 switch ((swPersistReferencedObjectStates_e)Errors)
                 {
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Deleted:
-                        logger.Error("The component associated with PID " + PID + " was deleted");
+                        logger.Error("The component associated with PID " + byteAsString + " was deleted");
                         break;
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Invalid:
-                        logger.Error("the component associated with PID " + PID + " was found to be invalid");
+                        logger.Error("the component associated with PID " + byteAsString + " was found to be invalid");
                         break;
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
-                        logger.Error("The component associated with PID " + PID + " is suppressed");
+                        logger.Error("The component associated with PID " + byteAsString + " is suppressed");
                         break;
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Ok:
                         break;
 
                     default:
-                        logger.Error("The component associated with PID " + PID +
+                        logger.Error("The component associated with PID " + byteAsString +
                             " was not loaded due to an unspecified error (" + Errors + ")");
                         break;
                 }
             }
             return null;
+        }
+
+        public static string PIDToString(byte[] pid)
+        {
+            return Encoding.ASCII.GetString(pid);
+            //return BitConverter.ToString(pid).Replace("-", "");
         }
     }
 }

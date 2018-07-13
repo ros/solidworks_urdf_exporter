@@ -46,7 +46,7 @@ namespace SW2URDF
             RollingFileAppender roller = new RollingFileAppender
             {
                 AppendToFile = false,
-                File = @"C:\\sw2urdf_logs\\sw2urdf.log",
+                File = Path.Combine(homeDir, "sw2urdf_logs", "sw2urdf.log"),
                 Layout = patternLayout,
                 MaxSizeRollBackups = 5,
                 MaximumFileSize = "10MB",
