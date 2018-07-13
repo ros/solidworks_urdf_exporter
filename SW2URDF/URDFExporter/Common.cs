@@ -30,10 +30,11 @@ namespace SW2URDF
 {
     public static class Common
     {
-        private readonly static ILog logger = Logger.GetLogger();
+        private static readonly ILog logger = Logger.GetLogger();
 
-        //Selects the components of a link. Helps highlight when the associated node is selected from the tree
-        public static void selectComponents(ModelDoc2 model, link Link, bool clearSelection, int mark = -1)
+        //Selects the components of a link. Helps highlight when the associated node is
+        // selected from the tree
+        public static void SelectComponents(ModelDoc2 model, Link Link, bool clearSelection, int mark = -1)
         {
             if (clearSelection)
             {
@@ -48,16 +49,17 @@ namespace SW2URDF
             }
             else
             {
-                selectComponents(model, Link.SWcomponents, false);
+                SelectComponents(model, Link.SWcomponents, false);
             }
-            foreach (link child in Link.Children)
+            foreach (Link child in Link.Children)
             {
-                selectComponents(model, child, false, mark);
+                SelectComponents(model, child, false, mark);
             }
         }
 
         //Selects components from a list.
-        public static void selectComponents(ModelDoc2 model, List<Component2> components, bool clearSelection = true, int mark = -1)
+        public static void SelectComponents(
+            ModelDoc2 model, List<Component2> components, bool clearSelection = true, int mark = -1)
         {
             if (clearSelection)
             {
@@ -72,9 +74,11 @@ namespace SW2URDF
             }
         }
 
-        //Finds the selected components and returns them, used when pulling the items from the selection box because it would be too hard
-        // for SolidWorks to allow you to access the selectionbox components directly.
-        public static void getSelectedComponents(ModelDoc2 model, List<Component2> Components, int Mark = -1)
+        //Finds the selected components and returns them, used when pulling the items from
+        // the selection box because it would be too hard for SolidWorks to allow you to
+        // access the selectionbox components directly.
+        public static void GetSelectedComponents(
+            ModelDoc2 model, List<Component2> Components, int Mark = -1)
         {
             SelectionMgr selectionManager = model.SelectionManager;
             Components.Clear();
@@ -89,9 +93,9 @@ namespace SW2URDF
             }
         }
 
-        //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
-        //remain hidden
-        public static List<string> findHiddenComponents(object[] varComp)
+        //finds all the hidden components, which will be added to a new display state. Also
+        // used when exporting STLs, so that hidden components remain hidden
+        public static List<string> FindHiddenComponents(object[] varComp)
         {
             List<string> hiddenComp = new List<string>();
             foreach (object obj in varComp)
@@ -106,7 +110,7 @@ namespace SW2URDF
         }
 
         //Except for an exclusionary list, this shows all the components
-        public static void showAllComponents(ModelDoc2 model, List<string> hiddenComponents)
+        public static void ShowAllComponents(ModelDoc2 model, List<string> hiddenComponents)
         {
             AssemblyDoc assyDoc = (AssemblyDoc)model;
             List<Component2> componentsToShow = new List<Component2>();
@@ -118,68 +122,68 @@ namespace SW2URDF
                     componentsToShow.Add(comp);
                 }
             }
-            showComponents(model, componentsToShow);
+            ShowComponents(model, componentsToShow);
         }
 
         //Shows the components in the list. Useful  for exporting STLs
-        public static void showComponents(ModelDoc2 model, List<Component2> components)
+        public static void ShowComponents(ModelDoc2 model, List<Component2> components)
         {
-            selectComponents(model, components, true);
+            SelectComponents(model, components, true);
             model.ShowComponent2();
         }
 
         //Shows the components in the link
-        public static void showComponents(ModelDoc2 model, link Link)
+        public static void ShowComponents(ModelDoc2 model, Link Link)
         {
-            selectComponents(model, Link, true);
+            SelectComponents(model, Link, true);
             model.ShowComponent2();
         }
 
         //Hides the components from a link
-        public static void hideComponents(ModelDoc2 model, link Link)
+        public static void HideComponents(ModelDoc2 model, Link Link)
         {
-            selectComponents(model, Link, true);
+            SelectComponents(model, Link, true);
             model.HideComponent2();
         }
 
         //Hides the components from a list
-        public static void hideComponents(ModelDoc2 model, List<Component2> components)
+        public static void HideComponents(ModelDoc2 model, List<Component2> components)
         {
-            selectComponents(model, components, true);
+            SelectComponents(model, components, true);
             model.HideComponent2();
         }
 
-        public static int getCount(link Link)
+        public static int GetCount(Link Link)
         {
             int count = 1;
-            foreach (link child in Link.Children)
+            foreach (Link child in Link.Children)
             {
-                count += getCount(child);
+                count += GetCount(child);
             }
             return count;
         }
 
-        public static int getCount(LinkNode node)
+        public static int GetCount(LinkNode node)
         {
             int count = 1;
             foreach (LinkNode child in node.Nodes)
             {
-                count += getCount(child);
+                count += GetCount(child);
             }
             return count;
         }
 
-        public static int getCount(TreeNodeCollection nodes)
+        public static int GetCount(TreeNodeCollection nodes)
         {
             int count = 0;
             foreach (LinkNode node in nodes)
             {
-                count += getCount(node);
+                count += GetCount(node);
             }
             return count;
         }
 
-        public static void retrieveSWComponentPIDs(ModelDoc2 model, LinkNode node)
+        public static void RetrieveSWComponentPIDs(ModelDoc2 model, LinkNode node)
         {
             if (node.Components != null)
             {
@@ -192,42 +196,42 @@ namespace SW2URDF
             }
             foreach (LinkNode child in node.Nodes)
             {
-                retrieveSWComponentPIDs(model, child);
+                RetrieveSWComponentPIDs(model, child);
             }
         }
 
-        public static void retrieveSWComponentPIDs(ModelDoc2 model, TreeView tree)
+        public static void RetrieveSWComponentPIDs(ModelDoc2 model, TreeView tree)
         {
             foreach (LinkNode node in tree.Nodes)
             {
-                retrieveSWComponentPIDs(model, node);
+                RetrieveSWComponentPIDs(model, node);
             }
         }
 
         //Converts the SW component references to PIDs
-        public static void saveSWComponents(ModelDoc2 model, link Link)
+        public static void SaveSWComponents(ModelDoc2 model, Link Link)
         {
             model.ClearSelection2(true);
-            byte[] PID = saveSWComponent(model, Link.SWMainComponent);
+            byte[] PID = SaveSWComponent(model, Link.SWMainComponent);
             if (PID != null)
             {
                 Link.SWMainComponentPID = PID;
             }
-            Link.SWComponentPIDs = saveSWComponents(model, Link.SWcomponents);
+            Link.SWComponentPIDs = SaveSWComponents(model, Link.SWcomponents);
 
-            foreach (link Child in Link.Children)
+            foreach (Link Child in Link.Children)
             {
-                saveSWComponents(model, Child);
+                SaveSWComponents(model, Child);
             }
         }
 
         //Converts SW component references to PIDs
-        public static List<byte[]> saveSWComponents(ModelDoc2 model, List<Component2> components)
+        public static List<byte[]> SaveSWComponents(ModelDoc2 model, List<Component2> components)
         {
             List<byte[]> PIDs = new List<byte[]>();
             foreach (Component2 component in components)
             {
-                byte[] PID = saveSWComponent(model, component);
+                byte[] PID = SaveSWComponent(model, component);
                 if (PID != null)
                 {
                     PIDs.Add(PID);
@@ -236,7 +240,7 @@ namespace SW2URDF
             return PIDs;
         }
 
-        public static byte[] saveSWComponent(ModelDoc2 model, Component2 component)
+        public static byte[] SaveSWComponent(ModelDoc2 model, Component2 component)
         {
             if (component != null)
             {
@@ -245,49 +249,50 @@ namespace SW2URDF
             return null;
         }
 
-        // Converts the PIDs to actual references to the components and proceeds recursively through the child links
-        public static void loadSWComponents(ModelDoc2 model, link Link)
+        // Converts the PIDs to actual references to the components and proceeds recursively
+        // through the child links
+        public static void LoadSWComponents(ModelDoc2 model, Link Link)
         {
-            Link.SWMainComponent = loadSWComponent(model, Link.SWMainComponentPID);
-            logger.Info("Loading components for " + Link.name);
+            Link.SWMainComponent = LoadSWComponent(model, Link.SWMainComponentPID);
+            Link.SWcomponents = LoadSWComponents(model, Link.SWComponentPIDs);
+            logger.Info("Loading components for " + Link.Name);
             logger.Info("Main component ID " + Link.SWMainComponentPID);
             logger.Info("Additional components " + string.Join("\n", Link.SWMainComponentPID));
 
-            Link.SWcomponents = loadSWComponents(model, Link.SWComponentPIDs);
-
-            foreach (link Child in Link.Children)
+            foreach (Link Child in Link.Children)
             {
-                loadSWComponents(model, Child);
+                LoadSWComponents(model, Child);
             }
         }
 
-        // Converts the PIDs to actual references to the components and proceeds recursively through the child nodes
-        public static void loadSWComponents(ModelDoc2 model, LinkNode node)
+        // Converts the PIDs to actual references to the components and proceeds recursively
+        // through the child nodes
+        public static void LoadSWComponents(ModelDoc2 model, LinkNode node)
         {
             logger.Info("Loading SolidWorks components for " +
-                node.linkName + " from " + model.GetPathName());
+                node.LinkName + " from " + model.GetPathName());
 
-            node.Components = loadSWComponents(model, node.ComponentPIDs);
+            node.Components = LoadSWComponents(model, node.ComponentPIDs);
             if (node.Components.Count != node.ComponentPIDs.Count)
             {
-                logger.Error("Link " + node.linkName + " did not fully load all components");
+                logger.Error("Link " + node.LinkName + " did not fully load all components");
             }
-            logger.Info("Loaded " + node.Components.Count + " components for link " + node.linkName);
+            logger.Info("Loaded " + node.Components.Count + " components for link " + node.LinkName);
 
             foreach (LinkNode Child in node.Nodes)
             {
-                loadSWComponents(model, Child);
+                LoadSWComponents(model, Child);
             }
         }
 
         // Converts the PIDs to actual references to the components
-        public static List<Component2> loadSWComponents(ModelDoc2 model, List<byte[]> PIDs)
+        public static List<Component2> LoadSWComponents(ModelDoc2 model, List<byte[]> PIDs)
         {
             List<Component2> components = new List<Component2>();
             foreach (byte[] PID in PIDs)
             {
                 logger.Info("Loading component with PID " + PID);
-                Component2 comp = loadSWComponent(model, PID);
+                Component2 comp = LoadSWComponent(model, PID);
                 components.Add(comp);
                 logger.Info("Successfully loaded component " + comp.GetPathName());
             }
@@ -295,7 +300,7 @@ namespace SW2URDF
         }
 
         // Converts a single PID to a Component2 object
-        public static Component2 loadSWComponent(ModelDoc2 model, byte[] PID)
+        public static Component2 LoadSWComponent(ModelDoc2 model, byte[] PID)
         {
             int Errors = 0;
             if (PID != null)
@@ -320,6 +325,9 @@ namespace SW2URDF
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
                         logger.Error("The component associated with PID " + PID + " is suppressed");
+                        break;
+
+                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Ok:
                         break;
 
                     default:

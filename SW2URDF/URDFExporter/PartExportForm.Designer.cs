@@ -127,7 +127,6 @@
             this.textBox_inertial_origin_x.Name = "textBox_inertial_origin_x";
             this.textBox_inertial_origin_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_x.TabIndex = 3;
-            this.textBox_inertial_origin_x.TextChanged += new System.EventHandler(this.textBox_inertial_origin_x_TextChanged);
             // 
             // textBox_inertial_origin_y
             // 
@@ -135,7 +134,6 @@
             this.textBox_inertial_origin_y.Name = "textBox_inertial_origin_y";
             this.textBox_inertial_origin_y.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_y.TabIndex = 4;
-            this.textBox_inertial_origin_y.TextChanged += new System.EventHandler(this.textBox_inertial_origin_y_TextChanged);
             // 
             // textBox_inertial_origin_z
             // 
@@ -143,7 +141,6 @@
             this.textBox_inertial_origin_z.Name = "textBox_inertial_origin_z";
             this.textBox_inertial_origin_z.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_z.TabIndex = 5;
-            this.textBox_inertial_origin_z.TextChanged += new System.EventHandler(this.textBox_inertial_origin_z_TextChanged);
             // 
             // textBox_mass
             // 
@@ -151,7 +148,6 @@
             this.textBox_mass.Name = "textBox_mass";
             this.textBox_mass.Size = new System.Drawing.Size(72, 20);
             this.textBox_mass.TabIndex = 6;
-            this.textBox_mass.TextChanged += new System.EventHandler(this.textBox_mass_TextChanged);
             // 
             // textBox_ixx
             // 
@@ -159,7 +155,6 @@
             this.textBox_ixx.Name = "textBox_ixx";
             this.textBox_ixx.Size = new System.Drawing.Size(65, 20);
             this.textBox_ixx.TabIndex = 7;
-            this.textBox_ixx.TextChanged += new System.EventHandler(this.textBox_ixx_TextChanged);
             // 
             // textBox_ixy
             // 
@@ -167,7 +162,6 @@
             this.textBox_ixy.Name = "textBox_ixy";
             this.textBox_ixy.Size = new System.Drawing.Size(65, 20);
             this.textBox_ixy.TabIndex = 8;
-            this.textBox_ixy.TextChanged += new System.EventHandler(this.textBox_ixy_TextChanged);
             // 
             // textBox_ixz
             // 
@@ -175,7 +169,6 @@
             this.textBox_ixz.Name = "textBox_ixz";
             this.textBox_ixz.Size = new System.Drawing.Size(65, 20);
             this.textBox_ixz.TabIndex = 9;
-            this.textBox_ixz.TextChanged += new System.EventHandler(this.textBox_ixz_TextChanged);
             // 
             // textBox_iyy
             // 
@@ -183,7 +176,6 @@
             this.textBox_iyy.Name = "textBox_iyy";
             this.textBox_iyy.Size = new System.Drawing.Size(65, 20);
             this.textBox_iyy.TabIndex = 10;
-            this.textBox_iyy.TextChanged += new System.EventHandler(this.textBox_iyy_TextChanged);
             // 
             // textBox_iyz
             // 
@@ -191,7 +183,6 @@
             this.textBox_iyz.Name = "textBox_iyz";
             this.textBox_iyz.Size = new System.Drawing.Size(65, 20);
             this.textBox_iyz.TabIndex = 11;
-            this.textBox_iyz.TextChanged += new System.EventHandler(this.textBox_iyz_TextChanged);
             // 
             // textBox_izz
             // 
@@ -199,7 +190,6 @@
             this.textBox_izz.Name = "textBox_izz";
             this.textBox_izz.Size = new System.Drawing.Size(65, 20);
             this.textBox_izz.TabIndex = 12;
-            this.textBox_izz.TextChanged += new System.EventHandler(this.textBox_izz_TextChanged);
             // 
             // label2
             // 
@@ -324,7 +314,6 @@
             this.textBox_inertial_origin_yaw.Name = "textBox_inertial_origin_yaw";
             this.textBox_inertial_origin_yaw.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_yaw.TabIndex = 32;
-            this.textBox_inertial_origin_yaw.TextChanged += new System.EventHandler(this.textBox_inertial_origin_yaw_TextChanged);
             // 
             // textBox_inertial_origin_pitch
             // 
@@ -332,7 +321,6 @@
             this.textBox_inertial_origin_pitch.Name = "textBox_inertial_origin_pitch";
             this.textBox_inertial_origin_pitch.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_pitch.TabIndex = 31;
-            this.textBox_inertial_origin_pitch.TextChanged += new System.EventHandler(this.textBox_inertial_origin_pitch_TextChanged);
             // 
             // textBox_inertial_origin_roll
             // 
@@ -340,7 +328,6 @@
             this.textBox_inertial_origin_roll.Name = "textBox_inertial_origin_roll";
             this.textBox_inertial_origin_roll.Size = new System.Drawing.Size(65, 20);
             this.textBox_inertial_origin_roll.TabIndex = 30;
-            this.textBox_inertial_origin_roll.TextChanged += new System.EventHandler(this.textBox_inertial_origin_roll_TextChanged);
             // 
             // label18
             // 
@@ -386,7 +373,7 @@
             this.button_texturebrowse.TabIndex = 59;
             this.button_texturebrowse.Text = "Browse...";
             this.button_texturebrowse.UseVisualStyleBackColor = true;
-            this.button_texturebrowse.Click += new System.EventHandler(this.button_texturebrowse_Click);
+            this.button_texturebrowse.Click += new System.EventHandler(this.ButtonTextureBrowseClick);
             // 
             // textBox_texture
             // 
@@ -394,7 +381,6 @@
             this.textBox_texture.Name = "textBox_texture";
             this.textBox_texture.Size = new System.Drawing.Size(352, 20);
             this.textBox_texture.TabIndex = 58;
-            this.textBox_texture.TextChanged += new System.EventHandler(this.textBox_texture_TextChanged);
             // 
             // label26
             // 
@@ -412,7 +398,6 @@
             this.domainUpDown_alpha.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_alpha.TabIndex = 57;
             this.domainUpDown_alpha.Text = "1";
-            this.domainUpDown_alpha.SelectedItemChanged += new System.EventHandler(this.domainUpDown_alpha_SelectedItemChanged);
             // 
             // label25
             // 
@@ -456,7 +441,6 @@
             this.textBox_visual_origin_z.Name = "textBox_visual_origin_z";
             this.textBox_visual_origin_z.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_z.TabIndex = 35;
-            this.textBox_visual_origin_z.TextChanged += new System.EventHandler(this.textBox_visual_origin_z_TextChanged);
             // 
             // label31
             // 
@@ -491,7 +475,6 @@
             this.textBox_visual_origin_y.Name = "textBox_visual_origin_y";
             this.textBox_visual_origin_y.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_y.TabIndex = 34;
-            this.textBox_visual_origin_y.TextChanged += new System.EventHandler(this.textBox_visual_origin_y_TextChanged);
             // 
             // domainUpDown_blue
             // 
@@ -500,7 +483,6 @@
             this.domainUpDown_blue.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_blue.TabIndex = 52;
             this.domainUpDown_blue.Text = "1";
-            this.domainUpDown_blue.SelectedItemChanged += new System.EventHandler(this.domainUpDown_blue_SelectedItemChanged);
             // 
             // textBox_visual_origin_x
             // 
@@ -508,7 +490,6 @@
             this.textBox_visual_origin_x.Name = "textBox_visual_origin_x";
             this.textBox_visual_origin_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_x.TabIndex = 33;
-            this.textBox_visual_origin_x.TextChanged += new System.EventHandler(this.textBox_visual_origin_x_TextChanged);
             // 
             // domainUpDown_green
             // 
@@ -517,7 +498,6 @@
             this.domainUpDown_green.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_green.TabIndex = 51;
             this.domainUpDown_green.Text = "1";
-            this.domainUpDown_green.SelectedItemChanged += new System.EventHandler(this.domainUpDown_green_SelectedItemChanged);
             // 
             // label22
             // 
@@ -535,7 +515,6 @@
             this.domainUpDown_red.Size = new System.Drawing.Size(60, 20);
             this.domainUpDown_red.TabIndex = 50;
             this.domainUpDown_red.Text = "1";
-            this.domainUpDown_red.SelectedItemChanged += new System.EventHandler(this.domainUpDown_red_SelectedItemChanged);
             // 
             // label21
             // 
@@ -571,7 +550,6 @@
             this.comboBox_materials.Name = "comboBox_materials";
             this.comboBox_materials.Size = new System.Drawing.Size(121, 21);
             this.comboBox_materials.TabIndex = 48;
-            this.comboBox_materials.SelectedIndexChanged += new System.EventHandler(this.comboBox_materials_SelectedIndexChanged);
             // 
             // textBox_visual_origin_roll
             // 
@@ -579,7 +557,6 @@
             this.textBox_visual_origin_roll.Name = "textBox_visual_origin_roll";
             this.textBox_visual_origin_roll.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_roll.TabIndex = 43;
-            this.textBox_visual_origin_roll.TextChanged += new System.EventHandler(this.textBox_visual_origin_roll_TextChanged);
             // 
             // label28
             // 
@@ -596,7 +573,6 @@
             this.textBox_visual_origin_pitch.Name = "textBox_visual_origin_pitch";
             this.textBox_visual_origin_pitch.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_pitch.TabIndex = 44;
-            this.textBox_visual_origin_pitch.TextChanged += new System.EventHandler(this.textBox_visual_origin_pitch_TextChanged);
             // 
             // textBox_visual_origin_yaw
             // 
@@ -604,7 +580,6 @@
             this.textBox_visual_origin_yaw.Name = "textBox_visual_origin_yaw";
             this.textBox_visual_origin_yaw.Size = new System.Drawing.Size(65, 20);
             this.textBox_visual_origin_yaw.TabIndex = 45;
-            this.textBox_visual_origin_yaw.TextChanged += new System.EventHandler(this.textBox_visual_origin_yaw_TextChanged);
             // 
             // button_cancel
             // 
@@ -614,7 +589,7 @@
             this.button_cancel.TabIndex = 65;
             this.button_cancel.Text = "Cancel";
             this.button_cancel.UseVisualStyleBackColor = true;
-            this.button_cancel.Click += new System.EventHandler(this.button_cancel_Click);
+            this.button_cancel.Click += new System.EventHandler(this.ButtonCancelClick);
             // 
             // button_finish
             // 
@@ -624,7 +599,7 @@
             this.button_finish.TabIndex = 64;
             this.button_finish.Text = "Finish";
             this.button_finish.UseVisualStyleBackColor = true;
-            this.button_finish.Click += new System.EventHandler(this.button_finish_Click);
+            this.button_finish.Click += new System.EventHandler(this.ButtonFinishClick);
             // 
             // label37
             // 
@@ -659,7 +634,6 @@
             this.textBox_collision_origin_z.Name = "textBox_collision_origin_z";
             this.textBox_collision_origin_z.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_z.TabIndex = 52;
-            this.textBox_collision_origin_z.TextChanged += new System.EventHandler(this.textBox_collision_origin_z_TextChanged);
             // 
             // label40
             // 
@@ -676,7 +650,6 @@
             this.textBox_collision_origin_y.Name = "textBox_collision_origin_y";
             this.textBox_collision_origin_y.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_y.TabIndex = 51;
-            this.textBox_collision_origin_y.TextChanged += new System.EventHandler(this.textBox_collision_origin_y_TextChanged);
             // 
             // textBox_collision_origin_x
             // 
@@ -684,7 +657,6 @@
             this.textBox_collision_origin_x.Name = "textBox_collision_origin_x";
             this.textBox_collision_origin_x.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_x.TabIndex = 50;
-            this.textBox_collision_origin_x.TextChanged += new System.EventHandler(this.textBox_collision_origin_x_TextChanged);
             // 
             // label41
             // 
@@ -719,7 +691,6 @@
             this.textBox_collision_origin_roll.Name = "textBox_collision_origin_roll";
             this.textBox_collision_origin_roll.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_roll.TabIndex = 60;
-            this.textBox_collision_origin_roll.TextChanged += new System.EventHandler(this.textBox_collision_origin_roll_TextChanged);
             // 
             // textBox_collision_origin_pitch
             // 
@@ -727,7 +698,6 @@
             this.textBox_collision_origin_pitch.Name = "textBox_collision_origin_pitch";
             this.textBox_collision_origin_pitch.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_pitch.TabIndex = 61;
-            this.textBox_collision_origin_pitch.TextChanged += new System.EventHandler(this.textBox_collision_origin_pitch_TextChanged);
             // 
             // textBox_collision_origin_yaw
             // 
@@ -735,7 +705,6 @@
             this.textBox_collision_origin_yaw.Name = "textBox_collision_origin_yaw";
             this.textBox_collision_origin_yaw.Size = new System.Drawing.Size(65, 20);
             this.textBox_collision_origin_yaw.TabIndex = 62;
-            this.textBox_collision_origin_yaw.TextChanged += new System.EventHandler(this.textBox_collision_origin_yaw_TextChanged);
             // 
             // groupBox1
             // 
@@ -949,7 +918,6 @@
             this.textBox_save_as.Name = "textBox_save_as";
             this.textBox_save_as.Size = new System.Drawing.Size(304, 20);
             this.textBox_save_as.TabIndex = 72;
-            this.textBox_save_as.TextChanged += new System.EventHandler(this.textBox_save_as_TextChanged);
             // 
             // button_savename_browse
             // 
@@ -959,11 +927,10 @@
             this.button_savename_browse.TabIndex = 73;
             this.button_savename_browse.Text = "Browse...";
             this.button_savename_browse.UseVisualStyleBackColor = true;
-            this.button_savename_browse.Click += new System.EventHandler(this.button_savename_browse_Click);
+            this.button_savename_browse.Click += new System.EventHandler(this.ButtonSaveNameBrowseClick);
             // 
             // saveFileDialog_save_as
             // 
-            this.saveFileDialog_save_as.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_save_as_FileOk);
             // 
             // checkBox_rotate
             // 
@@ -994,7 +961,7 @@
             this.Controls.Add(this.button_finish);
             this.Name = "PartExportForm";
             this.Text = "SolidWorks Part to URDF Link Exporter";
-            this.Load += new System.EventHandler(this.PartExportForm_Load);
+            this.Load += new System.EventHandler(this.PartExportFormLoad);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
