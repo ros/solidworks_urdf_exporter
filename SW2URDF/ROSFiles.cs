@@ -113,7 +113,8 @@ namespace SW2URDF
         private readonly string nodeOutput;
         private readonly bool nodeRespawn;
 
-        public LaunchNode(string name, string pkg, string type, string args = "", string output = "", bool respawn = false)
+        public LaunchNode(string name, string pkg, string type, string args = "",
+            string output = "", bool respawn = false)
         {
             nodeName = name;
             nodePkg = pkg;
@@ -181,9 +182,14 @@ namespace SW2URDF
             robotURDF = URDFName;
 
             elements.Add(new LaunchInclude("$(find gazebo_ros)/launch/empty_world.launch"));
-            elements.Add(new LaunchNode("tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
-            elements.Add(new LaunchNode("spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + package + ")/urdf/" + robotURDF + " -urdf -model " + model, "screen"));
-            elements.Add(new LaunchNode("fake_joint_calibration", "rostopic", "rostopic", "pub /calibrated std_msgs/Bool true"));
+            elements.Add(new LaunchNode(
+                "tf_footprint_base", "tf", "static_transform_publisher", "0 0 0 0 0 0 base_link base_footprint 40"));
+            elements.Add(new LaunchNode(
+                "spawn_model", "gazebo_ros", "spawn_model", "-file $(find " + package +
+                ")/urdf/" + robotURDF + " -urdf -model " + model, "screen"));
+            elements.Add(new LaunchNode(
+                "fake_joint_calibration", "rostopic", "rostopic",
+                "pub /calibrated std_msgs/Bool true"));
         }
 
         public void WriteFile(string dir)

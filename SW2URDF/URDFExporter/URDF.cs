@@ -49,7 +49,8 @@ namespace SW2URDF
         }
     }
 
-    //Not sure why I have a class that everything else inherits from that is empty. But maybe we'll want to add things to it
+    //Not sure why I have a class that everything else inherits from that is empty.
+    // But maybe we'll want to add things to it
     public class URDFElement
     {
         protected static readonly log4net.ILog logger = Logger.GetLogger();
@@ -86,13 +87,15 @@ namespace SW2URDF
                 double[] valueArray = (double[])value;
                 foreach (double d in valueArray)
                 {
-                    valueString += d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
+                    valueString +=
+                        d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
                 }
                 valueString = valueString.Trim();
             }
             else if (value.GetType() == typeof(double))
             {
-                valueString = ((Double)value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
+                valueString =
+                    ((Double)value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
             }
             else if (value.GetType() == typeof(string))
             {
@@ -305,7 +308,9 @@ namespace SW2URDF
                 {
                     jointName = node.Link.Joint.Name;
 
-                    if (node.Link.Joint.Axis.X == 0 && node.Link.Joint.Axis.Y == 0 && node.Link.Joint.Axis.Z == 0)
+                    if (node.Link.Joint.Axis.X == 0 &&
+                        node.Link.Joint.Axis.Y == 0 &&
+                        node.Link.Joint.Axis.Z == 0)
                     {
                         axisName = "None";
                     }
@@ -499,7 +504,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll, TextBox boxPitch, TextBox boxYaw, string format)
+        public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll,
+            TextBox boxPitch, TextBox boxYaw, string format)
         {
             if (XYZAttribute.value != null)
             {
@@ -524,11 +530,14 @@ namespace SW2URDF
             }
         }
 
-        public void Update(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll, TextBox boxPitch, TextBox boxYaw
+        public void Update(TextBox boxX, TextBox boxY, TextBox boxZ,
+            TextBox boxRoll, TextBox boxPitch, TextBox boxYaw
             )
         {
             double value;
-            if (String.IsNullOrWhiteSpace(boxX.Text) && String.IsNullOrWhiteSpace(boxY.Text) && String.IsNullOrWhiteSpace(boxZ.Text))
+            if (String.IsNullOrWhiteSpace(boxX.Text) &&
+                String.IsNullOrWhiteSpace(boxY.Text) &&
+                String.IsNullOrWhiteSpace(boxZ.Text))
             {
                 XYZ = null;
             }
@@ -539,7 +548,9 @@ namespace SW2URDF
                 Z = (Double.TryParse(boxZ.Text, out value)) ? value : 0;
             }
 
-            if (String.IsNullOrWhiteSpace(boxRoll.Text) && String.IsNullOrWhiteSpace(boxPitch.Text) && String.IsNullOrWhiteSpace(boxYaw.Text))
+            if (String.IsNullOrWhiteSpace(boxRoll.Text) &&
+                String.IsNullOrWhiteSpace(boxPitch.Text) &&
+                String.IsNullOrWhiteSpace(boxYaw.Text))
             {
                 RPY = null;
             }
@@ -746,7 +757,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz, TextBox boxIyy, TextBox boxIyz, TextBox boxIzz, string format)
+        public void FillBoxes(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz,
+            TextBox boxIyy, TextBox boxIyz, TextBox boxIzz, string format)
         {
             boxIxx.Text = Ixx.ToString(format);
             boxIxy.Text = Ixy.ToString(format);
@@ -756,7 +768,8 @@ namespace SW2URDF
             boxIzz.Text = Izz.ToString(format);
         }
 
-        public void Update(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz, TextBox boxIyy, TextBox boxIyz, TextBox boxIzz)
+        public void Update(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz,
+            TextBox boxIyy, TextBox boxIyz, TextBox boxIzz)
         {
             double value = 0;
             Ixx = (Double.TryParse(boxIxx.Text, out value)) ? value : 0;
@@ -978,7 +991,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(DomainUpDown boxRed, DomainUpDown boxGreen, DomainUpDown boxBlue, DomainUpDown boxAlpha, string format)
+        public void FillBoxes(DomainUpDown boxRed, DomainUpDown boxGreen,
+            DomainUpDown boxBlue, DomainUpDown boxAlpha, string format)
         {
             double[] rgba = (double[])RGBAAttribute.value;
             boxRed.Text = Red.ToString(format);
@@ -987,7 +1001,8 @@ namespace SW2URDF
             boxAlpha.Text = Alpha.ToString(format);
         }
 
-        public void Update(DomainUpDown boxRed, DomainUpDown boxGreen, DomainUpDown boxBlue, DomainUpDown boxAlpha)
+        public void Update(DomainUpDown boxRed, DomainUpDown boxGreen,
+            DomainUpDown boxBlue, DomainUpDown boxAlpha)
         {
             double value;
             Red = (Double.TryParse(boxRed.Text, out value)) ? value : 0;
@@ -1443,7 +1458,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox boxLower, TextBox boxUpper, TextBox boxEffort, TextBox boxVelocity, string format)
+        public void FillBoxes(TextBox boxLower, TextBox boxUpper,
+            TextBox boxEffort, TextBox boxVelocity, string format)
         {
             if (LowerAttribute != null)
             {
@@ -1459,7 +1475,8 @@ namespace SW2URDF
             boxVelocity.Text = Velocity.ToString(format);
         }
 
-        public void SetValues(TextBox boxLower, TextBox boxUpper, TextBox boxEffort, TextBox boxVelocity)
+        public void SetValues(TextBox boxLower, TextBox boxUpper,
+            TextBox boxEffort, TextBox boxVelocity)
         {
             double value;
             if (String.IsNullOrWhiteSpace(boxLower.Text))
@@ -1773,7 +1790,8 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public void FillBoxes(TextBox boxLower, TextBox boxUpper, TextBox boxPosition, TextBox boxVelocity, string format)
+        public void FillBoxes(TextBox boxLower, TextBox boxUpper,
+            TextBox boxPosition, TextBox boxVelocity, string format)
         {
             if (SoftLowerAttribute != null)
             {
@@ -1793,7 +1811,8 @@ namespace SW2URDF
             boxVelocity.Text = KVelocity.ToString(format);
         }
 
-        public void SetValues(TextBox boxLower, TextBox boxUpper, TextBox boxPosition, TextBox boxVelocity)
+        public void SetValues(TextBox boxLower, TextBox boxUpper,
+            TextBox boxPosition, TextBox boxVelocity)
         {
             double value;
             if (String.IsNullOrWhiteSpace(boxLower.Text))
@@ -1870,7 +1889,8 @@ namespace SW2URDF
 
             dependencies = new Dependencies(
                 new String[] { "catkin" },
-                new String[] { "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
+                new String[] {
+                    "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
 
             author = new Author("TODO");
 
@@ -2013,8 +2033,8 @@ namespace SW2URDF
 
     #region Windows Forms Derived classes
 
-    //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so that information can be passed around
-    //from the TreeView itself.
+    //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so
+    // that information can be passed around from the TreeView itself.
     public class LinkNode : TreeNode
     {
         public Link Link

@@ -29,7 +29,8 @@ namespace SW2URDF
 {
     public static class Common
     {
-        //Selects the components of a link. Helps highlight when the associated node is selected from the tree
+        //Selects the components of a link. Helps highlight when the associated node is
+        // selected from the tree
         public static void SelectComponents(ModelDoc2 model, Link Link, bool clearSelection, int mark = -1)
         {
             if (clearSelection)
@@ -54,7 +55,8 @@ namespace SW2URDF
         }
 
         //Selects components from a list.
-        public static void SelectComponents(ModelDoc2 model, List<Component2> components, bool clearSelection = true, int mark = -1)
+        public static void SelectComponents(
+            ModelDoc2 model, List<Component2> components, bool clearSelection = true, int mark = -1)
         {
             if (clearSelection)
             {
@@ -69,9 +71,11 @@ namespace SW2URDF
             }
         }
 
-        //Finds the selected components and returns them, used when pulling the items from the selection box because it would be too hard
-        // for SolidWorks to allow you to access the selectionbox components directly.
-        public static void GetSelectedComponents(ModelDoc2 model, List<Component2> Components, int Mark = -1)
+        //Finds the selected components and returns them, used when pulling the items from
+        // the selection box because it would be too hard for SolidWorks to allow you to
+        // access the selectionbox components directly.
+        public static void GetSelectedComponents(
+            ModelDoc2 model, List<Component2> Components, int Mark = -1)
         {
             SelectionMgr selectionManager = model.SelectionManager;
             Components.Clear();
@@ -86,8 +90,8 @@ namespace SW2URDF
             }
         }
 
-        //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
-        //remain hidden
+        //finds all the hidden components, which will be added to a new display state. Also
+        // used when exporting STLs, so that hidden components remain hidden
         public static List<string> FindHiddenComponents(object[] varComp)
         {
             List<string> hiddenComp = new List<string>();
@@ -242,7 +246,8 @@ namespace SW2URDF
             return null;
         }
 
-        // Converts the PIDs to actual references to the components and proceeds recursively through the child links
+        // Converts the PIDs to actual references to the components and proceeds recursively
+        // through the child links
         public static void LoadSWComponents(ModelDoc2 model, Link Link)
         {
             Link.SWMainComponent = LoadSWComponent(model, Link.SWMainComponentPID);
@@ -253,7 +258,8 @@ namespace SW2URDF
             }
         }
 
-        // Converts the PIDs to actual references to the components and proceeds recursively through the child nodes
+        // Converts the PIDs to actual references to the components and proceeds recursively
+        // through the child nodes
         public static void LoadSWComponents(ModelDoc2 model, LinkNode node)
         {
             node.Components = LoadSWComponents(model, node.ComponentPIDs);

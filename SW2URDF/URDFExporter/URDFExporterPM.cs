@@ -144,22 +144,26 @@ namespace SW2URDF
 
             //Set the variables for the page
             PageTitle = "URDF Exporter";
-            //options = (int)swPropertyManagerButtonTypes_e.swPropertyManager_OkayButton + (int)swPropertyManagerButtonTypes_e.swPropertyManager_CancelButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_LockedPage + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_PushpinButton;
-            options = (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_OkayButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_CancelButton + (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_HandleKeystrokes;
+            options = (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_OkayButton +
+                (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_CancelButton +
+                (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_HandleKeystrokes;
 
             //Create the PropertyManager page
-            PMPage = (PropertyManagerPage2)swApp.CreatePropertyManagerPage(PageTitle, (int)options, this, ref longerrors);
+            PMPage = (PropertyManagerPage2)swApp.CreatePropertyManagerPage(
+                PageTitle, (int)options, this, ref longerrors);
 
             //Make sure that the page was created properly
             if (longerrors == (int)swPropertyManagerPageStatus_e.swPropertyManagerPage_Okay)
             {
-                SetupPropertyManagerPage(ref caption, ref tip, ref options, ref controlType, ref alignment);
+                SetupPropertyManagerPage(ref caption, ref tip, ref options,
+                    ref controlType, ref alignment);
             }
             else
             {
                 //If the page is not created
                 logger.Error("An error occurred while attempting to create the PropertyManager Page\nError: " + longerrors);
-                MessageBox.Show("There was a problem setting up the property manager: \nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem setting up the property manager: " +
+                    "\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
 
             #endregion Create and instantiate components of PM page
@@ -167,19 +171,24 @@ namespace SW2URDF
 
         private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
-            logger.Warn("Exception encountered in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), e.Exception);
+            logger.Warn("Exception encountered in URDF configuration form\n" +
+                "Email your maintainer with the log file found at " + Logger.GetFileName(),
+                e.Exception);
         }
 
         private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            logger.Error("Unhandled exception in URDF configuration form\nEmail your maintainer with the log file found at " + Logger.GetFileName(), (Exception)e.ExceptionObject);
+            logger.Error("Unhandled exception in URDF configuration form\n" +
+                "Email your maintainer with the log file found at " + Logger.GetFileName(),
+                (Exception)e.ExceptionObject);
         }
 
         #region Implemented Property Manager Page Handler Methods
 
         void IPropertyManagerPage2Handler9.AfterActivation()
         {
-            //Turns the selection box blue so that selected components are added to the PMPage selection box
+            //Turns the selection box blue so that selected components are added to the PMPage
+            // selection box
             PMSelection.SetSelectionFocus();
         }
 
@@ -193,10 +202,12 @@ namespace SW2URDF
                     PMPage.Close(true); //It saves automatically when sending Okay as true;
                     AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
-                    //This call can be a real sink of processing time if the model is large. Unfortunately there isn't a way around it I believe.
+                    //This call can be a real sink of processing time if the model is large.
+                    //Unfortunately there isn't a way around it I believe.
                     int result = assy.ResolveAllLightWeightComponents(true);
 
-                    // If the user confirms to resolve the components and they are successfully resolved we can continue
+                    // If the user confirms to resolve the components and they are successfully
+                    // resolved we can continue
                     if (result == (int)swComponentResolveStatus_e.swResolveOk)
                     {
                         // Builds the links and joints from the PMPage configuration
@@ -209,21 +220,27 @@ namespace SW2URDF
                         exportForm.Exporter = Exporter;
                         exportForm.Show();
                     }
-                    else if (result == (int)swComponentResolveStatus_e.swResolveError || result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
+                    else if (result == (int)swComponentResolveStatus_e.swResolveError ||
+                        result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
                     {
                         logger.Warn("Resolving components failed. Warning user to do so on their own");
-                        MessageBox.Show("Resolving components failed. In order to export to URDF, this tool needs all components to be resolved. Try resolving lightweight components manually before attempting to export again");
+                        MessageBox.Show("Resolving components failed. In order to export to URDF, " +
+                            " this tool needs all components to be resolved. Try resolving " +
+                            "lightweight components manually before attempting to export again");
                     }
                     else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
                     {
                         logger.Warn("Components were not resolved by user");
-                        MessageBox.Show("In order to export to URDF, this tool needs all components to be resolved. You can resolve them manually or try exporting again");
+                        MessageBox.Show("In order to export to URDF, this tool needs all " +
+                            "components to be resolved. You can resolve them manually or try " +
+                            "exporting again");
                     }
                 }
             }
         }
 
-        // Called when a PropertyManagerPageButton is pressed. In our case, that's only the export button for now
+        // Called when a PropertyManagerPageButton is pressed. In our case, that's only the
+        // export button for now
         void IPropertyManagerPage2Handler9.OnButtonPress(int Id)
         {
             try
@@ -233,7 +250,8 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Exception caught handling button press " + Id, e);
-                MessageBox.Show("There was a problem with the configuration property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the configuration property manager: \n\"" +
+                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -241,12 +259,14 @@ namespace SW2URDF
         {
             try
             {
-                if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
+                if (Reason ==
+                    (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Cancel)
                 {
                     logger.Info("Configuration canceled");
                     SaveActiveNode();
                 }
-                else if (Reason == (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
+                else if (Reason ==
+                    (int)swPropertyManagerPageCloseReasons_e.swPropertyManagerPageClose_Okay)
                 {
                     logger.Info("Configuration saved");
                     SaveActiveNode();
@@ -256,7 +276,8 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Exception caught on close ", e);
-                MessageBox.Show("There was a problem closing the property manager: \n\"" + e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem closing the property manager: \n\"" +
+                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -303,7 +324,8 @@ namespace SW2URDF
             PMPage.SetCursor((int)swPropertyManagerPageCursors_e.swPropertyManagerPageCursors_Advance);
         }
 
-        bool IPropertyManagerPage2Handler9.OnSubmitSelection(int Id, object Selection, int SelType, ref string ItemText)
+        bool IPropertyManagerPage2Handler9.OnSubmitSelection(
+            int Id, object Selection, int SelType, ref string ItemText)
         {
             // This method must return true for selections to occur
             return true;
@@ -328,7 +350,8 @@ namespace SW2URDF
 
         #region TreeView handler methods
 
-        // Upon selection of a node, the node displayed on the PMPage is saved and the selected one is then set
+        // Upon selection of a node, the node displayed on the PMPage is saved and the
+        // selected one is then set
         private void TreeAfterSelect(object sender, TreeViewEventArgs e)
         {
             try
@@ -342,7 +365,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view AfterSelect ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -378,7 +403,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view add child ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -393,12 +420,15 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view remove child ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
         // The callback for the configuration page context menu 'Rename Child' option
-        // This isn't really working right now, so the option was deactivated from the context menu
+        // This isn't really working right now, so the option was deactivated from the
+        // context menu
         private void RenameChildClick(object sender, EventArgs e)
         {
             try
@@ -411,7 +441,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view rename child ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -424,7 +456,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -442,7 +476,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag Over ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -460,7 +496,9 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view DragEnter ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -520,11 +558,13 @@ namespace SW2URDF
                     LinkNode ancestorNode = targetNode;
                     for (int i = 0; i < levelDiff; i++)
                     {
-                        //Ascend up the target's node (new parent) parent tree the level difference to get the ancestoral node that is at the same level
-                        //as the dragged node (the new child)
+                        //Ascend up the target's node (new parent) parent tree the level
+                        // difference to get the ancestoral node that is at the same level
+                        // as the dragged node (the new child)
                         ancestorNode = (LinkNode)ancestorNode.Parent;
                     }
-                    // If the dragged node is in the same line as the target node, then the real kungfu begins
+                    // If the dragged node is in the same line as the target node, then the real
+                    // kungfu begins
                     if (ancestorNode == draggedNode)
                     {
                         LinkNode newParent = targetNode;
@@ -558,50 +598,61 @@ namespace SW2URDF
             catch (Exception ex)
             {
                 logger.Error("Exception caught on tree view Drag Drop ", ex);
-                MessageBox.Show("There was a problem with the property manager: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("There was a problem with the property manager: \n\"" +
+                    ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
         #endregion TreeView handler methods
 
         //A method that sets up the Property Manager Page
-        private void SetupPropertyManagerPage(ref string caption, ref string tip, ref long options, ref int controlType, ref int alignment)
+        private void SetupPropertyManagerPage(ref string caption, ref string tip,
+            ref long options, ref int controlType, ref int alignment)
         {
             //Begin adding the controls to the page
             //Create the group box
             caption = "Configure and Organize Links";
-            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible + (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
+            options = (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Visible +
+                (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
             PMGroup = (PropertyManagerPageGroup)PMPage.AddGroupBox(GroupID, caption, (int)options);
 
             //Create the parent link label (static)
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Parent Link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the parent link name label, the one that is updated
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelParentLink = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
+            PMLabelParentLink = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the link name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Link Name";
             tip = "Enter the name of the link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the link name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
             caption = "base_link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the link";
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMTextBoxLinkName = (PropertyManagerPageTextbox)PMGroup.AddControl(TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMTextBoxLinkName = (PropertyManagerPageTextbox)PMGroup.AddControl(
+                TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -609,7 +660,8 @@ namespace SW2URDF
             tip = "Enter the name of the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelJointName = (PropertyManagerPageLabel)PMGroup.AddControl(LabelJointNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelJointName = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelJointNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
@@ -617,7 +669,8 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the joint";
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMTextBoxJointName = (PropertyManagerPageTextbox)PMGroup.AddControl(TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
+            PMTextBoxJointName = (PropertyManagerPageTextbox)PMGroup.AddControl(
+                TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the global origin coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -625,7 +678,8 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelGlobalCoordsys = (PropertyManagerPageLabel)PMGroup.AddControl(IDLabelGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelGlobalCoordsys = (PropertyManagerPageLabel)PMGroup.AddControl(
+                IDLabelGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -633,8 +687,10 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxGlobalCoordsys = (PropertyManagerPageCombobox)PMGroup.AddControl(IDGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
-            PMComboBoxGlobalCoordsys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxGlobalCoordsys = (PropertyManagerPageCombobox)PMGroup.AddControl(
+                IDGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxGlobalCoordsys.Style =
+                (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref coordinate sys label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -642,7 +698,8 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = 0;
-            PMLabelCoordSys = (PropertyManagerPageLabel)PMGroup.AddControl(LabelCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelCoordSys = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -650,8 +707,10 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = 0;
-            PMComboBoxCoordSys = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            PMComboBoxCoordSys.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxCoordSys = (PropertyManagerPageCombobox)PMGroup.AddControl(
+                ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxCoordSys.Style =
+                (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the ref axis label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -659,7 +718,8 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelAxes = (PropertyManagerPageLabel)PMGroup.AddControl(LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelAxes = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for axes
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -667,8 +727,10 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxAxes = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            PMComboBoxAxes.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxAxes = (PropertyManagerPageCombobox)PMGroup.AddControl(
+                ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxAxes.Style =
+                (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
 
             //Create the joint type label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -676,7 +738,8 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelJointType = (PropertyManagerPageLabel)PMGroup.AddControl(LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMLabelJointType = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for joint type
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Combobox;
@@ -684,17 +747,22 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxJointType = (PropertyManagerPageCombobox)PMGroup.AddControl(ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            PMComboBoxJointType.Style = (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
-            PMComboBoxJointType.AddItems(new string[] { "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
+            PMComboBoxJointType = (PropertyManagerPageCombobox)PMGroup.AddControl(
+                ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComboBoxJointType.Style =
+                (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
+            PMComboBoxJointType.AddItems(new string[] {
+                "Automatically Detect", "continuous", "revolute", "prismatic", "fixed" });
 
             //Create the selection box label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Link Components";
             tip = "Select components associated with this link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl(
+                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create selection box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
@@ -702,7 +770,8 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             tip = "Select components associated with this link";
-            PMSelection = (PropertyManagerPageSelectionbox)PMGroup.AddControl(SelectionID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMSelection = (PropertyManagerPageSelectionbox)PMGroup.AddControl(
+                SelectionID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             swSelectType_e[] filters = new swSelectType_e[1];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
@@ -721,27 +790,35 @@ namespace SW2URDF
             caption = "Number of child links";
             tip = "Enter the number of child links and they will be automatically added";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelChildCount = (PropertyManagerPageLabel)PMGroup.AddControl(LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMLabelChildCount = (PropertyManagerPageLabel)PMGroup.AddControl
+                (LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the number box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the number of child links and they will be automatically added";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled + (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMNumberBoxChildCount = PMGroup.AddControl(NumBoxChildCountID, (short)controlType, caption, (short)alignment, (int)options, tip);
-            PMNumberBoxChildCount.SetRange2((int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
+                (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMNumberBoxChildCount = PMGroup.AddControl(
+                NumBoxChildCountID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMNumberBoxChildCount.SetRange2(
+                (int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
             PMNumberBoxChildCount.Value = 0;
 
-            //pm_Button_save = pm_Group.AddControl(Button_save_ID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Build Link", 0, (int)options, "");
-            PMButtonExport = PMGroup.AddControl(ButtonExportID, (short)swPropertyManagerPageControlType_e.swControlType_Button, "Preview and Export...", 0, (int)options, "");
+            PMButtonExport = PMGroup.AddControl(ButtonExportID,
+                (short)swPropertyManagerPageControlType_e.swControlType_Button,
+                "Preview and Export...", 0, (int)options, "");
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
             caption = "Link Tree";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMTree = PMPage.AddControl(dotNetTree, (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMTree = PMPage.AddControl(dotNetTree,
+                (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
             PMTree.Height = 163;
             Tree = new TreeView
             {
@@ -782,130 +859,155 @@ namespace SW2URDF
 
         #region Not implemented handler methods
 
-        // These methods are still active. The exceptions that are thrown only cause the debugger to pause. Comment out the exception
-        // if you choose not to implement it, but it gets regularly called anyway
+        // These methods are still active. The exceptions that are thrown only cause the debugger
+        // to pause. Comment out the exception if you choose not to implement it, but it gets
+        // regularly called anyway
         void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
         {
-            logger.Info("OnCheckboxCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnCheckboxCheck called. This method no longer throws an Exception. " +
+                " It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxEditChanged(int Id, string Text)
         {
-            logger.Info("OnComboboxEditChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnComboboxEditChanged called. This method no longer throws an Exception." +
+                " It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxSelectionChanged(int Id, int Item)
         {
-            logger.Info("OnComboboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnComboboxSelectionChanged called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupCheck(int Id, bool Checked)
         {
-            logger.Info("OnGroupCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnGroupCheck called. This method no longer throws an Exception. It just " +
+                "silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnGroupExpand(int Id, bool Expanded)
         {
-            logger.Info("OnGroupExpand called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnGroupExpand called. This method no longer throws an Exception. It just " +
+                "silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxSelectionChanged(int Id, int Item)
         {
-            logger.Info("OnListboxSelectionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnListboxSelectionChanged called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnNextPage()
         {
-            logger.Info("OnNextPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnNextPage called. This method no longer throws an Exception. It just " + "" +
+                "silently does nothing. Ok, except for this logging message");
             return true;
         }
 
         void IPropertyManagerPage2Handler9.OnOptionCheck(int Id)
         {
-            logger.Info("OnOptionCheck called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnOptionCheck called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItem(int Id)
         {
-            logger.Info("OnPopupMenuItem called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnPopupMenuItem called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnPopupMenuItemUpdate(int Id, ref int retval)
         {
-            logger.Info("OnPopupMenuItemUpdate called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnPopupMenuItemUpdate called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnPreview()
         {
-            logger.Info("OnPreview called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnPreview called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
             return true;
         }
 
         bool IPropertyManagerPage2Handler9.OnPreviousPage()
         {
-            logger.Info("OnPreviousPage called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnPreviousPage called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
             return true;
         }
 
         void IPropertyManagerPage2Handler9.OnRedo()
         {
-            logger.Info("OnRedo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnRedo called. This method no longer throws an Exception. " +
+                "It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutCreated(int Id)
         {
-            logger.Info("OnSelectionboxCalloutCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnSelectionboxCalloutCreated called. This method no longer throws " +
+                " an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSelectionboxCalloutDestroyed(int Id)
         {
-            logger.Info("OnSelectionboxCalloutDestroyed called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnSelectionboxCalloutDestroyed called. This method no longer throws " +
+                "an Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSliderPositionChanged(int Id, double Value)
         {
-            logger.Info("OnSliderPositionChanged called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnSliderPositionChanged called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnSliderTrackingCompleted(int Id, double Value)
         {
-            logger.Info("OnSliderTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnSliderTrackingCompleted called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         bool IPropertyManagerPage2Handler9.OnTabClicked(int Id)
         {
-            logger.Info("OnTabClicked called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnTabClicked called. This method no longer throws an Exception. It " +
+                " just silently does nothing. Ok, except for this logging message");
             return true;
         }
 
         void IPropertyManagerPage2Handler9.OnUndo()
         {
-            logger.Info("OnUndo called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnUndo called. This method no longer throws an Exception. It just " +
+                "silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnWhatsNew()
         {
-            logger.Info("OnWhatsNew called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnWhatsNew called. This method no longer throws an Exception. It just " +
+                " silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnListboxRMBUp(int Id, int PosX, int PosY)
         {
-            logger.Info("OnListboxRMBUp called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnListboxRMBUp called. This method no longer throws an Exception. It " +
+                " just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.OnNumberBoxTrackingCompleted(int Id, double Value)
         {
-            logger.Info("OnNumberBoxTrackingCompleted called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnNumberBoxTrackingCompleted called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
         }
 
         void IPropertyManagerPage2Handler9.AfterClose()
         {
-            logger.Info("AfterClose called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("AfterClose called. This method no longer throws an Exception. It just " +
+                "silently does nothing. Ok, except for this logging message");
         }
 
         int IPropertyManagerPage2Handler9.OnActiveXControlCreated(int Id, bool Status)
         {
-            logger.Info("OnActiveXControlCreated called. This method no longer throws an Exception. It just silently does nothing. Ok, except for this logging message");
+            logger.Info("OnActiveXControlCreated called. This method no longer throws an " +
+                "Exception. It just silently does nothing. Ok, except for this logging message");
             return 0;
         }
 

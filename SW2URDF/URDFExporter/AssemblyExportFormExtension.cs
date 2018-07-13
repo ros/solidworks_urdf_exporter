@@ -32,7 +32,8 @@ using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
-    //This source file contains all the non-handler methods for the assembly export form, the ones that are helpers.
+    //This source file contains all the non-handler methods for the assembly export form,
+    // the ones that are helpers.
     public partial class AssemblyExportForm : Form
     {
         //From the link, this method fills the property boxes on the Link Properties page
@@ -182,7 +183,8 @@ namespace SW2URDF
             comboBoxAxis.Items.Clear();
             List<string> axesNames = Exporter.FindRefGeoNames("RefAxis");
             comboBoxAxis.Items.AddRange(axesNames.ToArray());
-            comboBoxOrigin.SelectedIndex = comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);
+            comboBoxOrigin.SelectedIndex =
+                comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);
             if (String.IsNullOrWhiteSpace(Joint.AxisName))
             {
                 comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(Joint.AxisName);
@@ -260,7 +262,10 @@ namespace SW2URDF
                               textBoxAxisY,
                               textBoxAxisZ);
 
-            if (String.IsNullOrWhiteSpace(textBoxLimitLower.Text) && String.IsNullOrWhiteSpace(textBoxLimitUpper.Text) && String.IsNullOrWhiteSpace(textBoxLimitEffort.Text) && String.IsNullOrWhiteSpace(textBoxLimitVelocity.Text))
+            if (String.IsNullOrWhiteSpace(textBoxLimitLower.Text) &&
+                String.IsNullOrWhiteSpace(textBoxLimitUpper.Text) &&
+                String.IsNullOrWhiteSpace(textBoxLimitEffort.Text) &&
+                String.IsNullOrWhiteSpace(textBoxLimitVelocity.Text))
             {
                 if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
@@ -291,7 +296,8 @@ namespace SW2URDF
                                    textBoxLimitVelocity);
             }
 
-            if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) && String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))
+            if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) &&
+                String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))
             {
                 Joint.Calibration = null;
             }
@@ -305,7 +311,8 @@ namespace SW2URDF
                                          textBoxCalibrationFalling);
             }
 
-            if (String.IsNullOrWhiteSpace(textBoxFriction.Text) && String.IsNullOrWhiteSpace(textBoxDamping.Text))
+            if (String.IsNullOrWhiteSpace(textBoxFriction.Text) &&
+                String.IsNullOrWhiteSpace(textBoxDamping.Text))
             {
                 Joint.Dynamics = null;
             }
@@ -319,7 +326,8 @@ namespace SW2URDF
                                       textBoxFriction);
             }
 
-            if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) && String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
+            if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) &&
+                String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
             {
                 Joint.Safety = null;
             }
@@ -419,8 +427,9 @@ namespace SW2URDF
             {
                 node.Nodes.Add(CreateLinkNodeFromLink(child));
             }
-            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
 
+            // Need to erase the children from the embedded link because they may be rearranged later.
+            node.Link.Children.Clear();
             return node;
         }
 
@@ -458,7 +467,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         param = att.GetParameter("data");
@@ -481,10 +491,14 @@ namespace SW2URDF
             string newData = stringWriter.ToString();
             if (oldData != newData)
             {
-                if (!warnUser || (warnUser && MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+                if (!warnUser ||
+                    (warnUser &&
+                    MessageBox.Show("The configuration has changed, would you like to save?",
+                        "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = CreateSWSaveAttribute(swApp, "URDF Export Configuration");
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                        CreateSWSaveAttribute(swApp, "URDF Export Configuration");
                     param = saveExporterAttribute.GetParameter("data");
                     param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("name");
@@ -509,7 +523,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == name)
                     {
                         return att;
@@ -517,7 +532,9 @@ namespace SW2URDF
                 }
             }
 
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null,
+                "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
 

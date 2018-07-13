@@ -50,8 +50,10 @@ namespace SW2URDF
 
         public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
         {
-            Application.ThreadException += new ThreadExceptionEventHandler(ExceptionHandler);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledException);
+            Application.ThreadException +=
+                new ThreadExceptionEventHandler(ExceptionHandler);
+            AppDomain.CurrentDomain.UnhandledException +=
+                new UnhandledExceptionEventHandler(UnhandledException);
             InitializeComponent();
             swApp = iSwApp;
             BaseNode = node;
@@ -62,15 +64,18 @@ namespace SW2URDF
             jointBoxes = new Control[] {
                 textBoxJointName, comboBoxAxis, comboBoxJointType,
                 textBoxAxisX, textBoxAxisY, textBoxAxisZ,
-                textBoxJointX, textBoxJointY, textBoxJointZ, textBoxJointPitch, textBoxJointRoll, textBoxJointYaw,
+                textBoxJointX, textBoxJointY, textBoxJointZ,
+                textBoxJointPitch, textBoxJointRoll, textBoxJointYaw,
                 textBoxLimitLower, textBoxLimitUpper, textBoxLimitEffort, textBoxLimitVelocity,
                 textBoxDamping, textBoxFriction,
                 textBoxCalibrationFalling, textBoxCalibrationRising,
                 textBoxSoftLower, textBoxSoftUpper, textBoxKPosition, textBoxKVelocity
             };
             linkBoxes = new Control[] {
-                textBoxInertialOriginX, textBoxInertialOriginY, textBoxInertialOriginZ, textBoxInertialOriginRoll, textBoxInertialOriginPitch, textBoxInertialOriginYaw,
-                textBoxVisualOriginX, textBoxVisualOriginY, textBoxVisualOriginZ, textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
+                textBoxInertialOriginX, textBoxInertialOriginY, textBoxInertialOriginZ,
+                textBoxInertialOriginRoll, textBoxInertialOriginPitch, textBoxInertialOriginYaw,
+                textBoxVisualOriginX, textBoxVisualOriginY, textBoxVisualOriginZ,
+                textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
                 textBoxIxx, textBoxIxy, textBoxIxz, textBoxIyy, textBoxIyz, textBoxIzz,
                 textBoxMass,
                 domainUpDownRed, domainUpDownGreen, domainUpDownBlue, domainUpDownAlpha,
@@ -81,24 +86,32 @@ namespace SW2URDF
             saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
             int Options = 0;
 
-            saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
-            saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
-            saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
-            saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+            saveConfigurationAttributeDef.AddParameter(
+                "data", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter(
+                "name", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter(
+                "date", (int)swParamType_e.swParamTypeString, 0, Options);
+            saveConfigurationAttributeDef.AddParameter(
+                "exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
             saveConfigurationAttributeDef.Register();
         }
 
         private void ExceptionHandler(object sender, ThreadExceptionEventArgs e)
         {
             logger.Error("Exception encountered in Assembly export form", e.Exception);
-            MessageBox.Show("There was a problem with the export form: \n\"" + e.Exception.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            MessageBox.Show("There was a problem with the export form: \n\"" +
+                e.Exception.Message + "\"\nEmail your maintainer with the log file found at " +
+                Logger.GetFileName());
         }
 
         private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Exception ex = (Exception)e.ExceptionObject;
             logger.Error("Unhandled exception in Assembly Export form", ex);
-            MessageBox.Show("There was a problem with the export form: \n\"" + ex.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+            MessageBox.Show("There was a problem with the export form: \n\"" +
+                ex.Message + "\"\nEmail your maintainer with the log file found at " +
+                Logger.GetFileName());
         }
 
         //Joint form configuration controls
@@ -295,7 +308,8 @@ namespace SW2URDF
         {
             if (!AutoUpdatingForm)
             {
-                if (!(String.IsNullOrWhiteSpace(comboBoxOrigin.Text) || String.IsNullOrWhiteSpace(comboBoxAxis.Text)))
+                if (!(String.IsNullOrWhiteSpace(comboBoxOrigin.Text) ||
+                    String.IsNullOrWhiteSpace(comboBoxAxis.Text)))
                 {
                     double[] Axis = Exporter.EstimateAxis(comboBoxAxis.Text);
                     Axis = Exporter.LocalizeAxis(Axis, comboBoxOrigin.Text);

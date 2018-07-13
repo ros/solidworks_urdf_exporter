@@ -49,7 +49,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         param = att.GetParameter("data");
@@ -72,11 +73,12 @@ namespace SW2URDF
             {
                 if (!warnUser ||
                     (warnUser &&
-                    MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration",
-                    MessageBoxButtons.YesNo) == DialogResult.Yes))
+                    MessageBox.Show("The configuration has changed, would you like to save?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = CreateSWSaveAttribute("URDF Export Configuration");
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                        CreateSWSaveAttribute("URDF Export Configuration");
                     param = saveExporterAttribute.GetParameter("data");
                     param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("name");
@@ -89,8 +91,8 @@ namespace SW2URDF
             }
         }
 
-        //As nodes are created and destroyed, this menu gets called a lot. It basically just adds the context menu (right-click menu)
-        // to the node
+        //As nodes are created and destroyed, this menu gets called a lot. It basically just
+        // adds the context menu (right-click menu) to the node
         public void AddDocMenu(LinkNode node)
         {
             node.ContextMenuStrip = docMenu;
@@ -100,8 +102,10 @@ namespace SW2URDF
             }
         }
 
-        // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
-        private void UpdateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
+        // Gets all the features in the SolidWorks model doc that match the specific feature name,
+        // and updates the specified combobox.
+        private void UpdateComboBoxFromFeatures(
+            PropertyManagerPageCombobox box, string featureName)
         {
             List<string> featureNames = Exporter.FindRefGeoNames(featureName);
             FillComboBox(box, featureNames);
@@ -118,18 +122,21 @@ namespace SW2URDF
             }
         }
 
-        // Finds the specified item in a combobox and sets the box to it. I'm not sure why I couldn't do this with a foreach loop
-        // or even a for loop, but there is no way to get the current number of items in the menu
+        // Finds the specified item in a combobox and sets the box to it. I'm not sure why I
+        // couldn't do this with a foreach loop or even a for loop, but there is no way to get
+        // the current number of items in the menu
         private void SelectComboBox(PropertyManagerPageCombobox box, string item)
         {
             short i = 0;
             string itemtext = "nothing";
             box.CurrentSelection = 0;
 
-            // Cycles through the menu items until it finds what its looking for, it finds blank strings, or itemtext is null
+            // Cycles through the menu items until it finds what its looking for, it finds
+            // blank strings, or itemtext is null
             while (String.IsNullOrWhiteSpace(itemtext) && itemtext != item)
             {
-                // Gets the item text at index in a pull-down menu. No way to now how many items are in the combobox
+                // Gets the item text at index in a pull-down menu. No way to now how many
+                // items are in the combobox
                 itemtext = box.get_ItemText(i);
                 if (itemtext == item)
                 {
@@ -191,8 +198,8 @@ namespace SW2URDF
             currentNode.ExpandAll();
         }
 
-        // When a new node is selected or another node is found that needs to be visited, this method saves the previously
-        // active node and fills in the property mananger with the new one
+        // When a new node is selected or another node is found that needs to be visited, this
+        // method saves the previously active node and fills in the property mananger with the new one
         public void SwitchActiveNodes(LinkNode node)
         {
             SaveActiveNode();
@@ -205,7 +212,8 @@ namespace SW2URDF
             }
             FillPropertyManager(node);
 
-            //If this flag is set to true, it prevents this method from getting called again when changing the selected node
+            //If this flag is set to true, it prevents this method from getting called again when
+            // changing the selected node
             automaticallySwitched = true;
 
             //Change the selected node to the argument node. This highlights the newly activated node
@@ -217,9 +225,9 @@ namespace SW2URDF
             CheckNodeComplete(node);
         }
 
-        // This method runs through first the child nodes of the selected node to see if there are more to visit
-        // then it runs through the nodes top to bottom to find the next to visit. Returns the node if one is found
-        // otherwise it returns null.
+        // This method runs through first the child nodes of the selected node to see if there are
+        // more to visit then it runs through the nodes top to bottom to find the next to visit.
+        // Returns the node if one is found otherwise it returns null.
         public LinkNode FindNextLinkToVisit(TreeView tree)
         {
             // First check if SelectedNode has any nodes to visit
@@ -263,13 +271,16 @@ namespace SW2URDF
             if (node.Nodes.Count > 0 && node.Components.Count == 0)
             {
                 node.IsIncomplete = true;
-                node.WhyIncomplete += "        Links with children cannot be empty. Select its associated components\r\n";
+                node.WhyIncomplete +=
+                    "        Links with children cannot be empty. Select its associated components\r\n";
             }
             if (node.Components.Count == 0 && node.CoordsysName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
-                node.WhyIncomplete += "        The origin reference coordinate system cannot be automatically generated\r\n";
-                node.WhyIncomplete += "        without components. Either select an origin or at least one component.";
+                node.WhyIncomplete +=
+                    "        The origin reference coordinate system cannot be automatically generated\r\n";
+                node.WhyIncomplete +=
+                    "        without components. Either select an origin or at least one component.";
             }
             if (String.IsNullOrWhiteSpace(node.JointName) && !node.IsBaseNode)
             {
@@ -285,7 +296,8 @@ namespace SW2URDF
             CheckNodeComplete(node);
             if (node.IsIncomplete)
             {
-                incompleteNodes += "    '" + node.Text + "':\r\n" + node.WhyIncomplete + "\r\n\r\n"; //Building the message
+                //Building the message
+                incompleteNodes += "    '" + node.Text + "':\r\n" + node.WhyIncomplete + "\r\n\r\n";
             }
             // Cycle through the rest of the nodes
             foreach (LinkNode child in node.Nodes)
@@ -298,11 +310,13 @@ namespace SW2URDF
         //Finds all the nodes in a TreeView that need to be completed before exporting
         public bool CheckNodesComplete(TreeView tree)
         {
-            //Calls the recursive function starting with the base_link node and retrieves a string identifying the incomplete nodes
+            //Calls the recursive function starting with the base_link node and retrieves a string
+            // identifying the incomplete nodes
             string incompleteNodes = CheckNodesComplete((LinkNode)tree.Nodes[0], "");
             if (!String.IsNullOrWhiteSpace(incompleteNodes))
             {
-                MessageBox.Show("The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
+                MessageBox.Show(
+                    "The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
                 return false;
             }
             return true;
@@ -323,9 +337,11 @@ namespace SW2URDF
                 }
                 else
                 {
-                    previouslySelectedNode.CoordsysName = PMComboBoxGlobalCoordsys.get_ItemText(-1);
+                    previouslySelectedNode.CoordsysName =
+                        PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
-                Common.GetSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
+                Common.GetSelectedComponents(
+                    ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
             }
         }
 
@@ -404,28 +420,32 @@ namespace SW2URDF
             }
         }
 
-        //Takes care of activating/deactivating the drop down menus, lables and text box for joint configuration
-        //Generally these are deactivated for the base node
+        //Takes care of activating/deactivating the drop down menus, lables and text box for
+        // joint configuration. Generally these are deactivated for the base node
         private void EnableControls(bool enableJoints)
         {
-            PropertyManagerPageControl[] pmJointControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMTextBoxJointName,
-                                                                                          (PropertyManagerPageControl)PMLabelJointName,
-                                                                                          (PropertyManagerPageControl)PMComboBoxCoordSys,
-                                                                                          (PropertyManagerPageControl)PMLabelCoordSys,
-                                                                                          (PropertyManagerPageControl)PMComboBoxAxes,
-                                                                                          (PropertyManagerPageControl)PMLabelAxes,
-                                                                                          (PropertyManagerPageControl)PMComboBoxJointType,
-                                                                                          (PropertyManagerPageControl)PMLabelJointType };
+            PropertyManagerPageControl[] pmJointControls =
+                new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMTextBoxJointName,
+                                                    (PropertyManagerPageControl)PMLabelJointName,
+                                                    (PropertyManagerPageControl)PMComboBoxCoordSys,
+                                                    (PropertyManagerPageControl)PMLabelCoordSys,
+                                                    (PropertyManagerPageControl)PMComboBoxAxes,
+                                                    (PropertyManagerPageControl)PMLabelAxes,
+                                                    (PropertyManagerPageControl)PMComboBoxJointType,
+                                                    (PropertyManagerPageControl)PMLabelJointType };
 
-            PropertyManagerPageControl[] pmGlobalOriginControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMComboBoxGlobalCoordsys,
-                                                                                                       (PropertyManagerPageControl)PMLabelGlobalCoordsys};
+            PropertyManagerPageControl[] pmGlobalOriginControls = new PropertyManagerPageControl[] {
+                (PropertyManagerPageControl)PMComboBoxGlobalCoordsys,
+                (PropertyManagerPageControl)PMLabelGlobalCoordsys};
 
-            PropertyManagerPageControl[] pmJointOriginControls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMComboBoxCoordSys,
-                                                                                                       (PropertyManagerPageControl)PMLabelCoordSys};
+            PropertyManagerPageControl[] pmJointOriginControls = new PropertyManagerPageControl[] {
+                (PropertyManagerPageControl)PMComboBoxCoordSys,
+                (PropertyManagerPageControl)PMLabelCoordSys};
 
             foreach (PropertyManagerPageControl control in pmGlobalOriginControls)
             {
-                control.Visible = !enableJoints; // Make the global origin controls visible when no joint controls are needed
+                // Make the global origin controls visible when no joint controls are needed
+                control.Visible = !enableJoints;
                 control.Enabled = !enableJoints;
             }
             foreach (PropertyManagerPageControl control in pmJointOriginControls)
@@ -450,8 +470,8 @@ namespace SW2URDF
             PMSelection.SetSelectionFilters(filterObj);
         }
 
-        // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
-        // and items are added to the selection box.
+        // This removes the component only filters so that the export tool can select sketches,
+        // sketch items etc while the PMPage is active and items are added to the selection box.
         // Because the PMPage closes before selections need to occur, this method is no longer used.
         private void SetGeneralFilters()
         {
@@ -510,7 +530,9 @@ namespace SW2URDF
             {
                 node.Nodes.Add(CreateLinkNodeFromLink(child));
             }
-            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
+
+            // Need to erase the children from the embedded link because they may be rearranged later.
+            node.Link.Children.Clear();
             return node;
         }
 
@@ -525,7 +547,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         Parameter param = att.GetParameter("data");
@@ -596,15 +619,20 @@ namespace SW2URDF
                 }
             }
             ActiveSWModel.ClearSelection2(true);
-            ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2(
+                "Origin_global", "COORDSYS", 0, 0, 0, true, 0, null, 0);
             if (needToCreateFolder)
             {
-                Feature folderFeature = ActiveSWModel.FeatureManager.InsertFeatureTreeFolder2((int)swFeatureTreeFolderType_e.swFeatureTreeFolder_Containing);
+                Feature folderFeature =
+                    ActiveSWModel.FeatureManager.InsertFeatureTreeFolder2(
+                        (int)swFeatureTreeFolderType_e.swFeatureTreeFolder_Containing);
                 folderFeature.Name = "URDF Export Items";
             }
-            ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2
+                ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
-            ActiveSWModel.Extension.SelectByID2("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2
+                ("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
@@ -612,10 +640,12 @@ namespace SW2URDF
 
         public void SelectFeatures(LinkNode node)
         {
-            ActiveSWModel.Extension.SelectByID2(node.CoordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
+            ActiveSWModel.Extension.SelectByID2(
+                node.CoordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
             if (node.AxisName != "None")
             {
-                ActiveSWModel.Extension.SelectByID2(node.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
+                ActiveSWModel.Extension.SelectByID2(
+                    node.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -666,7 +696,8 @@ namespace SW2URDF
                     linkNamesInConflict = true;
                     if (displayInitialMessage)
                     {
-                        specificErrors += "The following links have LINK names that conflict:\r\n\r\n";
+                        specificErrors +=
+                            "The following links have LINK names that conflict:\r\n\r\n";
                         displayInitialMessage = false;
                     }
                     bool isFirst = true;
@@ -686,7 +717,8 @@ namespace SW2URDF
                     linkNamesInConflict = true;
                     if (displayInitialMessage)
                     {
-                        specificErrors += "The following links have JOINT names that conflict:\r\n\r\n";
+                        specificErrors +=
+                            "The following links have JOINT names that conflict:\r\n\r\n";
                         displayInitialMessage = false;
                     }
                     bool isFirst = true;
@@ -706,7 +738,8 @@ namespace SW2URDF
             return true;
         }
 
-        public void CheckIfLinkNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        public void CheckIfLinkNamesAreUnique(
+            LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
         {
             List<string> conflict = new List<string>();
 
@@ -726,12 +759,14 @@ namespace SW2URDF
             }
             foreach (LinkNode child in currentNode.Nodes)
             {
-                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
+                //Proceeds recursively through the children nodes and adds to the conflicts
+                // list of lists.
                 CheckIfLinkNamesAreUnique(basenode, child, conflicts);
             }
         }
 
-        public void CheckIfJointNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        public void CheckIfJointNamesAreUnique(
+            LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
         {
             List<string> conflict = new List<string>();
 
@@ -752,7 +787,8 @@ namespace SW2URDF
             }
             foreach (LinkNode child in currentNode.Nodes)
             {
-                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
+                //Proceeds recursively through the children nodes and adds to the conflicts
+                // list of lists.
                 CheckIfJointNamesAreUnique(basenode, child, conflicts);
             }
         }
@@ -764,10 +800,14 @@ namespace SW2URDF
             {
                 saveConfigurationAttributeDef = swApp.DefineAttribute("URDF Export Configuration");
 
-                saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "data", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "name", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "date", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
                 saveConfigurationAttributeDef.Register();
             }
 
@@ -780,7 +820,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == name)
                     {
                         return att;
@@ -788,7 +829,8 @@ namespace SW2URDF
                 }
             }
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+                saveConfigurationAttributeDef.CreateInstance5(
+                    ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
     }

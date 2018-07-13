@@ -59,14 +59,16 @@ namespace SW2URDF
         // This method now only works for the part exporter
         public Link CreateBaseLinkFromActiveModel()
         {
-            if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART) // If the model is a part
+            // If the model is a part
+            if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART)
             {
                 return CreateLinkFromPartModel(ActiveSWModel);
             }
             return null;
         }
 
-        // This creates a Link from a Part ModelDoc. It basically just extracts the material properties and saves them to the appropriate fields.
+        // This creates a Link from a Part ModelDoc. It basically just extracts the material
+        // properties and saves them to the appropriate fields.
         public Link CreateLinkFromPartModel(ModelDoc2 swModel)
         {
             Link Link = new Link(null);
@@ -80,7 +82,10 @@ namespace SW2URDF
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
             Link.Inertial.Mass.Value = swMass.Mass;
-            double[] moment = swMass.GetMomentOfInertia((int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass); // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+
+            // returned as double with values [Lxx, Lxy, Lxz, Lyx, Lyy, Lyz, Lzx, Lzy, Lzz]
+            double[] moment = swMass.GetMomentOfInertia(
+                (int)swMassPropertyMoment_e.swMassPropertyMomentAboutCenterOfMass);
             Link.Inertial.Inertia.SetMomentMatrix(moment);
 
             double[] centerOfMass = swMass.CenterOfMass;
@@ -104,31 +109,40 @@ namespace SW2URDF
             return Link;
         }
 
-        //This is only used by the Part Exporter, but it localizes the link to the Origin_global coordinate system
+        //This is only used by the Part Exporter, but it localizes the link to the Origin_global
+        // coordinate system
         public void LocalizeLink(Link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
             Matrix<double> linkCoMTransform = MathOps.GetTranslation(Link.Inertial.Origin.GetXYZ());
             Matrix<double> localLinkCoMTransform = GlobalTransformInverse * linkCoMTransform;
 
-            Matrix<double> linkVisualTransform = MathOps.GetTransformation(Link.Visual.Origin.GetXYZ(), Link.Visual.Origin.GetRPY());
+            Matrix<double> linkVisualTransform =
+                MathOps.GetTransformation(Link.Visual.Origin.GetXYZ(), Link.Visual.Origin.GetRPY());
             Matrix<double> localVisualTransform = GlobalTransformInverse * linkVisualTransform;
 
-            Matrix<double> linkCollisionTransform = MathOps.GetTransformation(Link.Collision.Origin.GetXYZ(), Link.Collision.Origin.GetRPY());
-            Matrix<double> localCollisionTransform = GlobalTransformInverse * linkCollisionTransform;
+            Matrix<double> linkCollisionTransform =
+                MathOps.GetTransformation(Link.Collision.Origin.GetXYZ(), Link.Collision.Origin.GetRPY());
+            Matrix<double> localCollisionTransform =
+                GlobalTransformInverse * linkCollisionTransform;
 
-            // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this matrix constructor uses column major order
-            // It's a rotation matrix, so this shouldn't matter. If it does, just transpose linkGlobalMomentInertia
-            // These three matrices are 3x3 as opposed to the 4x4 transformation matrices above. You're welcome for the confusion.
-            Matrix<double> linkGlobalMomentInertia = new DenseMatrix(3, 3, Link.Inertial.Inertia.GetMoment());
-            Matrix<double> GlobalRotMat = GlobalTransform.SubMatrix(0, 3, 0, 3);
-            Matrix<double> linkLocalMomentInertia = GlobalRotMat * linkGlobalMomentInertia * GlobalRotMat.Transpose();
+            // The linear array in Link.Inertial.Inertia.Moment is in row major order, but this
+            // matrix constructor uses column major order. It's a rotation matrix, so this
+            // shouldn't matter. If it does, just transpose linkGlobalMomentInertia. These three
+            // matrices are 3x3 as opposed to the 4x4 transformation matrices above.
+            // You're welcome for the confusion.
+            Matrix<double> linkGlobalMomentInertia =
+                new DenseMatrix(3, 3, Link.Inertial.Inertia.GetMoment());
+            Matrix<double> GlobalRotMat =
+                GlobalTransform.SubMatrix(0, 3, 0, 3);
+            Matrix<double> linkLocalMomentInertia =
+                GlobalRotMat * linkGlobalMomentInertia * GlobalRotMat.Transpose();
 
             Link.Inertial.Origin.SetXYZ(MathOps.GetXYZ(localLinkCoMTransform));
             Link.Inertial.Origin.SetRPY(new double[] { 0, 0, 0 });
 
-            // Wait are you saying that even though the matrix was trasposed from column major order, you are writing it in row-major order here.
-            // Yes, yes I am.
+            // Wait are you saying that even though the matrix was trasposed from column major
+            // order, you are writing it in row-major order here. Yes, yes I am.
             double[] moment = linkLocalMomentInertia.ToRowWiseArray();
             Link.Inertial.Inertia.SetMomentMatrix(moment);
 
@@ -244,7 +258,8 @@ namespace SW2URDF
 
                 bool bRet = swMass.AddBodies(bodies.ToArray());
 
-                double[] moment = (double[])swMass.GetMomentOfInertia((int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+                double[] moment = (double[])swMass.GetMomentOfInertia(
+                    (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
                 child.Inertial.Mass.Value = swMass.Mass;
                 child.Inertial.Inertia.SetMomentMatrix(moment);
 
@@ -267,7 +282,8 @@ namespace SW2URDF
                 child.Visual.Material.Color.Alpha = 1.0 - values[7];
                 //child.Visual.Material.name = "material_" + child.name;
 
-                //The part model doesn't actually know where the origin is, but the component does and this is important when exporting from assembly
+                //The part model doesn't actually know where the origin is, but the component
+                // does and this is important when exporting from assembly
                 child.Visual.Origin.SetXYZ(new double[] { 0, 0, 0 });
                 child.Visual.Origin.SetRPY(new double[] { 0, 0, 0 });
                 child.Collision.Origin.SetXYZ(new double[] { 0, 0, 0 });
@@ -284,7 +300,8 @@ namespace SW2URDF
             foreach (Component2 comp in components)
             {
                 // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
-                object[] componentBodies = (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
+                object[] componentBodies =
+                    (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
                 if (componentBodies != null)
                 {
                     foreach (Body2 obj in componentBodies)
@@ -333,9 +350,11 @@ namespace SW2URDF
                 jointType = "fixed";
                 child.Joint.Type = jointType;
             }
-            else if (coordSysName == "Automatically Generate" || axisName == "Automatically Generate" || jointType == "Automatically Detect")
+            else if (coordSysName == "Automatically Generate" ||
+                axisName == "Automatically Generate" || jointType == "Automatically Detect")
             {
-                // We have to estimate the joint if the user specifies automatic for either the reference coordinate system, the reference axis or the joint type.
+                // We have to estimate the joint if the user specifies automatic for either the
+                // reference coordinate system, the reference axis or the joint type.
                 unfix = EstimateGlobalJointFromComponents(assy, parent, child);
             }
 
@@ -344,10 +363,12 @@ namespace SW2URDF
                 child.Joint.CoordinateSystemName = "Origin_" + child.Joint.Name;
                 ActiveSWModel.ClearSelection2(true);
                 int i = 2;
-                while (ActiveSWModel.Extension.SelectByID2(child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+                while (ActiveSWModel.Extension.SelectByID2(
+                    child.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, false, 0, null, 0))
                 {
                     ActiveSWModel.ClearSelection2(true);
-                    child.Joint.CoordinateSystemName = "Origin_" + child.Joint.Name + i.ToString();
+                    child.Joint.CoordinateSystemName =
+                        "Origin_" + child.Joint.Name + i.ToString();
                     i++;
                 }
                 CreateRefOrigin(child.Joint);
@@ -361,7 +382,8 @@ namespace SW2URDF
                 child.Joint.AxisName = "Axis_" + child.Joint.Name;
                 ActiveSWModel.ClearSelection2(true);
                 int i = 2;
-                while (ActiveSWModel.Extension.SelectByID2(child.Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
+                while (ActiveSWModel.Extension.SelectByID2(
+                    child.Joint.AxisName, "AXIS", 0, 0, 0, false, 0, null, 0))
                 {
                     ActiveSWModel.ClearSelection2(true);
                     child.Joint.AxisName = "Axis_" + child.Joint.Name + i.ToString();
@@ -383,7 +405,8 @@ namespace SW2URDF
 
             EstimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            coordSysName = (parent.Joint == null) ?
+                parent.CoordSysName : parent.Joint.CoordinateSystemName;
             if (unfix)
             {
                 UnFixComponents(fixedComponents);
@@ -400,7 +423,8 @@ namespace SW2URDF
         // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
         public void CreateRefOrigin(Origin Origin, string CoordinateSystemName)
         {
-            // Adds the sketch segments and point to the 3D sketch. The sketchEnties are the actual items created (and their locations)
+            // Adds the sketch segments and point to the 3D sketch. The sketchEnties are the actual
+            // items created (and their locations)
             object[] sketchEntities = AddSketchGeometry(Origin);
 
             SketchPoint OriginPoint = (SketchPoint)sketchEntities[0];
@@ -425,7 +449,9 @@ namespace SW2URDF
             SelectData data = selectionManager.CreateSelectData();
 
             // First select the origin
-            bool SelectedOrigin = false; bool SelectedXAxis = false; bool SelectedYAxis = false;
+            bool SelectedOrigin = false;
+            bool SelectedXAxis = false;
+            bool SelectedYAxis = false;
             if (OriginPoint != null)
             {
                 data.Mark = 1;
@@ -433,7 +459,9 @@ namespace SW2URDF
             }
             if (!SelectedOrigin)
             {
-                SelectedOrigin = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", originX, originY, originZ, true, 1, null, 0);
+                SelectedOrigin =
+                    ActiveSWModel.Extension.SelectByID2(
+                        "", "EXTSKETCHPOINT", originX, originY, originZ, true, 1, null, 0);
             }
 
             // Second, select the xaxis
@@ -444,7 +472,9 @@ namespace SW2URDF
             }
             if (!SelectedXAxis)
             {
-                SelectedXAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", xAxisX, xAxisY, xAxisZ, true, 2, null, 0);
+                SelectedXAxis =
+                    ActiveSWModel.Extension.SelectByID2
+                    ("", "EXTSKETCHPOINT", xAxisX, xAxisY, xAxisZ, true, 2, null, 0);
             }
 
             // Third, select the yaxis
@@ -455,11 +485,14 @@ namespace SW2URDF
             }
             if (!SelectedYAxis)
             {
-                SelectedYAxis = ActiveSWModel.Extension.SelectByID2("", "EXTSKETCHPOINT", yAxisX, yAxisY, yAxisZ, true, 4, null, 0);
+                SelectedYAxis =
+                    ActiveSWModel.Extension.SelectByID2(
+                        "", "EXTSKETCHPOINT", yAxisX, yAxisY, yAxisZ, true, 4, null, 0);
             }
 
             //From the selected items, insert a coordinate system.
-            coordinates = ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
+            coordinates =
+                ActiveSWModel.FeatureManager.InsertCoordinateSystem(false, false, false);
             if (coordinates != null)
             {
                 coordinates.Name = CoordinateSystemName;
@@ -469,7 +502,8 @@ namespace SW2URDF
         //Creates the Origin_global coordinate system
         public void CreateBaseRefOrigin(bool zIsUp)
         {
-            if (!ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            if (!ActiveSWModel.Extension.SelectByID2(
+                    "Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
                 Joint Joint = new Joint();
                 Joint.Origin = new Origin();
@@ -507,20 +541,24 @@ namespace SW2URDF
             }
         }
 
-        // Takes a links joint and calculates the local transform from the global transforms of the parent and child. It also converts the
-        // axis to local values
+        // Takes a links joint and calculates the local transform from the global transforms of
+        // the parent and child. It also converts the axis to local values
         public void LocalizeJoint(Joint Joint, string parentCoordsysName)
         {
             MathTransform parentTransform = GetCoordinateSystemTransform(parentCoordsysName);
             double[] parentRPY = MathOps.GetRPY(parentTransform);
 
-            Matrix<double> ParentJointGlobalTransform = MathOps.GetTransformation(parentTransform);
-            MathTransform coordsysTransform = GetCoordinateSystemTransform(Joint.CoordinateSystemName);
+            Matrix<double> ParentJointGlobalTransform =
+                MathOps.GetTransformation(parentTransform);
+            MathTransform coordsysTransform =
+                GetCoordinateSystemTransform(Joint.CoordinateSystemName);
             double[] coordsysRPY = MathOps.GetRPY(coordsysTransform);
 
             //Transform from global origin to child joint
-            Matrix<double> ChildJointGlobalTransform = MathOps.GetTransformation(coordsysTransform);
-            Matrix<double> ChildJointOrigin = ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
+            Matrix<double> ChildJointGlobalTransform =
+                MathOps.GetTransformation(coordsysTransform);
+            Matrix<double> ChildJointOrigin =
+                ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
             double[] globalRPY = MathOps.GetRPY(ChildJointOrigin);
 
             //Localize the axis to the Link's coordinate system.
@@ -558,7 +596,8 @@ namespace SW2URDF
                 //It was probably added at the end (hence .Reverse())
                 foreach (Feature feat in featuresAfter.Reverse())
                 {
-                    //If the feature in featuresAfter is not in features before, its gotta be the axis we inserted
+                    //If the feature in featuresAfter is not in features before, its gotta be the
+                    // axis we inserted
                     if (!featuresBefore.Contains(feat))
                     {
                         return feat;
@@ -571,7 +610,9 @@ namespace SW2URDF
         // Inserts a sketch into the main assembly and name it
         public string Setup3DSketch()
         {
-            bool sketchExists = ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
+            bool sketchExists =
+                ActiveSWModel.Extension.SelectByID2(
+                    "URDF Reference", "SKETCH", 0, 0, 0, false, 0, null, 0);
             ActiveSWModel.SketchManager.Insert3DSketch(true);
             ActiveSWModel.SketchManager.CreatePoint(0, 0, 0);
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
@@ -589,7 +630,9 @@ namespace SW2URDF
             //Find if the sketch exists first
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
             {
-                bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                bool sketchExists =
+                    ActiveSWModel.Extension.SelectByID2(
+                        referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
             IFeature sketch = (IFeature)ActiveSWModel.SketchManager.ActiveSketch;
@@ -627,8 +670,12 @@ namespace SW2URDF
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
-            // Return an array of objects representing the sketch items that were just inserted, as well as the actual locations of those objecs (aids selection).
-            return new object[] { OriginPoint, XAxis, YAxis, Origin.X, Origin.Y, Origin.Z, Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0], Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
+            // Return an array of objects representing the sketch items that were just inserted,
+            // as well as the actual locations of those objecs (aids selection).
+            return new object[] { OriginPoint, XAxis, YAxis,
+                Origin.X, Origin.Y, Origin.Z,
+                Origin.X + tA[0, 0], Origin.Y + tA[1, 0], Origin.Z + tA[2, 0],
+                Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
         }
 
         //Inserts a sketch segment for use when creating a Reference Axis
@@ -636,17 +683,20 @@ namespace SW2URDF
         {
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
             {
-                bool sketchExists = ActiveSWModel.Extension.SelectByID2(referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+                bool sketchExists =
+                    ActiveSWModel.Extension.SelectByID2(
+                        referenceSketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
 
             //Insert sketch segment 0.1m long centered on the origin.
-            SketchSegment RotAxis = ActiveSWModel.SketchManager.CreateLine(Origin.X - 0.05 * Axis.X,
-                                                               Origin.Y - 0.05 * Axis.Y,
-                                                               Origin.Z - 0.05 * Axis.Z,
-                                                               Origin.X + 0.05 * Axis.X,
-                                                               Origin.Y + 0.05 * Axis.Y,
-                                                               Origin.Z + 0.05 * Axis.Z);
+            SketchSegment RotAxis = ActiveSWModel.SketchManager.CreateLine(
+                Origin.X - 0.05 * Axis.X,
+                Origin.Y - 0.05 * Axis.Y,
+                Origin.Z - 0.05 * Axis.Z,
+                Origin.X + 0.05 * Axis.X,
+                Origin.Y + 0.05 * Axis.Y,
+                Origin.Z + 0.05 * Axis.Z);
             if (RotAxis == null)
             {
                 return null;
@@ -662,7 +712,8 @@ namespace SW2URDF
             return RotAxis;
         }
 
-        //Calculates the free degree of freedom (if exists), and then determines the location of the joint, the axis of rotation/translation, and the type of joint
+        //Calculates the free degree of freedom (if exists), and then determines the location of the joint,
+        // the axis of rotation/translation, and the type of joint
         public Boolean EstimateGlobalJointFromComponents(AssemblyDoc assy, Link parent, Link child)
         {
             //Create the ref objects
@@ -676,10 +727,12 @@ namespace SW2URDF
             {
                 // The wonderful undocumented API call I found to get the degrees of freedom in a joint.
                 // https://forum.solidworks.com/thread/57414
-                int remainingDOFs = child.SWMainComponent.GetRemainingDOFs(out int R1Status, out MathPoint RPoint1, out int R1DirStatus, out MathVector RDir1,
-                                                                           out int R2Status, out MathPoint RPoint2, out int R2DirStatus, out MathVector RDir2,
-                                                                           out int L1Status, out MathVector LDir1,
-                                                                           out int L2Status, out MathVector LDir2);
+                int remainingDOFs =
+                    child.SWMainComponent.GetRemainingDOFs(
+                        out int R1Status, out MathPoint RPoint1, out int R1DirStatus, out MathVector RDir1,
+                        out int R2Status, out MathPoint RPoint2, out int R2DirStatus, out MathVector RDir2,
+                        out int L1Status, out MathVector LDir1,
+                        out int L2Status, out MathVector LDir2);
                 if (RPoint1 != null)
                 {
                     logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
@@ -756,7 +809,8 @@ namespace SW2URDF
         //Then it needs to transform to the top level assembly (sounds like fun).
         public void EstimateGlobalJointFromRefGeometry(Link parent, Link child)
         {
-            MathTransform GlobalCoordsysTransform = GetCoordinateSystemTransform(child.Joint.CoordinateSystemName);
+            MathTransform GlobalCoordsysTransform =
+                GetCoordinateSystemTransform(child.Joint.CoordinateSystemName);
             child.Joint.Origin.SetXYZ(MathOps.GetXYZ(GlobalCoordsysTransform));
             child.Joint.Origin.SetRPY(MathOps.GetRPY(GlobalCoordsysTransform));
             if (child.Joint.Type != "fixed")
@@ -781,7 +835,8 @@ namespace SW2URDF
                 int indexLast = CoordinateSystemName.IndexOf('>', indexFirst);
                 if (indexLast > indexFirst)
                 {
-                    componentStr = CoordinateSystemName.Substring(indexFirst + 1, indexLast - indexFirst - 1);
+                    componentStr =
+                        CoordinateSystemName.Substring(indexFirst + 1, indexLast - indexFirst - 1);
                     CoordinateSystemNameUnTrimmed = CoordinateSystemName.Substring(0, indexFirst);
                     CoordinateSystemName = CoordinateSystemNameUnTrimmed.Trim();
                 }
@@ -796,20 +851,27 @@ namespace SW2URDF
                     }
                 }
             }
-            MathTransform LocalCoordsysTransform = ComponentModel.Extension.GetCoordinateSystemTransformByName(CoordinateSystemName);
-            MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ? LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
+            MathTransform LocalCoordsysTransform =
+                ComponentModel.Extension.GetCoordinateSystemTransformByName(CoordinateSystemName);
+            MathTransform GlobalCoordsysTransform = (ComponentTransform == null) ?
+                LocalCoordsysTransform : LocalCoordsysTransform.Multiply(ComponentTransform);
             return GlobalCoordsysTransform;
         }
 
         public void MoveOrigin(Link parent, Link nonLocalizedChild)
         {
-            double xMax = Double.MinValue; double yMax = Double.MinValue; double zMax = Double.MinValue;
-            double xMin = Double.MaxValue; double yMin = Double.MaxValue; double zMin = Double.MaxValue;
+            double xMax = Double.MinValue;
+            double yMax = Double.MinValue;
+            double zMax = Double.MinValue;
+            double xMin = Double.MaxValue;
+            double yMin = Double.MaxValue;
+            double zMin = Double.MaxValue;
             double[] points;
 
             foreach (Component2 comp in nonLocalizedChild.SWcomponents)
             {
-                points = comp.GetBox(false, false); // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
+                // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
+                points = comp.GetBox(false, false);
                 xMax = MathOps.Max(points[0], points[3], xMax);
                 yMax = MathOps.Max(points[1], points[4], yMax);
                 zMax = MathOps.Max(points[2], points[5], zMax);
@@ -817,12 +879,19 @@ namespace SW2URDF
                 yMin = MathOps.Min(points[1], points[4], yMin);
                 zMin = MathOps.Min(points[2], points[5], zMin);
             }
-            string coordsys = (parent.Joint == null) ? parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            string coordsys = (parent.Joint == null) ?
+                parent.CoordSysName : parent.Joint.CoordinateSystemName;
             MathTransform parentTransform = GetCoordinateSystemTransform(coordsys);
-            double[] idealOrigin = MathOps.ClosestPointOnLineToPoint(MathOps.GetXYZ(parentTransform), nonLocalizedChild.Joint.Axis.GetXYZ(), nonLocalizedChild.Joint.Origin.GetXYZ());
+
+            double[] xyzParent = MathOps.GetXYZ(parentTransform);
+            double[] xyzJointAxis = nonLocalizedChild.Joint.Axis.GetXYZ();
+            double[] xyzOrigin = nonLocalizedChild.Joint.Origin.GetXYZ();
+            double[] idealOrigin =
+                MathOps.ClosestPointOnLineToPoint(xyzParent, xyzJointAxis, xyzOrigin);
 
             nonLocalizedChild.Joint.Origin.SetXYZ(
-                MathOps.ClosestPointOnLineWithinBox(xMin, xMax, yMin, yMax, zMin, zMax, nonLocalizedChild.Joint.Axis.GetXYZ(), idealOrigin));
+                MathOps.ClosestPointOnLineWithinBox(xMin, xMax, yMin, yMax, zMin, zMax,
+                    nonLocalizedChild.Joint.Axis.GetXYZ(), idealOrigin));
         }
 
         // Calculates the axis from a Reference Axis in the model
@@ -874,7 +943,8 @@ namespace SW2URDF
             double[] axisParams;
             double[] xyz = new double[3];
 
-            bool selected = ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
+            bool selected =
+                ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
             if (selected)
             {
                 Feature feat = ComponentModel.SelectionManager.GetSelectedObject6(1, 0);
@@ -900,7 +970,8 @@ namespace SW2URDF
             return xyz;
         }
 
-        //This is called whenever the pull down menu is changed and the axis needs to be recalculated in reference to the coordinate system
+        //This is called whenever the pull down menu is changed and the axis needs to be
+        // recalculated in reference to the coordinate system
         public double[] LocalizeAxis(double[] Axis, string coordsys)
         {
             MathTransform coordsysTransform = GetCoordinateSystemTransform(coordsys);
@@ -940,7 +1011,8 @@ namespace SW2URDF
             return features;
         }
 
-        public void GetFeaturesOfType(Component2 component, string featureName, bool topLevelOnly, Dictionary<string, List<Feature>> features)
+        public void GetFeaturesOfType(Component2 component, string featureName,
+            bool topLevelOnly, Dictionary<string, List<Feature>> features)
         {
             ModelDoc2 modeldoc;
             string ComponentName = "";
@@ -982,7 +1054,8 @@ namespace SW2URDF
                         ModelDoc2 doc = comp.GetModelDoc2();
                         if (doc != null)
                         {
-                            //We already have all the components in an assembly, we don't want to recur as we go through them. (topLevelOnly = true)
+                            //We already have all the components in an assembly, we don't want
+                            // to recur as we go through them. (topLevelOnly = true)
                             GetFeaturesOfType(comp, featureName, true, features);
                         }
                     }
@@ -1038,12 +1111,15 @@ namespace SW2URDF
             return featureNames;
         }
 
-        //This method adds in the limits from a limit mate, to make a joint a revolute joint. It really needs to checked for correctness.
-        public void AddLimits(Joint Joint, List<Mate2> limitMates, Component2 parentComponent, Component2 childComponent)
+        //This method adds in the limits from a limit mate, to make a joint a revolute joint.
+        // It really needs to checked for correctness.
+        public void AddLimits(Joint Joint, List<Mate2> limitMates,
+            Component2 parentComponent, Component2 childComponent)
         {
             logger.Info("Parent SW Component: " + parentComponent.Name2);
             logger.Info("Child SW Component: " + childComponent.Name2);
-            // The number of limit Mates should only be one. But for completeness, I cycle through every found limit mate.
+            // The number of limit Mates should only be one. But for completeness, I cycle through
+            // every found limit mate.
             foreach (Mate2 swMate in limitMates)
             {
                 logger.Info("Determining limit mate eligibility ");
@@ -1065,22 +1141,28 @@ namespace SW2URDF
 
                 if (entities.Contains(parentComponent) && entities.Contains(childComponent))
                 {
-                    // [TODO] This assumes the limit mate limits the right degree of freedom, it really should check that assumption
-                    if ((Joint.Type == "continuous" && swMate.Type == (int)swMateType_e.swMateANGLE) ||
-                        (Joint.Type == "prismatic" && swMate.Type == (int)swMateType_e.swMateDISTANCE))
+                    // [TODO] This assumes the limit mate limits the right degree of freedom,
+                    // it really should check that assumption
+                    if ((Joint.Type == "continuous" && swMate.Type ==
+                            (int)swMateType_e.swMateANGLE) ||
+                        (Joint.Type == "prismatic" && swMate.Type ==
+                            (int)swMateType_e.swMateDISTANCE))
                     {
                         Joint.Limit = new Limit();
 
                         // Unclear if flipped is the right thing we want to be checking here.
-                        // From a sample size of 1, in SolidWorks it appears that an aligned and anti-aligned mates are NOT flipped...
+                        // From a sample size of 1, in SolidWorks it appears that an aligned and
+                        // anti-aligned mates are NOT flipped...
                         if (!swMate.Flipped)
                         {
-                            Joint.Limit.Upper = -swMate.MinimumVariation; // Reverse mate directions, for some reason
+                            // Reverse mate directions, for some reason
+                            Joint.Limit.Upper = -swMate.MinimumVariation;
                             Joint.Limit.Lower = -swMate.MaximumVariation;
                         }
                         else
                         {
-                            Joint.Limit.Upper = swMate.MaximumVariation; // Lucky me that no conversion is necessary
+                            // Lucky me that no conversion is necessary
+                            Joint.Limit.Upper = swMate.MaximumVariation;
                             Joint.Limit.Lower = swMate.MinimumVariation;
                         }
                         if (Joint.Type == "continuous")
@@ -1120,7 +1202,8 @@ namespace SW2URDF
                 ModelDoc2 doc = component.GetModelDoc2();
                 Feature feat = (Feature)swMate;
                 feat.Select(false);
-                feat.SetSuppression2((int)swFeatureSuppressionAction_e.swSuppressFeature, (int)swInConfigurationOpts_e.swThisConfiguration, null);
+                feat.SetSuppression2((int)swFeatureSuppressionAction_e.swSuppressFeature,
+                    (int)swInConfigurationOpts_e.swThisConfiguration, null);
             }
 
             return limitMates;
@@ -1132,7 +1215,8 @@ namespace SW2URDF
             foreach (Mate2 swMate in limitMates)
             {
                 Feature feat = (Feature)swMate;
-                feat.SetSuppression2((int)swFeatureSuppressionAction_e.swUnSuppressFeature, (int)swInConfigurationOpts_e.swThisConfiguration, null);
+                feat.SetSuppression2((int)swFeatureSuppressionAction_e.swUnSuppressFeature,
+                    (int)swInConfigurationOpts_e.swThisConfiguration, null);
             }
         }
 
@@ -1149,7 +1233,8 @@ namespace SW2URDF
             assy.UnfixComponent();
         }
 
-        //Verifies that the reference geometry still exists. This can happen if the reference geometry was deleted but the configuration was kept
+        //Verifies that the reference geometry still exists. This can happen if the reference
+        // geometry was deleted but the configuration was kept
         public void CheckRefGeometryExists(Joint Joint)
         {
             if (!CheckRefCoordsysExists(Joint.CoordinateSystemName))

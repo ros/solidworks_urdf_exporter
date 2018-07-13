@@ -10,7 +10,8 @@
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /// <param name="disposing">true if managed resources should be disposed; 
+        /// otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -199,7 +200,8 @@
             this.buttonLinksExportUrdfOnly.TabIndex = 94;
             this.buttonLinksExportUrdfOnly.Text = "Export URDF Only...";
             this.buttonLinksExportUrdfOnly.UseVisualStyleBackColor = true;
-            this.buttonLinksExportUrdfOnly.Click += new System.EventHandler(this.ButtonLinksExportUrdfOnlyClick);
+            this.buttonLinksExportUrdfOnly.Click += 
+                new System.EventHandler(this.ButtonLinksExportUrdfOnlyClick);
             // 
             // label2
             // 
@@ -214,7 +216,8 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(18, 14);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
@@ -224,7 +227,8 @@
             // 
             // button_links_finish
             // 
-            this.buttonLinksFinish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonLinksFinish.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonLinksFinish.Location = new System.Drawing.Point(1374, 1005);
             this.buttonLinksFinish.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonLinksFinish.Name = "button_links_finish";
@@ -246,7 +250,8 @@
             this.buttonLinksPrevious.TabIndex = 90;
             this.buttonLinksPrevious.Text = "Previous";
             this.buttonLinksPrevious.UseVisualStyleBackColor = true;
-            this.buttonLinksPrevious.Click += new System.EventHandler(this.ButtonLinksPreviousClick);
+            this.buttonLinksPrevious.Click += 
+                new System.EventHandler(this.ButtonLinksPreviousClick);
             // 
             // button_links_cancel
             // 
@@ -293,7 +298,8 @@
             this.groupBox5.Controls.Add(this.textBoxIzz);
             this.groupBox5.Controls.Add(this.label50);
             this.groupBox5.Controls.Add(this.textBoxMass);
-            this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 
+                8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox5.Location = new System.Drawing.Point(740, 134);
             this.groupBox5.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox5.Name = "groupBox5";
@@ -305,7 +311,8 @@
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label15.Location = new System.Drawing.Point(9, 0);
             this.label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label15.Name = "label15";
@@ -645,7 +652,8 @@
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label19.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F,
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label19.Location = new System.Drawing.Point(4, 0);
             this.label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label19.Name = "label19";
@@ -696,7 +704,8 @@
             this.buttonTextureBrowse.TabIndex = 59;
             this.buttonTextureBrowse.Text = "Browse...";
             this.buttonTextureBrowse.UseVisualStyleBackColor = true;
-            this.buttonTextureBrowse.Click += new System.EventHandler(this.ButtonTextureBrowseClick);
+            this.buttonTextureBrowse.Click += 
+                new System.EventHandler(this.ButtonTextureBrowseClick);
             // 
             // label28
             // 
@@ -908,7 +917,8 @@
             // treeView_linkProperties
             // 
             this.treeViewLinkProperties.AllowDrop = true;
-            this.treeViewLinkProperties.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.treeViewLinkProperties.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.treeViewLinkProperties.Location = new System.Drawing.Point(18, 122);
@@ -916,11 +926,13 @@
             this.treeViewLinkProperties.Name = "treeView_linkProperties";
             this.treeViewLinkProperties.Size = new System.Drawing.Size(698, 872);
             this.treeViewLinkProperties.TabIndex = 74;
-            this.treeViewLinkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewLinkPropertiesAfterSelect);
+            this.treeViewLinkProperties.AfterSelect += 
+                new System.Windows.Forms.TreeViewEventHandler(this.TreeViewLinkPropertiesAfterSelect);
             // 
             // button_joint_next
             // 
-            this.buttonJointNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonJointNext.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonJointNext.Location = new System.Drawing.Point(1479, 1005);
             this.buttonJointNext.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonJointNext.Name = "button_joint_next";
@@ -932,7 +944,8 @@
             // 
             // button_joint_cancel
             // 
-            this.buttonJointCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonJointCancel.Anchor = ((System.Windows.Forms.AnchorStyles)(
+                (System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonJointCancel.Location = new System.Drawing.Point(18, 1005);
             this.buttonJointCancel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.buttonJointCancel.Name = "button_joint_cancel";
@@ -945,7 +958,8 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F,
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(18, 14);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
@@ -1030,7 +1044,8 @@
             // label80
             // 
             this.label80.AutoSize = true;
-            this.label80.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label80.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label80.Location = new System.Drawing.Point(1428, 662);
             this.label80.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label80.Name = "label80";
@@ -1095,7 +1110,8 @@
             // label76
             // 
             this.label76.AutoSize = true;
-            this.label76.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label76.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label76.Location = new System.Drawing.Point(1146, 658);
             this.label76.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label76.Name = "label76";
@@ -1142,7 +1158,8 @@
             // label74
             // 
             this.label74.AutoSize = true;
-            this.label74.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label74.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label74.Location = new System.Drawing.Point(792, 658);
             this.label74.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label74.Name = "label74";
@@ -1207,7 +1224,8 @@
             // label68
             // 
             this.label68.AutoSize = true;
-            this.label68.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label68.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label68.Location = new System.Drawing.Point(1428, 414);
             this.label68.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label68.Name = "label68";
@@ -1236,7 +1254,8 @@
             // label65
             // 
             this.label65.AutoSize = true;
-            this.label65.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label65.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label65.Location = new System.Drawing.Point(778, 163);
             this.label65.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label65.Name = "label65";
@@ -1247,7 +1266,8 @@
             // label64
             // 
             this.label64.AutoSize = true;
-            this.label64.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label64.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label64.Location = new System.Drawing.Point(768, 122);
             this.label64.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label64.Name = "label64";
@@ -1258,7 +1278,8 @@
             // label63
             // 
             this.label63.AutoSize = true;
-            this.label63.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label63.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label63.Location = new System.Drawing.Point(770, 203);
             this.label63.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label63.Name = "label63";
@@ -1277,7 +1298,8 @@
             // label62
             // 
             this.label62.AutoSize = true;
-            this.label62.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label62.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, 
+                System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label62.Location = new System.Drawing.Point(1280, 203);
             this.label62.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label62.Name = "label62";
@@ -1340,7 +1362,8 @@
             // label60
             // 
             this.label60.AutoSize = true;
-            this.label60.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label60.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F,
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label60.Location = new System.Drawing.Point(1146, 414);
             this.label60.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label60.Name = "label60";
@@ -1439,7 +1462,8 @@
             // label54
             // 
             this.label54.AutoSize = true;
-            this.label54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F,
+                System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label54.Location = new System.Drawing.Point(792, 414);
             this.label54.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label54.Name = "label54";
@@ -1510,7 +1534,8 @@
             this.treeViewJointTree.Name = "treeView_jointtree";
             this.treeViewJointTree.Size = new System.Drawing.Size(690, 872);
             this.treeViewJointTree.TabIndex = 163;
-            this.treeViewJointTree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewJointtreeAfterSelect);
+            this.treeViewJointTree.AfterSelect += 
+                new System.Windows.Forms.TreeViewEventHandler(this.TreeViewJointtreeAfterSelect);
             // 
             // comboBox_axis
             // 
@@ -1521,7 +1546,8 @@
             this.comboBoxAxis.Name = "comboBox_axis";
             this.comboBoxAxis.Size = new System.Drawing.Size(700, 28);
             this.comboBoxAxis.TabIndex = 224;
-            this.comboBoxAxis.SelectedIndexChanged += new System.EventHandler(this.ComboBoxAxisSelectedIndexChanged);
+            this.comboBoxAxis.SelectedIndexChanged += 
+                new System.EventHandler(this.ComboBoxAxisSelectedIndexChanged);
             // 
             // comboBox_origin
             // 
@@ -1560,9 +1586,9 @@
             this.label69.Name = "label69";
             this.label69.Size = new System.Drawing.Size(676, 82);
             this.label69.TabIndex = 228;
-            this.label69.Text = "Customize the joint properties. If you want to adjust the coordinate systems and " +
-    "axes in the model, click cancel and restart the export. The tool will recognize " +
-    "your changes on the next run.";
+            this.label69.Text = "Customize the joint properties. If you want to adjust the " + 
+                "coordinate systems and axes in the model, click cancel and restart the export. " +
+                "The tool will recognize your changes on the next run.";
             // 
             // label4
             // 

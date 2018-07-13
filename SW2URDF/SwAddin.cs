@@ -115,11 +115,13 @@ namespace SW2URDF
                 keyname = "Software\\SolidWorks\\AddInsStartup\\{" + t.GUID.ToString() + "}";
                 logger.Info("Registering " + keyname);
                 addinkey = hkcu.CreateSubKey(keyname);
-                addinkey.SetValue(null, Convert.ToInt32(SWattr.LoadAtStartup), Microsoft.Win32.RegistryValueKind.DWord);
+                addinkey.SetValue(
+                    null, Convert.ToInt32(SWattr.LoadAtStartup), Microsoft.Win32.RegistryValueKind.DWord);
             }
             catch (NullReferenceException nl)
             {
-                logger.Error("There was a problem registering this dll: SWattr is null. \n\"" + nl.Message + "\"", nl);
+                logger.Error("There was a problem registering this dll: SWattr is null. \n\"" +
+                    nl.Message + "\"", nl);
                 MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
                     nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
@@ -151,13 +153,15 @@ namespace SW2URDF
             {
                 logger.Error("There was a problem unregistering this dll: " + nl.Message);
                 MessageBox.Show("There was a problem unregistering this dll: \n\"" +
-                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                    nl.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
             catch (Exception e)
             {
                 logger.Error("There was a problem unregistering this dll: " + e.Message);
                 MessageBox.Show("There was a problem unregistering this dll: \n\"" +
-                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                    e.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -167,9 +171,11 @@ namespace SW2URDF
 
         public SwAddin()
         {
-            Application.ThreadException += new ThreadExceptionEventHandler(ExceptionHandler);
+            Application.ThreadException +=
+                new ThreadExceptionEventHandler(ExceptionHandler);
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledException);
+            AppDomain.CurrentDomain.UnhandledException +=
+                new UnhandledExceptionEventHandler(UnhandledException);
             Logger.Setup();
         }
 
@@ -180,7 +186,8 @@ namespace SW2URDF
 
         private void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer with the log file found at " +
+            logger.Error("Unhandled exception in Assembly Export form\nEmail your maintainer " +
+                "with the log file found at " +
                 Logger.GetFileName(), (Exception)e.ExceptionObject);
         }
 
@@ -267,7 +274,8 @@ namespace SW2URDF
                 saveAndRebuild = true;
                 logger.Info("Save is required");
             }
-            else if (modeldoc.Extension.NeedsRebuild2 != (int)swModelRebuildStatus_e.swModelRebuildStatus_FullyRebuilt)
+            else if (modeldoc.Extension.NeedsRebuild2 !=
+                (int)swModelRebuildStatus_e.swModelRebuildStatus_FullyRebuilt)
             {
                 saveAndRebuild = true;
                 logger.Info("A rebuild is required");
@@ -296,7 +304,8 @@ namespace SW2URDF
             {
                 logger.Error("An exception was caught when trying to setup the assembly exporter", e);
                 MessageBox.Show("There was a problem setting up the property manager: \n\"" +
-                    e.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                    e.Message + "\"\nEmail your maintainer with the log file found at " +
+                    Logger.GetFileName());
             }
         }
 
@@ -315,7 +324,8 @@ namespace SW2URDF
             ModelDoc2 modeldoc = SwApp.ActiveDoc;
             if ((modeldoc.Extension.NeedsRebuild2 == 0) ||
                 MessageBox.Show("Save and rebuild document?",
-                "The SW to URDF exporter requires saving before continuing", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                "The SW to URDF exporter requires saving before continuing",
+                MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 if (modeldoc.Extension.NeedsRebuild2 != 0)
                 {
@@ -340,8 +350,8 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Error("Excoption caught setting up export form", e);
-                MessageBox.Show("An exception occured setting up the export form, please email your " +
-                    "maintainer with the log file found at " + Logger.GetFileName());
+                MessageBox.Show("An exception occured setting up the export form, please email " +
+                    " your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -350,7 +360,8 @@ namespace SW2URDF
             FlyoutGroup flyGroup = CmdMgr.GetFlyoutGroup(flyoutGroupID);
             flyGroup.RemoveAllCommandItems();
 
-            flyGroup.AddCommandItem(DateTime.Now.ToLongTimeString(), "test", 0, "FlyoutCommandItem1", "FlyoutEnableCommandItem1");
+            flyGroup.AddCommandItem(
+                DateTime.Now.ToLongTimeString(), "test", 0, "FlyoutCommandItem1", "FlyoutEnableCommandItem1");
         }
 
         public int FlyoutEnable()
@@ -384,11 +395,16 @@ namespace SW2URDF
         {
             try
             {
-                SwEventPtr.ActiveDocChangeNotify += new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(OnDocChange);
-                SwEventPtr.DocumentLoadNotify2 += new DSldWorksEvents_DocumentLoadNotify2EventHandler(OnDocLoad);
-                SwEventPtr.FileNewNotify2 += new DSldWorksEvents_FileNewNotify2EventHandler(OnFileNew);
-                SwEventPtr.ActiveModelDocChangeNotify += new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(OnModelChange);
-                SwEventPtr.FileOpenPostNotify += new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
+                SwEventPtr.ActiveDocChangeNotify +=
+                    new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(OnDocChange);
+                SwEventPtr.DocumentLoadNotify2 +=
+                    new DSldWorksEvents_DocumentLoadNotify2EventHandler(OnDocLoad);
+                SwEventPtr.FileNewNotify2 +=
+                    new DSldWorksEvents_FileNewNotify2EventHandler(OnFileNew);
+                SwEventPtr.ActiveModelDocChangeNotify +=
+                    new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(OnModelChange);
+                SwEventPtr.FileOpenPostNotify +=
+                    new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
                 return true;
             }
             catch (Exception e)
@@ -402,11 +418,16 @@ namespace SW2URDF
         {
             try
             {
-                SwEventPtr.ActiveDocChangeNotify -= new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(OnDocChange);
-                SwEventPtr.DocumentLoadNotify2 -= new DSldWorksEvents_DocumentLoadNotify2EventHandler(OnDocLoad);
-                SwEventPtr.FileNewNotify2 -= new DSldWorksEvents_FileNewNotify2EventHandler(OnFileNew);
-                SwEventPtr.ActiveModelDocChangeNotify -= new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(OnModelChange);
-                SwEventPtr.FileOpenPostNotify -= new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
+                SwEventPtr.ActiveDocChangeNotify -=
+                    new DSldWorksEvents_ActiveDocChangeNotifyEventHandler(OnDocChange);
+                SwEventPtr.DocumentLoadNotify2 -=
+                    new DSldWorksEvents_DocumentLoadNotify2EventHandler(OnDocLoad);
+                SwEventPtr.FileNewNotify2 -=
+                    new DSldWorksEvents_FileNewNotify2EventHandler(OnFileNew);
+                SwEventPtr.ActiveModelDocChangeNotify -=
+                    new DSldWorksEvents_ActiveModelDocChangeNotifyEventHandler(OnModelChange);
+                SwEventPtr.FileOpenPostNotify -=
+                    new DSldWorksEvents_FileOpenPostNotifyEventHandler(FileOpenPostNotify);
                 return true;
             }
             catch (Exception e)

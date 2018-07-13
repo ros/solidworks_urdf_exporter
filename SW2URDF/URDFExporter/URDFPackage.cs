@@ -69,7 +69,8 @@ namespace SW2URDF
 
         public void CreateDirectories()
         {
-            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" + PackageName + "\" at:\n" + WindowsPackageDirectory);
+            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" +
+                PackageName + "\" at:\n" + WindowsPackageDirectory);
             if (!Directory.Exists(WindowsPackageDirectory))
             {
                 Directory.CreateDirectory(WindowsPackageDirectory);

@@ -166,16 +166,19 @@ namespace SW2URDF
             return FindLeadingOneinVector(v, 0, v.Count);
         }
 
-        // Sets a lower bound in case this vector only has values thare are to the right of other leading ones
+        // Sets a lower bound in case this vector only has values thare are to the right of
+        // other leading ones
         public static int FindLeadingOneinVector(Vector v, int lowerBound)
         {
             return FindLeadingOneinVector(v, lowerBound, v.Count);
         }
 
-        // Sets an upper bound to reduce the number of computations. I.E in a rref matrix the 1 should be on or above the diagonal
+        // Sets an upper bound to reduce the number of computations. I.E in a rref matrix
+        // the 1 should be on or above the diagonal
         public static int FindLeadingOneinVector(Vector v, int lowerBound, int upperBound)
         {
-            // If the upperBound is less than the lowerBound, the vector is searched backwards (to help speed up computation in some cases)
+            // If the upperBound is less than the lowerBound, the vector is searched backwards
+            // (to help speed up computation in some cases)
             if (upperBound < lowerBound)
             {
                 for (int i = upperBound - 1; i >= lowerBound; i--)
@@ -214,7 +217,8 @@ namespace SW2URDF
             return m;
         }
 
-        // Finds the first empty (all entries are 0) row in a matrix. Returns -1 if no row is non-zero
+        // Finds the first empty (all entries are 0) row in a matrix. Returns -1 if no row is
+        // non-zero
         public static int FirstEmptyRow(Matrix m)
         {
             for (int i = 0; i < m.RowCount; i++)
@@ -264,14 +268,23 @@ namespace SW2URDF
             return result;
         }
 
-        public static double[] ClosestPointOnLineWithinBox(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, double[] line, double[] pointOnLine)
+        public static double[] ClosestPointOnLineWithinBox(
+            double xMin, double xMax, double yMin, double yMax, double zMin, double zMax,
+            double[] line, double[] pointOnLine)
         {
-            if (pointOnLine[0] > xMin && pointOnLine[0] < xMax && pointOnLine[1] > yMin && pointOnLine[1] < yMax && pointOnLine[2] > zMin && pointOnLine[2] < zMax)
+            if (pointOnLine[0] > xMin &&
+                pointOnLine[0] < xMax &&
+                pointOnLine[1] > yMin &&
+                pointOnLine[1] < yMax &&
+                pointOnLine[2] > zMin &&
+                pointOnLine[2] < zMax)
             {
                 return pointOnLine;
             }
-            double[] point1 = ClosestPointOnLineToPoint(new double[] { xMax, yMax, zMax }, line, pointOnLine);
-            double[] point2 = ClosestPointOnLineToPoint(new double[] { xMin, yMin, zMin }, line, pointOnLine);
+            double[] point1 =
+                ClosestPointOnLineToPoint(new double[] { xMax, yMax, zMax }, line, pointOnLine);
+            double[] point2 =
+                ClosestPointOnLineToPoint(new double[] { xMin, yMin, zMin }, line, pointOnLine);
 
             if (Distance2(pointOnLine, point1) < Distance2(pointOnLine, point2))
             {
@@ -372,7 +385,9 @@ namespace SW2URDF
         public static double[] GetXYZ(MathTransform transform)
         {
             double[] XYZ = new double[3];
-            XYZ[0] = transform.ArrayData[9]; XYZ[1] = transform.ArrayData[10]; XYZ[2] = transform.ArrayData[11];
+            XYZ[0] = transform.ArrayData[9];
+            XYZ[1] = transform.ArrayData[10];
+            XYZ[2] = transform.ArrayData[11];
             return XYZ;
         }
 
@@ -411,9 +426,20 @@ namespace SW2URDF
             Matrix<double> RY = DenseMatrix.Identity(4);
             Matrix<double> RZ = DenseMatrix.Identity(4);
 
-            RX[1, 1] = Math.Cos(RPY[0]); RX[1, 2] = -Math.Sin(RPY[0]); RX[2, 1] = Math.Sin(RPY[0]); RX[2, 2] = Math.Cos(RPY[0]);
-            RY[0, 0] = Math.Cos(RPY[1]); RY[0, 2] = Math.Sin(RPY[1]); RY[2, 0] = -Math.Sin(RPY[1]); RY[2, 2] = Math.Cos(RPY[1]);
-            RZ[0, 0] = Math.Cos(RPY[2]); RZ[0, 1] = -Math.Sin(RPY[2]); RZ[1, 0] = Math.Sin(RPY[2]); RZ[1, 1] = Math.Cos(RPY[2]);
+            RX[1, 1] = Math.Cos(RPY[0]);
+            RX[1, 2] = -Math.Sin(RPY[0]);
+            RX[2, 1] = Math.Sin(RPY[0]);
+            RX[2, 2] = Math.Cos(RPY[0]);
+
+            RY[0, 0] = Math.Cos(RPY[1]);
+            RY[0, 2] = Math.Sin(RPY[1]);
+            RY[2, 0] = -Math.Sin(RPY[1]);
+            RY[2, 2] = Math.Cos(RPY[1]);
+
+            RZ[0, 0] = Math.Cos(RPY[2]);
+            RZ[0, 1] = -Math.Sin(RPY[2]);
+            RZ[1, 0] = Math.Sin(RPY[2]);
+            RZ[1, 1] = Math.Cos(RPY[2]);
 
             return RZ * RY * RX;
         }
@@ -446,7 +472,8 @@ namespace SW2URDF
             return rot;
         }
 
-        public static Matrix<double> GetTransformation(Vector<double> translationVector, Vector<double> rotationVector, double angle)
+        public static Matrix<double> GetTransformation(
+            Vector<double> translationVector, Vector<double> rotationVector, double angle)
         {
             Matrix<double> transform = DenseMatrix.Identity(4);
 

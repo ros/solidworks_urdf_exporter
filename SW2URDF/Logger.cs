@@ -32,8 +32,8 @@ namespace SW2URDF
 
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
-            // This ConversionPattern is slow because any location-based parameter in log4net is slow. If it becomes an issue
-            // this might have to be wrapped into a compile time macro
+            // This ConversionPattern is slow because any location-based parameter in log4net is
+            // slow. If it becomes an issue this might have to be wrapped into a compile time macro
             PatternLayout patternLayout = new PatternLayout()
             {
                 ConversionPattern = "%date %-5level %filename: %line - %message%newline"
@@ -78,7 +78,8 @@ namespace SW2URDF
 
         public static string GetFileName()
         {
-            var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
+            var rootAppender =
+                LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
                                          .FirstOrDefault();
             if (rootAppender != null)
             {
