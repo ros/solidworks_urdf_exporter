@@ -21,6 +21,7 @@ namespace SW2URDF
     public class Logger
     {
         private static bool Initialized = false;
+
         public static void Setup()
         {
             if (Initialized)
@@ -38,9 +39,10 @@ namespace SW2URDF
             patternLayout.AddConverter("filename", typeof(FileNamePatternConverter));
             patternLayout.ActivateOptions();
 
+            string homeDir = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             RollingFileAppender roller = new RollingFileAppender();
             roller.AppendToFile = false;
-            roller.File = @"C:\\sw2urdf_logs\\sw2urdf.log";
+            roller.File = homeDir + @"\\sw2urdf_logs\\sw2urdf.log";
             roller.Layout = patternLayout;
             roller.MaxSizeRollBackups = 5;
             roller.MaximumFileSize = "10MB";

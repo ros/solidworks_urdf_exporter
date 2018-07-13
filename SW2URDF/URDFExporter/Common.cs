@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,12 +22,16 @@ THE SOFTWARE.
 
 using System.Collections.Generic;
 using System.Windows.Forms;
+using log4net;
 using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
     public static class Common
     {
+        private readonly static ILog logger = Logger.GetLogger();
+
         //Selects the components of a link. Helps highlight when the associated node is selected from the tree
         public static void selectComponents(ModelDoc2 model, link Link, bool clearSelection, int mark = -1)
         {
@@ -91,7 +89,6 @@ namespace SW2URDF
             }
         }
 
-
         //finds all the hidden components, which will be added to a new display state. Also used when exporting STLs, so that hidden components
         //remain hidden
         public static List<string> findHiddenComponents(object[] varComp)
@@ -136,7 +133,6 @@ namespace SW2URDF
         {
             selectComponents(model, Link, true);
             model.ShowComponent2();
-
         }
 
         //Hides the components from a link
@@ -208,8 +204,6 @@ namespace SW2URDF
             }
         }
 
-
-
         //Converts the SW component references to PIDs
         public static void saveSWComponents(ModelDoc2 model, link Link)
         {
@@ -251,12 +245,16 @@ namespace SW2URDF
             return null;
         }
 
-
         // Converts the PIDs to actual references to the components and proceeds recursively through the child links
         public static void loadSWComponents(ModelDoc2 model, link Link)
         {
             Link.SWMainComponent = loadSWComponent(model, Link.SWMainComponentPID);
+            logger.Info("Loading components for " + Link.name);
+            logger.Info("Main component ID " + Link.SWMainComponentPID);
+            logger.Info("Additional components " + string.Join("\n", Link.SWMainComponentPID));
+
             Link.SWcomponents = loadSWComponents(model, Link.SWComponentPIDs);
+
             foreach (link Child in Link.Children)
             {
                 loadSWComponents(model, Child);
@@ -266,7 +264,15 @@ namespace SW2URDF
         // Converts the PIDs to actual references to the components and proceeds recursively through the child nodes
         public static void loadSWComponents(ModelDoc2 model, LinkNode node)
         {
+            logger.Info("Loading SolidWorks components for " +
+                node.linkName + " from " + model.GetPathName());
+
             node.Components = loadSWComponents(model, node.ComponentPIDs);
+            if (node.Components.Count != node.ComponentPIDs.Count)
+            {
+                logger.Error("Link " + node.linkName + " did not fully load all components");
+            }
+            logger.Info("Loaded " + node.Components.Count + " components for link " + node.linkName);
 
             foreach (LinkNode Child in node.Nodes)
             {
@@ -280,7 +286,10 @@ namespace SW2URDF
             List<Component2> components = new List<Component2>();
             foreach (byte[] PID in PIDs)
             {
-                components.Add(loadSWComponent(model, PID));
+                logger.Info("Loading component with PID " + PID);
+                Component2 comp = loadSWComponent(model, PID);
+                components.Add(comp);
+                logger.Info("Successfully loaded component " + comp.GetPathName());
             }
             return components;
         }
@@ -292,6 +301,32 @@ namespace SW2URDF
             if (PID != null)
             {
                 return (Component2)model.Extension.GetObjectByPersistReference3(PID, out Errors);
+            }
+            else
+            {
+                logger.Error("PID " + PID + " was null. Is the configuration corrupted?");
+            }
+            if (Errors != 0)
+            {
+                switch ((swPersistReferencedObjectStates_e)Errors)
+                {
+                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Deleted:
+                        logger.Error("The component associated with PID " + PID + " was deleted");
+                        break;
+
+                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Invalid:
+                        logger.Error("the component associated with PID " + PID + " was found to be invalid");
+                        break;
+
+                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
+                        logger.Error("The component associated with PID " + PID + " is suppressed");
+                        break;
+
+                    default:
+                        logger.Error("The component associated with PID " + PID +
+                            " was not loaded due to an unspecified error (" + Errors + ")");
+                        break;
+                }
             }
             return null;
         }
