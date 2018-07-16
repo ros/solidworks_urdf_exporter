@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 
@@ -456,6 +457,30 @@ namespace SW2URDF
             return Link;
         }
 
+        private bool CheckLinkAlpha(Link node)
+        {
+            return node.Visual.Material.Color.Alpha == 1.0;
+        }
+
+        private void CheckLinksForWarnings(Link node, StringBuilder builder)
+        {
+            if (!CheckLinkAlpha(node))
+            {
+                builder.Append(node.Name + " has an Visual Alpha color below 1.0");
+            }
+            foreach (Link child in node.Children)
+            {
+                CheckLinksForWarnings(child, builder);
+            }
+        }
+
+        private string CheckLinksForWarnings(Link baseNode)
+        {
+            StringBuilder builder = new StringBuilder();
+            CheckLinksForWarnings(baseNode, builder);
+            return builder.ToString();
+        }
+
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
@@ -477,7 +502,6 @@ namespace SW2URDF
                 }
             }
 
-            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
             Common.RetrieveSWComponentPIDs(model, BaseNode);
             SerialNode sNode = new SerialNode(BaseNode);
 

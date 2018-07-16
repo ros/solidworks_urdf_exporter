@@ -194,6 +194,25 @@ namespace SW2URDF
         {
             logger.Info("Completing URDF export");
             SaveConfigTree(ActiveSWModel, BaseNode, false);
+
+            string warnings = CheckLinksForWarnings(BaseNode.Link);
+
+            if (!string.IsNullOrWhiteSpace(warnings))
+            {
+                logger.Info("Link warnings encountered\n" + warnings);
+
+                string message = "The following links contained issues that may cause problems. " +
+                "Do you wish to proceed?\n" + warnings;
+                DialogResult result =
+                    MessageBox.Show(message, "URDF Warnings", MessageBoxButtons.YesNo);
+
+                if (result == DialogResult.No)
+                {
+                    logger.Info("Export canceled for user to review warnings");
+                    return;
+                }
+            }
+
             SaveFileDialog saveFileDialog1 = new SaveFileDialog
             {
                 RestoreDirectory = true,
