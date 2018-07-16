@@ -1,18 +1,19 @@
-﻿using log4net;
-using log4net.Repository.Hierarchy;
-using log4net.Core;
-using log4net.Appender;
-using log4net.Layout;
-using System;
-using System.Linq;
-using log4net.Layout.Pattern;
+﻿using System;
 using System.IO;
+using System.Linq;
+
+using log4net;
+using log4net.Appender;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Layout.Pattern;
+using log4net.Repository.Hierarchy;
 
 namespace SW2URDF
 {
     public class FileNamePatternConverter : PatternLayoutConverter
     {
-        override protected void Convert(TextWriter writer, LoggingEvent loggingEvent)
+        protected override void Convert(TextWriter writer, LoggingEvent loggingEvent)
         {
             writer.Write(Path.GetFileName(loggingEvent.LocationInformation.FileName));
         }
@@ -21,6 +22,7 @@ namespace SW2URDF
     public class Logger
     {
         private static bool Initialized = false;
+
         public static void Setup()
         {
             if (Initialized)
@@ -30,22 +32,27 @@ namespace SW2URDF
 
             Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
-            PatternLayout patternLayout = new PatternLayout();
+            // This ConversionPattern is slow because any location-based parameter in log4net is
+            // slow. If it becomes an issue this might have to be wrapped into a compile time macro
+            PatternLayout patternLayout = new PatternLayout()
+            {
+                ConversionPattern = "%date %-5level %filename: %line - %message%newline"
+            };
 
-            // This ConversionPattern is slow because any location-based parameter in log4net is slow. If it becomes an issue
-            // this might have to be wrapped into a compile time macro
-            patternLayout.ConversionPattern = "%date %-5level %filename: %line - %message%newline";
             patternLayout.AddConverter("filename", typeof(FileNamePatternConverter));
             patternLayout.ActivateOptions();
 
-            RollingFileAppender roller = new RollingFileAppender();
-            roller.AppendToFile = false;
-            roller.File = @"C:\\sw2urdf_logs\\sw2urdf.log";
-            roller.Layout = patternLayout;
-            roller.MaxSizeRollBackups = 5;
-            roller.MaximumFileSize = "10MB";
-            roller.RollingStyle = RollingFileAppender.RollingMode.Size;
-            roller.StaticLogFileName = true;
+            RollingFileAppender roller = new RollingFileAppender
+            {
+                AppendToFile = false,
+                File = @"C:\\sw2urdf_logs\\sw2urdf.log",
+                Layout = patternLayout,
+                MaxSizeRollBackups = 5,
+                MaximumFileSize = "10MB",
+                RollingStyle = RollingFileAppender.RollingMode.Size,
+                StaticLogFileName = true
+            };
+
             roller.ActivateOptions();
             hierarchy.Root.AddAppender(roller);
 
@@ -55,23 +62,24 @@ namespace SW2URDF
 
             hierarchy.Root.Level = Level.Info;
             hierarchy.Configured = true;
-            Logger.Initialized = true;
-            var logger = log4net.LogManager.GetLogger(
+            Initialized = true;
+            var logger = LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
             logger.Info("\n" + String.Concat(Enumerable.Repeat("-", 80)));
             logger.Info("Logging commencing for SW2URDF exporter");
         }
 
-        public static log4net.ILog GetLogger()
+        public static ILog GetLogger()
         {
-            Logger.Setup();
-            return log4net.LogManager.GetLogger(
+            Setup();
+            return LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         }
 
         public static string GetFileName()
         {
-            var rootAppender = LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
+            var rootAppender =
+                LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
                                          .FirstOrDefault();
             if (rootAppender != null)
             {

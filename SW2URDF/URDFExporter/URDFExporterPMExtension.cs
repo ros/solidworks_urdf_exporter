@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,23 +22,23 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
+
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
-using System.Drawing;
 
 namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
-
         public AttributeDef saveConfigurationAttributeDef;
 
-        public void saveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
             string oldData = "";
@@ -55,7 +49,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         param = att.GetParameter("data");
@@ -64,7 +59,7 @@ namespace SW2URDF
                 }
             }
             //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
-            retrieveSWComponentPIDs(BaseNode);
+            RetrieveSWComponentPIDs(BaseNode);
             SerialNode sNode = new SerialNode(BaseNode);
             StringWriter stringWriter;
             XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
@@ -76,13 +71,14 @@ namespace SW2URDF
             string newData = stringWriter.ToString();
             if (oldData != newData)
             {
-                if (!warnUser || 
-                    (warnUser && 
-                    MessageBox.Show("The configuration has changed, would you like to save?", "Save Export Configuration", 
-                    MessageBoxButtons.YesNo) == DialogResult.Yes))
+                if (!warnUser ||
+                    (warnUser &&
+                    MessageBox.Show("The configuration has changed, would you like to save?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
                 {
                     int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = createSWSaveAttribute("URDF Export Configuration");
+                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                        CreateSWSaveAttribute("URDF Export Configuration");
                     param = saveExporterAttribute.GetParameter("data");
                     param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("name");
@@ -94,29 +90,29 @@ namespace SW2URDF
                 }
             }
         }
- 
 
-
-        //As nodes are created and destroyed, this menu gets called a lot. It basically just adds the context menu (right-click menu)
-        // to the node
-        public void addDocMenu(LinkNode node)
+        //As nodes are created and destroyed, this menu gets called a lot. It basically just
+        // adds the context menu (right-click menu) to the node
+        public void AddDocMenu(LinkNode node)
         {
             node.ContextMenuStrip = docMenu;
             foreach (LinkNode child in node.Nodes)
             {
-                addDocMenu(child);
+                AddDocMenu(child);
             }
         }
 
-        // Gets all the features in the SolidWorks model doc that match the specific feature name, and updates the specified combobox.
-        private void updateComboBoxFromFeatures(PropertyManagerPageCombobox box, string featureName)
+        // Gets all the features in the SolidWorks model doc that match the specific feature name,
+        // and updates the specified combobox.
+        private void UpdateComboBoxFromFeatures(
+            PropertyManagerPageCombobox box, string featureName)
         {
             List<string> featureNames = Exporter.FindRefGeoNames(featureName);
-            fillComboBox(box, featureNames);
+            FillComboBox(box, featureNames);
         }
 
         // Populates the combo box with feature names
-        private void fillComboBox(PropertyManagerPageCombobox box, List<string> featureNames)
+        private void FillComboBox(PropertyManagerPageCombobox box, List<string> featureNames)
         {
             box.Clear();
             box.AddItems("Automatically Generate");
@@ -126,18 +122,21 @@ namespace SW2URDF
             }
         }
 
-        // Finds the specified item in a combobox and sets the box to it. I'm not sure why I couldn't do this with a foreach loop
-        // or even a for loop, but there is no way to get the current number of items in the menu
-        private void selectComboBox(PropertyManagerPageCombobox box, string item)
+        // Finds the specified item in a combobox and sets the box to it. I'm not sure why I
+        // couldn't do this with a foreach loop or even a for loop, but there is no way to get
+        // the current number of items in the menu
+        private void SelectComboBox(PropertyManagerPageCombobox box, string item)
         {
             short i = 0;
             string itemtext = "nothing";
             box.CurrentSelection = 0;
 
-            // Cycles through the menu items until it finds what its looking for, it finds blank strings, or itemtext is null
-            while (itemtext != null && itemtext != "" && itemtext != item)
+            // Cycles through the menu items until it finds what its looking for, it finds
+            // blank strings, or itemtext is null
+            while (String.IsNullOrWhiteSpace(itemtext) && itemtext != item)
             {
-                // Gets the item text at index in a pull-down menu. No way to now how many items are in the combobox
+                // Gets the item text at index in a pull-down menu. No way to now how many
+                // items are in the combobox
                 itemtext = box.get_ItemText(i);
                 if (itemtext == item)
                 {
@@ -148,92 +147,93 @@ namespace SW2URDF
         }
 
         // Adds an asterix to the node text if it is incomplete (not currently used)
-        private void updateNodeNames(TreeView tree)
+        private void UpdateNodeNames(TreeView tree)
         {
             foreach (LinkNode node in tree.Nodes)
             {
-                updateNodeNames(node);
+                UpdateNodeNames(node);
             }
         }
 
         // Adds an asterix to the node text if it is incomplete (not currently used)
-        private void updateNodeNames(LinkNode node)
+        private void UpdateNodeNames(LinkNode node)
         {
-            if (node.isIncomplete)
+            if (node.IsIncomplete)
             {
-                node.Text = node.linkName + "*";
+                node.Text = node.LinkName + "*";
             }
             foreach (LinkNode child in node.Nodes)
             {
-                updateNodeNames(child);
+                UpdateNodeNames(child);
             }
         }
 
         // Determines how many nodes need to be built, and they are added to the current node
-        private void createNewNodes(LinkNode CurrentlySelectedNode)
+        private void CreateNewNodes(LinkNode CurrentlySelectedNode)
         {
-            int nodesToBuild = (int)pm_NumberBox_ChildCount.Value - CurrentlySelectedNode.Nodes.Count;
-            createNewNodes(CurrentlySelectedNode, nodesToBuild);
+            int nodesToBuild = (int)PMNumberBoxChildCount.Value - CurrentlySelectedNode.Nodes.Count;
+            CreateNewNodes(CurrentlySelectedNode, nodesToBuild);
         }
 
         // Adds the number of empty nodes to the currently active node
-        private void createNewNodes(LinkNode currentNode, int number)
+        private void CreateNewNodes(LinkNode currentNode, int number)
         {
             for (int i = 0; i < number; i++)
             {
-                LinkNode node = createEmptyNode(currentNode);
+                LinkNode node = CreateEmptyNode(currentNode);
                 currentNode.Nodes.Add(node);
             }
             for (int i = 0; i < -number; i++)
             {
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
-            int itemsCount = Common.getCount(tree.Nodes);
-            int itemHeight = 1 + itemsCount * tree.ItemHeight;
+            int itemsCount = Common.GetCount(Tree.Nodes);
+            int itemHeight = 1 + itemsCount * Tree.ItemHeight;
             int min = 163;
             int max = 600;
 
-            int height = ops.envelope(itemHeight, min, max);
-            tree.Height = height;
-            pm_tree.Height = height;
+            int height = MathOps.Envelope(itemHeight, min, max);
+            Tree.Height = height;
+            PMTree.Height = height;
             currentNode.ExpandAll();
         }
 
-        // When a new node is selected or another node is found that needs to be visited, this method saves the previously
-        // active node and fills in the property mananger with the new one
-        public void switchActiveNodes(LinkNode node)
+        // When a new node is selected or another node is found that needs to be visited, this
+        // method saves the previously active node and fills in the property mananger with the new one
+        public void SwitchActiveNodes(LinkNode node)
         {
-            saveActiveNode();
+            SaveActiveNode();
 
-            Font fontRegular = new Font(tree.Font, FontStyle.Regular);
-            Font fontBold = new Font(tree.Font, FontStyle.Bold);
+            Font fontRegular = new Font(Tree.Font, FontStyle.Regular);
+            Font fontBold = new Font(Tree.Font, FontStyle.Bold);
             if (previouslySelectedNode != null)
             {
                 previouslySelectedNode.NodeFont = fontRegular;
             }
-            fillPropertyManager(node);
+            FillPropertyManager(node);
 
-            //If this flag is set to true, it prevents this method from getting called again when changing the selected node
+            //If this flag is set to true, it prevents this method from getting called again when
+            // changing the selected node
             automaticallySwitched = true;
 
             //Change the selected node to the argument node. This highlights the newly activated node
-            tree.SelectedNode = node;
+            Tree.SelectedNode = node;
 
             node.NodeFont = fontBold;
             node.Text = node.Text;
             previouslySelectedNode = node;
-            checkNodeComplete(node);
+            CheckNodeComplete(node);
         }
 
-        // This method runs through first the child nodes of the selected node to see if there are more to visit
-        // then it runs through the nodes top to bottom to find the next to visit. Returns the node if one is found
-        // otherwise it returns null.
-        public LinkNode findNextLinkToVisit(System.Windows.Forms.TreeView tree)
+        // This method runs through first the child nodes of the selected node to see if there are
+        // more to visit then it runs through the nodes top to bottom to find the next to visit.
+        // Returns the node if one is found otherwise it returns null.
+        public LinkNode FindNextLinkToVisit(TreeView tree)
         {
             // First check if SelectedNode has any nodes to visit
             if (tree.SelectedNode != null)
             {
-                LinkNode nodeToReturn = findNextLinkToVisit((LinkNode)tree.SelectedNode);
+                LinkNode nodeToReturn = FindNextLinkToVisit((LinkNode)tree.SelectedNode);
                 if (nodeToReturn != null)
                 {
                     return nodeToReturn;
@@ -241,11 +241,11 @@ namespace SW2URDF
             }
 
             // Now run through tree to see if any other nodes need to be visited
-            return findNextLinkToVisit((LinkNode)tree.Nodes[0]);
+            return FindNextLinkToVisit((LinkNode)tree.Nodes[0]);
         }
 
         // Finds the next incomplete node and returns that
-        public LinkNode findNextLinkToVisit(LinkNode nodeToCheck)
+        public LinkNode FindNextLinkToVisit(LinkNode nodeToCheck)
         {
             if (nodeToCheck.Link.isIncomplete)
             {
@@ -253,195 +253,207 @@ namespace SW2URDF
             }
             foreach (LinkNode node in nodeToCheck.Nodes)
             {
-                return findNextLinkToVisit(node);
+                return FindNextLinkToVisit(node);
             }
             return null;
         }
 
         //Sets the node's isIncomplete flag if the node has key items that need to be completed
-        public void checkNodeComplete(LinkNode node)
+        public void CheckNodeComplete(LinkNode node)
         {
-            node.whyIncomplete = "";
-            node.isIncomplete = false;
-            if (node.linkName.Equals(""))
+            node.WhyIncomplete = "";
+            node.IsIncomplete = false;
+            if (String.IsNullOrWhiteSpace(node.LinkName))
             {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
+                node.IsIncomplete = true;
+                node.WhyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
             }
             if (node.Nodes.Count > 0 && node.Components.Count == 0)
             {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Links with children cannot be empty. Select its associated components\r\n";
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        Links with children cannot be empty. Select its associated components\r\n";
             }
-            if (node.Components.Count == 0 && node.coordsysName == "Automatically Generate")
+            if (node.Components.Count == 0 && node.CoordsysName == "Automatically Generate")
             {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        The origin reference coordinate system cannot be automatically generated\r\n";
-                node.whyIncomplete += "        without components. Either select an origin or at least one component.";
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        The origin reference coordinate system cannot be automatically generated\r\n";
+                node.WhyIncomplete +=
+                    "        without components. Either select an origin or at least one component.";
             }
-            if (node.jointName == "" && !node.isBaseNode)
+            if (String.IsNullOrWhiteSpace(node.JointName) && !node.IsBaseNode)
             {
-                node.isIncomplete = true;
-                node.whyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
+                node.IsIncomplete = true;
+                node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
             }
         }
 
         //Recursive function to iterate though nodes and build a message containing those that are incomplete
-        public string checkNodesComplete(LinkNode node, string incompleteNodes)
+        public string CheckNodesComplete(LinkNode node, string incompleteNodes)
         {
             // Determine if the node is incomplete
-            checkNodeComplete(node);
-            if (node.isIncomplete)
+            CheckNodeComplete(node);
+            if (node.IsIncomplete)
             {
-                incompleteNodes += "    '" + node.Text + "':\r\n" + node.whyIncomplete + "\r\n\r\n"; //Building the message
+                //Building the message
+                incompleteNodes += "    '" + node.Text + "':\r\n" + node.WhyIncomplete + "\r\n\r\n";
             }
             // Cycle through the rest of the nodes
             foreach (LinkNode child in node.Nodes)
             {
-                incompleteNodes = checkNodesComplete(child, incompleteNodes);
+                incompleteNodes = CheckNodesComplete(child, incompleteNodes);
             }
             return incompleteNodes;
         }
 
         //Finds all the nodes in a TreeView that need to be completed before exporting
-        public bool checkNodesComplete(TreeView tree)
+        public bool CheckNodesComplete(TreeView tree)
         {
-            //Calls the recursive function starting with the base_link node and retrieves a string identifying the incomplete nodes
-            string incompleteNodes = checkNodesComplete((LinkNode)tree.Nodes[0], "");
-            if (incompleteNodes != "")
+            //Calls the recursive function starting with the base_link node and retrieves a string
+            // identifying the incomplete nodes
+            string incompleteNodes = CheckNodesComplete((LinkNode)tree.Nodes[0], "");
+            if (!String.IsNullOrWhiteSpace(incompleteNodes))
             {
-                MessageBox.Show("The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
+                MessageBox.Show(
+                    "The following nodes are incomplete. You need to fix them before continuing.\r\n\r\n" + incompleteNodes);
                 return false;
             }
             return true;
         }
 
         // When the selected node is changed, the previously active node needs to be saved
-        public void saveActiveNode()
+        public void SaveActiveNode()
         {
             if (previouslySelectedNode != null)
             {
-                previouslySelectedNode.linkName = pm_TextBox_LinkName.Text;
-                if (!previouslySelectedNode.isBaseNode)
+                previouslySelectedNode.LinkName = PMTextBoxLinkName.Text;
+                if (!previouslySelectedNode.IsBaseNode)
                 {
-                    previouslySelectedNode.jointName = pm_TextBox_JointName.Text;
-                    previouslySelectedNode.axisName = pm_ComboBox_Axes.get_ItemText(-1);
-                    previouslySelectedNode.coordsysName = pm_ComboBox_CoordSys.get_ItemText(-1);
-                    previouslySelectedNode.jointType = pm_ComboBox_JointType.get_ItemText(-1);
+                    previouslySelectedNode.JointName = PMTextBoxJointName.Text;
+                    previouslySelectedNode.AxisName = PMComboBoxAxes.get_ItemText(-1);
+                    previouslySelectedNode.CoordsysName = PMComboBoxCoordSys.get_ItemText(-1);
+                    previouslySelectedNode.JointType = PMComboBoxJointType.get_ItemText(-1);
                 }
                 else
                 {
-                    previouslySelectedNode.coordsysName = pm_ComboBox_GlobalCoordsys.get_ItemText(-1);
+                    previouslySelectedNode.CoordsysName =
+                        PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
-                Common.getSelectedComponents(ActiveSWModel, previouslySelectedNode.Components, pm_Selection.Mark);
+                Common.GetSelectedComponents(
+                    ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
             }
         }
 
         //Creates an Empty node when children are added to a link
-        public LinkNode createEmptyNode(LinkNode Parent)
+        public LinkNode CreateEmptyNode(LinkNode Parent)
         {
             LinkNode node = new LinkNode();
 
             if (Parent == null)             //For the base_link node
             {
-                node.linkName = "base_link";
-                node.axisName = "";
-                node.coordsysName = "Automatically Generate";
+                node.LinkName = "base_link";
+                node.AxisName = "";
+                node.CoordsysName = "Automatically Generate";
                 node.Components = new List<Component2>();
-                node.isBaseNode = true;
-                node.isIncomplete = true;
+                node.IsBaseNode = true;
+                node.IsIncomplete = true;
             }
             else
             {
-                node.isBaseNode = false;
-                node.linkName = "Empty_Link";
-                node.axisName = "Automatically Generate";
-                node.coordsysName = "Automatically Generate";
-                node.jointType = "Automatically Detect";
+                node.IsBaseNode = false;
+                node.LinkName = "Empty_Link";
+                node.AxisName = "Automatically Generate";
+                node.CoordsysName = "Automatically Generate";
+                node.JointType = "Automatically Detect";
                 node.Components = new List<Component2>();
-                node.isBaseNode = false;
-                node.isIncomplete = true;
+                node.IsBaseNode = false;
+                node.IsIncomplete = true;
             }
-            node.Name = node.linkName;
-            node.Text = node.linkName;
+            node.Name = node.LinkName;
+            node.Text = node.LinkName;
             node.ContextMenuStrip = docMenu;
             return node;
         }
 
         //Sets all the controls in the Property Manager from the Selected Node
-        public void fillPropertyManager(LinkNode node)
+        public void FillPropertyManager(LinkNode node)
         {
-            pm_TextBox_LinkName.Text = node.linkName;
-            pm_NumberBox_ChildCount.Value = node.Nodes.Count;
+            PMTextBoxLinkName.Text = node.LinkName;
+            PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.selectComponents(ActiveSWModel, node.Components, true, pm_Selection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Components, true, PMSelection.Mark);
 
             //Setting joint properties
-            if (!node.isBaseNode && node.Parent != null)
+            if (!node.IsBaseNode && node.Parent != null)
             {
                 //Combobox needs to be blanked before de-activating
-                selectComboBox(pm_ComboBox_GlobalCoordsys, "");
+                SelectComboBox(PMComboBoxGlobalCoordsys, "");
 
                 //Labels need to be activated before changing them
-                enableControls(!node.isBaseNode);
-                pm_TextBox_JointName.Text = node.jointName;
-                pm_Label_ParentLink.Caption = node.Parent.Name;
+                EnableControls(!node.IsBaseNode);
+                PMTextBoxJointName.Text = node.JointName;
+                PMLabelParentLink.Caption = node.Parent.Name;
 
-                updateComboBoxFromFeatures(pm_ComboBox_CoordSys, "CoordSys");
+                UpdateComboBoxFromFeatures(PMComboBoxCoordSys, "CoordSys");
                 //checkTransforms(ActiveSWModel);
 
-                updateComboBoxFromFeatures(pm_ComboBox_Axes, "RefAxis");
-                pm_ComboBox_Axes.AddItems("None");
-                selectComboBox(pm_ComboBox_CoordSys, node.coordsysName);
-                selectComboBox(pm_ComboBox_Axes, node.axisName);
-                selectComboBox(pm_ComboBox_JointType, node.jointType);
+                UpdateComboBoxFromFeatures(PMComboBoxAxes, "RefAxis");
+                PMComboBoxAxes.AddItems("None");
+                SelectComboBox(PMComboBoxCoordSys, node.CoordsysName);
+                SelectComboBox(PMComboBoxAxes, node.AxisName);
+                SelectComboBox(PMComboBoxJointType, node.JointType);
             }
             else
             {
                 //Labels and text box have be blanked before de-activating them
-                pm_Label_ParentLink.Caption = " ";
-                selectComboBox(pm_ComboBox_CoordSys, "");
-                selectComboBox(pm_ComboBox_Axes, "");
-                selectComboBox(pm_ComboBox_JointType, "");
+                PMLabelParentLink.Caption = " ";
+                SelectComboBox(PMComboBoxCoordSys, "");
+                SelectComboBox(PMComboBoxAxes, "");
+                SelectComboBox(PMComboBoxJointType, "");
 
                 //Activate controls before changing them
-                enableControls(!node.isBaseNode);
-                updateComboBoxFromFeatures(pm_ComboBox_GlobalCoordsys, "CoordSys");
-                selectComboBox(pm_ComboBox_GlobalCoordsys, node.coordsysName);
+                EnableControls(!node.IsBaseNode);
+                UpdateComboBoxFromFeatures(PMComboBoxGlobalCoordsys, "CoordSys");
+                SelectComboBox(PMComboBoxGlobalCoordsys, node.CoordsysName);
             }
         }
 
-        //Takes care of activating/deactivating the drop down menus, lables and text box for joint configuration
-        //Generally these are deactivated for the base node
-        private void enableControls(bool enableJoints)
+        //Takes care of activating/deactivating the drop down menus, lables and text box for
+        // joint configuration. Generally these are deactivated for the base node
+        private void EnableControls(bool enableJoints)
         {
-            PropertyManagerPageControl[] pm_joint_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_TextBox_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_Label_JointName, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_Label_CoordSys, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_Label_Axes, 
-                                                                                          (PropertyManagerPageControl)pm_ComboBox_JointType, 
-                                                                                          (PropertyManagerPageControl)pm_Label_JointType };
+            PropertyManagerPageControl[] pmJointControls =
+                new PropertyManagerPageControl[] { (PropertyManagerPageControl)PMTextBoxJointName,
+                                                    (PropertyManagerPageControl)PMLabelJointName,
+                                                    (PropertyManagerPageControl)PMComboBoxCoordSys,
+                                                    (PropertyManagerPageControl)PMLabelCoordSys,
+                                                    (PropertyManagerPageControl)PMComboBoxAxes,
+                                                    (PropertyManagerPageControl)PMLabelAxes,
+                                                    (PropertyManagerPageControl)PMComboBoxJointType,
+                                                    (PropertyManagerPageControl)PMLabelJointType };
 
-            PropertyManagerPageControl[] pm_GlobalOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_GlobalCoordsys, 
-                                                                                                       (PropertyManagerPageControl)pm_Label_GlobalCoordsys};
+            PropertyManagerPageControl[] pmGlobalOriginControls = new PropertyManagerPageControl[] {
+                (PropertyManagerPageControl)PMComboBoxGlobalCoordsys,
+                (PropertyManagerPageControl)PMLabelGlobalCoordsys};
 
-            PropertyManagerPageControl[] pm_JointOrigin_controls = new PropertyManagerPageControl[] { (PropertyManagerPageControl)pm_ComboBox_CoordSys, 
-                                                                                                       (PropertyManagerPageControl)pm_Label_CoordSys};
+            PropertyManagerPageControl[] pmJointOriginControls = new PropertyManagerPageControl[] {
+                (PropertyManagerPageControl)PMComboBoxCoordSys,
+                (PropertyManagerPageControl)PMLabelCoordSys};
 
-            foreach (PropertyManagerPageControl control in pm_GlobalOrigin_controls)
+            foreach (PropertyManagerPageControl control in pmGlobalOriginControls)
             {
-                control.Visible = !enableJoints; // Make the global origin controls visible when no joint controls are needed
+                // Make the global origin controls visible when no joint controls are needed
+                control.Visible = !enableJoints;
                 control.Enabled = !enableJoints;
             }
-            foreach (PropertyManagerPageControl control in pm_JointOrigin_controls)
+            foreach (PropertyManagerPageControl control in pmJointOriginControls)
             {
                 control.Visible = enableJoints;
                 control.Enabled = enableJoints;
             }
-            foreach (PropertyManagerPageControl control in pm_joint_controls)
+            foreach (PropertyManagerPageControl control in pmJointControls)
             {
                 control.Enabled = enableJoints;
                 control.Visible = enableJoints;
@@ -449,19 +461,19 @@ namespace SW2URDF
         }
 
         //Only allows components to be selected for the PMPage selection box
-        void setComponentFilters()
+        private void SetComponentFilters()
         {
             swSelectType_e[] filters = new swSelectType_e[1];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
             object filterObj = null;
             filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
+            PMSelection.SetSelectionFilters(filterObj);
         }
 
-        // This removes the component only filters so that the export tool can select sketches, sketch items etc while the PMPage is active
-        // and items are added to the selection box. 
-        // Because the PMPage closes before selections need to occur, this method is no longer used. 
-        void setGeneralFilters()
+        // This removes the component only filters so that the export tool can select sketches,
+        // sketch items etc while the PMPage is active and items are added to the selection box.
+        // Because the PMPage closes before selections need to occur, this method is no longer used.
+        private void SetGeneralFilters()
         {
             swSelectType_e[] filters = new swSelectType_e[15];
             filters[0] = swSelectType_e.swSelCOMPONENTS;
@@ -483,47 +495,49 @@ namespace SW2URDF
             object filterObj = null;
 
             filterObj = filters;
-            pm_Selection.SetSelectionFilters(filterObj);
+            PMSelection.SetSelectionFilters(filterObj);
         }
 
         //Populates the TreeView with the organized links from the robot
-        public void fillTreeViewFromRobot(robot robot)
+        public void FillTreeViewFromRobot(Robot robot)
         {
-            tree.Nodes.Clear();
+            Tree.Nodes.Clear();
             LinkNode baseNode = new LinkNode();
-            link baseLink = robot.BaseLink;
-            baseNode.Name = baseLink.name;
-            baseNode.Text = baseLink.name;
+            Link baseLink = robot.BaseLink;
+            baseNode.Name = baseLink.Name;
+            baseNode.Text = baseLink.Name;
             baseNode.Link = baseLink;
             baseNode.ContextMenuStrip = docMenu;
 
-            foreach (link child in baseLink.Children)
+            foreach (Link child in baseLink.Children)
             {
-                baseNode.Nodes.Add(createLinkNodeFromLink(child));
+                baseNode.Nodes.Add(CreateLinkNodeFromLink(child));
             }
-            tree.Nodes.Add(baseNode);
-            tree.ExpandAll();
+            Tree.Nodes.Add(baseNode);
+            Tree.ExpandAll();
         }
 
         // Similar to the AssemblyExportForm method. It creates a LinkNode from a Link object
-        public LinkNode createLinkNodeFromLink(link Link)
+        public LinkNode CreateLinkNodeFromLink(Link Link)
         {
             LinkNode node = new LinkNode();
-            node.Name = Link.name;
-            node.Text = Link.name;
+            node.Name = Link.Name;
+            node.Text = Link.Name;
             node.Link = Link;
             node.ContextMenuStrip = docMenu;
 
-            foreach (link child in Link.Children)
+            foreach (Link child in Link.Children)
             {
-                node.Nodes.Add(createLinkNodeFromLink(child));
+                node.Nodes.Add(CreateLinkNodeFromLink(child));
             }
-            node.Link.Children.Clear(); // Need to erase the children from the embedded link because they may be rearranged later.
+
+            // Need to erase the children from the embedded link because they may be rearranged later.
+            node.Link.Children.Clear();
             return node;
         }
 
         // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
-        public void loadConfigTree()
+        public void LoadConfigTree()
         {
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
             string data = "";
@@ -533,7 +547,8 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == "URDF Export Configuration")
                     {
                         Parameter param = att.GetParameter("data");
@@ -541,33 +556,32 @@ namespace SW2URDF
                         logger.Info("URDF Configuration found\n" + data);
                     }
                 }
-
             }
             LinkNode basenode = null;
-            if (!data.Equals(""))
+            if (!String.IsNullOrWhiteSpace(data))
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
                 SerialNode node = (SerialNode)serializer.Deserialize(textReader);
                 basenode = new LinkNode(node);
-                Common.loadSWComponents(ActiveSWModel, basenode);
+                Common.LoadSWComponents(ActiveSWModel, basenode);
                 textReader.Close();
             }
 
             if (basenode == null)
             {
                 logger.Info("Starting new configuration");
-                basenode = createEmptyNode(null);
+                basenode = CreateEmptyNode(null);
             }
-            addDocMenu(basenode);
+            AddDocMenu(basenode);
 
-            tree.Nodes.Clear();
-            tree.Nodes.Add(basenode);
-            tree.ExpandAll();
-            tree.SelectedNode = tree.Nodes[0];
+            Tree.Nodes.Clear();
+            Tree.Nodes.Add(basenode);
+            Tree.ExpandAll();
+            Tree.SelectedNode = Tree.Nodes[0];
         }
 
-        public void retrieveSWComponentPIDs(LinkNode node)
+        public void RetrieveSWComponentPIDs(LinkNode node)
         {
             if (node.Components != null)
             {
@@ -580,20 +594,19 @@ namespace SW2URDF
             }
             foreach (LinkNode child in node.Nodes)
             {
-                retrieveSWComponentPIDs(child);
+                RetrieveSWComponentPIDs(child);
             }
         }
 
-        public void retrieveSWComponentPIDs(TreeView tree)
+        public void RetrieveSWComponentPIDs(TreeView tree)
         {
             foreach (LinkNode node in tree.Nodes)
             {
-                retrieveSWComponentPIDs(node);
+                RetrieveSWComponentPIDs(node);
             }
         }
 
-
-        public void moveComponentsToFolder(LinkNode node)
+        public void MoveComponentsToFolder(LinkNode node)
         {
             bool needToCreateFolder = true;
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
@@ -606,64 +619,71 @@ namespace SW2URDF
                 }
             }
             ActiveSWModel.ClearSelection2(true);
-            ActiveSWModel.Extension.SelectByID2("Origin_global", "COORDSYS", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2(
+                "Origin_global", "COORDSYS", 0, 0, 0, true, 0, null, 0);
             if (needToCreateFolder)
             {
-                Feature folderFeature = ActiveSWModel.FeatureManager.InsertFeatureTreeFolder2((int)swFeatureTreeFolderType_e.swFeatureTreeFolder_Containing);
+                Feature folderFeature =
+                    ActiveSWModel.FeatureManager.InsertFeatureTreeFolder2(
+                        (int)swFeatureTreeFolderType_e.swFeatureTreeFolder_Containing);
                 folderFeature.Name = "URDF Export Items";
             }
-            ActiveSWModel.Extension.SelectByID2("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2
+                ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
-            ActiveSWModel.Extension.SelectByID2("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+            ActiveSWModel.Extension.SelectByID2
+                ("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
-            selectFeatures(node);
+            SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
         }
 
-        public void selectFeatures(LinkNode node)
+        public void SelectFeatures(LinkNode node)
         {
-            ActiveSWModel.Extension.SelectByID2(node.coordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
-            if (node.axisName != "None")
+            ActiveSWModel.Extension.SelectByID2(
+                node.CoordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
+            if (node.AxisName != "None")
             {
-                ActiveSWModel.Extension.SelectByID2(node.axisName, "AXIS", 0, 0, 0, true, -1, null, 0);
+                ActiveSWModel.Extension.SelectByID2(
+                    node.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
             }
             foreach (LinkNode child in node.Nodes)
             {
-                selectFeatures(child);
+                SelectFeatures(child);
             }
         }
 
-        public void checkIfLinkNamesAreUnique(LinkNode node, string linkName, List<string> conflict)
+        public void CheckIfLinkNamesAreUnique(LinkNode node, string linkName, List<string> conflict)
         {
-            if (node.linkName == linkName)
+            if (node.LinkName == linkName)
             {
-                conflict.Add(node.linkName);
+                conflict.Add(node.LinkName);
             }
 
             foreach (LinkNode child in node.Nodes)
             {
-                checkIfLinkNamesAreUnique(child, linkName, conflict);
+                CheckIfLinkNamesAreUnique(child, linkName, conflict);
             }
         }
 
-        public void checkIfJointNamesAreUnique(LinkNode node, string jointName, List<string> conflict)
+        public void CheckIfJointNamesAreUnique(LinkNode node, string jointName, List<string> conflict)
         {
-            if (node.jointName == jointName)
+            if (node.JointName == jointName)
             {
-                conflict.Add(node.linkName);
+                conflict.Add(node.LinkName);
             }
             foreach (LinkNode child in node.Nodes)
             {
-                checkIfLinkNamesAreUnique(child, jointName, conflict);
+                CheckIfLinkNamesAreUnique(child, jointName, conflict);
             }
         }
 
-        public bool checkIfNamesAreUnique(LinkNode node)
+        public bool CheckIfNamesAreUnique(LinkNode node)
         {
             List<List<string>> linkConflicts = new List<List<string>>();
             List<List<string>> jointConflicts = new List<List<string>>();
-            checkIfLinkNamesAreUnique(node, node, linkConflicts);
-            checkIfJointNamesAreUnique(node, node, jointConflicts);
+            CheckIfLinkNamesAreUnique(node, node, linkConflicts);
+            CheckIfJointNamesAreUnique(node, node, jointConflicts);
 
             string message = "\r\nPlease fix these errors before proceeding.";
             string specificErrors = "";
@@ -676,7 +696,8 @@ namespace SW2URDF
                     linkNamesInConflict = true;
                     if (displayInitialMessage)
                     {
-                        specificErrors += "The following links have LINK names that conflict:\r\n\r\n";
+                        specificErrors +=
+                            "The following links have LINK names that conflict:\r\n\r\n";
                         displayInitialMessage = false;
                     }
                     bool isFirst = true;
@@ -686,9 +707,7 @@ namespace SW2URDF
                         isFirst = false;
                     }
                     specificErrors += "\r\n";
-
                 }
-
             }
             displayInitialMessage = true;
             foreach (List<string> conflict in jointConflicts)
@@ -698,7 +717,8 @@ namespace SW2URDF
                     linkNamesInConflict = true;
                     if (displayInitialMessage)
                     {
-                        specificErrors += "The following links have JOINT names that conflict:\r\n\r\n";
+                        specificErrors +=
+                            "The following links have JOINT names that conflict:\r\n\r\n";
                         displayInitialMessage = false;
                     }
                     bool isFirst = true;
@@ -718,12 +738,13 @@ namespace SW2URDF
             return true;
         }
 
-        public void checkIfLinkNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        public void CheckIfLinkNamesAreUnique(
+            LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
         {
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            checkIfLinkNamesAreUnique(basenode, currentNode.linkName, conflict);
+            CheckIfLinkNamesAreUnique(basenode, currentNode.LinkName, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {
@@ -738,17 +759,19 @@ namespace SW2URDF
             }
             foreach (LinkNode child in currentNode.Nodes)
             {
-                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
-                checkIfLinkNamesAreUnique(basenode, child, conflicts);
+                //Proceeds recursively through the children nodes and adds to the conflicts
+                // list of lists.
+                CheckIfLinkNamesAreUnique(basenode, child, conflicts);
             }
         }
 
-        public void checkIfJointNamesAreUnique(LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
+        public void CheckIfJointNamesAreUnique(
+            LinkNode basenode, LinkNode currentNode, List<List<string>> conflicts)
         {
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            checkIfJointNamesAreUnique(basenode, currentNode.jointName, conflict);
+            CheckIfJointNamesAreUnique(basenode, currentNode.JointName, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {
@@ -764,23 +787,27 @@ namespace SW2URDF
             }
             foreach (LinkNode child in currentNode.Nodes)
             {
-                //Proceeds recursively through the children nodes and adds to the conflicts list of lists.
-                checkIfJointNamesAreUnique(basenode, child, conflicts);
+                //Proceeds recursively through the children nodes and adds to the conflicts
+                // list of lists.
+                CheckIfJointNamesAreUnique(basenode, child, conflicts);
             }
         }
 
-
-        private SolidWorks.Interop.sldworks.Attribute createSWSaveAttribute(string name)
+        private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(string name)
         {
             int Options = 0;
             if (saveConfigurationAttributeDef == null)
             {
                 saveConfigurationAttributeDef = swApp.DefineAttribute("URDF Export Configuration");
 
-                saveConfigurationAttributeDef.AddParameter("data", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("name", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("date", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter("exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "data", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "name", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "date", (int)swParamType_e.swParamTypeString, 0, Options);
+                saveConfigurationAttributeDef.AddParameter(
+                    "exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
                 saveConfigurationAttributeDef.Register();
             }
 
@@ -793,16 +820,17 @@ namespace SW2URDF
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == "Attribute")
                 {
-                    SolidWorks.Interop.sldworks.Attribute att = (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
                     if (att.GetName() == name)
                     {
                         return att;
                     }
                 }
-
             }
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute = 
-                saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
+            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                saveConfigurationAttributeDef.CreateInstance5(
+                    ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
     }

@@ -1,8 +1,6 @@
 ﻿/*
 Copyright (c) 2015 Stephen Brawner
 
-
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -10,12 +8,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,212 +21,88 @@ THE SOFTWARE.
 */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace SW2URDF
 {
     public class URDFPackage
     {
-        private string packageName;
-        public string PackageName
-        {
-            get
-            {
-                return packageName;
-            }
-        }
+        public string PackageName { get; }
 
-        private string packageDirectory;
-        public string PackageDirectory
-        {
-            get
-            {
-                return packageDirectory;
-            }
-        }
+        public string PackageDirectory { get; }
+        public string MeshesDirectory { get; }
+        public string TexturesDirectory { get; }
+        public string RobotsDirectory { get; }
+        public string ConfigDirectory { get; }
+        public string LaunchDirectory { get; }
 
-        private string windowsPackageDirectory;
-        public string WindowsPackageDirectory
-        {
-            get
-            {
-                return windowsPackageDirectory;
-            }
-        }
-
-        private string meshesDirectory;
-        public string MeshesDirectory
-        {
-            get
-            {
-                return meshesDirectory;
-            }
-        }
-
-        private string configDirectory;
-        public string ConfigDirectory
-        {
-            get
-            {
-                return configDirectory;
-            }
-
-        }
-
-
-        private string windowsMeshesDirectory;
-        public string WindowsMeshesDirectory
-        {
-            get
-            {
-                return windowsMeshesDirectory;
-            }
-        }
-
-        private string robotsDirectory;
-        public string RobotsDirectory
-        {
-            get
-            {
-                return robotsDirectory;
-            }
-        }
-
-        private string windowsRobotsDirectory;
-        public string WindowsRobotsDirectory
-        {
-            get
-            {
-                return windowsRobotsDirectory;
-            }
-        }
-
-        private string texturesDirectory;
-        public string TexturesDirectory
-        {
-            get
-            {
-                return texturesDirectory;
-            }
-        }
-
-        private string windowsTexturesDirectory;
-        public string WindowsTexturesDirectory
-        {
-            get
-            {
-                return windowsTexturesDirectory;
-            }
-        }
-
-        private string launchDirectory;
-        public string LaunchDirectory
-        {
-            get
-            {
-                return launchDirectory;
-            }
-        }
-
-        private string windowsLaunchDirectory;
-        public string WindowsLaunchDirectory
-        {
-            get
-            {
-                return windowsLaunchDirectory;
-            }
-        }
-
-        private string windowsConfigDirectory;
-        public string WindowsConfigDirectory
-        {
-            get
-            {
-                return windowsConfigDirectory;
-            }
-        }
-
-        private string windowsCMakeLists;
-        public string WindowsCMakeLists
-        {
-            get
-            {
-                return windowsCMakeLists;
-            }
-        }
-
-        private string windowsConfigYAML;
-        public string WindowsConfigYAML
-        {
-            get
-            {
-                return windowsConfigYAML;
-            }
-        }
-
+        public string WindowsPackageDirectory { get; }
+        public string WindowsMeshesDirectory { get; }
+        public string WindowsTexturesDirectory { get; }
+        public string WindowsRobotsDirectory { get; }
+        public string WindowsLaunchDirectory { get; }
+        public string WindowsConfigDirectory { get; }
+        public string WindowsCMakeLists { get; }
+        public string WindowsConfigYAML { get; }
 
         public URDFPackage(string name, string dir)
         {
-            packageName = name;
-            packageDirectory = @"package://" + name + @"/";
-            meshesDirectory = packageDirectory + @"meshes/";
-            robotsDirectory = packageDirectory + @"urdf/";
-            texturesDirectory = packageDirectory + @"textures/";
-            launchDirectory = packageDirectory + @"launch/";
-            configDirectory = packageDirectory + @"config/";
-           
+            PackageName = name;
+            PackageDirectory = @"package://" + name + @"/";
+            MeshesDirectory = PackageDirectory + @"meshes/";
+            RobotsDirectory = PackageDirectory + @"urdf/";
+            TexturesDirectory = PackageDirectory + @"textures/";
+            LaunchDirectory = PackageDirectory + @"launch/";
+            ConfigDirectory = PackageDirectory + @"config/";
 
             char last = dir[dir.Length - 1];
             dir = (last == '\\') ? dir : dir + @"\";
-            windowsPackageDirectory = dir + name + @"\";
-            windowsMeshesDirectory = windowsPackageDirectory + @"meshes\";
-            windowsRobotsDirectory = windowsPackageDirectory + @"urdf\";
-            windowsTexturesDirectory = windowsPackageDirectory + @"textures\";
-            windowsLaunchDirectory = windowsPackageDirectory + @"launch\";
-            windowsConfigDirectory = windowsPackageDirectory + @"config\";
-            windowsCMakeLists = windowsPackageDirectory + @"CMakeLists.txt";
-            windowsConfigYAML = windowsConfigDirectory + @"joint_names_" + name + ".yaml";
+            WindowsPackageDirectory = dir + name + @"\";
+            WindowsMeshesDirectory = WindowsPackageDirectory + @"meshes\";
+            WindowsRobotsDirectory = WindowsPackageDirectory + @"urdf\";
+            WindowsTexturesDirectory = WindowsPackageDirectory + @"textures\";
+            WindowsLaunchDirectory = WindowsPackageDirectory + @"launch\";
+            WindowsConfigDirectory = WindowsPackageDirectory + @"config\";
+            WindowsCMakeLists = WindowsPackageDirectory + @"CMakeLists.txt";
+            WindowsConfigYAML = WindowsConfigDirectory + @"joint_names_" + name + ".yaml";
         }
 
-        public void createDirectories()
+        public void CreateDirectories()
         {
-            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" + packageName + "\" at:\n" + windowsPackageDirectory);
-            if (!Directory.Exists(windowsPackageDirectory))
+            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" +
+                PackageName + "\" at:\n" + WindowsPackageDirectory);
+            if (!Directory.Exists(WindowsPackageDirectory))
             {
-                Directory.CreateDirectory(windowsPackageDirectory);
+                Directory.CreateDirectory(WindowsPackageDirectory);
             }
-            if (!Directory.Exists(windowsMeshesDirectory))
+            if (!Directory.Exists(WindowsMeshesDirectory))
             {
-                Directory.CreateDirectory(windowsMeshesDirectory);
+                Directory.CreateDirectory(WindowsMeshesDirectory);
             }
-            if (!Directory.Exists(windowsRobotsDirectory))
+            if (!Directory.Exists(WindowsRobotsDirectory))
             {
-                Directory.CreateDirectory(windowsRobotsDirectory);
+                Directory.CreateDirectory(WindowsRobotsDirectory);
             }
-            if (!Directory.Exists(windowsTexturesDirectory))
+            if (!Directory.Exists(WindowsTexturesDirectory))
             {
-                Directory.CreateDirectory(windowsTexturesDirectory);
+                Directory.CreateDirectory(WindowsTexturesDirectory);
             }
-            if (!Directory.Exists(windowsLaunchDirectory))
+            if (!Directory.Exists(WindowsLaunchDirectory))
             {
-                Directory.CreateDirectory(windowsLaunchDirectory);
+                Directory.CreateDirectory(WindowsLaunchDirectory);
             }
-            if (!Directory.Exists(windowsConfigDirectory))
+            if (!Directory.Exists(WindowsConfigDirectory))
             {
-                Directory.CreateDirectory(windowsConfigDirectory);
+                Directory.CreateDirectory(WindowsConfigDirectory);
             }
-
         }
 
-        public void createCMakeLists()
+        public void CreateCMakeLists()
         {
-            using (StreamWriter file = new StreamWriter(windowsCMakeLists))
+            using (StreamWriter file = new StreamWriter(WindowsCMakeLists))
             {
                 file.WriteLine("cmake_minimum_required(VERSION 2.8.3)\r\n");
-                file.WriteLine("project(" + packageName + ")\r\n");
+                file.WriteLine("project(" + PackageName + ")\r\n");
                 file.WriteLine("find_package(catkin REQUIRED)\r\n");
                 file.WriteLine("catkin_package()\r\n");
                 file.WriteLine("find_package(roslaunch)\r\n");
@@ -243,9 +113,9 @@ namespace SW2URDF
             }
         }
 
-        public void createConfigYAML(String[] jointNames)
+        public void CreateConfigYAML(String[] jointNames)
         {
-            using (StreamWriter file = new StreamWriter(windowsConfigYAML))
+            using (StreamWriter file = new StreamWriter(WindowsConfigYAML))
             {
                 file.Write("controller_joint_names: " + "[");
 
@@ -256,11 +126,6 @@ namespace SW2URDF
 
                 file.WriteLine("]");
             }
-
         }
-
-
-
-
     }
 }
