@@ -338,7 +338,6 @@ namespace SW2URDF
             string jointType = node.JointType;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-            List<Component2> fixedComponents = FixComponents(parent);
             child.Joint = new Joint();
             child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
@@ -407,10 +406,7 @@ namespace SW2URDF
 
             coordSysName = (parent.Joint == null) ?
                 parent.CoordSysName : parent.Joint.CoordinateSystemName;
-            if (unfix)
-            {
-                UnFixComponents(fixedComponents);
-            }
+
             LocalizeJoint(child.Joint, coordSysName);
         }
 
@@ -719,6 +715,9 @@ namespace SW2URDF
             //Create the ref objects
             int DOFs;
 
+            // Fix parent components so that only the actual degree of freedom can be detected.
+            List<Component2> fixedComponents = FixComponents(parent);
+
             // Surpress Limit Mates to properly find degrees of freedom. They don't work with the API call
             List<Mate2> limitMates = new List<Mate2>();
             limitMates = SuppressLimitMates(child.SWMainComponent);
@@ -802,6 +801,8 @@ namespace SW2URDF
                     AddLimits(child.Joint, limitMates, parent.SWMainComponent, child.SWMainComponent);
                 }
             }
+
+            UnFixComponents(fixedComponents);
             return success;
         }
 
