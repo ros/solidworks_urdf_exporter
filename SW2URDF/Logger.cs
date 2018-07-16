@@ -42,10 +42,11 @@ namespace SW2URDF
             patternLayout.AddConverter("filename", typeof(FileNamePatternConverter));
             patternLayout.ActivateOptions();
 
+            string homeDir = Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             RollingFileAppender roller = new RollingFileAppender
             {
                 AppendToFile = false,
-                File = @"C:\\sw2urdf_logs\\sw2urdf.log",
+                File = Path.Combine(homeDir, "sw2urdf_logs", "sw2urdf.log"),
                 Layout = patternLayout,
                 MaxSizeRollBackups = 5,
                 MaximumFileSize = "10MB",

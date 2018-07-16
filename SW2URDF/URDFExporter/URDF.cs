@@ -26,7 +26,7 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-
+using log4net;
 using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
@@ -53,7 +53,7 @@ namespace SW2URDF
     // But maybe we'll want to add things to it
     public class URDFElement
     {
-        protected static readonly log4net.ILog logger = Logger.GetLogger();
+        protected static readonly ILog logger = Logger.GetLogger();
 
         public URDFElement()
         {
@@ -1177,6 +1177,7 @@ namespace SW2URDF
     }
 
     //parent_link element of a joint.
+
     public class ParentLink : URDFElement
     {
         private Attribute NameAttribute;
@@ -1841,6 +1842,7 @@ namespace SW2URDF
             {
                 KPosition = (Double.TryParse(boxPosition.Text, out value)) ? value : 0;
             }
+
             KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
         }
     }
@@ -1849,7 +1851,7 @@ namespace SW2URDF
     public class PackageXMLWriter
     {
         public XmlWriter writer;
-        private static readonly log4net.ILog logger = Logger.GetLogger();
+        private static readonly ILog logger = Logger.GetLogger();
 
         public PackageXMLWriter(string savePath)
         {
@@ -2037,6 +2039,8 @@ namespace SW2URDF
     // that information can be passed around from the TreeView itself.
     public class LinkNode : TreeNode
     {
+        private static readonly ILog logger = Logger.GetLogger();
+
         public Link Link
         { get; set; }
 
@@ -2076,6 +2080,7 @@ namespace SW2URDF
 
         public LinkNode(SerialNode node)
         {
+            logger.Info("Deserializing node " + node.linkName);
             LinkName = node.linkName;
             JointName = node.jointName;
             AxisName = node.axisName;
