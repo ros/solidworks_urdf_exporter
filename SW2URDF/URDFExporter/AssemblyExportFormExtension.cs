@@ -457,16 +457,23 @@ namespace SW2URDF
             return Link;
         }
 
-        private bool CheckLinkAlpha(Link node)
+        private string CheckLinkAlpha(Link node)
         {
-            return node.Visual.Material.Color.Alpha == 1.0;
+            if (node.Visual.Material.Color.Alpha < 1.0)
+            {
+                return "Alpha value is below 1.0 (" +
+                    node.Visual.Material.Color.Alpha + ")";
+            }
+            return "";
         }
 
         private void CheckLinksForWarnings(Link node, StringBuilder builder)
         {
-            if (!CheckLinkAlpha(node))
+            string msg = CheckLinkAlpha(node);
+
+            if (!string.IsNullOrWhiteSpace(msg))
             {
-                builder.Append(node.Name + " has an Visual Alpha color below 1.0");
+                builder.Append(node.Name + " - " + msg);
             }
             foreach (Link child in node.Children)
             {

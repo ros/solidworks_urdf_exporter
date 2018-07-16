@@ -194,12 +194,19 @@ namespace SW2URDF
         {
             logger.Info("Completing URDF export");
             SaveConfigTree(ActiveSWModel, BaseNode, false);
+            LinkNode node = (LinkNode)treeViewLinkProperties.SelectedNode;
+            if (node != null)
+            {
+                SaveLinkDataFromPropertyBoxes(node.Link);
+            }
 
-            string warnings = CheckLinksForWarnings(BaseNode.Link);
+            Exporter.URDFRobot = CreateRobotFromTreeView(treeViewLinkProperties);
+            string warnings = CheckLinksForWarnings(Exporter.URDFRobot.BaseLink);
 
             if (!string.IsNullOrWhiteSpace(warnings))
             {
-                logger.Info("Link warnings encountered\n" + warnings);
+                logger.Info("Link warnings encountered");
+                logger.Info(warnings);
 
                 string message = "The following links contained issues that may cause problems. " +
                 "Do you wish to proceed?\n" + warnings;
@@ -224,13 +231,8 @@ namespace SW2URDF
             {
                 Exporter.SavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
                 Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);
-                LinkNode node = (LinkNode)treeViewLinkProperties.SelectedNode;
-                if (node != null)
-                {
-                    SaveLinkDataFromPropertyBoxes(node.Link);
-                }
-                Exporter.URDFRobot = CreateRobotFromTreeView(treeViewLinkProperties);
 
+                logger.Info("Saving URDF package to " + saveFileDialog1.FileName);
                 Exporter.ExportRobot(exportSTL);
                 Close();
             }
