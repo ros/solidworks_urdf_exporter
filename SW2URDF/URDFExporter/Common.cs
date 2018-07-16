@@ -322,7 +322,7 @@ namespace SW2URDF
                         break;
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Invalid:
-                        logger.Error("the component associated with PID " + byteAsString + " was found to be invalid");
+                        logger.Error("The component associated with PID " + byteAsString + " was found to be invalid");
                         break;
 
                     case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
@@ -344,7 +344,6 @@ namespace SW2URDF
         public static string PIDToString(byte[] pid)
         {
             return Encoding.ASCII.GetString(pid);
-            //return BitConverter.ToString(pid).Replace("-", "");
         }
     }
 }
