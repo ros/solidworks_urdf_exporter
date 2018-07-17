@@ -269,27 +269,16 @@ namespace SW2URDF
             {
                 if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
-                    if (Joint.Limit == null)
-                    {
-                        Joint.Limit = new Limit();
-                    }
-                    else
-                    {
-                        Joint.Limit.Effort = 0;
-                        Joint.Limit.Velocity = 0;
-                    }
+                    Joint.Limit.Effort = 0;
+                    Joint.Limit.Velocity = 0;
                 }
                 else
                 {
-                    Joint.Limit = null;
+                    Joint.Limit.Unset();
                 }
             }
             else
             {
-                if (Joint.Limit == null)
-                {
-                    Joint.Limit = new Limit();
-                }
                 Joint.Limit.SetValues(textBoxLimitLower,
                                    textBoxLimitUpper,
                                    textBoxLimitEffort,
@@ -299,14 +288,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) &&
                 String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))
             {
-                Joint.Calibration = null;
+                Joint.Calibration.Unset();
             }
             else
             {
-                if (Joint.Calibration == null)
-                {
-                    Joint.Calibration = new Calibration();
-                }
                 Joint.Calibration.SetValues(textBoxCalibrationRising,
                                          textBoxCalibrationFalling);
             }
@@ -314,14 +299,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxFriction.Text) &&
                 String.IsNullOrWhiteSpace(textBoxDamping.Text))
             {
-                Joint.Dynamics = null;
+                Joint.Dynamics.Unset();
             }
             else
             {
-                if (Joint.Dynamics == null)
-                {
-                    Joint.Dynamics = new Dynamics();
-                }
                 Joint.Dynamics.SetValues(textBoxDamping,
                                       textBoxFriction);
             }
@@ -329,14 +310,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) &&
                 String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
             {
-                Joint.Safety = null;
+                Joint.Safety.Unset();
             }
             else
             {
-                if (Joint.Safety == null)
-                {
-                    Joint.Safety = new SafetyController();
-                }
                 Joint.Safety.SetValues(textBoxSoftLower,
                                     textBoxSoftUpper,
                                     textBoxKPosition,

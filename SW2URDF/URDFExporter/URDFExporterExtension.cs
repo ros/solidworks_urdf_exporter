@@ -75,9 +75,6 @@ namespace SW2URDF
             Link.Name = swModel.GetTitle();
 
             Link.isFixedFrame = false;
-            Link.Visual = new Visual();
-            Link.Inertial = new Inertial();
-            Link.Collision = new Collision();
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
@@ -223,9 +220,6 @@ namespace SW2URDF
             if (components.Count > 0)
             {
                 child.isFixedFrame = false;
-                child.Visual = new Visual();
-                child.Inertial = new Inertial();
-                child.Collision = new Collision();
                 child.SWMainComponent = components[0];
                 child.SWcomponents.AddRange(components);
             }
@@ -339,7 +333,6 @@ namespace SW2URDF
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             List<Component2> fixedComponents = FixComponents(parent);
-            child.Joint = new Joint();
             child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
@@ -506,7 +499,6 @@ namespace SW2URDF
                     "Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
                 Joint Joint = new Joint();
-                Joint.Origin = new Origin();
                 if (zIsUp)
                 {
                     Joint.Origin.SetRPY(new double[] { -Math.PI / 2, 0, 0 });
@@ -1148,8 +1140,6 @@ namespace SW2URDF
                         (Joint.Type == "prismatic" && swMate.Type ==
                             (int)swMateType_e.swMateDISTANCE))
                     {
-                        Joint.Limit = new Limit();
-
                         // Unclear if flipped is the right thing we want to be checking here.
                         // From a sample size of 1, in SolidWorks it appears that an aligned and
                         // anti-aligned mates are NOT flipped...
