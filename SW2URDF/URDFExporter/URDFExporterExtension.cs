@@ -334,6 +334,7 @@ namespace SW2URDF
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             List<Component2> fixedComponents = FixComponents(parent);
+
             child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
@@ -404,6 +405,7 @@ namespace SW2URDF
             {
                 UnFixComponents(fixedComponents);
             }
+
             LocalizeJoint(child.Joint, coordSysName);
         }
 
@@ -521,7 +523,7 @@ namespace SW2URDF
         public void CreateRefAxis(Joint Joint)
         {
             //Adds sketch segment
-            SketchSegment rotaxis = AddSketchGeometry(Joint.Axis, Joint.Origin);
+            SketchSegment rotaxis = AddSketchGeometry(Joint.Axis, Joint.Origin, Joint.CoordinateSystemName);
             if (rotaxis != null)
             {
                 //Use special method to create the axis
@@ -671,7 +673,7 @@ namespace SW2URDF
         }
 
         //Inserts a sketch segment for use when creating a Reference Axis
-        public SketchSegment AddSketchGeometry(Axis Axis, Origin Origin)
+        public SketchSegment AddSketchGeometry(Axis axis, Origin origin, string coordSysName)
         {
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
             {
@@ -681,27 +683,57 @@ namespace SW2URDF
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
 
+            bool flip = CheckReverseAxis(axis, origin, coordSysName);
+            double sign = (flip) ? -1.0 : 1.0;
+
             //Insert sketch segment 0.1m long centered on the origin.
-            SketchSegment RotAxis = ActiveSWModel.SketchManager.CreateLine(
-                Origin.X - 0.05 * Axis.X,
-                Origin.Y - 0.05 * Axis.Y,
-                Origin.Z - 0.05 * Axis.Z,
-                Origin.X + 0.05 * Axis.X,
-                Origin.Y + 0.05 * Axis.Y,
-                Origin.Z + 0.05 * Axis.Z);
-            if (RotAxis == null)
+            SketchSegment rotAxis = ActiveSWModel.SketchManager.CreateLine(
+                origin.X + sign * 0.05 * axis.X,
+                origin.Y + sign * 0.05 * axis.Y,
+                origin.Z + sign * 0.05 * axis.Z,
+                origin.X - sign * 0.05 * axis.X,
+                origin.Y - sign * 0.05 * axis.Y,
+                origin.Z - sign * 0.05 * axis.Z);
+            if (rotAxis == null)
             {
                 return null;
             }
-            RotAxis.ConstructionGeometry = true;
-            RotAxis.Width = 2;
+            rotAxis.ConstructionGeometry = true;
+            rotAxis.Width = 2;
 
             //Close sketch
             if (ActiveSWModel.SketchManager.ActiveSketch != null)
             {
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
-            return RotAxis;
+            return rotAxis;
+        }
+
+        // Checks if an axis to be created should be flipped, so as to favor positive directions of rotation
+        // This prefers that the first non-zero value be positive
+        private bool CheckReverseAxis(Axis axis, Origin origin, string coordSysName)
+        {
+            //axis is a double[] {x, y, z}
+            double[] transformedAxis = LocalizeAxis(axis.GetXYZ(), coordSysName);
+
+            // If x is negative, flip
+            if (transformedAxis[0] < 0)
+            {
+                return true;
+            }
+            // Else if x is 0 and y is negative, flip
+            else if (Math.Abs(transformedAxis[0]) < 0.00001 && transformedAxis[1] < 0)
+            {
+                return true;
+            }
+            // Else if x and y are 0 and z is negative, flip
+            else if (Math.Abs(transformedAxis[0]) < 0.00001 &&
+                     Math.Abs(transformedAxis[1]) < 0.00001 &&
+                     transformedAxis[2] < 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         //Calculates the free degree of freedom (if exists), and then determines the location of the joint,
@@ -709,7 +741,10 @@ namespace SW2URDF
         public Boolean EstimateGlobalJointFromComponents(AssemblyDoc assy, Link parent, Link child)
         {
             //Create the ref objects
-            int DOFs;
+            int degreesOfFreedom;
+
+            // Fix parent components so that only the actual degree of freedom can be detected.
+            List<Component2> fixedComponents = FixComponents(parent);
 
             // Surpress Limit Mates to properly find degrees of freedom. They don't work with the API call
             List<Mate2> limitMates = new List<Mate2>();
@@ -759,14 +794,14 @@ namespace SW2URDF
                     logger.Info("L2: " + L2Status);
                 }
 
-                DOFs = remainingDOFs;
+                degreesOfFreedom = remainingDOFs;
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.Type = "fixed";
                 child.Joint.Origin.SetXYZ(MathOps.GetXYZ(child.SWMainComponent.Transform2));
                 child.Joint.Origin.SetRPY(MathOps.GetRPY(child.SWMainComponent.Transform2));
 
-                if (DOFs == 0 && (R1Status + L1Status > 0))
+                if (degreesOfFreedom == 0 && (R1Status + L1Status > 0))
                 {
                     success = true;
                     if (R1Status == 1)
@@ -794,6 +829,8 @@ namespace SW2URDF
                     AddLimits(child.Joint, limitMates, parent.SWMainComponent, child.SWMainComponent);
                 }
             }
+
+            UnFixComponents(fixedComponents);
             return success;
         }
 
@@ -936,7 +973,7 @@ namespace SW2URDF
             }
             //Calculate!
             double[] axisParams;
-            double[] xyz = new double[3];
+            double[] axisVector = new double[3];
 
             bool selected =
                 ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
@@ -947,22 +984,18 @@ namespace SW2URDF
 
                 // GetRefAxisParams returns {startX, startY, startZ, endX, endY, endZ}
                 axisParams = axis.GetRefAxisParams();
-                xyz[0] = axisParams[0] - axisParams[3];
-                xyz[1] = axisParams[1] - axisParams[4];
-                xyz[2] = axisParams[2] - axisParams[5];
+                axisVector[0] = axisParams[0] - axisParams[3];
+                axisVector[1] = axisParams[1] - axisParams[4];
+                axisVector[2] = axisParams[2] - axisParams[5];
 
                 // Normalize and cleanup
-                xyz = MathOps.PNorm(xyz, 2);
-                if (MathOps.Sum(xyz) < 0.0)
-                {
-                    xyz = MathOps.Flip(xyz);
-                }
+                axisVector = MathOps.PNorm(axisVector, 2);
 
                 // Transform to proper coordinates
-                GlobalAxis(xyz, ComponentTransform);
+                axisVector = GlobalAxis(axisVector, ComponentTransform);
             }
 
-            return xyz;
+            return axisVector;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be
@@ -986,16 +1019,28 @@ namespace SW2URDF
             return MathOps.Threshold(Axis, 0.00001);
         }
 
-        public double[] GlobalAxis(double[] Axis, MathTransform coordsysTransform)
+        public double[] GlobalAxis(double[] axis, Matrix<double> transform)
+        {
+            double[] transformedAxis = new double[axis.Length];
+            if (transform != null)
+            {
+                Vector<double> transformedVector = new DenseVector(new double[] { axis[0], axis[1], axis[2], 0 });
+                transformedVector = transform * transformedVector;
+                transformedAxis[0] = transformedVector[0];
+                transformedAxis[1] = transformedVector[1];
+                transformedAxis[2] = transformedVector[2];
+            }
+            return MathOps.Threshold(transformedAxis, 0.00001);
+        }
+
+        public double[] GlobalAxis(double[] axis, MathTransform coordsysTransform)
         {
             if (coordsysTransform != null)
             {
-                Vector<double> vec = new DenseVector(new double[] { Axis[0], Axis[1], Axis[2], 0 });
                 Matrix<double> transform = MathOps.GetTransformation(coordsysTransform);
-                vec = transform * vec;
-                Axis[0] = vec[0]; Axis[1] = vec[1]; Axis[2] = vec[2];
+                return GlobalAxis(axis, transform);
             }
-            return MathOps.Threshold(Axis, 0.00001);
+            return axis;
         }
 
         // Creates a list of all the features of this type.
