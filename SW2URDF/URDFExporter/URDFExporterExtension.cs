@@ -674,27 +674,6 @@ namespace SW2URDF
                 Origin.X + tA[0, 1], Origin.Y + tA[1, 1], Origin.Z + tA[2, 1] };
         }
 
-        // Checks if an axis to be created should be flipped, so as to favor positive directions of rotation
-        private bool CheckReverseAxis(Axis axis, Origin origin, string coordSysName)
-        {
-            //Axis is a double[] {x, y, z}
-            double[] transformedAxis = LocalizeAxis(axis.GetXYZ(), coordSysName);
-
-            if (transformedAxis[0] < 0)
-            {
-                return true;
-            }
-            else if (transformedAxis[0] == 0 && transformedAxis[1] < 0)
-            {
-                return true;
-            }
-            else if (transformedAxis[0] == 0 && transformedAxis[1] == 0 && transformedAxis[2] < 0)
-            {
-                return true;
-            }
-            return false;
-        }
-
         //Inserts a sketch segment for use when creating a Reference Axis
         public SketchSegment AddSketchGeometry(Axis axis, Origin origin, string coordSysName)
         {
@@ -730,6 +709,33 @@ namespace SW2URDF
                 ActiveSWModel.SketchManager.Insert3DSketch(true);
             }
             return rotAxis;
+        }
+
+        // Checks if an axis to be created should be flipped, so as to favor positive directions of rotation
+        // This prefers that the first non-zero value be positive
+        private bool CheckReverseAxis(Axis axis, Origin origin, string coordSysName)
+        {
+            //axis is a double[] {x, y, z}
+            double[] transformedAxis = LocalizeAxis(axis.GetXYZ(), coordSysName);
+
+            // If x is negative, flip
+            if (transformedAxis[0] < 0)
+            {
+                return true;
+            }
+            // Else if x is 0 and y is negative, flip
+            else if (Math.Abs(transformedAxis[0]) < 0.00001 && transformedAxis[1] < 0)
+            {
+                return true;
+            }
+            // Else if x and y are 0 and z is negative, flip
+            else if (Math.Abs(transformedAxis[0]) < 0.00001 &&
+                     Math.Abs(transformedAxis[1]) < 0.00001 &&
+                     transformedAxis[2] < 0)
+            {
+                return true;
+            }
+            return false;
         }
 
         //Calculates the free degree of freedom (if exists), and then determines the location of the joint,
@@ -966,7 +972,7 @@ namespace SW2URDF
             }
             //Calculate!
             double[] axisParams;
-            double[] xyz = new double[3];
+            double[] axisVector = new double[3];
 
             bool selected =
                 ComponentModel.Extension.SelectByID2(axisName, "AXIS", 0, 0, 0, false, 0, null, 0);
@@ -977,18 +983,18 @@ namespace SW2URDF
 
                 // GetRefAxisParams returns {startX, startY, startZ, endX, endY, endZ}
                 axisParams = axis.GetRefAxisParams();
-                xyz[0] = axisParams[0] - axisParams[3];
-                xyz[1] = axisParams[1] - axisParams[4];
-                xyz[2] = axisParams[2] - axisParams[5];
+                axisVector[0] = axisParams[0] - axisParams[3];
+                axisVector[1] = axisParams[1] - axisParams[4];
+                axisVector[2] = axisParams[2] - axisParams[5];
 
                 // Normalize and cleanup
-                xyz = MathOps.PNorm(xyz, 2);
+                axisVector = MathOps.PNorm(axisVector, 2);
 
                 // Transform to proper coordinates
-                xyz = GlobalAxis(xyz, ComponentTransform);
+                axisVector = GlobalAxis(axisVector, ComponentTransform);
             }
 
-            return xyz;
+            return axisVector;
         }
 
         //This is called whenever the pull down menu is changed and the axis needs to be
@@ -1017,11 +1023,11 @@ namespace SW2URDF
             double[] transformedAxis = new double[axis.Length];
             if (transform != null)
             {
-                Vector<double> vec = new DenseVector(new double[] { axis[0], axis[1], axis[2], 0 });
-                vec = transform * vec;
-                transformedAxis[0] = vec[0];
-                transformedAxis[1] = vec[1];
-                transformedAxis[2] = vec[2];
+                Vector<double> transformedVector = new DenseVector(new double[] { axis[0], axis[1], axis[2], 0 });
+                transformedVector = transform * transformedVector;
+                transformedAxis[0] = transformedVector[0];
+                transformedAxis[1] = transformedVector[1];
+                transformedAxis[2] = transformedVector[2];
             }
             return MathOps.Threshold(transformedAxis, 0.00001);
         }
