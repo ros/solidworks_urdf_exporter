@@ -169,8 +169,8 @@ namespace SW2URDF
     [Serializable]
     public class Robot : URDFElement
     {
-        public Link BaseLink;
-        private Attribute NameAttribute;
+        public Link BaseLink { get; private set; }
+        private readonly Attribute NameAttribute;
 
         public string Name
         {
@@ -200,6 +200,13 @@ namespace SW2URDF
             base.WriteURDF(writer);
             writer.WriteEndDocument();
             writer.Close();
+        }
+
+        public void SetBaseLink(Link link)
+        {
+            BaseLink = link;
+            ChildElements.Clear();
+            ChildElements.Add(link);
         }
 
         internal string[] GetJointNames(bool includeFixed)
@@ -285,7 +292,7 @@ namespace SW2URDF
             }
 
             writer.WriteEndElement();
-            if (Joint != null && Joint.Name != null)
+            if (Joint.IsElementSet())
             {
                 Joint.WriteURDF(writer);
             }
@@ -1110,6 +1117,11 @@ namespace SW2URDF
         {
             Name = boxName.Text;
             Type = boxType.Text;
+        }
+
+        public override bool IsElementSet()
+        {
+            return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Type);
         }
     }
 

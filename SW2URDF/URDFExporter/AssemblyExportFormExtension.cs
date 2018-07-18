@@ -415,7 +415,8 @@ namespace SW2URDF
         {
             //TODO: This needs to properly handle the new differences between the trees.
             Robot Robot = Exporter.URDFRobot;
-            Robot.BaseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Link baseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Robot.SetBaseLink(baseLink);
             Robot.Name = Exporter.URDFRobot.Name;
             return Robot;
         }

@@ -53,7 +53,8 @@ namespace SW2URDF
             }
 
             //Each Robot contains a single base link, build this link
-            URDFRobot.BaseLink = CreateBaseLinkFromActiveModel();
+            Link baseLink = CreateBaseLinkFromActiveModel();
+            URDFRobot.SetBaseLink(baseLink);
         }
 
         // This method now only works for the part exporter
@@ -162,9 +163,9 @@ namespace SW2URDF
             progressBar.UpdateTitle("Building link: " + baseNode.Name);
             count++;
 
-            Link BaseLink = CreateLink(baseNode, 1);
-            URDFRobot.BaseLink = BaseLink;
-            baseNode.Link = BaseLink;
+            Link baseLink = CreateLink(baseNode, 1);
+            URDFRobot.SetBaseLink(baseLink);
+            baseNode.Link = baseLink;
 
             progressBar.End();
         }
@@ -172,18 +173,18 @@ namespace SW2URDF
         public void CreateBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
-            Link Link = CreateLinkFromComponents(null, node.Components, node);
+            Link link = CreateLinkFromComponents(null, node.Components, node);
             if (node.CoordsysName == "Automatically Generate")
             {
                 CreateBaseRefOrigin(true);
                 node.CoordsysName = "Origin_global";
-                Link.CoordSysName = node.CoordsysName;
+                link.CoordSysName = node.CoordsysName;
             }
             else
             {
-                Link.CoordSysName = node.CoordsysName;
+                link.CoordSysName = node.CoordsysName;
             }
-            URDFRobot.BaseLink = Link;
+            URDFRobot.SetBaseLink(link);
         }
 
         //Method which builds an entire link and iterates through.
