@@ -1141,6 +1141,9 @@ namespace SW2URDF
             Origin.WriteURDF(writer);
             Parent.WriteURDF(writer);
             Child.WriteURDF(writer);
+
+            // Since the axis parameter is optional, this will only write it as long as the type
+            // is not 'fixed
             if (!TypeAttribute.value.Equals("fixed"))
             {
                 Axis.WriteURDF(writer);
