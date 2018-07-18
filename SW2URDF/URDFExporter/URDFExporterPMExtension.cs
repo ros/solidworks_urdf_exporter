@@ -95,32 +95,35 @@ namespace SW2URDF
                     }
                 }
             }
-            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
             RetrieveSWComponentPIDs(BaseNode);
 
-            StringWriter stringWriter = new StringWriter();
+            // Serializing URDF data to a string
             String newData = "";
             using (MemoryStream stream = new MemoryStream())
             {
                 SoapFormatter formatter = new SoapFormatter();
                 formatter.Serialize(stream, BaseNode);
                 stream.Flush();
-                newData = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Position);
+                newData = Encoding.ASCII.GetString(stream.GetBuffer(), 0, (int)stream.Position);
             }
 
             bool userConfirms = AskUserConfigurationSave(warnUser, newData, oldData, previousVersion);
 
             if (userConfirms)
             {
+                // Saving data to SW ModelDoc
                 int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
                 SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
                     CreateSWSaveAttribute("URDF Export Configuration");
                 param = saveExporterAttribute.GetParameter("data");
-                param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                param.SetStringValue2(newData, ConfigurationOptions, "");
+
                 param = saveExporterAttribute.GetParameter("name");
                 param.SetStringValue2("config1", ConfigurationOptions, "");
+
                 param = saveExporterAttribute.GetParameter("date");
                 param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+
                 param = saveExporterAttribute.GetParameter("exporterVersion");
                 param.SetDoubleValue2(CONFIGURATION_VERSION, ConfigurationOptions, "");
             }
@@ -692,7 +695,7 @@ namespace SW2URDF
             LinkNode baseNode = null;
             if (!String.IsNullOrWhiteSpace(data))
             {
-                using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+                using (MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(data)))
                 {
                     SoapFormatter formatter = new SoapFormatter();
                     baseNode = (LinkNode)formatter.Deserialize(stream);
