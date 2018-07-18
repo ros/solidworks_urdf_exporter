@@ -819,6 +819,10 @@ namespace SW2URDF
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             MathTransform ComponentTransform = default(MathTransform);
+            if (CoordinateSystemName == null)
+            {
+                throw new Exception("Coordinate system string is null");
+            }
             if (CoordinateSystemName.Contains("<") && CoordinateSystemName.Contains(">"))
             {
                 string componentStr = "";
