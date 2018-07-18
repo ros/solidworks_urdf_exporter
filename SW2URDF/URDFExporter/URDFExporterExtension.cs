@@ -232,7 +232,7 @@ namespace SW2URDF
             }
 
             string childCoordSysName = "";
-            if (child.Joint == null)
+            if (child.Joint.CoordinateSystemName == null)
             {
                 childCoordSysName = node.CoordsysName;
             }
