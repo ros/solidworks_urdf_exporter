@@ -270,7 +270,7 @@ namespace SW2URDF
                 {
                     logger.Info("Configuration saved");
                     SaveActiveNode();
-                    SaveConfigTree(ActiveSWModel, (LinkNode)Tree.Nodes[0], false);
+                    SaveConfigTreeSoap(ActiveSWModel, (LinkNode)Tree.Nodes[0], false);
                 }
             }
             catch (Exception e)

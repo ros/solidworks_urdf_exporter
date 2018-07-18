@@ -31,14 +31,102 @@ using System.Xml.Serialization;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
+using System.Runtime.Serialization.Formatters.Soap;
+using System.Text;
 
 namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
+        public static readonly string CONFIGURATION_VERSION = "1.3";
+        public static readonly double SOAP_MIN_VERSION = 1.3;
         public AttributeDef saveConfigurationAttributeDef;
 
-        public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        private bool AskUserConfigurationSave(bool warnUser, string newData, string oldData, string previousVersion)
+        {
+            bool success = (oldData != newData);
+            if (oldData != newData)
+            {
+                if (previousVersion != CONFIGURATION_VERSION)
+                {
+                    if (MessageBox.Show("The configuration has changed, would you like to save and " +
+                    "update the configuration to the latest version?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        success = true;
+                    }
+                }
+                else if (warnUser)
+                {
+                    if (MessageBox.Show("The configuration has changed, would you like to save?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        success = true;
+                    }
+                }
+                else
+                {
+                    success = true;
+                }
+            }
+            return success;
+        }
+
+        private void SaveConfigTreeSoap(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
+        {
+            Object[] objects = model.FeatureManager.GetFeatures(true);
+            string oldData = "";
+            string previousVersion = "";
+            Parameter param;
+            foreach (Object obj in objects)
+            {
+                Feature feat = (Feature)obj;
+                string t = feat.GetTypeName2();
+                if (feat.GetTypeName2() == "Attribute")
+                {
+                    SolidWorks.Interop.sldworks.Attribute att =
+                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                    if (att.GetName() == "URDF Export Configuration")
+                    {
+                        param = att.GetParameter("data");
+                        oldData = param.GetStringValue();
+                        param = att.GetParameter("exporterVersion");
+                        previousVersion = param.GetStringValue();
+                    }
+                }
+            }
+            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
+            RetrieveSWComponentPIDs(BaseNode);
+
+            StringWriter stringWriter = new StringWriter();
+            String newData = "";
+            using (MemoryStream stream = new MemoryStream())
+            {
+                SoapFormatter formatter = new SoapFormatter();
+                formatter.Serialize(stream, BaseNode);
+                stream.Flush();
+                newData = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Position);
+            }
+
+            bool userConfirms = AskUserConfigurationSave(warnUser, newData, oldData, previousVersion);
+
+            if (userConfirms)
+            {
+                int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+                SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+                    CreateSWSaveAttribute("URDF Export Configuration");
+                param = saveExporterAttribute.GetParameter("data");
+                param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+                param = saveExporterAttribute.GetParameter("name");
+                param.SetStringValue2("config1", ConfigurationOptions, "");
+                param = saveExporterAttribute.GetParameter("date");
+                param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+                param = saveExporterAttribute.GetParameter("exporterVersion");
+                param.SetStringValue2("1.3", ConfigurationOptions, "");
+            }
+        }
+
+        public void SaveConfigTreeXML(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
             string oldData = "";
@@ -536,11 +624,11 @@ namespace SW2URDF
             return node;
         }
 
-        // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
         public void LoadConfigTree()
         {
             Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
             string data = "";
+            double configVersion = 0.0;
             foreach (Object obj in objects)
             {
                 Feature feat = (Feature)obj;
@@ -554,18 +642,21 @@ namespace SW2URDF
                         Parameter param = att.GetParameter("data");
                         data = param.GetStringValue();
                         logger.Info("URDF Configuration found\n" + data);
+
+                        param = att.GetParameter("exporterVersion");
+                        configVersion = Double.TryParse(param.GetStringValue(), out configVersion) ? configVersion : 0.0;
                     }
                 }
             }
+
             LinkNode basenode = null;
-            if (!String.IsNullOrWhiteSpace(data))
+            if (configVersion >= SOAP_MIN_VERSION)
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
-                basenode = new LinkNode(node);
-                Common.LoadSWComponents(ActiveSWModel, basenode);
-                textReader.Close();
+                basenode = LoadConfigFromStringSoap(data);
+            }
+            else
+            {
+                basenode = LoadConfigFromStringXML(data);
             }
 
             if (basenode == null)
@@ -579,6 +670,37 @@ namespace SW2URDF
             Tree.Nodes.Add(basenode);
             Tree.ExpandAll();
             Tree.SelectedNode = Tree.Nodes[0];
+        }
+
+        private LinkNode LoadConfigFromStringXML(string data)
+        {
+            LinkNode baseNode = null;
+            if (!String.IsNullOrWhiteSpace(data))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                baseNode = new LinkNode(node);
+                Common.LoadSWComponents(ActiveSWModel, baseNode);
+                textReader.Close();
+            }
+            return baseNode;
+        }
+
+        private LinkNode LoadConfigFromStringSoap(string data)
+        {
+            LinkNode baseNode = null;
+            if (!String.IsNullOrWhiteSpace(data))
+            {
+                using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+                {
+                    SoapFormatter formatter = new SoapFormatter();
+                    baseNode = (LinkNode)formatter.Deserialize(stream);
+                }
+
+                Common.LoadSWComponents(ActiveSWModel, baseNode);
+            }
+            return baseNode;
         }
 
         public void RetrieveSWComponentPIDs(LinkNode node)

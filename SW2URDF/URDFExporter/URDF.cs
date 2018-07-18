@@ -23,6 +23,7 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
@@ -51,6 +52,7 @@ namespace SW2URDF
 
     //Not sure why I have a class that everything else inherits from that is empty.
     // But maybe we'll want to add things to it
+    [Serializable]
     public class URDFElement
     {
         protected static readonly ILog logger = Logger.GetLogger();
@@ -61,6 +63,8 @@ namespace SW2URDF
         public URDFElement(string elementName)
         {
             ElementName = elementName;
+            ChildElements = new List<URDFElement>();
+            Attributes = new List<Attribute>();
         }
 
         public void WriteURDF(XmlWriter writer)
@@ -105,6 +109,7 @@ namespace SW2URDF
         protected bool isRequired;
     }
 
+    [Serializable]
     public class Attribute
     {
         private readonly string USStringFormat = "en-US";
@@ -161,6 +166,7 @@ namespace SW2URDF
     }
 
     //The base URDF element, a robot
+    [Serializable]
     public class Robot : URDFElement
     {
         public Link BaseLink;
@@ -203,6 +209,7 @@ namespace SW2URDF
     }
 
     //The link class, it contains many other elements not found in the URDF.
+    [Serializable]
     public class Link : URDFElement
     {
         public readonly Link Parent;
@@ -302,6 +309,7 @@ namespace SW2URDF
     }
 
     //The serial node class, it is used only for saving the configuration.
+    [Serializable]
     public class SerialNode
     {
         public string linkName;
@@ -373,6 +381,7 @@ namespace SW2URDF
     }
 
     //The inertial element of a link
+    [Serializable]
     public class Inertial : URDFElement
     {
         public readonly Origin Origin;
@@ -392,6 +401,7 @@ namespace SW2URDF
     }
 
     //The Origin element, used in several other elements
+    [Serializable]
     public class Origin : URDFElement
     {
         private readonly Attribute XYZAttribute;
@@ -585,6 +595,7 @@ namespace SW2URDF
     }
 
     //mass element, belongs to the inertial element
+    [Serializable]
     public class Mass : URDFElement
     {
         private readonly Attribute ValueAttribute;
@@ -627,6 +638,7 @@ namespace SW2URDF
     }
 
     //Inertia element, which means moment of inertia. In the inertial element
+    [Serializable]
     public class Inertia : URDFElement
     {
         private readonly Attribute IxxAttribute;
@@ -774,6 +786,7 @@ namespace SW2URDF
     }
 
     //The visual element of a link
+    [Serializable]
     public class Visual : URDFElement
     {
         public readonly Origin Origin;
@@ -793,6 +806,7 @@ namespace SW2URDF
     }
 
     //The geometry element the visual element
+    [Serializable]
     public class Geometry : URDFElement
     {
         public readonly Mesh Mesh;
@@ -806,6 +820,7 @@ namespace SW2URDF
     }
 
     //The mesh element of the geometry element. This contains only a filename location of the mesh.
+    [Serializable]
     public class Mesh : URDFElement
     {
         private readonly Attribute FilenameAttribute;
@@ -831,6 +846,7 @@ namespace SW2URDF
     }
 
     //The material element of the visual element.
+    [Serializable]
     public class Material : URDFElement
     {
         public readonly Color Color;
@@ -867,6 +883,7 @@ namespace SW2URDF
     }
 
     //The color element of the material element. Contains a single RGBA.
+    [Serializable]
     public class Color : URDFElement
     {
         private readonly Attribute RGBAAttribute;
@@ -960,6 +977,7 @@ namespace SW2URDF
     }
 
     //The texture element of the material element.
+    [Serializable]
     public class Texture : URDFElement
     {
         private readonly Attribute FilenameAttribute;
@@ -989,6 +1007,7 @@ namespace SW2URDF
     }
 
     //The collision element of a link.
+    [Serializable]
     public class Collision : URDFElement
     {
         public readonly Origin Origin;
@@ -1005,6 +1024,7 @@ namespace SW2URDF
     }
 
     //The joint class. There is one for every link but the base link
+    [Serializable]
     public class Joint : URDFElement
     {
         private readonly Attribute NameAttribute;
@@ -1090,6 +1110,7 @@ namespace SW2URDF
 
     //parent_link element of a joint.
 
+    [Serializable]
     public class ParentLink : URDFElement
     {
         private readonly Attribute NameAttribute;
@@ -1126,6 +1147,7 @@ namespace SW2URDF
     }
 
     //The child link element
+    [Serializable]
     public class ChildLink : URDFElement
     {
         private readonly Attribute NameAttribute;
@@ -1162,6 +1184,7 @@ namespace SW2URDF
     }
 
     //The axis element of a joint.
+    [Serializable]
     public class Axis : URDFElement
     {
         private readonly Attribute XYZAttribute;
@@ -1248,6 +1271,7 @@ namespace SW2URDF
     }
 
     //The limit element of a joint.
+    [Serializable]
     public class Limit : URDFElement
     {
         private readonly Attribute LowerAttribute;
@@ -1365,6 +1389,7 @@ namespace SW2URDF
     }
 
     //The calibration element of a joint.
+    [Serializable]
     public class Calibration : URDFElement
     {
         private readonly Attribute RisingAttribute;
@@ -1439,6 +1464,7 @@ namespace SW2URDF
     }
 
     //The dynamics element of a joint.
+    [Serializable]
     public class Dynamics : URDFElement
     {
         private readonly Attribute DampingAttribute;
@@ -1513,6 +1539,7 @@ namespace SW2URDF
     }
 
     //The safety_controller element of a joint.
+    [Serializable]
     public class SafetyController : URDFElement
     {
         private readonly Attribute SoftLowerAttribute;
@@ -1641,6 +1668,7 @@ namespace SW2URDF
     }
 
     //A class that just writes the bare minimum of the manifest file necessary for ROS packages.
+    [Serializable]
     public class PackageXMLWriter
     {
         public XmlWriter writer;
@@ -1659,6 +1687,7 @@ namespace SW2URDF
     }
 
     //The base class for packageXML elements. Again, I guess I like having empty base classes
+    [Serializable]
     public class PackageElement
     {
         public PackageElement()
@@ -1671,6 +1700,7 @@ namespace SW2URDF
     }
 
     //Top level class for the package XML file.
+    [Serializable]
     public class PackageXML : PackageElement
     {
         public Description description;
@@ -1718,6 +1748,7 @@ namespace SW2URDF
     }
 
     //description element of the manifest file
+    [Serializable]
     public class Description : PackageElement
     {
         private readonly string name;
@@ -1757,6 +1788,7 @@ namespace SW2URDF
     }
 
     //The depend element of the manifest file
+    [Serializable]
     public class Dependencies : PackageElement
     {
         private readonly string[] buildTool;
@@ -1787,6 +1819,7 @@ namespace SW2URDF
     }
 
     //The author element of the manifest file
+    [Serializable]
     public class Author : PackageElement
     {
         private readonly string name;
@@ -1809,6 +1842,7 @@ namespace SW2URDF
     }
 
     //The license element of the manifest file
+    [Serializable]
     public class License : PackageElement
     {
         private readonly string lic;
@@ -1830,6 +1864,7 @@ namespace SW2URDF
 
     //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so
     // that information can be passed around from the TreeView itself.
+    [Serializable]
     public class LinkNode : TreeNode
     {
         private static readonly ILog logger = Logger.GetLogger();
@@ -1868,6 +1903,10 @@ namespace SW2URDF
         { get; set; }
 
         public LinkNode()
+        {
+        }
+
+        protected LinkNode(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 
