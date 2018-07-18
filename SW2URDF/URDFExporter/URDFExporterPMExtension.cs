@@ -38,11 +38,11 @@ namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
-        public static readonly string CONFIGURATION_VERSION = "1.3";
+        public static readonly double CONFIGURATION_VERSION = 1.3;
         public static readonly double SOAP_MIN_VERSION = 1.3;
         public AttributeDef saveConfigurationAttributeDef;
 
-        private bool AskUserConfigurationSave(bool warnUser, string newData, string oldData, string previousVersion)
+        private bool AskUserConfigurationSave(bool warnUser, string newData, string oldData, double previousVersion)
         {
             bool success = (oldData != newData);
             if (oldData != newData)
@@ -76,7 +76,7 @@ namespace SW2URDF
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
             string oldData = "";
-            string previousVersion = "";
+            double previousVersion = 0;
             Parameter param;
             foreach (Object obj in objects)
             {
@@ -91,7 +91,7 @@ namespace SW2URDF
                         param = att.GetParameter("data");
                         oldData = param.GetStringValue();
                         param = att.GetParameter("exporterVersion");
-                        previousVersion = param.GetStringValue();
+                        previousVersion = param.GetDoubleValue();
                     }
                 }
             }
@@ -122,7 +122,7 @@ namespace SW2URDF
                 param = saveExporterAttribute.GetParameter("date");
                 param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
                 param = saveExporterAttribute.GetParameter("exporterVersion");
-                param.SetStringValue2("1.3", ConfigurationOptions, "");
+                param.SetDoubleValue2(CONFIGURATION_VERSION, ConfigurationOptions, "");
             }
         }
 
@@ -174,7 +174,7 @@ namespace SW2URDF
                     param = saveExporterAttribute.GetParameter("date");
                     param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
                     param = saveExporterAttribute.GetParameter("exporterVersion");
-                    param.SetStringValue2("1.1", ConfigurationOptions, "");
+                    param.SetDoubleValue2(CONFIGURATION_VERSION, ConfigurationOptions, "");
                 }
             }
         }
@@ -644,7 +644,7 @@ namespace SW2URDF
                         logger.Info("URDF Configuration found\n" + data);
 
                         param = att.GetParameter("exporterVersion");
-                        configVersion = Double.TryParse(param.GetStringValue(), out configVersion) ? configVersion : 0.0;
+                        configVersion = param.GetDoubleValue();
                     }
                 }
             }
@@ -929,7 +929,7 @@ namespace SW2URDF
                 saveConfigurationAttributeDef.AddParameter(
                     "date", (int)swParamType_e.swParamTypeString, 0, Options);
                 saveConfigurationAttributeDef.AddParameter(
-                    "exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
+                    "exporterVersion", (int)swParamType_e.swParamTypeDouble, CONFIGURATION_VERSION, Options);
                 saveConfigurationAttributeDef.Register();
             }
 
