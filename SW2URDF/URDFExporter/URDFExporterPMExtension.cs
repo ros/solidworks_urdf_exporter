@@ -129,6 +129,57 @@ namespace SW2URDF
             }
         }
 
+        //public void SaveConfigTreeXMLNew(ModelDoc2 model, SerialNode BaseNode, bool warnUser)
+        //{
+        //    Object[] objects = model.FeatureManager.GetFeatures(true);
+        //    string oldData = "";
+        //    Parameter param;
+        //    foreach (Object obj in objects)
+        //    {
+        //        Feature feat = (Feature)obj;
+        //        string t = feat.GetTypeName2();
+        //        if (feat.GetTypeName2() == "Attribute")
+        //        {
+        //            SolidWorks.Interop.sldworks.Attribute att =
+        //                (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+        //            if (att.GetName() == "URDF Export Configuration")
+        //            {
+        //                param = att.GetParameter("data");
+        //                oldData = param.GetStringValue();
+        //            }
+        //        }
+        //    }
+        //    RetrieveSWComponentPIDs(BaseNode);
+        //    StringWriter stringWriter;
+        //    XmlSerializer serializer = new XmlSerializer(typeof(LinkNode));
+        //    stringWriter = new StringWriter();
+        //    serializer.Serialize(stringWriter, BaseNode);
+        //    stringWriter.Flush();
+        //    stringWriter.Close();
+
+        //    string newData = stringWriter.ToString();
+        //    if (oldData != newData)
+        //    {
+        //        if (!warnUser ||
+        //            (warnUser &&
+        //            MessageBox.Show("The configuration has changed, would you like to save?",
+        //            "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
+        //        {
+        //            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
+        //            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
+        //                CreateSWSaveAttribute("URDF Export Configuration");
+        //            param = saveExporterAttribute.GetParameter("data");
+        //            param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
+        //            param = saveExporterAttribute.GetParameter("name");
+        //            param.SetStringValue2("config1", ConfigurationOptions, "");
+        //            param = saveExporterAttribute.GetParameter("date");
+        //            param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
+        //            param = saveExporterAttribute.GetParameter("exporterVersion");
+        //            param.SetDoubleValue2(CONFIGURATION_VERSION, ConfigurationOptions, "");
+        //        }
+        //    }
+        //}
+
         public void SaveConfigTreeXML(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Object[] objects = model.FeatureManager.GetFeatures(true);
@@ -655,7 +706,7 @@ namespace SW2URDF
             LinkNode basenode = null;
             if (configVersion >= SOAP_MIN_VERSION)
             {
-                basenode = LoadConfigFromStringSoap(data);
+                basenode = LoadConfigFromStringXML(data);
             }
             else
             {
@@ -673,6 +724,20 @@ namespace SW2URDF
             Tree.Nodes.Add(basenode);
             Tree.ExpandAll();
             Tree.SelectedNode = Tree.Nodes[0];
+        }
+
+        private LinkNode LoadConfigFromStringXMLNew(string data)
+        {
+            LinkNode baseNode = null;
+            if (!String.IsNullOrWhiteSpace(data))
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(LinkNode));
+                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                baseNode = (LinkNode)serializer.Deserialize(textReader);
+                Common.LoadSWComponents(ActiveSWModel, baseNode);
+                textReader.Close();
+            }
+            return baseNode;
         }
 
         private LinkNode LoadConfigFromStringXML(string data)

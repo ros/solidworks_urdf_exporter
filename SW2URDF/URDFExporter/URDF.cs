@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
+using System.Xml.Serialization;
 using log4net;
 using SolidWorks.Interop.sldworks;
 
@@ -244,12 +245,39 @@ namespace SW2URDF
         public string CoordSysName;
 
         // The SW part component object
+
+        [XmlIgnoreAttribute]
         public Component2 SWComponent;
 
+        [XmlIgnoreAttribute]
         public Component2 SWMainComponent;
+
+        [XmlIgnoreAttribute]
         public List<Component2> SWcomponents;
+
         public List<byte[]> SWComponentPIDs;
         public byte[] SWMainComponentPID;
+
+        public Link() : base("link")
+        {
+            Parent = null;
+            Children = new List<Link>();
+            SWcomponents = new List<Component2>();
+            NameAttribute = new Attribute("name", true, "");
+
+            Inertial = new Inertial();
+            Visual = new Visual();
+            Collision = new Collision();
+            Joint = new Joint();
+
+            isRequired = true;
+            isFixedFrame = true;
+
+            Attributes.Add(NameAttribute);
+            ChildElements.Add(Inertial);
+            ChildElements.Add(Visual);
+            ChildElements.Add(Collision);
+        }
 
         public Link(Link parent) : base("link")
         {
@@ -321,7 +349,7 @@ namespace SW2URDF
 
     //The serial node class, it is used only for saving the configuration.
     [Serializable]
-    public class SerialNode
+    public class SerialNode : ISerializable
     {
         public string linkName;
         public string jointName;
@@ -332,11 +360,26 @@ namespace SW2URDF
         public bool isBaseNode;
         public bool isIncomplete;
         public List<SerialNode> Nodes;
+        public Link Link;
 
         //This is only used by the serialization module.
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
+        }
+
+        protected SerialNode(SerializationInfo info, StreamingContext context) : base()
+        {
+            linkName = info.GetString("link_name");
+            jointName = info.GetString("joint_name");
+            axisName = info.GetString("axis_name");
+            coordsysName = info.GetString("coord_sys_name");
+            componentPIDs = (List<byte[]>)info.GetValue("component_pids", typeof(List<byte[]>));
+            jointType = info.GetString("joint_type");
+            isBaseNode = info.GetBoolean("is_base_node");
+            isIncomplete = info.GetBoolean("is_incomplete");
+            Nodes = (List<SerialNode>)info.GetValue("nodes", typeof(List<SerialNode>));
+            Link = (Link)info.GetValue("link", typeof(Link));
         }
 
         public SerialNode(LinkNode node)
@@ -355,6 +398,7 @@ namespace SW2URDF
             }
             else
             {
+                Link = node.Link;
                 linkName = node.Link.Name;
 
                 componentPIDs = node.ComponentPIDs;
@@ -388,6 +432,20 @@ namespace SW2URDF
             {
                 Nodes.Add(new SerialNode(child));
             }
+        }
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("link_name", linkName);
+            info.AddValue("joint_name", jointName);
+            info.AddValue("axis_name", axisName);
+            info.AddValue("coord_sys_name", coordsysName);
+            info.AddValue("component_pids", componentPIDs);
+            info.AddValue("joint_type", jointType);
+            info.AddValue("is_base_node", isBaseNode);
+            info.AddValue("is_incomplete", isIncomplete);
+            info.AddValue("nodes", Nodes);
+            info.AddValue("link", Link);
         }
     }
 
@@ -1887,7 +1945,6 @@ namespace SW2URDF
 
     //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so
     // that information can be passed around from the TreeView itself.
-    [Serializable]
     public class LinkNode : TreeNode
     {
         private static readonly ILog logger = Logger.GetLogger();
@@ -1908,6 +1965,7 @@ namespace SW2URDF
         { get; set; }
 
         public List<Component2> Components;
+
         public List<byte[]> ComponentPIDs;
 
         public string JointType
@@ -1944,6 +2002,7 @@ namespace SW2URDF
             JointType = node.jointType;
             IsBaseNode = node.isBaseNode;
             IsIncomplete = node.isIncomplete;
+            Link = node.Link;
 
             Name = LinkName;
             Text = LinkName;
