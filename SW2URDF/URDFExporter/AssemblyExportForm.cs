@@ -194,6 +194,8 @@ namespace SW2URDF
         {
             logger.Info("Completing URDF export");
             SaveConfigTree(ActiveSWModel, BaseNode, false);
+
+            // Saving selected node
             LinkNode node = (LinkNode)treeViewLinkProperties.SelectedNode;
             if (node != null)
             {
@@ -205,8 +207,7 @@ namespace SW2URDF
 
             if (!string.IsNullOrWhiteSpace(warnings))
             {
-                logger.Info("Link warnings encountered");
-                logger.Info(warnings);
+                logger.Info("Link warnings encountered:\n" + warnings);
 
                 string message = "The following links contained issues that may cause problems. " +
                 "Do you wish to proceed?\n" + warnings;
