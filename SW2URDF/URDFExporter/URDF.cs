@@ -1137,13 +1137,17 @@ namespace SW2URDF
             writer.WriteStartElement("joint");
             NameAttribute.WriteURDF(writer);
             TypeAttribute.WriteURDF(writer);
-            //writer.WriteAttributeString("name", "joint_" + name);
-            //writer.WriteAttributeString("type", type);
 
             Origin.WriteURDF(writer);
             Parent.WriteURDF(writer);
             Child.WriteURDF(writer);
-            Axis.WriteURDF(writer);
+
+            // Since the axis parameter is optional, this will only write it as long as the type
+            // is not 'fixed
+            if (!TypeAttribute.value.Equals("fixed"))
+            {
+                Axis.WriteURDF(writer);
+            }
             if (Limit != null)
             {
                 Limit.WriteURDF(writer);
