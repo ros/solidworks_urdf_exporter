@@ -398,8 +398,7 @@ namespace SW2URDF
 
             EstimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = (parent.Joint.CoordinateSystemName == null) ?
-                parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            coordSysName = parent.Joint.CoordinateSystemName ?? parent.CoordSysName;
             if (unfix)
             {
                 UnFixComponents(fixedComponents);
@@ -875,8 +874,7 @@ namespace SW2URDF
                 yMin = MathOps.Min(points[1], points[4], yMin);
                 zMin = MathOps.Min(points[2], points[5], zMin);
             }
-            string coordsys = (parent.Joint.CoordinateSystemName == null) ?
-                parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            string coordsys = parent.Joint.CoordinateSystemName ?? parent.CoordSysName;
             MathTransform parentTransform = GetCoordinateSystemTransform(coordsys);
 
             double[] xyzParent = MathOps.GetXYZ(parentTransform);

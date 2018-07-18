@@ -1334,8 +1334,8 @@ namespace SW2URDF
 
         public Limit() : base("limit")
         {
-            EffortAttribute = new Attribute("effort", true, 0);
-            VelocityAttribute = new Attribute("velocity", true, 0);
+            EffortAttribute = new Attribute("effort", true, 0.0);
+            VelocityAttribute = new Attribute("velocity", true, 0.0);
             LowerAttribute = new Attribute("lower", false, null);
             UpperAttribute = new Attribute("upper", false, null);
 
@@ -1348,18 +1348,25 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity, string format)
         {
-            if (LowerAttribute != null)
+            if (LowerAttribute.Value != null)
             {
                 boxLower.Text = Lower.ToString(format);
             }
 
-            if (UpperAttribute != null)
+            if (UpperAttribute.Value != null)
             {
                 boxUpper.Text = Upper.ToString(format);
             }
 
-            boxEffort.Text = Effort.ToString(format);
-            boxVelocity.Text = Velocity.ToString(format);
+            if (EffortAttribute.Value != null)
+            {
+                boxEffort.Text = Effort.ToString(format);
+            }
+
+            if (VelocityAttribute.Value != null)
+            {
+                boxVelocity.Text = Velocity.ToString(format);
+            }
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
@@ -1435,12 +1442,12 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxRising, TextBox boxFalling, string format)
         {
-            if (RisingAttribute != null)
+            if (RisingAttribute.Value != null)
             {
                 boxRising.Text = Rising.ToString(format);
             }
 
-            if (FallingAttribute != null)
+            if (FallingAttribute.Value != null)
             {
                 boxFalling.Text = Falling.ToString(format);
             }
@@ -1511,11 +1518,11 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxDamping, TextBox boxFriction, string format)
         {
-            if (DampingAttribute != null)
+            if (DampingAttribute.Value != null)
             {
                 boxDamping.Text = Damping.ToString(format);
             }
-            if (FrictionAttribute != null)
+            if (FrictionAttribute.Value != null)
             {
                 boxFriction.Text = Friction.ToString(format);
             }
@@ -1619,17 +1626,17 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxPosition, TextBox boxVelocity, string format)
         {
-            if (SoftLowerAttribute != null)
+            if (SoftLowerAttribute.Value != null)
             {
                 boxLower.Text = SoftLower.ToString(format);
             }
 
-            if (SoftUpperAttribute != null)
+            if (SoftUpperAttribute.Value != null)
             {
                 boxUpper.Text = SoftUpper.ToString(format);
             }
 
-            if (KPositionAttribute != null)
+            if (KPositionAttribute.Value != null)
             {
                 boxPosition.Text = KPosition.ToString(format);
             }
