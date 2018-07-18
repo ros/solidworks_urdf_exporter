@@ -338,7 +338,6 @@ namespace SW2URDF
             string jointType = node.JointType;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-            List<Component2> fixedComponents = FixComponents(parent);
             child.Joint = new Joint();
             child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
@@ -407,10 +406,7 @@ namespace SW2URDF
 
             coordSysName = (parent.Joint == null) ?
                 parent.CoordSysName : parent.Joint.CoordinateSystemName;
-            if (unfix)
-            {
-                UnFixComponents(fixedComponents);
-            }
+
             LocalizeJoint(child.Joint, coordSysName);
         }
 
@@ -717,7 +713,10 @@ namespace SW2URDF
         public Boolean EstimateGlobalJointFromComponents(AssemblyDoc assy, Link parent, Link child)
         {
             //Create the ref objects
-            int DOFs;
+            int degreesOfFreedom;
+
+            // Fix parent components so that only the actual degree of freedom can be detected.
+            List<Component2> fixedComponents = FixComponents(parent);
 
             // Surpress Limit Mates to properly find degrees of freedom. They don't work with the API call
             List<Mate2> limitMates = new List<Mate2>();
@@ -767,14 +766,14 @@ namespace SW2URDF
                     logger.Info("L2: " + L2Status);
                 }
 
-                DOFs = remainingDOFs;
+                degreesOfFreedom = remainingDOFs;
 
                 // Convert the gotten degrees of freedom to a joint type, origin and axis
                 child.Joint.Type = "fixed";
                 child.Joint.Origin.SetXYZ(MathOps.GetXYZ(child.SWMainComponent.Transform2));
                 child.Joint.Origin.SetRPY(MathOps.GetRPY(child.SWMainComponent.Transform2));
 
-                if (DOFs == 0 && (R1Status + L1Status > 0))
+                if (degreesOfFreedom == 0 && (R1Status + L1Status > 0))
                 {
                     success = true;
                     if (R1Status == 1)
@@ -802,6 +801,8 @@ namespace SW2URDF
                     AddLimits(child.Joint, limitMates, parent.SWMainComponent, child.SWMainComponent);
                 }
             }
+
+            UnFixComponents(fixedComponents);
             return success;
         }
 
