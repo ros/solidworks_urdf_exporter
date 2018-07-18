@@ -333,7 +333,6 @@ namespace SW2URDF
             string jointType = node.JointType;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-            List<Component2> fixedComponents = FixComponents(parent);
 
             child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
@@ -401,10 +400,6 @@ namespace SW2URDF
             EstimateGlobalJointFromRefGeometry(parent, child);
 
             coordSysName = parent.Joint.CoordinateSystemName ?? parent.CoordSysName;
-            if (unfix)
-            {
-                UnFixComponents(fixedComponents);
-            }
 
             LocalizeJoint(child.Joint, coordSysName);
         }

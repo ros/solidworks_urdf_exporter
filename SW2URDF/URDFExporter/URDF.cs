@@ -50,8 +50,7 @@ namespace SW2URDF
         }
     }
 
-    //Not sure why I have a class that everything else inherits from that is empty.
-    // But maybe we'll want to add things to it
+    // Base class of each URDFElement. The goal is to minimize the amount of code in the derived classes;s
     [Serializable]
     public class URDFElement
     {
