@@ -252,6 +252,11 @@ namespace SW2URDF
             SWcomponents = new List<Component2>();
             NameAttribute = new Attribute("name", true, "");
 
+            Inertial = new Inertial();
+            Visual = new Visual();
+            Collision = new Collision();
+            Joint = new Joint();
+
             isRequired = true;
             isFixedFrame = true;
 
