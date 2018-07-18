@@ -67,7 +67,7 @@ namespace SW2URDF
             Attributes = new List<Attribute>();
         }
 
-        public void WriteURDF(XmlWriter writer)
+        public virtual void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement(ElementName);
             foreach (Attribute attribute in Attributes)
@@ -101,7 +101,7 @@ namespace SW2URDF
             }
         }
 
-        public bool IsElementSet()
+        public virtual bool IsElementSet()
         {
             return true;
         }
@@ -194,7 +194,7 @@ namespace SW2URDF
             Attributes.Add(NameAttribute);
         }
 
-        public new void WriteURDF(XmlWriter writer)
+        public override void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartDocument();
             base.WriteURDF(writer);
@@ -266,7 +266,7 @@ namespace SW2URDF
             ChildElements.Add(Collision);
         }
 
-        public new void WriteURDF(XmlWriter writer)
+        public override void WriteURDF(XmlWriter writer)
         {
             writer.WriteStartElement("link");
             NameAttribute.WriteURDF(writer);
