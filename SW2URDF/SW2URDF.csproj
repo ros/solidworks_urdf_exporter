@@ -201,7 +201,7 @@
       <Name>System.Drawing</Name>
     </Reference>
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML">
@@ -230,6 +230,7 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="URDFExporter\Serialization.cs" />
     <Compile Include="URDFExporter\URDFExporter.cs" />
     <Compile Include="URDFExporter\URDFExporterExtension.cs" />
     <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">

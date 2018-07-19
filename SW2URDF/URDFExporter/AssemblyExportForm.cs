@@ -40,7 +40,7 @@ namespace SW2URDF
         public bool AutoUpdatingForm;
         public AttributeDef saveConfigurationAttributeDef;
 
-        private ISldWorks swApp;
+        private SldWorks swApp;
         private ModelDoc2 ActiveSWModel;
         private StringBuilder NewNodeMap = new StringBuilder(128);
         private LinkNode previouslySelectedNode;
@@ -48,17 +48,17 @@ namespace SW2URDF
         private Control[] linkBoxes;
         private LinkNode BaseNode;
 
-        public AssemblyExportForm(ISldWorks iSwApp, LinkNode node)
+        public AssemblyExportForm(SldWorks SwApp, LinkNode node)
         {
             Application.ThreadException +=
                 new ThreadExceptionEventHandler(ExceptionHandler);
             AppDomain.CurrentDomain.UnhandledException +=
                 new UnhandledExceptionEventHandler(UnhandledException);
             InitializeComponent();
-            swApp = iSwApp;
+            swApp = SwApp;
             BaseNode = node;
             ActiveSWModel = swApp.ActiveDoc;
-            Exporter = new URDFExporter(iSwApp);
+            Exporter = new URDFExporter(SwApp);
             AutoUpdatingForm = false;
 
             jointBoxes = new Control[] {
@@ -83,7 +83,7 @@ namespace SW2URDF
                 textBoxTexture
             };
 
-            saveConfigurationAttributeDef = iSwApp.DefineAttribute("URDF Export Configuration");
+            saveConfigurationAttributeDef = SwApp.DefineAttribute("URDF Export Configuration");
             int Options = 0;
 
             saveConfigurationAttributeDef.AddParameter(

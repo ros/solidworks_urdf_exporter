@@ -83,7 +83,7 @@ namespace SW2URDF
         #endregion class variables
 
         // Constructor for SW2URDF Exporter class
-        public URDFExporter(ISldWorks iSldWorksApp)
+        public URDFExporter(SldWorks iSldWorksApp)
         {
             ConstructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
@@ -92,7 +92,7 @@ namespace SW2URDF
             PackageName = ActiveSWModel.GetTitle();
         }
 
-        private void ConstructExporter(ISldWorks iSldWorksApp)
+        private void ConstructExporter(SldWorks iSldWorksApp)
         {
             iSwApp = iSldWorksApp;
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;

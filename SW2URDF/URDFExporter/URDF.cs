@@ -23,6 +23,8 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
@@ -52,13 +54,20 @@ namespace SW2URDF
     }
 
     // Base class of each URDFElement. The goal is to minimize the amount of code in the derived classes;s
-    [Serializable]
+    [DataContract(IsReference = true)]
+    [KnownType("GetKnownTypes")]
     public class URDFElement// : ISerializable
     {
         protected static readonly ILog logger = Logger.GetLogger();
-        public List<URDFElement> ChildElements;
-        public List<Attribute> Attributes;
-        public string ElementName;
+
+        [DataMember]
+        protected readonly List<URDFElement> ChildElements;
+
+        [DataMember]
+        protected readonly List<Attribute> Attributes;
+
+        [DataMember]
+        protected readonly string ElementName;
 
         public URDFElement(string elementName)
         {
@@ -66,13 +75,6 @@ namespace SW2URDF
             ChildElements = new List<URDFElement>();
             Attributes = new List<Attribute>();
         }
-
-        //public URDFElement(SerializationInfo info, StreamingContext context)
-        //{
-        //    ElementName = info.GetString("ElementName");
-        //    ChildElements = new List<URDFElement>();
-        //    Attributes = new List<Attribute>();
-        //}
 
         public virtual void WriteURDF(XmlWriter writer)
         {
@@ -113,25 +115,31 @@ namespace SW2URDF
             return true;
         }
 
-        //public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    info.AddValue("ElementName", ElementName);
-        //}
+        public static Type[] GetKnownTypes()
+        {
+            return new List<Type>(
+                Assembly.GetExecutingAssembly().GetTypes().Where(_ => _.IsSubclassOf(typeof(URDFElement))))
+            {
+                typeof(double[])
+            }.ToArray();
+        }
 
         protected bool isRequired;
     }
 
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Attribute
     {
         private readonly string USStringFormat = "en-US";
-        public bool IsRequired;
-        public string AttributeType;
-        public object Value;
 
-        public Attribute()
-        {
-        }
+        [DataMember]
+        private bool IsRequired;
+
+        [DataMember]
+        private string AttributeType;
+
+        [DataMember]
+        public object Value;
 
         public Attribute(string type, bool isRequired, object initialValue)
         {
@@ -182,13 +190,15 @@ namespace SW2URDF
     }
 
     //The base URDF element, a robot
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Robot : URDFElement
     {
+        [DataMember]
         public Link BaseLink { get; private set; }
-        public Attribute NameAttribute;
 
-        [XmlIgnore]
+        [DataMember]
+        private Attribute NameAttribute;
+
         public string Name
         {
             get
@@ -233,17 +243,18 @@ namespace SW2URDF
     }
 
     //The link class, it contains many other elements not found in the URDF.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Link : URDFElement//, ISerializable
     {
-        [XmlIgnore]
+        [DataMember]
         public Link Parent;
 
+        [DataMember]
         public List<Link> Children;
 
-        public Attribute NameAttribute;
+        [DataMember]
+        private readonly Attribute NameAttribute;
 
-        [XmlIgnore]
         public string Name
         {
             get
@@ -256,31 +267,40 @@ namespace SW2URDF
             }
         }
 
+        [DataMember]
         public Inertial Inertial;
 
+        [DataMember]
         public Visual Visual;
 
+        [DataMember]
         public Collision Collision;
 
+        [DataMember]
         public Joint Joint;
 
+        [DataMember]
         public bool STLQualityFine;
+
+        [DataMember]
         public bool isIncomplete;
+
+        [DataMember]
         public bool isFixedFrame;
+
+        [DataMember]
         public string CoordSysName;
 
-        // The SW part component object
-
-        [XmlIgnore]
         public Component2 SWComponent;
 
-        [XmlIgnore]
         public Component2 SWMainComponent;
 
-        [XmlIgnore]
         public List<Component2> SWcomponents;
 
+        [DataMember]
         public List<byte[]> SWComponentPIDs;
+
+        [DataMember]
         public byte[] SWMainComponentPID;
 
         public Link() : base("link")
@@ -408,38 +428,44 @@ namespace SW2URDF
     }
 
     //The serial node class, it is used only for saving the configuration.
-    [Serializable]
-    public class SerialNode : ISerializable
+    [DataContract(IsReference = true)]
+    public class SerialNode
     {
+        [DataMember]
         public string linkName;
+
+        [DataMember]
         public string jointName;
+
+        [DataMember]
         public string axisName;
+
+        [DataMember]
         public string coordsysName;
+
+        [DataMember]
         public List<byte[]> componentPIDs;
+
+        [DataMember]
         public string jointType;
+
+        [DataMember]
         public bool isBaseNode;
+
+        [DataMember]
         public bool isIncomplete;
+
+        [DataMember]
         public List<SerialNode> Nodes;
+
+        [XmlIgnore]
+        [DataMember]
         public Link Link;
 
         //This is only used by the serialization module.
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
-        }
-
-        protected SerialNode(SerializationInfo info, StreamingContext context) : base()
-        {
-            linkName = info.GetString("link_name");
-            jointName = info.GetString("joint_name");
-            axisName = info.GetString("axis_name");
-            coordsysName = info.GetString("coord_sys_name");
-            componentPIDs = (List<byte[]>)info.GetValue("component_pids", typeof(List<byte[]>));
-            jointType = info.GetString("joint_type");
-            isBaseNode = info.GetBoolean("is_base_node");
-            isIncomplete = info.GetBoolean("is_incomplete");
-            Nodes = (List<SerialNode>)info.GetValue("nodes", typeof(List<SerialNode>));
-            Link = (Link)info.GetValue("link", typeof(Link));
         }
 
         public SerialNode(LinkNode node)
@@ -493,29 +519,20 @@ namespace SW2URDF
                 Nodes.Add(new SerialNode(child));
             }
         }
-
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("link_name", linkName);
-            info.AddValue("joint_name", jointName);
-            info.AddValue("axis_name", axisName);
-            info.AddValue("coord_sys_name", coordsysName);
-            info.AddValue("component_pids", componentPIDs);
-            info.AddValue("joint_type", jointType);
-            info.AddValue("is_base_node", isBaseNode);
-            info.AddValue("is_incomplete", isIncomplete);
-            info.AddValue("nodes", Nodes);
-            info.AddValue("link", Link);
-        }
     }
 
     //The inertial element of a link
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Inertial : URDFElement
     {
-        public Origin Origin;
-        public Mass Mass;
-        public Inertia Inertia;
+        [DataMember]
+        public readonly Origin Origin;
+
+        [DataMember]
+        public readonly Mass Mass;
+
+        [DataMember]
+        public readonly Inertia Inertia;
 
         public Inertial() : base("inertial")
         {
@@ -530,13 +547,15 @@ namespace SW2URDF
     }
 
     //The Origin element, used in several other elements
-    [Serializable]
+    [DataContract]
     public class Origin : URDFElement
     {
-        public Attribute XYZAttribute;
-        public Attribute RPYAttribute;
+        [DataMember]
+        private readonly Attribute XYZAttribute;
 
-        [XmlIgnore]
+        [DataMember]
+        private readonly Attribute RPYAttribute;
+
         private double[] XYZ
         {
             get
@@ -559,7 +578,6 @@ namespace SW2URDF
             XYZ = xyz;
         }
 
-        [XmlIgnore]
         public double X
         {
             get
@@ -572,7 +590,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Y
         {
             get
@@ -585,7 +602,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Z
         {
             get
@@ -598,7 +614,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         private double[] RPY
         {
             get
@@ -621,7 +636,6 @@ namespace SW2URDF
             RPY = rpy;
         }
 
-        [XmlIgnore]
         public double Roll
         {
             get
@@ -634,7 +648,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Pitch
         {
             get
@@ -647,7 +660,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Yaw
         {
             get
@@ -660,6 +672,7 @@ namespace SW2URDF
             }
         }
 
+        [DataMember]
         public bool isCustomized;
 
         public Origin() : base("origin")
@@ -732,12 +745,12 @@ namespace SW2URDF
     }
 
     //mass element, belongs to the inertial element
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Mass : URDFElement
     {
-        public Attribute ValueAttribute;
+        [DataMember]
+        private readonly Attribute ValueAttribute;
 
-        [XmlIgnore]
         public double Value
         {
             get
@@ -776,12 +789,12 @@ namespace SW2URDF
     }
 
     //Inertia element, which means moment of inertia. In the inertial element
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Inertia : URDFElement
     {
-        public Attribute IxxAttribute;
+        [DataMember]
+        private readonly Attribute IxxAttribute;
 
-        [XmlIgnore]
         public double Ixx
         {
             get
@@ -794,9 +807,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute IxyAttribute;
+        [DataMember]
+        private readonly Attribute IxyAttribute;
 
-        [XmlIgnore]
         public double Ixy
         {
             get
@@ -809,9 +822,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute IxzAttribute;
+        [DataMember]
+        private readonly Attribute IxzAttribute;
 
-        [XmlIgnore]
         public double Ixz
         {
             get
@@ -824,9 +837,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute IyyAttribute;
+        [DataMember]
+        private readonly Attribute IyyAttribute;
 
-        [XmlIgnore]
         public double Iyy
         {
             get
@@ -839,9 +852,8 @@ namespace SW2URDF
             }
         }
 
-        public Attribute IyzAttribute;
+        private readonly Attribute IyzAttribute;
 
-        [XmlIgnore]
         public double Iyz
         {
             get
@@ -854,9 +866,8 @@ namespace SW2URDF
             }
         }
 
-        public Attribute IzzAttribute;
+        private readonly Attribute IzzAttribute;
 
-        [XmlIgnore]
         public double Izz
         {
             get
@@ -869,11 +880,12 @@ namespace SW2URDF
             }
         }
 
-        public double[] Moment { get; set; }
+        [DataMember]
+        private List<double> Moment { get; set; }
 
         public Inertia() : base("robot")
         {
-            Moment = new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
             IxxAttribute = new Attribute("ixx", true, 0.0);
             IxyAttribute = new Attribute("ixy", true, 0.0);
             IxzAttribute = new Attribute("ixz", true, 0.0);
@@ -891,13 +903,13 @@ namespace SW2URDF
 
         public void SetMomentMatrix(double[] array)
         {
-            Moment = (double[])array.Clone();
-            Ixx = Moment[0];
-            Ixy = -Moment[1];
-            Ixz = -Moment[2];
-            Iyy = Moment[4];
-            Iyz = -Moment[5];
-            Izz = Moment[8];
+            Moment = new List<double>(array);
+            Ixx = array[0];
+            Ixy = -array[1];
+            Ixz = -array[2];
+            Iyy = array[4];
+            Iyz = -array[5];
+            Izz = array[8];
         }
 
         public void FillBoxes(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz,
@@ -925,17 +937,22 @@ namespace SW2URDF
 
         internal double[] GetMoment()
         {
-            return (double[])Moment.Clone();
+            return Moment.ToArray();
         }
     }
 
     //The visual element of a link
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Visual : URDFElement
     {
-        public Origin Origin;
-        public Geometry Geometry;
-        public Material Material;
+        [DataMember]
+        public readonly Origin Origin;
+
+        [DataMember]
+        public readonly Geometry Geometry;
+
+        [DataMember]
+        public readonly Material Material;
 
         public Visual() : base("visual")
         {
@@ -950,10 +967,11 @@ namespace SW2URDF
     }
 
     //The geometry element the visual element
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Geometry : URDFElement
     {
-        public Mesh Mesh;
+        [DataMember]
+        public readonly Mesh Mesh;
 
         public Geometry() : base("geometry")
         {
@@ -964,12 +982,12 @@ namespace SW2URDF
     }
 
     //The mesh element of the geometry element. This contains only a filename location of the mesh.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Mesh : URDFElement
     {
-        public Attribute FilenameAttribute;
+        [DataMember]
+        private readonly Attribute FilenameAttribute;
 
-        [XmlIgnore]
         public string Filename
         {
             get
@@ -991,14 +1009,18 @@ namespace SW2URDF
     }
 
     //The material element of the visual element.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Material : URDFElement
     {
-        public Color Color;
-        public Texture Texture;
-        public Attribute NameAttribute;
+        [DataMember]
+        public readonly Color Color;
 
-        [XmlIgnore]
+        [DataMember]
+        public readonly Texture Texture;
+
+        [DataMember]
+        public readonly Attribute NameAttribute;
+
         public string Name
         {
             get
@@ -1029,12 +1051,12 @@ namespace SW2URDF
     }
 
     //The color element of the material element. Contains a single RGBA.
-    [Serializable]
+    [DataContract]
     public class Color : URDFElement
     {
-        public Attribute RGBAAttribute;
+        [DataMember]
+        private readonly Attribute RGBAAttribute;
 
-        [XmlIgnore]
         private double[] RGBA
         {
             get
@@ -1047,7 +1069,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Red
         {
             get
@@ -1060,7 +1081,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Green
         {
             get
@@ -1073,7 +1093,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Blue
         {
             get
@@ -1086,7 +1105,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Alpha
         {
             get
@@ -1128,12 +1146,12 @@ namespace SW2URDF
     }
 
     //The texture element of the material element.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Texture : URDFElement
     {
-        public Attribute FilenameAttribute;
+        [DataMember]
+        private readonly Attribute FilenameAttribute;
 
-        [XmlIgnore]
         public string Filename
         {
             get
@@ -1146,6 +1164,7 @@ namespace SW2URDF
             }
         }
 
+        [DataMember]
         public string wFilename;
 
         public Texture() : base("texture")
@@ -1159,11 +1178,14 @@ namespace SW2URDF
     }
 
     //The collision element of a link.
-    [Serializable]
+    [DataContract]
     public class Collision : URDFElement
     {
-        public Origin Origin;
-        public Geometry Geometry;
+        [DataMember]
+        public readonly Origin Origin;
+
+        [DataMember]
+        public readonly Geometry Geometry;
 
         public Collision() : base("collision")
         {
@@ -1176,12 +1198,12 @@ namespace SW2URDF
     }
 
     //The joint class. There is one for every link but the base link
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Joint : URDFElement
     {
-        public Attribute NameAttribute;
+        [DataMember]
+        private readonly Attribute NameAttribute;
 
-        [XmlIgnore]
         public string Name
         {
             get
@@ -1194,9 +1216,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute TypeAttribute;
+        [DataMember]
+        private readonly Attribute TypeAttribute;
 
-        [XmlIgnore]
         public string Type
         {
             get
@@ -1209,15 +1231,34 @@ namespace SW2URDF
             }
         }
 
-        public Origin Origin;
-        public ParentLink Parent;
-        public ChildLink Child;
-        public Axis Axis;
-        public Limit Limit;
-        public Calibration Calibration;
-        public Dynamics Dynamics;
-        public SafetyController Safety;
+        [DataMember]
+        public readonly Origin Origin;
+
+        [DataMember]
+        public readonly ParentLink Parent;
+
+        [DataMember]
+        public readonly ChildLink Child;
+
+        [DataMember]
+        public readonly Axis Axis;
+
+        [DataMember]
+        public readonly Limit Limit;
+
+        [DataMember]
+        public readonly Calibration Calibration;
+
+        [DataMember]
+        public readonly Dynamics Dynamics;
+
+        [DataMember]
+        public readonly SafetyController Safety;
+
+        [DataMember]
         public string CoordinateSystemName;
+
+        [DataMember]
         public string AxisName;
 
         public Joint() : base("joint")
@@ -1269,10 +1310,11 @@ namespace SW2URDF
 
     //parent_link element of a joint.
 
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class ParentLink : URDFElement
     {
-        public Attribute NameAttribute;
+        [DataMember]
+        private readonly Attribute NameAttribute;
 
         public string Name
         {
@@ -1306,10 +1348,11 @@ namespace SW2URDF
     }
 
     //The child link element
-    [Serializable]
+    [DataContract]
     public class ChildLink : URDFElement
     {
-        public Attribute NameAttribute;
+        [DataMember]
+        private readonly Attribute NameAttribute;
 
         public string Name
         {
@@ -1343,12 +1386,12 @@ namespace SW2URDF
     }
 
     //The axis element of a joint.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Axis : URDFElement
     {
-        public Attribute XYZAttribute;
+        [DataMember]
+        private readonly Attribute XYZAttribute;
 
-        [XmlIgnore]
         private double[] XYZ
         {
             get
@@ -1371,7 +1414,6 @@ namespace SW2URDF
             XYZ = (double[])xyz.Clone();
         }
 
-        [XmlIgnore]
         public double X
         {
             get
@@ -1384,7 +1426,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Y
         {
             get
@@ -1397,7 +1438,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Z
         {
             get
@@ -1434,15 +1474,21 @@ namespace SW2URDF
     }
 
     //The limit element of a joint.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Limit : URDFElement
     {
-        public Attribute LowerAttribute;
-        public Attribute UpperAttribute;
-        public Attribute EffortAttribute;
-        public Attribute VelocityAttribute;
+        [DataMember]
+        private readonly Attribute LowerAttribute;
 
-        [XmlIgnore]
+        [DataMember]
+        private readonly Attribute UpperAttribute;
+
+        [DataMember]
+        private readonly Attribute EffortAttribute;
+
+        [DataMember]
+        private readonly Attribute VelocityAttribute;
+
         public double Lower
         {
             get
@@ -1455,7 +1501,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Upper
         {
             get
@@ -1468,7 +1513,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Effort
         {
             get
@@ -1481,7 +1525,6 @@ namespace SW2URDF
             }
         }
 
-        [XmlIgnore]
         public double Velocity
         {
             get
@@ -1563,12 +1606,12 @@ namespace SW2URDF
     }
 
     //The calibration element of a joint.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Calibration : URDFElement
     {
-        public Attribute RisingAttribute;
+        [DataMember]
+        private readonly Attribute RisingAttribute;
 
-        [XmlIgnore]
         public double Rising
         {
             get
@@ -1581,9 +1624,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute FallingAttribute;
+        [DataMember]
+        private readonly Attribute FallingAttribute;
 
-        [XmlIgnore]
         public double Falling
         {
             get
@@ -1640,12 +1683,12 @@ namespace SW2URDF
     }
 
     //The dynamics element of a joint.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class Dynamics : URDFElement
     {
-        public Attribute DampingAttribute;
+        [DataMember]
+        private readonly Attribute DampingAttribute;
 
-        [XmlIgnore]
         public double Damping
         {
             get
@@ -1658,9 +1701,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute FrictionAttribute;
+        [DataMember]
+        private readonly Attribute FrictionAttribute;
 
-        [XmlIgnore]
         public double Friction
         {
             get
@@ -1717,12 +1760,12 @@ namespace SW2URDF
     }
 
     //The safety_controller element of a joint.
-    [Serializable]
+    [DataContract(IsReference = true)]
     public class SafetyController : URDFElement
     {
-        public Attribute SoftLowerAttribute;
+        [DataMember]
+        private readonly Attribute SoftLowerAttribute;
 
-        [XmlIgnore]
         public double SoftLower
         {
             get
@@ -1735,9 +1778,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute SoftUpperAttribute;
+        [DataMember]
+        private readonly Attribute SoftUpperAttribute;
 
-        [XmlIgnore]
         public double SoftUpper
         {
             get
@@ -1750,9 +1793,9 @@ namespace SW2URDF
             }
         }
 
-        public Attribute KPositionAttribute;
+        [DataMember]
+        private readonly Attribute KPositionAttribute;
 
-        [XmlIgnore]
         public double KPosition
         {
             get
@@ -1765,9 +1808,8 @@ namespace SW2URDF
             }
         }
 
-        public Attribute KVelocityAttribute;
+        private readonly Attribute KVelocityAttribute;
 
-        [XmlIgnore]
         public double KVelocity
         {
             get
@@ -1850,7 +1892,6 @@ namespace SW2URDF
     }
 
     //A class that just writes the bare minimum of the manifest file necessary for ROS packages.
-    [Serializable]
     public class PackageXMLWriter
     {
         public XmlWriter writer;
@@ -1869,7 +1910,6 @@ namespace SW2URDF
     }
 
     //The base class for packageXML elements. Again, I guess I like having empty base classes
-    [Serializable]
     public class PackageElement
     {
         public PackageElement()
@@ -1882,7 +1922,6 @@ namespace SW2URDF
     }
 
     //Top level class for the package XML file.
-    [Serializable]
     public class PackageXML : PackageElement
     {
         public Description description;
@@ -1930,7 +1969,6 @@ namespace SW2URDF
     }
 
     //description element of the manifest file
-    [Serializable]
     public class Description : PackageElement
     {
         private readonly string name;
@@ -1970,7 +2008,6 @@ namespace SW2URDF
     }
 
     //The depend element of the manifest file
-    [Serializable]
     public class Dependencies : PackageElement
     {
         private readonly string[] buildTool;
@@ -2001,7 +2038,6 @@ namespace SW2URDF
     }
 
     //The author element of the manifest file
-    [Serializable]
     public class Author : PackageElement
     {
         private readonly string name;
@@ -2024,7 +2060,6 @@ namespace SW2URDF
     }
 
     //The license element of the manifest file
-    [Serializable]
     public class License : PackageElement
     {
         private readonly string lic;
@@ -2085,10 +2120,6 @@ namespace SW2URDF
         { get; set; }
 
         public LinkNode()
-        {
-        }
-
-        protected LinkNode(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
 

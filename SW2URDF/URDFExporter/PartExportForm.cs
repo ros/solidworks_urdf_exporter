@@ -32,7 +32,7 @@ namespace SW2URDF
     {
         public URDFExporter Exporter;
 
-        public PartExportForm(ISldWorks iSwApp)
+        public PartExportForm(SldWorks iSwApp)
         {
             InitializeComponent();
             Exporter = new URDFExporter(iSwApp);

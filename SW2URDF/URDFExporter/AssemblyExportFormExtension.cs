@@ -468,56 +468,8 @@ namespace SW2URDF
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Object[] objects = model.FeatureManager.GetFeatures(true);
-            string oldData = "";
-            Parameter param;
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        param = att.GetParameter("data");
-                        oldData = param.GetStringValue();
-                    }
-                }
-            }
-
             Common.RetrieveSWComponentPIDs(model, BaseNode);
-            SerialNode sNode = new SerialNode(BaseNode);
-
-            StringWriter stringWriter;
-            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-            stringWriter = new StringWriter();
-            serializer.Serialize(stringWriter, sNode);
-            stringWriter.Flush();
-            stringWriter.Close();
-
-            string newData = stringWriter.ToString();
-            if (oldData != newData)
-            {
-                if (!warnUser ||
-                    (warnUser &&
-                    MessageBox.Show("The configuration has changed, would you like to save?",
-                        "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
-                {
-                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                        CreateSWSaveAttribute(swApp, "URDF Export Configuration");
-                    param = saveExporterAttribute.GetParameter("data");
-                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("name");
-                    param.SetStringValue2("config1", ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("date");
-                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("exporterVersion");
-                    param.SetStringValue2("1.1", ConfigurationOptions, "");
-                }
-            }
+            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(ISldWorks iSwApp, string name)

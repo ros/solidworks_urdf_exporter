@@ -335,7 +335,7 @@ namespace SW2URDF
                     modeldoc.Save3(options, 0, 0);
                 }
 
-                PartExportForm exportForm = new PartExportForm(SwApp);
+                PartExportForm exportForm = new PartExportForm((SldWorks)SwApp);
                 logger.Info("Showing part");
                 exportForm.Show();
             }
