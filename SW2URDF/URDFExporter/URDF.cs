@@ -246,13 +246,13 @@ namespace SW2URDF
 
         // The SW part component object
 
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
         public Component2 SWComponent;
 
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
         public Component2 SWMainComponent;
 
-        [XmlIgnoreAttribute]
+        [XmlIgnore]
         public List<Component2> SWcomponents;
 
         public List<byte[]> SWComponentPIDs;
