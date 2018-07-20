@@ -18,13 +18,14 @@ namespace SW2URDF
 
         public static string SerializeToString(LinkNode node)
         {
-            SerialNode sNode = new SerialNode(node);
+            // TODO need to make sure this contains all the info from the LinkNode
+            Link link = node.Link
             string data = "";
             using (MemoryStream stream = new MemoryStream())
             {
                 DataContractSerializer ser =
-                    new DataContractSerializer(typeof(SerialNode));
-                ser.WriteObject(stream, sNode);
+                    new DataContractSerializer(typeof(Link));
+                ser.WriteObject(stream, link);
                 stream.Flush();
                 data = Encoding.ASCII.GetString(stream.GetBuffer(), 0, (int)stream.Position);
             }
@@ -39,9 +40,9 @@ namespace SW2URDF
                 using (MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(data)))
                 {
                     DataContractSerializer ser =
-                        new DataContractSerializer(typeof(SerialNode));
-                    SerialNode sNode = (SerialNode)ser.ReadObject(stream);
-                    baseNode = new LinkNode(sNode);
+                        new DataContractSerializer(typeof(Link));
+                    Link link = (Link)ser.ReadObject(stream);
+                    baseNode = new LinkNode(link);
                 }
             }
             return baseNode;
@@ -69,12 +70,12 @@ namespace SW2URDF
             LinkNode baseNode = null;
             if (!string.IsNullOrWhiteSpace(data))
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
+                XmlSerializer serializer = new XmlSerializer(typeof(Link));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                Link link = (Link)serializer.Deserialize(textReader);
                 textReader.Close();
 
-                baseNode = new LinkNode(node);
+                baseNode = new LinkNode(link);
             }
             return baseNode;
         }
