@@ -1053,7 +1053,7 @@ namespace SW2URDF
         public void GetFeaturesOfType(ModelDoc2 modelDoc, string featureName,
             bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
-            logger.Info("Retreiving features of type [" + featureName + "] from ModelDoc" + keyName);
+            logger.Info("Retreiving features of type [" + featureName + "] from " + keyName);
 
             features[keyName] = new List<Feature>();
 
