@@ -1774,6 +1774,15 @@ namespace SW2URDF
         [DataMember]
         private readonly Attribute SoftLowerAttribute;
 
+        [DataMember]
+        private readonly Attribute SoftUpperAttribute;
+
+        [DataMember]
+        private readonly Attribute KPositionAttribute;
+
+        [DataMember]
+        private readonly Attribute KVelocityAttribute;
+
         public double SoftLower
         {
             get
@@ -1785,9 +1794,6 @@ namespace SW2URDF
                 SoftLowerAttribute.Value = value;
             }
         }
-
-        [DataMember]
-        private readonly Attribute SoftUpperAttribute;
 
         public double SoftUpper
         {
@@ -1801,9 +1807,6 @@ namespace SW2URDF
             }
         }
 
-        [DataMember]
-        private readonly Attribute KPositionAttribute;
-
         public double KPosition
         {
             get
@@ -1815,8 +1818,6 @@ namespace SW2URDF
                 KPositionAttribute.Value = value;
             }
         }
-
-        private readonly Attribute KVelocityAttribute;
 
         public double KVelocity
         {
