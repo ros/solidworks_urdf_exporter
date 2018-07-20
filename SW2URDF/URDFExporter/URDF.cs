@@ -425,6 +425,12 @@ namespace SW2URDF
         //    info.AddValue("SWComponentPIDs", SWComponentPIDs);
         //    info.AddValue("SWMainComponentPID", SWMainComponentPID);
         //}
+
+        [OnDeserialized]
+        public void OnDeserialized(StreamingContext context)
+        {
+            SWcomponents = new List<Component2>();
+        }
     }
 
     //The serial node class, it is used only for saving the configuration.
@@ -795,6 +801,24 @@ namespace SW2URDF
         [DataMember]
         private readonly Attribute IxxAttribute;
 
+        [DataMember]
+        private readonly Attribute IxyAttribute;
+
+        [DataMember]
+        private readonly Attribute IxzAttribute;
+
+        [DataMember]
+        private readonly Attribute IyyAttribute;
+
+        [DataMember]
+        private readonly Attribute IyzAttribute;
+
+        [DataMember]
+        private readonly Attribute IzzAttribute;
+
+        [DataMember]
+        private List<double> Moment { get; set; }
+
         public double Ixx
         {
             get
@@ -806,9 +830,6 @@ namespace SW2URDF
                 IxxAttribute.Value = value;
             }
         }
-
-        [DataMember]
-        private readonly Attribute IxyAttribute;
 
         public double Ixy
         {
@@ -822,9 +843,6 @@ namespace SW2URDF
             }
         }
 
-        [DataMember]
-        private readonly Attribute IxzAttribute;
-
         public double Ixz
         {
             get
@@ -836,9 +854,6 @@ namespace SW2URDF
                 IxzAttribute.Value = value;
             }
         }
-
-        [DataMember]
-        private readonly Attribute IyyAttribute;
 
         public double Iyy
         {
@@ -852,8 +867,6 @@ namespace SW2URDF
             }
         }
 
-        private readonly Attribute IyzAttribute;
-
         public double Iyz
         {
             get
@@ -866,8 +879,6 @@ namespace SW2URDF
             }
         }
 
-        private readonly Attribute IzzAttribute;
-
         public double Izz
         {
             get
@@ -879,9 +890,6 @@ namespace SW2URDF
                 IzzAttribute.Value = value;
             }
         }
-
-        [DataMember]
-        private List<double> Moment { get; set; }
 
         public Inertia() : base("robot")
         {

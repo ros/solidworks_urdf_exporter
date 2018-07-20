@@ -170,10 +170,10 @@ namespace SW2URDF
             progressBar.End();
         }
 
-        public void CreateBaseLinkFromComponents(LinkNode node)
+        public Link CreateBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
-            Link link = CreateLinkFromComponents(null, node.Components, node);
+            Link link = CreateLinkFromComponents(null, node);
             if (node.CoordsysName == "Automatically Generate")
             {
                 CreateBaseRefOrigin(true);
@@ -184,7 +184,7 @@ namespace SW2URDF
             {
                 link.CoordSysName = node.CoordsysName;
             }
-            URDFRobot.SetBaseLink(link);
+            return link;
         }
 
         //Method which builds an entire link and iterates through.
@@ -192,30 +192,32 @@ namespace SW2URDF
         {
             progressBar.UpdateTitle("Building link: " + node.Name);
             progressBar.UpdateProgress(count);
-            Link Link;
+            Link link;
             if (node.IsBaseNode)
             {
-                CreateBaseLinkFromComponents(node);
-                Link = URDFRobot.BaseLink;
+                link = CreateBaseLinkFromComponents(node);
+                URDFRobot.SetBaseLink(link);
             }
             else
             {
                 LinkNode parentNode = (LinkNode)node.Parent;
-                Link = CreateLinkFromComponents(parentNode.Link, node.Components, node);
+                link = CreateLinkFromComponents(parentNode.Link, node);
             }
-            node.Link = Link;
+            node.Link = link;
             foreach (LinkNode child in node.Nodes)
             {
                 Link childLink = CreateLink(child, count + 1);
-                Link.Children.Add(childLink);
+                link.Children.Add(childLink);
             }
-            return Link;
+            return link;
         }
 
         //Method which builds a single link
-        public Link CreateLinkFromComponents(Link parent, List<Component2> components, LinkNode node)
+        public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
-            Link child = new Link(parent);
+            List<Component2> components = node.Components;
+
+            Link child = node.Link ?? new Link(parent);
             child.Name = node.LinkName;
 
             if (components.Count > 0)
