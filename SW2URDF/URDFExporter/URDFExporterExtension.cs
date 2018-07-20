@@ -1046,14 +1046,15 @@ namespace SW2URDF
         public Dictionary<string, List<Feature>> GetFeaturesOfType(string featureName, bool topLevelOnly)
         {
             Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
-            GetFeaturesOfType(ActiveSWModel, featureName, topLevelOnly, ActiveSWModel.GetTitle(), features);
+            GetFeaturesOfType(ActiveSWModel, featureName, topLevelOnly, "", features);
             return features;
         }
 
         public void GetFeaturesOfType(ModelDoc2 modelDoc, string featureName,
             bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
-            logger.Info("Retreiving features of type [" + featureName + "] from " + keyName);
+            string fileName = (string.IsNullOrWhiteSpace(keyName)) ? modelDoc.GetTitle() : keyName;
+            logger.Info("Retreiving features of type [" + featureName + "] from " + fileName);
 
             features[keyName] = new List<Feature>();
 
@@ -1064,7 +1065,7 @@ namespace SW2URDF
                 return;
             }
 
-            logger.Info("Found " + featureObjects.Length + " in " + keyName);
+            logger.Info("Found " + featureObjects.Length + " in " + fileName);
             foreach (Feature feat in featureObjects)
             {
                 string t = feat.GetTypeName2();
@@ -1074,7 +1075,7 @@ namespace SW2URDF
                 }
             }
 
-            logger.Info("Found " + features[keyName].Count + " features of type [" + featureName + "] in " + keyName);
+            logger.Info("Found " + features[keyName].Count + " features of type [" + featureName + "] in " + fileName);
             if (!topLevelOnly && modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
                 logger.Info("Proceeding through assembly components");
