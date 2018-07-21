@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -16,10 +17,33 @@ namespace SW2URDF
         public static readonly double SERIALIZATION_VERSION = 1.3;
         public static readonly double MIN_DATA_CONTRACT_VERSION = 1.3;
 
+        public static void SavePropertiesLinkNodeToLink(LinkNode node)
+        {
+            Link link = node.Link;
+            link.CoordSysName = node.CoordsysName;
+            link.Name = node.LinkName;
+
+            if (!node.IsBaseNode)
+            {
+                link.Joint.Name = node.JointName;
+                link.Joint.AxisName = node.AxisName;
+                link.Joint.CoordinateSystemName = node.CoordsysName;
+                link.Joint.Type = node.JointType;
+            }
+
+            link.SWComponentPIDs = new List<byte[]>(node.ComponentPIDs);
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                SavePropertiesLinkNodeToLink(child);
+            }
+        }
+
         public static string SerializeToString(LinkNode node)
         {
             // TODO need to make sure this contains all the info from the LinkNode
-            Link link = node.Link
+            SavePropertiesLinkNodeToLink(node);
+            Link link = node.Link;
             string data = "";
             using (MemoryStream stream = new MemoryStream())
             {
