@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.Legacy;
 
 namespace SW2URDF
 {
@@ -19,6 +20,12 @@ namespace SW2URDF
 
         public static void SavePropertiesLinkNodeToLink(LinkNode node)
         {
+            if (node.Link == null)
+            {
+                node.Link = new Link(node, null);
+                return;
+            }
+
             Link link = node.Link;
             link.CoordSysName = node.CoordsysName;
             link.Name = node.LinkName;
@@ -94,12 +101,12 @@ namespace SW2URDF
             LinkNode baseNode = null;
             if (!string.IsNullOrWhiteSpace(data))
             {
-                XmlSerializer serializer = new XmlSerializer(typeof(Link));
+                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                Link link = (Link)serializer.Deserialize(textReader);
+                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
                 textReader.Close();
 
-                baseNode = new LinkNode(link);
+                baseNode = new LinkNode(node);
             }
             return baseNode;
         }

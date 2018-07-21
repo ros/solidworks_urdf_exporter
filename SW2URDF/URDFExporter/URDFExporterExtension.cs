@@ -204,6 +204,9 @@ namespace SW2URDF
                 link = CreateLinkFromComponents(parentNode.Link, node);
             }
             node.Link = link;
+
+            // Reset list of children, don't worry the links that were saved are still attached to the child nodes
+            link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
                 Link childLink = CreateLink(child, count + 1);
