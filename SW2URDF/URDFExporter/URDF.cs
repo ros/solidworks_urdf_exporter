@@ -838,7 +838,7 @@ namespace SW2URDF
             }
         }
 
-        public Inertia() : base("robot")
+        public Inertia() : base("inertia")
         {
             Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
             IxxAttribute = new Attribute("ixx", true, 0.0);
