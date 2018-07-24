@@ -133,7 +133,7 @@ namespace SW2URDF
 
             // Cycles through the menu items until it finds what its looking for, it finds
             // blank strings, or itemtext is null
-            while (String.IsNullOrWhiteSpace(itemtext) && itemtext != item)
+            while (!string.IsNullOrWhiteSpace(itemtext) && itemtext != item)
             {
                 // Gets the item text at index in a pull-down menu. No way to now how many
                 // items are in the combobox

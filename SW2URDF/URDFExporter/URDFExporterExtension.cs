@@ -1046,41 +1046,40 @@ namespace SW2URDF
         public Dictionary<string, List<Feature>> GetFeaturesOfType(string featureName, bool topLevelOnly)
         {
             Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
-            GetFeaturesOfType(null, featureName, topLevelOnly, features);
+            GetFeaturesOfType(ActiveSWModel, featureName, topLevelOnly, "", features);
             return features;
         }
 
-        public void GetFeaturesOfType(Component2 component, string featureName,
-            bool topLevelOnly, Dictionary<string, List<Feature>> features)
+        public void GetFeaturesOfType(ModelDoc2 modelDoc, string featureName,
+            bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
-            ModelDoc2 modeldoc;
-            string ComponentName = "";
-            if (component == null)
-            {
-                modeldoc = ActiveSWModel;
-            }
-            else
-            {
-                modeldoc = component.GetModelDoc2();
-                ComponentName = component.Name2;
-            }
-            features[ComponentName] = new List<Feature>();
+            string fileName = (string.IsNullOrWhiteSpace(keyName)) ? modelDoc.GetTitle() : keyName;
+            logger.Info("Retreiving features of type [" + featureName + "] from " + fileName);
 
-            object[] featureObjects;
-            featureObjects = modeldoc.FeatureManager.GetFeatures(false);
+            features[keyName] = new List<Feature>();
 
+            object[] featureObjects = modelDoc.FeatureManager.GetFeatures(false);
+            if (featureObjects == null)
+            {
+                logger.Info("No features found in " + modelDoc.GetTitle());
+                return;
+            }
+
+            logger.Info("Found " + featureObjects.Length + " in " + fileName);
             foreach (Feature feat in featureObjects)
             {
                 string t = feat.GetTypeName2();
                 if (feat.GetTypeName2() == featureName)
                 {
-                    features[ComponentName].Add(feat);
+                    features[keyName].Add(feat);
                 }
             }
 
-            if (!topLevelOnly && modeldoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
+            logger.Info("Found " + features[keyName].Count + " features of type [" + featureName + "] in " + fileName);
+            if (!topLevelOnly && modelDoc.GetType() == (int)swDocumentTypes_e.swDocASSEMBLY)
             {
-                AssemblyDoc assyDoc = (AssemblyDoc)modeldoc;
+                logger.Info("Proceeding through assembly components");
+                AssemblyDoc assyDoc = (AssemblyDoc)modelDoc;
 
                 //Get all components in an assembly
                 object[] components = assyDoc.GetComponents(false);
@@ -1088,6 +1087,7 @@ namespace SW2URDF
                 // If there are no components in an assembly, this object will be null.
                 if (components != null)
                 {
+                    logger.Info(components.Length + " components to check");
                     foreach (Component2 comp in components)
                     {
                         ModelDoc2 doc = comp.GetModelDoc2();
@@ -1095,7 +1095,7 @@ namespace SW2URDF
                         {
                             //We already have all the components in an assembly, we don't want
                             // to recur as we go through them. (topLevelOnly = true)
-                            GetFeaturesOfType(comp, featureName, true, features);
+                            GetFeaturesOfType(doc, featureName, true, comp.Name2, features);
                         }
                     }
                 }
