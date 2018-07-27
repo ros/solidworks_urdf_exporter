@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -29,7 +30,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Serialization;
 using log4net;
 using SolidWorks.Interop.sldworks;
 using SW2URDF.Legacy;
@@ -99,6 +99,19 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
+        public virtual void AppendToCSVDictionary(System.Collections.Specialized.OrderedDictionary dictionary)
+        {
+            foreach (Attribute att in Attributes)
+            {
+                att.AppendToCSVDictionary(dictionary);
+            }
+
+            foreach (URDFElement child in ChildElements)
+            {
+                child.AppendToCSVDictionary(dictionary);
+            }
+        }
+
         public void Unset()
         {
             foreach (Attribute attribute in Attributes)
@@ -134,19 +147,23 @@ namespace SW2URDF
         private static readonly string USStringFormat = "en-US";
 
         [DataMember]
-        private bool IsRequired;
+        private readonly bool IsRequired;
 
         [DataMember]
-        private string AttributeType;
+        private readonly string AttributeType;
 
         [DataMember]
         public object Value;
 
-        public Attribute(string type, bool isRequired, object initialValue)
+        [DataMember]
+        private readonly object CSVColumnName;
+
+        public Attribute(string type, bool isRequired, object initialValue, string columnName)
         {
             AttributeType = type;
             IsRequired = isRequired;
             Value = initialValue;
+            CSVColumnName = columnName;
         }
 
         public void WriteURDF(XmlWriter writer)
@@ -186,6 +203,24 @@ namespace SW2URDF
             if (Value != null)
             {
                 writer.WriteAttributeString(AttributeType, valueString);
+            }
+        }
+
+        public void AppendToCSVDictionary(OrderedDictionary dictionary)
+        {
+            if (Value.GetType() == typeof(double[]))
+            {
+                string[] columnNames = (string[])CSVColumnName;
+                double[] values = (double[])Value;
+                for (int i = 0; i < columnNames.Length; i++)
+                {
+                    dictionary.Add(columnNames[i], values[i]);
+                }
+            }
+            else
+            {
+                string name = (string)CSVColumnName;
+                dictionary.Add(name, Value);
             }
         }
     }

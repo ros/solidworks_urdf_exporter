@@ -180,8 +180,7 @@ namespace SW2URDF
 
         public static void SaveConfigTreeXML(SldWorks swApp, ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            double version;
-            string oldData = GetConfigTreeData(model, out version);
+            string oldData = GetConfigTreeData(model, out double version);
 
             string newData = SerializeToString(BaseNode);
             if (oldData != newData)
