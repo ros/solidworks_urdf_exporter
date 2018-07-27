@@ -231,6 +231,8 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="URDFExporter\CSV\ContextToColumns.cs" />
+    <Compile Include="URDFExporter\CSV\CSVImportExport.cs" />
     <Compile Include="URDFExporter\Serialization.cs" />
     <Compile Include="URDFExporter\URDFExporter.cs" />
     <Compile Include="URDFExporter\URDFExporterExtension.cs" />

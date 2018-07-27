@@ -99,16 +99,22 @@ namespace SW2URDF
             writer.WriteEndElement();
         }
 
-        public virtual void AppendToCSVDictionary(System.Collections.Specialized.OrderedDictionary dictionary)
+        public virtual void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
         {
+            string typeName = GetType().Name;
+            List<string> updatedContext = new List<string>(context) { typeName };
+
             foreach (Attribute att in Attributes)
             {
-                att.AppendToCSVDictionary(dictionary);
+                if (att.Value != null)
+                {
+                    att.AppendToCSVDictionary(updatedContext, dictionary);
+                }
             }
 
             foreach (URDFElement child in ChildElements)
             {
-                child.AppendToCSVDictionary(dictionary);
+                child.AppendToCSVDictionary(updatedContext, dictionary);
             }
         }
 
@@ -155,15 +161,11 @@ namespace SW2URDF
         [DataMember]
         public object Value;
 
-        [DataMember]
-        private readonly object CSVColumnName;
-
-        public Attribute(string type, bool isRequired, object initialValue, string columnName)
+        public Attribute(string type, bool isRequired, object initialValue)
         {
             AttributeType = type;
             IsRequired = isRequired;
             Value = initialValue;
-            CSVColumnName = columnName;
         }
 
         public void WriteURDF(XmlWriter writer)
@@ -206,21 +208,25 @@ namespace SW2URDF
             }
         }
 
-        public void AppendToCSVDictionary(OrderedDictionary dictionary)
+        public void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
         {
             if (Value.GetType() == typeof(double[]))
             {
-                string[] columnNames = (string[])CSVColumnName;
                 double[] values = (double[])Value;
-                for (int i = 0; i < columnNames.Length; i++)
+                if (values.Length != AttributeType.Length)
                 {
-                    dictionary.Add(columnNames[i], values[i]);
+                    throw new Exception("This is not going to work");
+                }
+                for (int i = 0; i < values.Length; i++)
+                {
+                    string contextString = string.Join(".", context) + "." + AttributeType + "." + AttributeType[i];
+                    dictionary.Add(contextString, values[i]);
                 }
             }
             else
             {
-                string name = (string)CSVColumnName;
-                dictionary.Add(name, Value);
+                string contextString = string.Join(".", context) + "." + AttributeType;
+                dictionary.Add(contextString, Value);
             }
         }
     }
@@ -399,26 +405,6 @@ namespace SW2URDF
             }
         }
 
-        //public Link(SerializationInfo info, StreamingContext context) : base(info, context)
-        //{
-        //    Name = info.GetString("Name");
-        //    Visual = (Visual)info.GetValue("Visual", typeof(Visual));
-        //    Collision = (Collision)info.GetValue("Collision", typeof(Collision));
-        //    Joint = (Joint)info.GetValue("Joint", typeof(Joint));
-        //    STLQualityFine = info.GetBoolean("STLQualityFine");
-        //    isIncomplete = info.GetBoolean("isIncomplete");
-        //    isFixedFrame = info.GetBoolean("isFixedFrame");
-        //    CoordSysName = info.GetString("CoordSysName");
-        //    SWComponentPIDs = (List<byte[]>)info.GetValue("SWComponentPIDs", typeof(List<byte[]>));
-        //    SWMainComponentPID = (byte[])info.GetValue("SWMainComponentPID", typeof(byte[]));
-
-        //    info.AddValue("isIncomplete", isIncomplete);
-        //    info.AddValue("isFixedFrame", isFixedFrame);
-        //    info.AddValue("CoordSysName", CoordSysName);
-        //    info.AddValue("SWComponentPIDs", SWComponentPIDs);
-        //    info.AddValue("SWMainComponentPID", SWMainComponentPID);
-        //}
-
         public Link(Link parent) : base("link")
         {
             Parent = parent;
@@ -524,7 +510,7 @@ namespace SW2URDF
 
         public Inertial() : base("inertial")
         {
-            Origin = new Origin();
+            Origin = new Origin("Inertia");
             Mass = new Mass();
             Inertia = new Inertia();
 
@@ -663,9 +649,10 @@ namespace SW2URDF
         [DataMember]
         public bool isCustomized;
 
-        public Origin() : base("origin")
+        public Origin(string csvContext) : base("origin")
         {
             isCustomized = false;
+
             XYZAttribute = new Attribute("xyz", true, new double[] { 0, 0, 0 });
             RPYAttribute = new Attribute("rpy", true, new double[] { 0, 0, 0 });
 
@@ -946,7 +933,7 @@ namespace SW2URDF
 
         public Visual() : base("visual")
         {
-            Origin = new Origin();
+            Origin = new Origin("Visual");
             Geometry = new Geometry();
             Material = new Material();
 
@@ -1179,7 +1166,7 @@ namespace SW2URDF
 
         public Collision() : base("collision")
         {
-            Origin = new Origin();
+            Origin = new Origin("Colission");
             Geometry = new Geometry();
 
             ChildElements.Add(Origin);
@@ -1253,7 +1240,7 @@ namespace SW2URDF
 
         public Joint() : base("joint")
         {
-            Origin = new Origin();
+            Origin = new Origin("Joint");
             Parent = new ParentLink();
             Child = new ChildLink();
             Axis = new Axis();

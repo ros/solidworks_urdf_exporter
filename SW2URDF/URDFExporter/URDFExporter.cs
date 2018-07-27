@@ -29,6 +29,7 @@ using MathNet.Numerics.LinearAlgebra.Generic;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.CSV;
 
 namespace SW2URDF
 {
@@ -115,6 +116,7 @@ namespace SW2URDF
             package.CreateDirectories();
             URDFRobot.Name = PackageName;
             string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
+            string windowsCSVFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".csv";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
@@ -170,6 +172,8 @@ namespace SW2URDF
             logger.Info("Writing URDF file to " + windowsURDFFileName);
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             URDFRobot.WriteURDF(uWriter.writer);
+
+            ImportExport.WriteRobotToCSV(URDFRobot, windowsCSVFileName);
 
             logger.Info("Copying log file");
             CopyLogFile(package);
