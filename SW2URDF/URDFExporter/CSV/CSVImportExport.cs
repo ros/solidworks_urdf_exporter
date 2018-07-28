@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -14,10 +16,10 @@ namespace SW2URDF.CSV
         public static void WriteHeaderToCSV(StreamWriter stream)
         {
             StringBuilder builder = new StringBuilder();
-            foreach (KeyValuePair<string, string> contextToColumn in ContextToColumns.Dictionary)
+            foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
-                string context = contextToColumn.Key;
-                string column = contextToColumn.Value;
+                string context = (string)entry.Key;
+                string column = (string)entry.Value;
 
                 builder = builder.Append(column).Append(",");
             }
@@ -27,10 +29,10 @@ namespace SW2URDF.CSV
         public static void WriteValuesToCSV(StreamWriter stream, OrderedDictionary dictionary)
         {
             StringBuilder builder = new StringBuilder();
-            foreach (KeyValuePair<string, string> contextToColumn in ContextToColumns.Dictionary)
+            foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
-                string context = contextToColumn.Key;
-                string column = contextToColumn.Value;
+                string context = (string)entry.Key;
+                string column = (string)entry.Value;
                 if (dictionary.Contains(context))
                 {
                     object value = dictionary[context];
@@ -42,18 +44,17 @@ namespace SW2URDF.CSV
                 }
             }
 
-            // invalid cast
-            IEnumerable<string> keys1 = (IEnumerable<string>)ContextToColumns.Dictionary.Keys
-            IEnumerable<string> keys2 = (IEnumerable<string>)dictionary.Keys;
+            HashSet<string> keys1 = new HashSet<string>(ContextToColumns.Dictionary.Keys.Cast<string>());
+            HashSet<string> keys2 = new HashSet<string>(dictionary.Keys.Cast<string>());
 
             StringBuilder missingColumns = new StringBuilder();
-            foreach (string missing in keys1.Except(keys2))
+            foreach (string missing in keys2.Except(keys1))
             {
                 missingColumns.Append(missing).Append(",");
             }
             if (missingColumns.Length > 0)
             {
-                logger.Info("The following columns were not written to the CSV: " + missingColumns.ToString());
+                logger.Error("The following columns were not written to the CSV: " + missingColumns.ToString());
             }
 
             stream.WriteLine(builder.ToString() + "\n");

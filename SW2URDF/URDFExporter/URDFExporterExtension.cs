@@ -178,11 +178,11 @@ namespace SW2URDF
             {
                 CreateBaseRefOrigin(true);
                 node.CoordsysName = "Origin_global";
-                link.CoordSysName = node.CoordsysName;
+                link.Joint.CoordinateSystemName = node.CoordsysName;
             }
             else
             {
-                link.CoordSysName = node.CoordsysName;
+                link.Joint.CoordinateSystemName = node.CoordsysName;
             }
             return link;
         }
@@ -404,7 +404,7 @@ namespace SW2URDF
 
             EstimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = parent.Joint.CoordinateSystemName ?? parent.CoordSysName;
+            coordSysName = parent.Joint.CoordinateSystemName;
 
             LocalizeJoint(child.Joint, coordSysName);
         }
@@ -912,7 +912,7 @@ namespace SW2URDF
                 yMin = MathOps.Min(points[1], points[4], yMin);
                 zMin = MathOps.Min(points[2], points[5], zMin);
             }
-            string coordsys = parent.Joint.CoordinateSystemName ?? parent.CoordSysName;
+            string coordsys = parent.Joint.CoordinateSystemName;
             MathTransform parentTransform = GetCoordinateSystemTransform(coordsys);
 
             double[] xyzParent = MathOps.GetXYZ(parentTransform);

@@ -330,9 +330,6 @@ namespace SW2URDF
         [DataMember]
         public bool isFixedFrame;
 
-        [DataMember]
-        public string CoordSysName;
-
         public Component2 SWComponent;
 
         public Component2 SWMainComponent;
@@ -365,6 +362,7 @@ namespace SW2URDF
             ChildElements.Add(Inertial);
             ChildElements.Add(Visual);
             ChildElements.Add(Collision);
+            ChildElements.Add(Joint);
         }
 
         public Link(LinkNode node, Link parent) : base("link")
@@ -387,8 +385,9 @@ namespace SW2URDF
             ChildElements.Add(Inertial);
             ChildElements.Add(Visual);
             ChildElements.Add(Collision);
+            ChildElements.Add(Joint);
 
-            CoordSysName = node.CoordsysName;
+            Joint.CoordinateSystemName = node.CoordsysName;
             Name = node.LinkName;
 
             if (!node.IsBaseNode)
@@ -425,6 +424,7 @@ namespace SW2URDF
             ChildElements.Add(Inertial);
             ChildElements.Add(Visual);
             ChildElements.Add(Collision);
+            ChildElements.Add(Joint);
         }
 
         public override void WriteURDF(XmlWriter writer)
@@ -457,6 +457,16 @@ namespace SW2URDF
             }
         }
 
+        public override void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
+        {
+            IEnumerable<string> componentNames = SWcomponents.Select(component => component.Name2);
+            string componentNamesStr = string.Join(";", componentNames);
+            string componentsContext = "Link.SWComponents";
+            dictionary.Add(componentsContext, componentNamesStr);
+
+            base.AppendToCSVDictionary(context, dictionary);
+        }
+
         public String[] GetJointNames(bool includeFixed)
         {
             List<String> names = new List<string>();
@@ -473,25 +483,14 @@ namespace SW2URDF
             return names.ToArray();
         }
 
-        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        //{
-        //    base.GetObjectData(info, context);
-        //    info.AddValue("Name", Name);
-        //    info.AddValue("Visual", Visual);
-        //    info.AddValue("Collision", Collision);
-        //    info.AddValue("Joint", Joint);
-        //    info.AddValue("STLQualityFine", STLQualityFine);
-        //    info.AddValue("isIncomplete", isIncomplete);
-        //    info.AddValue("isFixedFrame", isFixedFrame);
-        //    info.AddValue("CoordSysName", CoordSysName);
-        //    info.AddValue("SWComponentPIDs", SWComponentPIDs);
-        //    info.AddValue("SWMainComponentPID", SWMainComponentPID);
-        //}
-
         [OnDeserialized]
-        public void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext context)
         {
             SWcomponents = new List<Component2>();
+            if (ChildElements.Count == 3)
+            {
+                ChildElements.Add(Joint);
+            }
         }
     }
 
@@ -1282,6 +1281,19 @@ namespace SW2URDF
         public override bool IsElementSet()
         {
             return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Type);
+        }
+
+        public override void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
+        {
+            string contextString = string.Join(".", context);
+
+            string coordSysContext = contextString + ".CoordSysName";
+            dictionary.Add(coordSysContext, CoordinateSystemName);
+
+            string axisContext = contextString + ".AxisName";
+            dictionary.Add(axisContext, AxisName);
+
+            base.AppendToCSVDictionary(context, dictionary);
         }
     }
 
@@ -2105,7 +2117,7 @@ namespace SW2URDF
         {
             logger.Info("Building node " + link.Name);
             LinkName = link.Name;
-            CoordsysName = link.CoordSysName;
+            CoordsysName = link.Joint.CoordinateSystemName;
 
             ComponentPIDs = new List<byte[]>(link.SWComponentPIDs);
 

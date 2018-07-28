@@ -235,9 +235,8 @@ namespace SW2URDF
             int warnings = 0;
 
             string coordsysName = "";
-            coordsysName =
-                (link.Joint == null || link.Joint.CoordinateSystemName == null)
-                ? link.CoordSysName : link.Joint.CoordinateSystemName;
+            coordsysName = link.Joint.CoordinateSystemName;
+
             logger.Info(link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);

@@ -27,7 +27,7 @@ namespace SW2URDF
             }
 
             Link link = node.Link;
-            link.CoordSysName = node.CoordsysName;
+            link.Joint.CoordinateSystemName = node.CoordsysName;
             link.Name = node.LinkName;
 
             if (!node.IsBaseNode)
