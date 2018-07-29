@@ -224,7 +224,7 @@ namespace SW2URDF
             if (parent != null)
             {
                 logger.Info("Creating joint " + node.Link.Name);
-                CreateJoint(parent, node.Link, node);
+                CreateJoint(parent, node.Link);
             }
 
             // Get the SolidWorks MathTransform that corresponds to the child coordinate system
@@ -305,18 +305,17 @@ namespace SW2URDF
         #region Joint methods
 
         //Base method for constructing a joint from a parent link and child link.
-        public void CreateJoint(Link parent, Link child, LinkNode node)
+        public void CreateJoint(Link parent, Link child)
         {
-            CheckRefGeometryExists(node);
+            CheckRefGeometryExists(child);
 
-            string jointName = node.Link.Joint.Name;
-            string coordSysName = node.Link.Joint.CoordinateSystemName;
-            string axisName = node.Link.Joint.AxisName;
-            string jointType = node.Link.Joint.Type;
+            string jointName = child.Joint.Name;
+            string coordSysName = child.Joint.CoordinateSystemName;
+            string axisName = child.Joint.AxisName;
+            string jointType = child.Joint.Type;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
-            child.Joint.Name = jointName;
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
             Boolean unfix = false;
@@ -1262,15 +1261,15 @@ namespace SW2URDF
             }
         }
 
-        public void CheckRefGeometryExists(LinkNode node)
+        public void CheckRefGeometryExists(Link link)
         {
-            if (!CheckRefCoordsysExists(node.Link.Joint.CoordinateSystemName))
+            if (!CheckRefCoordsysExists(link.Joint.CoordinateSystemName))
             {
-                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
+                link.Joint.CoordinateSystemName = "Automatically Generate";
             }
-            if (!CheckRefAxisExists(node.Link.Joint.AxisName))
+            if (!CheckRefAxisExists(link.Joint.AxisName))
             {
-                node.Link.Joint.AxisName = "Automatically Generate";
+                link.Joint.AxisName = "Automatically Generate";
             }
         }
 

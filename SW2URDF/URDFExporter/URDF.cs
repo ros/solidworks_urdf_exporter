@@ -356,7 +356,7 @@ namespace SW2URDF
             Joint = new Joint();
 
             isRequired = true;
-            isFixedFrame = true;
+            isFixedFrame = false;
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Inertial);
@@ -418,7 +418,7 @@ namespace SW2URDF
             Joint = new Joint();
 
             isRequired = true;
-            isFixedFrame = true;
+            isFixedFrame = false;
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Inertial);
