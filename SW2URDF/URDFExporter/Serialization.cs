@@ -38,7 +38,7 @@ namespace SW2URDF
         {
             // TODO need to make sure this contains all the info from the LinkNode
             SavePropertiesLinkNodeToLink(node);
-            Link link = node.Link;
+            Link link = node.UpdateLinkTree(null);
             string data = "";
             using (MemoryStream stream = new MemoryStream())
             {

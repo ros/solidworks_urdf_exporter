@@ -2130,6 +2130,16 @@ namespace SW2URDF
                 Nodes.Add(new LinkNode(child));
             }
         }
+
+        public Link UpdateLinkTree(Link parent)
+        {
+            Link.Parent = parent;
+            foreach (LinkNode child in Nodes)
+            {
+                Link.Children.Add(child.UpdateLinkTree(Link));
+            }
+            return Link;
+        }
     }
 
     #endregion Windows Forms Derived classes
