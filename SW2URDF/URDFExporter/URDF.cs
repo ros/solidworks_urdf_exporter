@@ -2133,6 +2133,7 @@ namespace SW2URDF
 
         public Link UpdateLinkTree(Link parent)
         {
+            Link.Children.Clear();
             Link.Parent = parent;
             foreach (LinkNode child in Nodes)
             {
