@@ -183,8 +183,9 @@ namespace SW2URDF
             List<string> axesNames = Exporter.FindRefGeoNames("RefAxis");
             comboBoxAxis.Items.AddRange(axesNames.ToArray());
             comboBoxOrigin.SelectedIndex =
-                comboBoxOrigin.FindStringExact(Joint.AxisName);
-            if (String.IsNullOrWhiteSpace(Joint.AxisName))
+                comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);
+
+            if (!String.IsNullOrWhiteSpace(Joint.AxisName))
             {
                 comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(Joint.AxisName);
             }

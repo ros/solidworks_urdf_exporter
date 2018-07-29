@@ -348,10 +348,7 @@ namespace SW2URDF
                 }
                 CreateRefOrigin(child.Joint);
             }
-            else
-            {
-                child.Joint.CoordinateSystemName = coordSysName;
-            }
+
             if (axisName == "Automatically Generate")
             {
                 child.Joint.AxisName = "Axis_" + child.Joint.Name;
@@ -368,14 +365,6 @@ namespace SW2URDF
                 {
                     CreateRefAxis(child.Joint);
                 }
-            }
-            else
-            {
-                child.Joint.AxisName = axisName;
-            }
-            if (jointType != "Automatically Detect")
-            {
-                child.Joint.Type = jointType;
             }
 
             EstimateGlobalJointFromRefGeometry(parent, child);
