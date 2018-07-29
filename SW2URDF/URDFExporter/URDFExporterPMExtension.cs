@@ -141,7 +141,7 @@ namespace SW2URDF
         {
             if (node.IsIncomplete)
             {
-                node.Text = node.LinkName + "*";
+                node.Text = node.Link.Name + "*";
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -244,18 +244,18 @@ namespace SW2URDF
         {
             node.WhyIncomplete = "";
             node.IsIncomplete = false;
-            if (String.IsNullOrWhiteSpace(node.LinkName))
+            if (String.IsNullOrWhiteSpace(node.Link.Name))
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
             }
-            if (node.Nodes.Count > 0 && node.Components.Count == 0)
+            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
                     "        Links with children cannot be empty. Select its associated components\r\n";
             }
-            if (node.Components.Count == 0 && node.CoordsysName == "Automatically Generate")
+            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -263,7 +263,7 @@ namespace SW2URDF
                 node.WhyIncomplete +=
                     "        without components. Either select an origin or at least one component.";
             }
-            if (String.IsNullOrWhiteSpace(node.JointName) && !node.IsBaseNode)
+            if (String.IsNullOrWhiteSpace(node.Link.Joint.Name) && !node.IsBaseNode)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
@@ -308,21 +308,21 @@ namespace SW2URDF
         {
             if (previouslySelectedNode != null)
             {
-                previouslySelectedNode.LinkName = PMTextBoxLinkName.Text;
+                previouslySelectedNode.Link.Name = PMTextBoxLinkName.Text;
                 if (!previouslySelectedNode.IsBaseNode)
                 {
-                    previouslySelectedNode.JointName = PMTextBoxJointName.Text;
-                    previouslySelectedNode.AxisName = PMComboBoxAxes.get_ItemText(-1);
-                    previouslySelectedNode.CoordsysName = PMComboBoxCoordSys.get_ItemText(-1);
-                    previouslySelectedNode.JointType = PMComboBoxJointType.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.Name = PMTextBoxJointName.Text;
+                    previouslySelectedNode.Link.Joint.AxisName = PMComboBoxAxes.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.CoordinateSystemName = PMComboBoxCoordSys.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.Type = PMComboBoxJointType.get_ItemText(-1);
                 }
                 else
                 {
-                    previouslySelectedNode.CoordsysName =
+                    previouslySelectedNode.Link.Joint.CoordinateSystemName =
                         PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
                 Common.GetSelectedComponents(
-                    ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
+                    ActiveSWModel, previouslySelectedNode.Link.SWcomponents, PMSelection.Mark);
             }
         }
 
@@ -333,26 +333,26 @@ namespace SW2URDF
 
             if (Parent == null)             //For the base_link node
             {
-                node.LinkName = "base_link";
-                node.AxisName = "";
-                node.CoordsysName = "Automatically Generate";
-                node.Components = new List<Component2>();
+                node.Link.Name = "base_link";
+                node.Link.Joint.AxisName = "";
+                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
+                node.Link.SWcomponents = new List<Component2>();
                 node.IsBaseNode = true;
                 node.IsIncomplete = true;
             }
             else
             {
                 node.IsBaseNode = false;
-                node.LinkName = "Empty_Link";
-                node.AxisName = "Automatically Generate";
-                node.CoordsysName = "Automatically Generate";
-                node.JointType = "Automatically Detect";
-                node.Components = new List<Component2>();
+                node.Link.Name = "Empty_Link";
+                node.Link.Joint.AxisName = "Automatically Generate";
+                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
+                node.Link.Joint.Type = "Automatically Detect";
+                node.Link.SWcomponents = new List<Component2>();
                 node.IsBaseNode = false;
                 node.IsIncomplete = true;
             }
-            node.Name = node.LinkName;
-            node.Text = node.LinkName;
+            node.Name = node.Link.Name;
+            node.Text = node.Link.Name;
             node.ContextMenuStrip = docMenu;
             return node;
         }
@@ -360,11 +360,11 @@ namespace SW2URDF
         //Sets all the controls in the Property Manager from the Selected Node
         public void FillPropertyManager(LinkNode node)
         {
-            PMTextBoxLinkName.Text = node.LinkName;
+            PMTextBoxLinkName.Text = node.Link.Name;
             PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.SelectComponents(ActiveSWModel, node.Components, true, PMSelection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Link.SWcomponents, true, PMSelection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)
@@ -374,7 +374,7 @@ namespace SW2URDF
 
                 //Labels need to be activated before changing them
                 EnableControls(!node.IsBaseNode);
-                PMTextBoxJointName.Text = node.JointName;
+                PMTextBoxJointName.Text = node.Link.Joint.Name;
                 PMLabelParentLink.Caption = node.Parent.Name;
 
                 UpdateComboBoxFromFeatures(PMComboBoxCoordSys, "CoordSys");
@@ -382,9 +382,9 @@ namespace SW2URDF
 
                 UpdateComboBoxFromFeatures(PMComboBoxAxes, "RefAxis");
                 PMComboBoxAxes.AddItems("None");
-                SelectComboBox(PMComboBoxCoordSys, node.CoordsysName);
-                SelectComboBox(PMComboBoxAxes, node.AxisName);
-                SelectComboBox(PMComboBoxJointType, node.JointType);
+                SelectComboBox(PMComboBoxCoordSys, node.Link.Joint.CoordinateSystemName);
+                SelectComboBox(PMComboBoxAxes, node.Link.Joint.AxisName);
+                SelectComboBox(PMComboBoxJointType, node.Link.Joint.Type);
             }
             else
             {
@@ -397,7 +397,7 @@ namespace SW2URDF
                 //Activate controls before changing them
                 EnableControls(!node.IsBaseNode);
                 UpdateComboBoxFromFeatures(PMComboBoxGlobalCoordsys, "CoordSys");
-                SelectComboBox(PMComboBoxGlobalCoordsys, node.CoordsysName);
+                SelectComboBox(PMComboBoxGlobalCoordsys, node.Link.Joint.CoordinateSystemName);
             }
         }
 
@@ -528,6 +528,7 @@ namespace SW2URDF
             }
             else
             {
+                // Not sure what's happening here, but not all components are loading.
                 Common.LoadSWComponents(ActiveSWModel, baseNode);
             }
 
@@ -574,11 +575,11 @@ namespace SW2URDF
         public void SelectFeatures(LinkNode node)
         {
             ActiveSWModel.Extension.SelectByID2(
-                node.CoordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
-            if (node.AxisName != "None")
+                node.Link.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
+            if (node.Link.Joint.AxisName != "None")
             {
                 ActiveSWModel.Extension.SelectByID2(
-                    node.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
+                    node.Link.Joint.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -588,9 +589,9 @@ namespace SW2URDF
 
         public void CheckIfLinkNamesAreUnique(LinkNode node, string linkName, List<string> conflict)
         {
-            if (node.LinkName == linkName)
+            if (node.Link.Name == linkName)
             {
-                conflict.Add(node.LinkName);
+                conflict.Add(node.Link.Name);
             }
 
             foreach (LinkNode child in node.Nodes)
@@ -601,9 +602,9 @@ namespace SW2URDF
 
         public void CheckIfJointNamesAreUnique(LinkNode node, string jointName, List<string> conflict)
         {
-            if (node.JointName == jointName)
+            if (node.Link.Joint.Name == jointName)
             {
-                conflict.Add(node.LinkName);
+                conflict.Add(node.Link.Joint.Name);
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -677,7 +678,7 @@ namespace SW2URDF
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            CheckIfLinkNamesAreUnique(basenode, currentNode.LinkName, conflict);
+            CheckIfLinkNamesAreUnique(basenode, currentNode.Link.Name, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {
@@ -704,7 +705,7 @@ namespace SW2URDF
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            CheckIfJointNamesAreUnique(basenode, currentNode.JointName, conflict);
+            CheckIfJointNamesAreUnique(basenode, currentNode.Link.Joint.Name, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {

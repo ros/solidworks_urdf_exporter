@@ -174,15 +174,15 @@ namespace SW2URDF
         {
             // Build the link from the partdoc
             Link link = CreateLinkFromComponents(null, node);
-            if (node.CoordsysName == "Automatically Generate")
+            if (node.Link.Joint.CoordinateSystemName == "Automatically Generate")
             {
                 CreateBaseRefOrigin(true);
-                node.CoordsysName = "Origin_global";
-                link.Joint.CoordinateSystemName = node.CoordsysName;
+                node.Link.Joint.CoordinateSystemName = "Origin_global";
+                link.Joint.CoordinateSystemName = node.Link.Joint.CoordinateSystemName;
             }
             else
             {
-                link.Joint.CoordinateSystemName = node.CoordsysName;
+                link.Joint.CoordinateSystemName = node.Link.Joint.CoordinateSystemName;
             }
             return link;
         }
@@ -218,79 +218,56 @@ namespace SW2URDF
         //Method which builds a single link
         public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
-            List<Component2> components = node.Components;
-
-            Link child = node.Link ?? new Link(parent);
-            child.Name = node.LinkName;
-
-            if (components.Count > 0)
-            {
-                child.isFixedFrame = false;
-                child.SWMainComponent = components[0];
-                child.SWcomponents.AddRange(components);
-            }
-            //Get link properties from SolidWorks part
+            List<Component2> components = node.Link.SWcomponents;
+            node.Link.SWMainComponent = components[0];
 
             if (parent != null)
             {
-                logger.Info("Creating joint " + child.Name);
-                CreateJoint(parent, child, node);
-            }
-
-            string childCoordSysName = "";
-            if (child.Joint.CoordinateSystemName == null)
-            {
-                childCoordSysName = node.CoordsysName;
-            }
-            else
-            {
-                childCoordSysName = child.Joint.CoordinateSystemName;
+                logger.Info("Creating joint " + node.Link.Name);
+                CreateJoint(parent, node.Link, node);
             }
 
             // Get the SolidWorks MathTransform that corresponds to the child coordinate system
-            MathTransform jointTransform = GetCoordinateSystemTransform(childCoordSysName);
+            MathTransform jointTransform = GetCoordinateSystemTransform(node.Link.Joint.CoordinateSystemName);
 
-            if (!child.isFixedFrame)
-            {
-                List<Body2> bodies = GetBodies(components);
-                MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-                swMass.SetCoordinateSystem(jointTransform);
+            List<Body2> bodies = GetBodies(components);
+            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+            swMass.SetCoordinateSystem(jointTransform);
 
-                bool bRet = swMass.AddBodies(bodies.ToArray());
+            bool bRet = swMass.AddBodies(bodies.ToArray());
 
-                double[] moment = (double[])swMass.GetMomentOfInertia(
-                    (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
-                child.Inertial.Mass.Value = swMass.Mass;
-                child.Inertial.Inertia.SetMomentMatrix(moment);
+            double[] moment = (double[])swMass.GetMomentOfInertia(
+                (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+            node.Link.Inertial.Mass.Value = swMass.Mass;
+            node.Link.Inertial.Inertia.SetMomentMatrix(moment);
 
-                double[] centerOfMass = swMass.CenterOfMass;
-                child.Inertial.Origin.SetXYZ(centerOfMass);
-                child.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            double[] centerOfMass = swMass.CenterOfMass;
+            node.Link.Inertial.Origin.SetXYZ(centerOfMass);
+            node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-                // Will this ever not be zeros?
-                child.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-                child.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
-                child.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-                child.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            // Will this ever not be zeros?
+            node.Link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            node.Link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-                // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
-                ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
-                double[] values = mainCompdoc.MaterialPropertyValues;
-                child.Visual.Material.Color.Red = values[0];
-                child.Visual.Material.Color.Green = values[1];
-                child.Visual.Material.Color.Blue = values[2];
-                child.Visual.Material.Color.Alpha = 1.0 - values[7];
-                //child.Visual.Material.name = "material_" + child.name;
+            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
+            ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
+            double[] values = mainCompdoc.MaterialPropertyValues;
+            node.Link.Visual.Material.Color.Red = values[0];
+            node.Link.Visual.Material.Color.Green = values[1];
+            node.Link.Visual.Material.Color.Blue = values[2];
+            node.Link.Visual.Material.Color.Alpha = 1.0 - values[7];
+            //node.Link.Visual.Material.name = "material_" + node.Link.name;
 
-                //The part model doesn't actually know where the origin is, but the component
-                // does and this is important when exporting from assembly
-                child.Visual.Origin.SetXYZ(new double[] { 0, 0, 0 });
-                child.Visual.Origin.SetRPY(new double[] { 0, 0, 0 });
-                child.Collision.Origin.SetXYZ(new double[] { 0, 0, 0 });
-                child.Collision.Origin.SetRPY(new double[] { 0, 0, 0 });
-            }
+            //The part model doesn't actually know where the origin is, but the component
+            // does and this is important when exporting from assembly
+            node.Link.Visual.Origin.SetXYZ(new double[] { 0, 0, 0 });
+            node.Link.Visual.Origin.SetRPY(new double[] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetXYZ(new double[] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetRPY(new double[] { 0, 0, 0 });
 
-            return child;
+            return node.Link;
         }
 
         public List<Body2> GetBodies(List<Component2> components)
@@ -332,10 +309,10 @@ namespace SW2URDF
         {
             CheckRefGeometryExists(node);
 
-            string jointName = node.JointName;
-            string coordSysName = node.CoordsysName;
-            string axisName = node.AxisName;
-            string jointType = node.JointType;
+            string jointName = node.Link.Joint.Name;
+            string coordSysName = node.Link.Joint.CoordinateSystemName;
+            string axisName = node.Link.Joint.AxisName;
+            string jointType = node.Link.Joint.Type;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
@@ -1287,13 +1264,13 @@ namespace SW2URDF
 
         public void CheckRefGeometryExists(LinkNode node)
         {
-            if (!CheckRefCoordsysExists(node.CoordsysName))
+            if (!CheckRefCoordsysExists(node.Link.Joint.CoordinateSystemName))
             {
-                node.CoordsysName = "Automatically Generate";
+                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
             }
-            if (!CheckRefAxisExists(node.AxisName))
+            if (!CheckRefAxisExists(node.Link.Joint.AxisName))
             {
-                node.AxisName = "Automatically Generate";
+                node.Link.Joint.AxisName = "Automatically Generate";
             }
         }
 

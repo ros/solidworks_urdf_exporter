@@ -365,44 +365,44 @@ namespace SW2URDF
             ChildElements.Add(Joint);
         }
 
-        public Link(LinkNode node, Link parent) : base("link")
-        {
-            Parent = parent;
-            SWcomponents = new List<Component2>();
-            SWComponentPIDs = new List<byte[]>(node.ComponentPIDs);
-            NameAttribute = new Attribute("name", true, node.LinkName);
-            Children = new List<Link>();
+        //public Link(LinkNode node, Link parent) : base("link")
+        //{
+        //    Parent = parent;
+        //    SWcomponents = new List<Component2>();
+        //    SWComponentPIDs = new List<byte[]>(node.ComponentPIDs);
+        //    NameAttribute = new Attribute("name", true, node.LinkName);
+        //    Children = new List<Link>();
 
-            Inertial = new Inertial();
-            Visual = new Visual();
-            Collision = new Collision();
-            Joint = new Joint();
+        //    Inertial = new Inertial();
+        //    Visual = new Visual();
+        //    Collision = new Collision();
+        //    Joint = new Joint();
 
-            isRequired = true;
-            isFixedFrame = true;
+        //    isRequired = true;
+        //    isFixedFrame = true;
 
-            Attributes.Add(NameAttribute);
-            ChildElements.Add(Inertial);
-            ChildElements.Add(Visual);
-            ChildElements.Add(Collision);
-            ChildElements.Add(Joint);
+        //    Attributes.Add(NameAttribute);
+        //    ChildElements.Add(Inertial);
+        //    ChildElements.Add(Visual);
+        //    ChildElements.Add(Collision);
+        //    ChildElements.Add(Joint);
 
-            Joint.CoordinateSystemName = node.CoordsysName;
-            Name = node.LinkName;
+        //    Joint.CoordinateSystemName = node.Link;
+        //    Name = node.Name;
 
-            if (!node.IsBaseNode)
-            {
-                Joint.Name = node.JointName;
-                Joint.AxisName = node.AxisName;
-                Joint.CoordinateSystemName = node.CoordsysName;
-                Joint.Type = node.JointType;
-            }
+        //    if (!node.IsBaseNode)
+        //    {
+        //        Joint.Name = node.JointName;
+        //        Joint.AxisName = node.AxisName;
+        //        Joint.CoordinateSystemName = node.CoordsysName;
+        //        Joint.Type = node.JointType;
+        //    }
 
-            foreach (LinkNode child in node.Nodes)
-            {
-                Children.Add(new Link(child, this));
-            }
-        }
+        //    foreach (LinkNode child in node.Nodes)
+        //    {
+        //        Children.Add(new Link(child, this));
+        //    }
+        //}
 
         public Link(Link parent) : base("link")
         {
@@ -2078,24 +2078,24 @@ namespace SW2URDF
         public Link Link
         { get; set; }
 
-        public string LinkName
-        { get; set; }
+        //public string LinkName
+        //{ get; set; }
 
-        public string JointName
-        { get; set; }
+        //public string JointName
+        //{ get; set; }
 
-        public string AxisName
-        { get; set; }
+        //public string AxisName
+        //{ get; set; }
 
-        public string CoordsysName
-        { get; set; }
+        //public string CoordsysName
+        //{ get; set; }
 
-        public List<Component2> Components;
+        //public List<Component2> Components;
 
-        public List<byte[]> ComponentPIDs;
+        //public List<byte[]> ComponentPIDs;
 
-        public string JointType
-        { get; set; }
+        //public string JointType
+        //{ get; set; }
 
         public bool IsBaseNode
         { get; set; }
@@ -2111,29 +2111,19 @@ namespace SW2URDF
 
         public LinkNode()
         {
+            Link = new Link();
         }
 
         public LinkNode(Link link)
         {
             logger.Info("Building node " + link.Name);
-            LinkName = link.Name;
-            CoordsysName = link.Joint.CoordinateSystemName;
-
-            ComponentPIDs = new List<byte[]>(link.SWComponentPIDs);
 
             IsBaseNode = link.Parent == null;
-            if (!IsBaseNode)
-            {
-                JointName = link.Joint.Name;
-                AxisName = link.Joint.AxisName;
-                JointType = link.Joint.Type;
-            }
-
             IsIncomplete = true;
             Link = link;
 
-            Name = LinkName;
-            Text = LinkName;
+            Name = Link.Name;
+            Text = Link.Name;
 
             foreach (Link child in link.Children)
             {
@@ -2144,19 +2134,12 @@ namespace SW2URDF
         public LinkNode(SerialNode node)
         {
             logger.Info("Deserializing node " + node.linkName);
-            LinkName = node.linkName;
-            JointName = node.jointName;
-            AxisName = node.axisName;
-            CoordsysName = node.coordsysName;
-
-            ComponentPIDs = new List<byte[]>(node.componentPIDs);
-            JointType = node.jointType;
             IsBaseNode = node.isBaseNode;
             IsIncomplete = node.isIncomplete;
             Link = node.Link;
 
-            Name = LinkName;
-            Text = LinkName;
+            Name = Link.Name;
+            Text = Link.Name;
 
             foreach (SerialNode child in node.Nodes)
             {

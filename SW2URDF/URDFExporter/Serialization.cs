@@ -22,23 +22,11 @@ namespace SW2URDF
         {
             if (node.Link == null)
             {
-                node.Link = new Link(node, null);
+                node.Link = new Link();
                 return;
             }
 
-            Link link = node.Link;
-            link.Joint.CoordinateSystemName = node.CoordsysName;
-            link.Name = node.LinkName;
-
-            if (!node.IsBaseNode)
-            {
-                link.Joint.Name = node.JointName;
-                link.Joint.AxisName = node.AxisName;
-                link.Joint.CoordinateSystemName = node.CoordsysName;
-                link.Joint.Type = node.JointType;
-            }
-
-            link.SWComponentPIDs = new List<byte[]>(node.ComponentPIDs);
+            node.Link.Name = node.Name;
 
             foreach (LinkNode child in node.Nodes)
             {

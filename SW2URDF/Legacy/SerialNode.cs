@@ -44,57 +44,5 @@ namespace SW2URDF.Legacy
         {
             Nodes = new List<SerialNode>();
         }
-
-        public SerialNode(LinkNode node)
-        {
-            Nodes = new List<SerialNode>();
-            if (node.Link == null)
-            {
-                linkName = node.LinkName;
-                jointName = node.JointName;
-                axisName = node.AxisName;
-                coordsysName = node.CoordsysName;
-                componentPIDs = node.ComponentPIDs;
-                jointType = node.JointType;
-                isBaseNode = node.IsBaseNode;
-                isIncomplete = node.IsIncomplete;
-            }
-            else
-            {
-                Link = node.Link;
-                linkName = node.Link.Name;
-
-                componentPIDs = node.ComponentPIDs;
-                if (node.Link.Joint != null)
-                {
-                    jointName = node.Link.Joint.Name;
-
-                    if (node.Link.Joint.Axis.X == 0 &&
-                        node.Link.Joint.Axis.Y == 0 &&
-                        node.Link.Joint.Axis.Z == 0)
-                    {
-                        axisName = "None";
-                    }
-                    else
-                    {
-                        axisName = node.Link.Joint.AxisName;
-                    }
-                    coordsysName = node.Link.Joint.CoordinateSystemName;
-                    jointType = node.Link.Joint.Type;
-                }
-                else
-                {
-                    coordsysName = node.CoordsysName;
-                }
-
-                isBaseNode = node.IsBaseNode;
-                isIncomplete = node.IsIncomplete;
-            }
-            //Proceed recursively through the nodes
-            foreach (LinkNode child in node.Nodes)
-            {
-                Nodes.Add(new SerialNode(child));
-            }
-        }
     }
 }

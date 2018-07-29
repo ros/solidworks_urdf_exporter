@@ -186,13 +186,13 @@ namespace SW2URDF
 
         public static void RetrieveSWComponentPIDs(ModelDoc2 model, LinkNode node)
         {
-            if (node.Components != null)
+            if (node.Link.SWcomponents != null)
             {
-                node.ComponentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in node.Components)
+                node.Link.SWComponentPIDs = new List<byte[]>();
+                foreach (IComponent2 comp in node.Link.SWcomponents)
                 {
                     byte[] PID = model.Extension.GetPersistReference3(comp);
-                    node.ComponentPIDs.Add(PID);
+                    node.Link.SWComponentPIDs.Add(PID);
                 }
             }
             foreach (LinkNode child in node.Nodes)
@@ -269,14 +269,14 @@ namespace SW2URDF
         public static void LoadSWComponents(ModelDoc2 model, LinkNode node)
         {
             logger.Info("Loading SolidWorks components for " +
-                node.LinkName + " from " + model.GetPathName());
+                node.Link.Name + " from " + model.GetPathName());
 
-            node.Components = LoadSWComponents(model, node.ComponentPIDs);
-            if (node.Components.Count != node.ComponentPIDs.Count)
+            node.Link.SWcomponents = LoadSWComponents(model, node.Link.SWComponentPIDs);
+            if (node.Link.SWcomponents.Count != node.Link.SWComponentPIDs.Count)
             {
-                logger.Error("Link " + node.LinkName + " did not fully load all components");
+                logger.Error("Link " + node.Link.Name + " did not fully load all components");
             }
-            logger.Info("Loaded " + node.Components.Count + " components for link " + node.LinkName);
+            logger.Info("Loaded " + node.Link.SWcomponents.Count + " components for link " + node.Link.Name);
 
             foreach (LinkNode Child in node.Nodes)
             {

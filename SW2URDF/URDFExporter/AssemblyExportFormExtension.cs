@@ -329,9 +329,9 @@ namespace SW2URDF
             baseNode.Text = baseLink.Name;
             baseNode.Link = baseLink;
             baseNode.IsBaseNode = true;
-            baseNode.LinkName = baseLink.Name;
-            baseNode.Components = baseLink.SWcomponents;
-            baseNode.CoordsysName = "Origin_global";
+            baseNode.Link.Name = baseLink.Name;
+            baseNode.Link.SWcomponents = baseLink.SWcomponents;
+            baseNode.Link.Joint.CoordinateSystemName = "Origin_global";
             baseNode.IsIncomplete = false;
 
             foreach (Link child in baseLink.Children)
@@ -384,27 +384,7 @@ namespace SW2URDF
         //Converts a Link to a LinkNode
         public LinkNode CreateLinkNodeFromLink(Link Link)
         {
-            LinkNode node = new LinkNode
-            {
-                Name = Link.Name,
-                Text = Link.Name,
-                Link = Link,
-                IsBaseNode = false,
-                LinkName = Link.Name,
-                JointName = Link.Joint.Name,
-                Components = Link.SWcomponents,
-                CoordsysName = Link.Joint.CoordinateSystemName,
-                AxisName = Link.Joint.AxisName,
-                JointType = Link.Joint.Type,
-                IsIncomplete = false
-            };
-
-            foreach (Link child in Link.Children)
-            {
-                node.Nodes.Add(CreateLinkNodeFromLink(child));
-            }
-
-            // Need to erase the children from the embedded link because they may be rearranged later.
+            LinkNode node = new LinkNode(Link);
             node.Link.Children.Clear();
             return node;
         }
