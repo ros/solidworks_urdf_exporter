@@ -242,11 +242,25 @@ namespace SW2URDF
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
             ModelDoc2 ActiveDoc = ActiveSWModel;
 
-            string ComponentName = "";
-            string ConfigurationName = "";
-            string DisplayStateName = "";
-            Component2 geoComponent = default(Component2);
             logger.Info(link.Name + ": Reference geometry name " + names["component"]);
+
+            Common.ShowComponents(ActiveSWModel, link.SWcomponents);
+
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
+
+            logger.Info("Saving STL to " + windowsMeshFileName);
+            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
+                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+            Common.HideComponents(ActiveSWModel, link.SWcomponents);
+
+            CorrectSTLMesh(windowsMeshFileName);
+        }
+
+        private void ApplyConfigurationSpecificGeometry(Link link, Dictionary<string, string> names,
+            ref ModelDoc2 ActiveDoc, ref string ComponentName, ref string ConfigurationName,
+            ref string DisplayStateName, ref Component2 geoComponent)
+        {
             if (names["component"].Length > 0)
             {
                 foreach (Component2 comp in link.SWcomponents)
@@ -266,30 +280,9 @@ namespace SW2URDF
                     }
                     break;
                 }
-            }
-
-            if (ComponentName.Length == 0)
-            {
-                Common.ShowComponents(ActiveSWModel, link.SWcomponents);
-            }
-
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
-
-            logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
-                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            if (ComponentName.Length > 0)
-            {
                 iSwApp.CloseDoc(ComponentName);
                 geoComponent.ReferencedConfiguration = ConfigurationName;
             }
-            else
-            {
-                Common.HideComponents(ActiveSWModel, link.SWcomponents);
-            }
-
-            CorrectSTLMesh(windowsMeshFileName);
         }
 
         // Used only by the part exporter
