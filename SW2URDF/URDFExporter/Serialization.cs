@@ -91,10 +91,10 @@ namespace SW2URDF
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
+                SerialNode sNode = (SerialNode)serializer.Deserialize(textReader);
                 textReader.Close();
 
-                baseNode = new LinkNode(node);
+                baseNode = sNode.BuildLinkNodeFromSerialNode();
             }
             return baseNode;
         }

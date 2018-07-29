@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
+using log4net;
 
 namespace SW2URDF.Legacy
 {
@@ -8,6 +9,8 @@ namespace SW2URDF.Legacy
     [DataContract(IsReference = true)]
     public class SerialNode
     {
+        private readonly ILog logger = Logger.GetLogger();
+
         [DataMember]
         public string linkName;
 
@@ -43,6 +46,29 @@ namespace SW2URDF.Legacy
         public SerialNode()
         {
             Nodes = new List<SerialNode>();
+        }
+
+        public LinkNode BuildLinkNodeFromSerialNode()
+        {
+            logger.Info("Deserializing node " + linkName);
+            LinkNode node = new LinkNode();
+            node.Link.Name = linkName;
+            node.Link.Joint.Name = jointName;
+            node.Link.Joint.AxisName = axisName;
+            node.Link.Joint.CoordinateSystemName = coordsysName;
+            node.Link.SWComponentPIDs = componentPIDs;
+            node.Link.Joint.Type = jointType;
+            node.IsBaseNode = isBaseNode;
+            node.IsIncomplete = isIncomplete;
+
+            node.Name = node.Link.Name;
+            node.Text = node.Link.Name;
+
+            foreach (SerialNode child in Nodes)
+            {
+                node.Nodes.Add(child.BuildLinkNodeFromSerialNode());
+            }
+            return node;
         }
     }
 }

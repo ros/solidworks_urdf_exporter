@@ -2130,22 +2130,6 @@ namespace SW2URDF
                 Nodes.Add(new LinkNode(child));
             }
         }
-
-        public LinkNode(SerialNode node)
-        {
-            logger.Info("Deserializing node " + node.linkName);
-            IsBaseNode = node.isBaseNode;
-            IsIncomplete = node.isIncomplete;
-            Link = node.Link;
-
-            Name = Link.Name;
-            Text = Link.Name;
-
-            foreach (SerialNode child in node.Nodes)
-            {
-                Nodes.Add(new LinkNode(child));
-            }
-        }
     }
 
     #endregion Windows Forms Derived classes
