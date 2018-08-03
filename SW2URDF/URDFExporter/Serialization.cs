@@ -40,7 +40,9 @@ namespace SW2URDF
         /// The name given to the URDF configuration in the ModelDoc Feature tree. This is displayed to the
         /// user
         /// </summary>
-        public const string URDF_CONFIGURATION_SW_ATTRIBUTE_NAME = "URDF Export Configuration";
+        public const string URDF_CONFIGURATION_SW_ATTRIBUTE_NAME = "URDF Export Configuration (v1.3)";
+
+        public const string V1_URDF_CONFIGURATION_ATTRIBUTE_NAME = "URDF Export Configuration";
 
         #region Public Methods
 
@@ -49,7 +51,7 @@ namespace SW2URDF
         /// </summary>
         /// <param name="model">ModelDoc containing the URDF configuration</param>
         /// <returns>TreeView LinkNode loaded from configuration</returns>
-        public static LinkNode LoadBaseNodeFromModel(ModelDoc2 model)
+        public static LinkNode LoadBaseNodeFromModel(SldWorks swApp, ModelDoc2 model)
         {
             string data = GetConfigTreeData(model, out double configVersion);
 
@@ -61,7 +63,6 @@ namespace SW2URDF
             else
             {
                 // In case something happens in upgrading serialization we are saving it elsewhere.
-                ArchiveOldData(data, model);
                 basenode = LoadConfigFromStringXML(data);
             }
 
@@ -166,20 +167,16 @@ namespace SW2URDF
         /// </summary>
         /// <param name="data">Data string to save, utilizing old XMLSerializer scheme</param>
         /// <param name="model">ModelDoc to save to</param>
-        private static void ArchiveOldData(string data, ModelDoc2 model)
+        private static void ArchiveOldData(SldWorks swApp, string data, ModelDoc2 model)
         {
-            Feature feature =
-                GetFeatureAttributeByName(model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
-
             SolidWorks.Interop.sldworks.Attribute swAtt =
-                (SolidWorks.Interop.sldworks.Attribute)feature.GetSpecificFeature2();
+                FindSWSaveAttribute(model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+            if (swAtt != null)
+            {
+                swAtt.Delete(false);
+            }
 
-            AttributeDef definition = (AttributeDef)feature.GetDefinition();
-            int Options = 0;
-            definition.AddParameter(
-               ARCHIVED_DATA_FIELD_NAME, (int)swParamType_e.swParamTypeString, 0, Options);
-
-            feature.ModifyDefinition(definition, model, null);
+            swAtt = CreateSWSaveAttribute(swApp, model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
 
             Parameter param = swAtt.GetParameter(ARCHIVED_DATA_FIELD_NAME);
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
@@ -207,6 +204,27 @@ namespace SW2URDF
         }
 
         /// <summary>
+        /// For the future, if serialization is upgraded again, this might look for several versions
+        /// </summary>
+        /// <param name="model">ModelDoc to look through</param>
+        /// <returns>SolidWorks Attribute with older serialization schemes if found, otherwise null.</returns>
+        private static SolidWorks.Interop.sldworks.Attribute CheckForOldAttributes(ModelDoc2 model)
+        {
+            SolidWorks.Interop.sldworks.Attribute swAtt =
+                FindSWSaveAttribute(model, V1_URDF_CONFIGURATION_ATTRIBUTE_NAME);
+
+            if (swAtt != null)
+            {
+                MessageBox.Show("You have a URDF configuration with an outdated save format. It will automatically be " +
+                    "upgraded to the latest version and saved to the configuration named \"" +
+                    URDF_CONFIGURATION_SW_ATTRIBUTE_NAME + "\". The old configuration (\"" + ARCHIVED_DATA_FIELD_NAME +
+                    "\")can be deleted at your convenience.");
+            }
+
+            return swAtt;
+        }
+
+        /// <summary>
         /// Find the SW attribute that contains the URDF configuration serialized string
         /// </summary>
         /// <param name="model">ModelDoc model to load URDF configuration from</param>
@@ -217,8 +235,17 @@ namespace SW2URDF
             object[] objects = model.FeatureManager.GetFeatures(true);
             string data = "";
             version = 0.0;
+
+            // Check for most recent serialization version
             SolidWorks.Interop.sldworks.Attribute swAtt =
                 FindSWSaveAttribute(model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+
+            // If not found, check for an older version
+            if (swAtt == null)
+            {
+                swAtt = CheckForOldAttributes(model);
+            }
+
             if (swAtt != null)
             {
                 Parameter param = swAtt.GetParameter("data");
@@ -227,16 +254,6 @@ namespace SW2URDF
 
                 param = swAtt.GetParameter("exporterVersion");
                 version = param.GetDoubleValue();
-
-                if (version >= MIN_DATA_CONTRACT_VERSION)
-                {
-                    param = swAtt.GetParameter(ARCHIVED_DATA_FIELD_NAME);
-                    if (param != null)
-                    {
-                        string oldData = param.GetStringValue();
-                        logger.Info("An old configuration was also found\r\n" + oldData);
-                    }
-                }
             }
 
             return data;
@@ -311,6 +328,8 @@ namespace SW2URDF
 
             saveConfigurationAttributeDef.AddParameter(
                 "data", (int)swParamType_e.swParamTypeString, 0, Options);
+            //saveConfigurationAttributeDef.AddParameter(
+            //    ARCHIVED_DATA_FIELD_NAME, (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter(
                 "name", (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter(
@@ -333,7 +352,7 @@ namespace SW2URDF
         /// <param name="data">string to save</param>
         /// <param name="attributeName">Name of attribute to save to</param>
         private static void SaveDataToModelDoc(SldWorks swApp, ModelDoc2 model,
-            string data)
+            string data, string archivedData = null)
         {
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =

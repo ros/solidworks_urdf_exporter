@@ -519,7 +519,7 @@ namespace SW2URDF
 
         public void LoadConfigTree()
         {
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(ActiveSWModel);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel);
 
             if (baseNode == null)
             {
