@@ -474,7 +474,7 @@ namespace SW2URDF
 
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
                 saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null,
-                "URDF Export Configuration", Options, ConfigurationOptions);
+                Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
 

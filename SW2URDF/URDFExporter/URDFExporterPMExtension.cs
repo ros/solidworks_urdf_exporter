@@ -566,7 +566,7 @@ namespace SW2URDF
                 ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             ActiveSWModel.Extension.SelectByID2
-                ("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+                (Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);

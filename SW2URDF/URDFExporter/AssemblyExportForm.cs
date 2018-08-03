@@ -83,7 +83,7 @@ namespace SW2URDF
                 textBoxTexture
             };
 
-            saveConfigurationAttributeDef = SwApp.DefineAttribute("URDF Export Configuration");
+            saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
             int Options = 0;
 
             saveConfigurationAttributeDef.AddParameter(

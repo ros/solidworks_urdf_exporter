@@ -32,7 +32,6 @@ using System.Windows.Forms;
 using System.Xml;
 using log4net;
 using SolidWorks.Interop.sldworks;
-using SW2URDF.Legacy;
 
 namespace SW2URDF
 {

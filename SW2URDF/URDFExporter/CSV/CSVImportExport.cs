@@ -8,10 +8,17 @@ using log4net;
 
 namespace SW2URDF.CSV
 {
+    /// <summary>
+    /// Class to perform exporting and eventually exporting of data to a CSV file
+    /// </summary>
     public static class ImportExport
     {
         private static readonly ILog logger = Logger.GetLogger();
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="stream"></param>
         public static void WriteHeaderToCSV(StreamWriter stream)
         {
             StringBuilder builder = new StringBuilder();
