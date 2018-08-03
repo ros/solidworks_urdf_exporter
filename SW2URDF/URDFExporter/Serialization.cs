@@ -80,6 +80,14 @@ namespace SW2URDF
         public static void SaveConfigTreeXML(SldWorks swApp, ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             string oldData = GetConfigTreeData(model, out double version);
+            if (version < SERIALIZATION_VERSION)
+            {
+                MessageBox.Show("You have a URDF configuration with an outdated save format. It will automatically be " +
+                    "upgraded to the latest version and saved to the configuration named \"" +
+                    URDF_CONFIGURATION_SW_ATTRIBUTE_NAME + "\". " +
+                    "Old configurations can be deleted at your convenience.");
+                warnUser = false;
+            }
 
             string newData = SerializeToString(BaseNode);
             if (oldData != newData)
@@ -212,14 +220,6 @@ namespace SW2URDF
         {
             SolidWorks.Interop.sldworks.Attribute swAtt =
                 FindSWSaveAttribute(model, V1_URDF_CONFIGURATION_ATTRIBUTE_NAME);
-
-            if (swAtt != null)
-            {
-                MessageBox.Show("You have a URDF configuration with an outdated save format. It will automatically be " +
-                    "upgraded to the latest version and saved to the configuration named \"" +
-                    URDF_CONFIGURATION_SW_ATTRIBUTE_NAME + "\". The old configuration (\"" + ARCHIVED_DATA_FIELD_NAME +
-                    "\")can be deleted at your convenience.");
-            }
 
             return swAtt;
         }
