@@ -4,6 +4,10 @@ namespace SW2URDF.CSV
 {
     public static class ContextToColumns
     {
+        /// <summary>
+        /// Provides both the column order of CSV files that are written, but also a lookup between the
+        /// URDF name of field and a common sense name
+        /// </summary>
         public static OrderedDictionary Dictionary = new OrderedDictionary()
         {
             { "Link.name", "Link Name" },

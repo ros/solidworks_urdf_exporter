@@ -15,11 +15,32 @@ namespace SW2URDF.CSV
     {
         private static readonly ILog logger = Logger.GetLogger();
 
+        #region Public Methods
+
         /// <summary>
-        ///
+        /// Method to write a full URDF robot to a CSV
         /// </summary>
-        /// <param name="stream"></param>
-        public static void WriteHeaderToCSV(StreamWriter stream)
+        /// <param name="robot">URDF robot tree</param>
+        /// <param name="filename">Fully qualified string name to write to</param>
+        public static void WriteRobotToCSV(Robot robot, string filename)
+        {
+            logger.Info("Writing CSV file " + filename);
+            using (StreamWriter stream = new StreamWriter(filename))
+            {
+                WriteHeaderToCSV(stream);
+                WriteLinkToCSV(stream, robot.BaseLink);
+            }
+        }
+
+        #endregion Public Methods
+
+        #region Private Methods
+
+        /// <summary>
+        /// Iterates through the column names and writes them to a file stream
+        /// </summary>
+        /// <param name="stream">Stream to write to</param>
+        private static void WriteHeaderToCSV(StreamWriter stream)
         {
             StringBuilder builder = new StringBuilder();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
@@ -32,7 +53,12 @@ namespace SW2URDF.CSV
             stream.WriteLine(builder.ToString() + "\n");
         }
 
-        public static void WriteValuesToCSV(StreamWriter stream, OrderedDictionary dictionary)
+        /// <summary>
+        /// Appends a line to an open CSV document of a URDF's Link properties
+        /// </summary>
+        /// <param name="stream">Stream representing opened CSV file</param>
+        /// <param name="dictionary">Dictionary of values</param>
+        private static void WriteValuesToCSV(StreamWriter stream, OrderedDictionary dictionary)
         {
             StringBuilder builder = new StringBuilder();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
@@ -66,7 +92,12 @@ namespace SW2URDF.CSV
             stream.WriteLine(builder.ToString() + "\n");
         }
 
-        public static void WriteLinkToCSV(StreamWriter stream, Link link)
+        /// <summary>
+        /// Converts a URDF Link to a dictionary of values and writes them to a CSV
+        /// </summary>
+        /// <param name="stream">StreamWriter of opened CSV document</param>
+        /// <param name="link">URDF link to append to the file</param>
+        private static void WriteLinkToCSV(StreamWriter stream, Link link)
         {
             OrderedDictionary dictionary = new OrderedDictionary();
             link.AppendToCSVDictionary(new List<string>(), dictionary);
@@ -78,14 +109,6 @@ namespace SW2URDF.CSV
             }
         }
 
-        public static void WriteRobotToCSV(Robot robot, string filename)
-        {
-            logger.Info("Writing CSV file " + filename);
-            using (StreamWriter stream = new StreamWriter(filename))
-            {
-                WriteHeaderToCSV(stream);
-                WriteLinkToCSV(stream, robot.BaseLink);
-            }
-        }
+        #endregion Private Methods
     }
 }
