@@ -9,7 +9,7 @@ using log4net;
 namespace SW2URDF.CSV
 {
     /// <summary>
-    /// Class to perform exporting and eventually exporting of data to a CSV file
+    /// Class to perform exporting to CSV and eventually importing of data from a CSV file
     /// </summary>
     public static class ImportExport
     {

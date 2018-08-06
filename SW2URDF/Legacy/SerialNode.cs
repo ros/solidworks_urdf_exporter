@@ -40,7 +40,7 @@ namespace SW2URDF.Legacy
 
         [XmlIgnore]
         [DataMember]
-        public Link Link;
+        public Link URDFLink;
 
         //This is only used by the serialization module.
         public SerialNode()

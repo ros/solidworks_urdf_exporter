@@ -364,45 +364,6 @@ namespace SW2URDF
             ChildElements.Add(Joint);
         }
 
-        //public Link(LinkNode node, Link parent) : base("link")
-        //{
-        //    Parent = parent;
-        //    SWcomponents = new List<Component2>();
-        //    SWComponentPIDs = new List<byte[]>(node.ComponentPIDs);
-        //    NameAttribute = new Attribute("name", true, node.LinkName);
-        //    Children = new List<Link>();
-
-        //    Inertial = new Inertial();
-        //    Visual = new Visual();
-        //    Collision = new Collision();
-        //    Joint = new Joint();
-
-        //    isRequired = true;
-        //    isFixedFrame = true;
-
-        //    Attributes.Add(NameAttribute);
-        //    ChildElements.Add(Inertial);
-        //    ChildElements.Add(Visual);
-        //    ChildElements.Add(Collision);
-        //    ChildElements.Add(Joint);
-
-        //    Joint.CoordinateSystemName = node.Link;
-        //    Name = node.Name;
-
-        //    if (!node.IsBaseNode)
-        //    {
-        //        Joint.Name = node.JointName;
-        //        Joint.AxisName = node.AxisName;
-        //        Joint.CoordinateSystemName = node.CoordsysName;
-        //        Joint.Type = node.JointType;
-        //    }
-
-        //    foreach (LinkNode child in node.Nodes)
-        //    {
-        //        Children.Add(new Link(child, this));
-        //    }
-        //}
-
         public Link(Link parent) : base("link")
         {
             Parent = parent;
