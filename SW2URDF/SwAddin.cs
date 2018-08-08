@@ -313,9 +313,13 @@ namespace SW2URDF
         {
             URDFExporterPM pm = new URDFExporterPM((SldWorks)SwApp);
             logger.Info("Loading config tree");
-            pm.LoadConfigTree();
-            logger.Info("Showing property manager");
-            pm.Show();
+            bool success = pm.LoadConfigTree();
+
+            if (success)
+            {
+                logger.Info("Showing property manager");
+                pm.Show();
+            }
         }
 
         public void SetupPartExporter()

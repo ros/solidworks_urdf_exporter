@@ -517,7 +517,11 @@ namespace SW2URDF
             return node;
         }
 
-        public void LoadConfigTree()
+        /// <summary>
+        /// Loads configuration tree into PM Page. If an error occurs, this will do nothing
+        /// </summary>
+        /// <returns>bool representing success of load. If false, PMPage should not open</returns>
+        public bool LoadConfigTree()
         {
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel, out bool abortProcess);
 
@@ -525,7 +529,7 @@ namespace SW2URDF
             {
                 MessageBox.Show("An error occured loading an existing configuration. Either resolve the issue" +
                     " or delete the configuration from the feature manager");
-                PMPage.Close(false);
+                return false;
             }
 
             if (baseNode == null)
@@ -544,6 +548,7 @@ namespace SW2URDF
             Tree.Nodes.Add(baseNode);
             Tree.ExpandAll();
             Tree.SelectedNode = Tree.Nodes[0];
+            return true;
         }
 
         public void MoveComponentsToFolder(LinkNode node)
