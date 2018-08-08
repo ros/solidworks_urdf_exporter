@@ -519,7 +519,14 @@ namespace SW2URDF
 
         public void LoadConfigTree()
         {
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel, out bool abortProcess);
+
+            if (abortProcess)
+            {
+                MessageBox.Show("An error occured loading an existing configuration. Either resolve the issue" +
+                    " or delete the configuration from the feature manager");
+                PMPage.Close(false);
+            }
 
             if (baseNode == null)
             {
@@ -528,7 +535,6 @@ namespace SW2URDF
             }
             else
             {
-                // Not sure what's happening here, but not all components are loading.
                 Common.LoadSWComponents(ActiveSWModel, baseNode);
             }
 

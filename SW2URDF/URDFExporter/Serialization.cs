@@ -34,8 +34,6 @@ namespace SW2URDF
         /// </summary>
         private const double MIN_DATA_CONTRACT_VERSION = 1.3;
 
-        private const string ARCHIVED_DATA_FIELD_NAME = "serialization_1_data";
-
         /// <summary>
         /// The name given to the URDF configuration in the ModelDoc Feature tree. This is displayed to the
         /// user
@@ -51,21 +49,30 @@ namespace SW2URDF
         /// </summary>
         /// <param name="model">ModelDoc containing the URDF configuration</param>
         /// <returns>TreeView LinkNode loaded from configuration</returns>
-        public static LinkNode LoadBaseNodeFromModel(SldWorks swApp, ModelDoc2 model)
+        public static LinkNode LoadBaseNodeFromModel(SldWorks swApp, ModelDoc2 model, out bool error)
         {
             string data = GetConfigTreeData(model, out double configVersion);
 
             LinkNode basenode = null;
+            if (configVersion > SERIALIZATION_VERSION)
+            {
+                MessageBox.Show("The configuration saved in this model is newer than what this " +
+                    "exporter supports " + string.Format("({0} > {1})", configVersion, SERIALIZATION_VERSION) +
+                    ". Please update your exporter version");
+                error = true;
+                return null;
+            }
+
             if (configVersion >= MIN_DATA_CONTRACT_VERSION)
             {
                 basenode = DeserializeFromString(data);
             }
             else
             {
-                // In case something happens in upgrading serialization we are saving it elsewhere.
                 basenode = LoadConfigFromStringXML(data);
             }
 
+            error = false;
             return basenode;
         }
 
@@ -171,27 +178,6 @@ namespace SW2URDF
         }
 
         /// <summary>
-        /// In case something happens, we are saving the old version of the serialized data
-        /// </summary>
-        /// <param name="data">Data string to save, utilizing old XMLSerializer scheme</param>
-        /// <param name="model">ModelDoc to save to</param>
-        private static void ArchiveOldData(SldWorks swApp, string data, ModelDoc2 model)
-        {
-            SolidWorks.Interop.sldworks.Attribute swAtt =
-                FindSWSaveAttribute(model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
-            if (swAtt != null)
-            {
-                swAtt.Delete(false);
-            }
-
-            swAtt = CreateSWSaveAttribute(swApp, model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
-
-            Parameter param = swAtt.GetParameter(ARCHIVED_DATA_FIELD_NAME);
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            param.SetStringValue2(data, ConfigurationOptions, "");
-        }
-
-        /// <summary>
         /// Load from the deprecated XML serialized scheme
         /// </summary>
         /// <param name="data">Data string to deserialize using XMLSerializer</param>
@@ -270,15 +256,15 @@ namespace SW2URDF
             Object[] objects = model.FeatureManager.GetFeatures(true);
             foreach (Object obj in objects)
             {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
+                Feature feature = (Feature)obj;
+                string t = feature.GetTypeName2();
+                if (feature.GetTypeName2() == "Attribute")
                 {
                     SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
+                        (SolidWorks.Interop.sldworks.Attribute)feature.GetSpecificFeature2();
                     if (att.GetName() == featName)
                     {
-                        return feat;
+                        return feature;
                     }
                 }
             }
@@ -328,8 +314,6 @@ namespace SW2URDF
 
             saveConfigurationAttributeDef.AddParameter(
                 "data", (int)swParamType_e.swParamTypeString, 0, Options);
-            //saveConfigurationAttributeDef.AddParameter(
-            //    ARCHIVED_DATA_FIELD_NAME, (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter(
                 "name", (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter(

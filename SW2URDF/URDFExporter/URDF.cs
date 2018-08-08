@@ -212,10 +212,6 @@ namespace SW2URDF
             if (Value.GetType() == typeof(double[]))
             {
                 double[] values = (double[])Value;
-                if (values.Length != AttributeType.Length)
-                {
-                    throw new Exception("This is not going to work");
-                }
                 for (int i = 0; i < values.Length; i++)
                 {
                     string contextString = string.Join(".", context) + "." + AttributeType + "." + AttributeType[i];
@@ -2037,25 +2033,6 @@ namespace SW2URDF
 
         public Link Link
         { get; set; }
-
-        //public string LinkName
-        //{ get; set; }
-
-        //public string JointName
-        //{ get; set; }
-
-        //public string AxisName
-        //{ get; set; }
-
-        //public string CoordsysName
-        //{ get; set; }
-
-        //public List<Component2> Components;
-
-        //public List<byte[]> ComponentPIDs;
-
-        //public string JointType
-        //{ get; set; }
 
         public bool IsBaseNode
         { get; set; }

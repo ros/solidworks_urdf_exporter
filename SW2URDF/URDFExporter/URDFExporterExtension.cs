@@ -245,7 +245,6 @@ namespace SW2URDF
             node.Link.Inertial.Origin.SetXYZ(centerOfMass);
             node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-            // Will this ever not be zeros?
             node.Link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
             node.Link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
             node.Link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
@@ -258,14 +257,6 @@ namespace SW2URDF
             node.Link.Visual.Material.Color.Green = values[1];
             node.Link.Visual.Material.Color.Blue = values[2];
             node.Link.Visual.Material.Color.Alpha = 1.0 - values[7];
-            //node.Link.Visual.Material.name = "material_" + node.Link.name;
-
-            //The part model doesn't actually know where the origin is, but the component
-            // does and this is important when exporting from assembly
-            node.Link.Visual.Origin.SetXYZ(new double[] { 0, 0, 0 });
-            node.Link.Visual.Origin.SetRPY(new double[] { 0, 0, 0 });
-            node.Link.Collision.Origin.SetXYZ(new double[] { 0, 0, 0 });
-            node.Link.Collision.Origin.SetRPY(new double[] { 0, 0, 0 });
 
             return node.Link;
         }
