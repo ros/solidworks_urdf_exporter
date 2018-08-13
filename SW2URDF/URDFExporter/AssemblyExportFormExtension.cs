@@ -430,7 +430,7 @@ namespace SW2URDF
 
             if (!string.IsNullOrWhiteSpace(msg))
             {
-                builder.Append(node.Name + " - " + msg);
+                builder.Append(node.Name + " - " + msg + "\r\n");
             }
             foreach (Link child in node.Children)
             {

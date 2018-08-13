@@ -293,8 +293,15 @@ namespace SW2URDF
                 string byteAsString = PIDToString(PID);
                 logger.Info("Loading component with PID " + byteAsString);
                 Component2 comp = LoadSWComponent(model, PID);
-                components.Add(comp);
-                logger.Info("Successfully loaded component " + comp.GetPathName());
+                if (comp == null)
+                {
+                    logger.Warn("Component with PID " + byteAsString + " failed to load");
+                }
+                else
+                {
+                    components.Add(comp);
+                    logger.Info("Successfully loaded component " + comp.GetPathName());
+                }
             }
             return components;
         }
@@ -306,7 +313,9 @@ namespace SW2URDF
             string byteAsString = PIDToString(PID);
             if (PID != null)
             {
-                return (Component2)model.Extension.GetObjectByPersistReference3(PID, out Errors);
+                object obj = model.Extension.GetObjectByPersistReference3(PID, out Errors);
+                Component2 component = (Component2)obj;
+                return component;
             }
             else
             {
