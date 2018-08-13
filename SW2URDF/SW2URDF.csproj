@@ -201,6 +201,7 @@
       <Name>System.Drawing</Name>
     </Reference>
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML">
@@ -208,6 +209,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Legacy\SerialNode.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -229,6 +231,9 @@
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="URDFExporter\CSV\ContextToColumns.cs" />
+    <Compile Include="URDFExporter\CSV\CSVImportExport.cs" />
+    <Compile Include="URDFExporter\Serialization.cs" />
     <Compile Include="URDFExporter\URDFExporter.cs" />
     <Compile Include="URDFExporter\URDFExporterExtension.cs" />
     <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">

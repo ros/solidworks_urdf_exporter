@@ -53,7 +53,8 @@ namespace SW2URDF
             }
 
             //Each Robot contains a single base link, build this link
-            URDFRobot.BaseLink = CreateBaseLinkFromActiveModel();
+            Link baseLink = CreateBaseLinkFromActiveModel();
+            URDFRobot.SetBaseLink(baseLink);
         }
 
         // This method now only works for the part exporter
@@ -75,9 +76,6 @@ namespace SW2URDF
             Link.Name = swModel.GetTitle();
 
             Link.isFixedFrame = false;
-            Link.Visual = new Visual();
-            Link.Inertial = new Inertial();
-            Link.Collision = new Collision();
 
             //Get link properties from SolidWorks part
             IMassProperty swMass = swModel.Extension.CreateMassProperty();
@@ -165,28 +163,28 @@ namespace SW2URDF
             progressBar.UpdateTitle("Building link: " + baseNode.Name);
             count++;
 
-            Link BaseLink = CreateLink(baseNode, 1);
-            URDFRobot.BaseLink = BaseLink;
-            baseNode.Link = BaseLink;
+            Link baseLink = CreateLink(baseNode, 1);
+            URDFRobot.SetBaseLink(baseLink);
+            baseNode.Link = baseLink;
 
             progressBar.End();
         }
 
-        public void CreateBaseLinkFromComponents(LinkNode node)
+        public Link CreateBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
-            Link Link = CreateLinkFromComponents(null, node.Components, node);
-            if (node.CoordsysName == "Automatically Generate")
+            Link link = CreateLinkFromComponents(null, node);
+            if (node.Link.Joint.CoordinateSystemName == "Automatically Generate")
             {
                 CreateBaseRefOrigin(true);
-                node.CoordsysName = "Origin_global";
-                Link.CoordSysName = node.CoordsysName;
+                node.Link.Joint.CoordinateSystemName = "Origin_global";
+                link.Joint.CoordinateSystemName = node.Link.Joint.CoordinateSystemName;
             }
             else
             {
-                Link.CoordSysName = node.CoordsysName;
+                link.Joint.CoordinateSystemName = node.Link.Joint.CoordinateSystemName;
             }
-            URDFRobot.BaseLink = Link;
+            return link;
         }
 
         //Method which builds an entire link and iterates through.
@@ -194,103 +192,73 @@ namespace SW2URDF
         {
             progressBar.UpdateTitle("Building link: " + node.Name);
             progressBar.UpdateProgress(count);
-            Link Link;
+            Link link;
             if (node.IsBaseNode)
             {
-                CreateBaseLinkFromComponents(node);
-                Link = URDFRobot.BaseLink;
+                link = CreateBaseLinkFromComponents(node);
+                URDFRobot.SetBaseLink(link);
             }
             else
             {
                 LinkNode parentNode = (LinkNode)node.Parent;
-                Link = CreateLinkFromComponents(parentNode.Link, node.Components, node);
+                link = CreateLinkFromComponents(parentNode.Link, node);
             }
-            node.Link = Link;
+            node.Link = link;
+
+            // Reset list of children, don't worry the links that were saved are still attached to the child nodes
+            link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
                 Link childLink = CreateLink(child, count + 1);
-                Link.Children.Add(childLink);
+                link.Children.Add(childLink);
             }
-            return Link;
+            return link;
         }
 
         //Method which builds a single link
-        public Link CreateLinkFromComponents(Link parent, List<Component2> components, LinkNode node)
+        public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
-            Link child = new Link(parent);
-            child.Name = node.LinkName;
-
-            if (components.Count > 0)
-            {
-                child.isFixedFrame = false;
-                child.Visual = new Visual();
-                child.Inertial = new Inertial();
-                child.Collision = new Collision();
-                child.SWMainComponent = components[0];
-                child.SWcomponents.AddRange(components);
-            }
-            //Get link properties from SolidWorks part
+            List<Component2> components = node.Link.SWcomponents;
+            node.Link.SWMainComponent = components[0];
 
             if (parent != null)
             {
-                logger.Info("Creating joint " + child.Name);
-                CreateJoint(parent, child, node);
-            }
-
-            string childCoordSysName = "";
-            if (child.Joint == null)
-            {
-                childCoordSysName = node.CoordsysName;
-            }
-            else
-            {
-                childCoordSysName = child.Joint.CoordinateSystemName;
+                logger.Info("Creating joint " + node.Link.Name);
+                CreateJoint(parent, node.Link);
             }
 
             // Get the SolidWorks MathTransform that corresponds to the child coordinate system
-            MathTransform jointTransform = GetCoordinateSystemTransform(childCoordSysName);
+            MathTransform jointTransform = GetCoordinateSystemTransform(node.Link.Joint.CoordinateSystemName);
 
-            if (!child.isFixedFrame)
-            {
-                List<Body2> bodies = GetBodies(components);
-                MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-                swMass.SetCoordinateSystem(jointTransform);
+            List<Body2> bodies = GetBodies(components);
+            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+            swMass.SetCoordinateSystem(jointTransform);
 
-                bool bRet = swMass.AddBodies(bodies.ToArray());
+            bool bRet = swMass.AddBodies(bodies.ToArray());
 
-                double[] moment = (double[])swMass.GetMomentOfInertia(
-                    (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
-                child.Inertial.Mass.Value = swMass.Mass;
-                child.Inertial.Inertia.SetMomentMatrix(moment);
+            double[] moment = (double[])swMass.GetMomentOfInertia(
+                (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+            node.Link.Inertial.Mass.Value = swMass.Mass;
+            node.Link.Inertial.Inertia.SetMomentMatrix(moment);
 
-                double[] centerOfMass = swMass.CenterOfMass;
-                child.Inertial.Origin.SetXYZ(centerOfMass);
-                child.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            double[] centerOfMass = swMass.CenterOfMass;
+            node.Link.Inertial.Origin.SetXYZ(centerOfMass);
+            node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-                // Will this ever not be zeros?
-                child.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-                child.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
-                child.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-                child.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            node.Link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            node.Link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            node.Link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-                // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
-                ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
-                double[] values = mainCompdoc.MaterialPropertyValues;
-                child.Visual.Material.Color.Red = values[0];
-                child.Visual.Material.Color.Green = values[1];
-                child.Visual.Material.Color.Blue = values[2];
-                child.Visual.Material.Color.Alpha = 1.0 - values[7];
-                //child.Visual.Material.name = "material_" + child.name;
+            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
+            ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
+            double[] values = mainCompdoc.MaterialPropertyValues;
+            node.Link.Visual.Material.Color.Red = values[0];
+            node.Link.Visual.Material.Color.Green = values[1];
+            node.Link.Visual.Material.Color.Blue = values[2];
+            node.Link.Visual.Material.Color.Alpha = 1.0 - values[7];
 
-                //The part model doesn't actually know where the origin is, but the component
-                // does and this is important when exporting from assembly
-                child.Visual.Origin.SetXYZ(new double[] { 0, 0, 0 });
-                child.Visual.Origin.SetRPY(new double[] { 0, 0, 0 });
-                child.Collision.Origin.SetXYZ(new double[] { 0, 0, 0 });
-                child.Collision.Origin.SetRPY(new double[] { 0, 0, 0 });
-            }
-
-            return child;
+            return node.Link;
         }
 
         public List<Body2> GetBodies(List<Component2> components)
@@ -328,18 +296,17 @@ namespace SW2URDF
         #region Joint methods
 
         //Base method for constructing a joint from a parent link and child link.
-        public void CreateJoint(Link parent, Link child, LinkNode node)
+        public void CreateJoint(Link parent, Link child)
         {
-            CheckRefGeometryExists(node);
+            CheckRefGeometryExists(child);
 
-            string jointName = node.JointName;
-            string coordSysName = node.CoordsysName;
-            string axisName = node.AxisName;
-            string jointType = node.JointType;
+            string jointName = child.Joint.Name;
+            string coordSysName = child.Joint.CoordinateSystemName;
+            string axisName = child.Joint.AxisName;
+            string jointType = child.Joint.Type;
 
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-            child.Joint = new Joint();
-            child.Joint.Name = jointName;
+
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
             Boolean unfix = false;
@@ -372,10 +339,7 @@ namespace SW2URDF
                 }
                 CreateRefOrigin(child.Joint);
             }
-            else
-            {
-                child.Joint.CoordinateSystemName = coordSysName;
-            }
+
             if (axisName == "Automatically Generate")
             {
                 child.Joint.AxisName = "Axis_" + child.Joint.Name;
@@ -393,19 +357,10 @@ namespace SW2URDF
                     CreateRefAxis(child.Joint);
                 }
             }
-            else
-            {
-                child.Joint.AxisName = axisName;
-            }
-            if (jointType != "Automatically Detect")
-            {
-                child.Joint.Type = jointType;
-            }
 
             EstimateGlobalJointFromRefGeometry(parent, child);
 
-            coordSysName = (parent.Joint == null) ?
-                parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            coordSysName = parent.Joint.CoordinateSystemName;
 
             LocalizeJoint(child.Joint, coordSysName);
         }
@@ -502,7 +457,6 @@ namespace SW2URDF
                     "Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
             {
                 Joint Joint = new Joint();
-                Joint.Origin = new Origin();
                 if (zIsUp)
                 {
                     Joint.Origin.SetRPY(new double[] { -Math.PI / 2, 0, 0 });
@@ -858,6 +812,10 @@ namespace SW2URDF
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             MathTransform ComponentTransform = default(MathTransform);
+            if (CoordinateSystemName == null)
+            {
+                throw new Exception("Coordinate system string is null");
+            }
             if (CoordinateSystemName.Contains("<") && CoordinateSystemName.Contains(">"))
             {
                 string componentStr = "";
@@ -910,8 +868,7 @@ namespace SW2URDF
                 yMin = MathOps.Min(points[1], points[4], yMin);
                 zMin = MathOps.Min(points[2], points[5], zMin);
             }
-            string coordsys = (parent.Joint == null) ?
-                parent.CoordSysName : parent.Joint.CoordinateSystemName;
+            string coordsys = parent.Joint.CoordinateSystemName;
             MathTransform parentTransform = GetCoordinateSystemTransform(coordsys);
 
             double[] xyzParent = MathOps.GetXYZ(parentTransform);
@@ -1187,8 +1144,6 @@ namespace SW2URDF
                         (Joint.Type == "prismatic" && swMate.Type ==
                             (int)swMateType_e.swMateDISTANCE))
                     {
-                        Joint.Limit = new Limit();
-
                         // Unclear if flipped is the right thing we want to be checking here.
                         // From a sample size of 1, in SolidWorks it appears that an aligned and
                         // anti-aligned mates are NOT flipped...
@@ -1286,15 +1241,15 @@ namespace SW2URDF
             }
         }
 
-        public void CheckRefGeometryExists(LinkNode node)
+        public void CheckRefGeometryExists(Link link)
         {
-            if (!CheckRefCoordsysExists(node.CoordsysName))
+            if (!CheckRefCoordsysExists(link.Joint.CoordinateSystemName))
             {
-                node.CoordsysName = "Automatically Generate";
+                link.Joint.CoordinateSystemName = "Automatically Generate";
             }
-            if (!CheckRefAxisExists(node.AxisName))
+            if (!CheckRefAxisExists(link.Joint.AxisName))
             {
-                node.AxisName = "Automatically Generate";
+                link.Joint.AxisName = "Automatically Generate";
             }
         }
 

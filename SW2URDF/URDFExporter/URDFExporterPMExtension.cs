@@ -23,10 +23,7 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Serialization;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -36,59 +33,43 @@ namespace SW2URDF
 {
     public partial class URDFExporterPM : PropertyManagerPage2Handler9
     {
-        public AttributeDef saveConfigurationAttributeDef;
+        public static readonly double CONFIGURATION_VERSION = 1.3;
+        public static readonly double SOAP_MIN_VERSION = 1.3;
+
+        private bool AskUserConfigurationSave(bool warnUser, string newData, string oldData, double previousVersion)
+        {
+            bool success = (oldData != newData);
+            if (oldData != newData)
+            {
+                if (previousVersion != CONFIGURATION_VERSION)
+                {
+                    if (MessageBox.Show("The configuration has changed, would you like to save and " +
+                    "update the configuration to the latest version?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        success = true;
+                    }
+                }
+                else if (warnUser)
+                {
+                    if (MessageBox.Show("The configuration has changed, would you like to save?",
+                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        success = true;
+                    }
+                }
+                else
+                {
+                    success = true;
+                }
+            }
+            return success;
+        }
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Object[] objects = model.FeatureManager.GetFeatures(true);
-            string oldData = "";
-            Parameter param;
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        param = att.GetParameter("data");
-                        oldData = param.GetStringValue();
-                    }
-                }
-            }
-            //moveComponentsToFolder((LinkNode)tree.Nodes[0]);
-            RetrieveSWComponentPIDs(BaseNode);
-            SerialNode sNode = new SerialNode(BaseNode);
-            StringWriter stringWriter;
-            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-            stringWriter = new StringWriter();
-            serializer.Serialize(stringWriter, sNode);
-            stringWriter.Flush();
-            stringWriter.Close();
-
-            string newData = stringWriter.ToString();
-            if (oldData != newData)
-            {
-                if (!warnUser ||
-                    (warnUser &&
-                    MessageBox.Show("The configuration has changed, would you like to save?",
-                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
-                {
-                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                        CreateSWSaveAttribute("URDF Export Configuration");
-                    param = saveExporterAttribute.GetParameter("data");
-                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("name");
-                    param.SetStringValue2("config1", ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("date");
-                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("exporterVersion");
-                    param.SetStringValue2("1.1", ConfigurationOptions, "");
-                }
-            }
+            Common.RetrieveSWComponentPIDs(model, BaseNode);
+            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         //As nodes are created and destroyed, this menu gets called a lot. It basically just
@@ -160,7 +141,7 @@ namespace SW2URDF
         {
             if (node.IsIncomplete)
             {
-                node.Text = node.LinkName + "*";
+                node.Text = node.Link.Name + "*";
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -263,18 +244,18 @@ namespace SW2URDF
         {
             node.WhyIncomplete = "";
             node.IsIncomplete = false;
-            if (String.IsNullOrWhiteSpace(node.LinkName))
+            if (String.IsNullOrWhiteSpace(node.Link.Name))
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
             }
-            if (node.Nodes.Count > 0 && node.Components.Count == 0)
+            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
                     "        Links with children cannot be empty. Select its associated components\r\n";
             }
-            if (node.Components.Count == 0 && node.CoordsysName == "Automatically Generate")
+            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -282,7 +263,7 @@ namespace SW2URDF
                 node.WhyIncomplete +=
                     "        without components. Either select an origin or at least one component.";
             }
-            if (String.IsNullOrWhiteSpace(node.JointName) && !node.IsBaseNode)
+            if (String.IsNullOrWhiteSpace(node.Link.Joint.Name) && !node.IsBaseNode)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
@@ -327,21 +308,21 @@ namespace SW2URDF
         {
             if (previouslySelectedNode != null)
             {
-                previouslySelectedNode.LinkName = PMTextBoxLinkName.Text;
+                previouslySelectedNode.Link.Name = PMTextBoxLinkName.Text;
                 if (!previouslySelectedNode.IsBaseNode)
                 {
-                    previouslySelectedNode.JointName = PMTextBoxJointName.Text;
-                    previouslySelectedNode.AxisName = PMComboBoxAxes.get_ItemText(-1);
-                    previouslySelectedNode.CoordsysName = PMComboBoxCoordSys.get_ItemText(-1);
-                    previouslySelectedNode.JointType = PMComboBoxJointType.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.Name = PMTextBoxJointName.Text;
+                    previouslySelectedNode.Link.Joint.AxisName = PMComboBoxAxes.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.CoordinateSystemName = PMComboBoxCoordSys.get_ItemText(-1);
+                    previouslySelectedNode.Link.Joint.Type = PMComboBoxJointType.get_ItemText(-1);
                 }
                 else
                 {
-                    previouslySelectedNode.CoordsysName =
+                    previouslySelectedNode.Link.Joint.CoordinateSystemName =
                         PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
                 Common.GetSelectedComponents(
-                    ActiveSWModel, previouslySelectedNode.Components, PMSelection.Mark);
+                    ActiveSWModel, previouslySelectedNode.Link.SWcomponents, PMSelection.Mark);
             }
         }
 
@@ -352,26 +333,26 @@ namespace SW2URDF
 
             if (Parent == null)             //For the base_link node
             {
-                node.LinkName = "base_link";
-                node.AxisName = "";
-                node.CoordsysName = "Automatically Generate";
-                node.Components = new List<Component2>();
+                node.Link.Name = "base_link";
+                node.Link.Joint.AxisName = "";
+                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
+                node.Link.SWcomponents = new List<Component2>();
                 node.IsBaseNode = true;
                 node.IsIncomplete = true;
             }
             else
             {
                 node.IsBaseNode = false;
-                node.LinkName = "Empty_Link";
-                node.AxisName = "Automatically Generate";
-                node.CoordsysName = "Automatically Generate";
-                node.JointType = "Automatically Detect";
-                node.Components = new List<Component2>();
+                node.Link.Name = "Empty_Link";
+                node.Link.Joint.AxisName = "Automatically Generate";
+                node.Link.Joint.CoordinateSystemName = "Automatically Generate";
+                node.Link.Joint.Type = "Automatically Detect";
+                node.Link.SWcomponents = new List<Component2>();
                 node.IsBaseNode = false;
                 node.IsIncomplete = true;
             }
-            node.Name = node.LinkName;
-            node.Text = node.LinkName;
+            node.Name = node.Link.Name;
+            node.Text = node.Link.Name;
             node.ContextMenuStrip = docMenu;
             return node;
         }
@@ -379,11 +360,11 @@ namespace SW2URDF
         //Sets all the controls in the Property Manager from the Selected Node
         public void FillPropertyManager(LinkNode node)
         {
-            PMTextBoxLinkName.Text = node.LinkName;
+            PMTextBoxLinkName.Text = node.Link.Name;
             PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.SelectComponents(ActiveSWModel, node.Components, true, PMSelection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Link.SWcomponents, true, PMSelection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)
@@ -393,7 +374,7 @@ namespace SW2URDF
 
                 //Labels need to be activated before changing them
                 EnableControls(!node.IsBaseNode);
-                PMTextBoxJointName.Text = node.JointName;
+                PMTextBoxJointName.Text = node.Link.Joint.Name;
                 PMLabelParentLink.Caption = node.Parent.Name;
 
                 UpdateComboBoxFromFeatures(PMComboBoxCoordSys, "CoordSys");
@@ -401,9 +382,9 @@ namespace SW2URDF
 
                 UpdateComboBoxFromFeatures(PMComboBoxAxes, "RefAxis");
                 PMComboBoxAxes.AddItems("None");
-                SelectComboBox(PMComboBoxCoordSys, node.CoordsysName);
-                SelectComboBox(PMComboBoxAxes, node.AxisName);
-                SelectComboBox(PMComboBoxJointType, node.JointType);
+                SelectComboBox(PMComboBoxCoordSys, node.Link.Joint.CoordinateSystemName);
+                SelectComboBox(PMComboBoxAxes, node.Link.Joint.AxisName);
+                SelectComboBox(PMComboBoxJointType, node.Link.Joint.Type);
             }
             else
             {
@@ -416,7 +397,7 @@ namespace SW2URDF
                 //Activate controls before changing them
                 EnableControls(!node.IsBaseNode);
                 UpdateComboBoxFromFeatures(PMComboBoxGlobalCoordsys, "CoordSys");
-                SelectComboBox(PMComboBoxGlobalCoordsys, node.CoordsysName);
+                SelectComboBox(PMComboBoxGlobalCoordsys, node.Link.Joint.CoordinateSystemName);
             }
         }
 
@@ -536,74 +517,38 @@ namespace SW2URDF
             return node;
         }
 
-        // Calls the Exporter loadConfigTree method and then populates the tree with the loaded config
-        public void LoadConfigTree()
+        /// <summary>
+        /// Loads configuration tree into PM Page. If an error occurs, this will do nothing
+        /// </summary>
+        /// <returns>bool representing success of load. If false, PMPage should not open</returns>
+        public bool LoadConfigTree()
         {
-            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
-            string data = "";
-            foreach (Object obj in objects)
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel, out bool abortProcess);
+
+            if (abortProcess)
             {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        Parameter param = att.GetParameter("data");
-                        data = param.GetStringValue();
-                        logger.Info("URDF Configuration found\n" + data);
-                    }
-                }
-            }
-            LinkNode basenode = null;
-            if (!String.IsNullOrWhiteSpace(data))
-            {
-                XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-                XmlTextReader textReader = new XmlTextReader(new StringReader(data));
-                SerialNode node = (SerialNode)serializer.Deserialize(textReader);
-                basenode = new LinkNode(node);
-                Common.LoadSWComponents(ActiveSWModel, basenode);
-                textReader.Close();
+                MessageBox.Show("An error occured loading an existing configuration. Either resolve the issue" +
+                    " or delete the configuration from the feature manager");
+                return false;
             }
 
-            if (basenode == null)
+            if (baseNode == null)
             {
                 logger.Info("Starting new configuration");
-                basenode = CreateEmptyNode(null);
+                baseNode = CreateEmptyNode(null);
             }
-            AddDocMenu(basenode);
+            else
+            {
+                Common.LoadSWComponents(ActiveSWModel, baseNode);
+            }
+
+            AddDocMenu(baseNode);
 
             Tree.Nodes.Clear();
-            Tree.Nodes.Add(basenode);
+            Tree.Nodes.Add(baseNode);
             Tree.ExpandAll();
             Tree.SelectedNode = Tree.Nodes[0];
-        }
-
-        public void RetrieveSWComponentPIDs(LinkNode node)
-        {
-            if (node.Components != null)
-            {
-                node.ComponentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in node.Components)
-                {
-                    byte[] PID = ActiveSWModel.Extension.GetPersistReference3(comp);
-                    node.ComponentPIDs.Add(PID);
-                }
-            }
-            foreach (LinkNode child in node.Nodes)
-            {
-                RetrieveSWComponentPIDs(child);
-            }
-        }
-
-        public void RetrieveSWComponentPIDs(TreeView tree)
-        {
-            foreach (LinkNode node in tree.Nodes)
-            {
-                RetrieveSWComponentPIDs(node);
-            }
+            return true;
         }
 
         public void MoveComponentsToFolder(LinkNode node)
@@ -632,7 +577,7 @@ namespace SW2URDF
                 ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             ActiveSWModel.Extension.SelectByID2
-                ("URDF Export Configuration", "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+                (Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
@@ -641,11 +586,11 @@ namespace SW2URDF
         public void SelectFeatures(LinkNode node)
         {
             ActiveSWModel.Extension.SelectByID2(
-                node.CoordsysName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
-            if (node.AxisName != "None")
+                node.Link.Joint.CoordinateSystemName, "COORDSYS", 0, 0, 0, true, -1, null, 0);
+            if (node.Link.Joint.AxisName != "None")
             {
                 ActiveSWModel.Extension.SelectByID2(
-                    node.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
+                    node.Link.Joint.AxisName, "AXIS", 0, 0, 0, true, -1, null, 0);
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -655,9 +600,9 @@ namespace SW2URDF
 
         public void CheckIfLinkNamesAreUnique(LinkNode node, string linkName, List<string> conflict)
         {
-            if (node.LinkName == linkName)
+            if (node.Link.Name == linkName)
             {
-                conflict.Add(node.LinkName);
+                conflict.Add(node.Link.Name);
             }
 
             foreach (LinkNode child in node.Nodes)
@@ -668,9 +613,9 @@ namespace SW2URDF
 
         public void CheckIfJointNamesAreUnique(LinkNode node, string jointName, List<string> conflict)
         {
-            if (node.JointName == jointName)
+            if (node.Link.Joint.Name == jointName)
             {
-                conflict.Add(node.LinkName);
+                conflict.Add(node.Link.Joint.Name);
             }
             foreach (LinkNode child in node.Nodes)
             {
@@ -744,7 +689,7 @@ namespace SW2URDF
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            CheckIfLinkNamesAreUnique(basenode, currentNode.LinkName, conflict);
+            CheckIfLinkNamesAreUnique(basenode, currentNode.Link.Name, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {
@@ -771,7 +716,7 @@ namespace SW2URDF
             List<string> conflict = new List<string>();
 
             //Finds the conflicts of the currentNode with all the other nodes
-            CheckIfJointNamesAreUnique(basenode, currentNode.JointName, conflict);
+            CheckIfJointNamesAreUnique(basenode, currentNode.Link.Joint.Name, conflict);
             bool alreadyExists = false;
             foreach (List<string> existingConflict in conflicts)
             {
@@ -791,47 +736,6 @@ namespace SW2URDF
                 // list of lists.
                 CheckIfJointNamesAreUnique(basenode, child, conflicts);
             }
-        }
-
-        private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(string name)
-        {
-            int Options = 0;
-            if (saveConfigurationAttributeDef == null)
-            {
-                saveConfigurationAttributeDef = swApp.DefineAttribute("URDF Export Configuration");
-
-                saveConfigurationAttributeDef.AddParameter(
-                    "data", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter(
-                    "name", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter(
-                    "date", (int)swParamType_e.swParamTypeString, 0, Options);
-                saveConfigurationAttributeDef.AddParameter(
-                    "exporterVersion", (int)swParamType_e.swParamTypeDouble, 1.0, Options);
-                saveConfigurationAttributeDef.Register();
-            }
-
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            ModelDoc2 modeldoc = swApp.ActiveDoc;
-            Object[] objects = modeldoc.FeatureManager.GetFeatures(true);
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == name)
-                    {
-                        return att;
-                    }
-                }
-            }
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                saveConfigurationAttributeDef.CreateInstance5(
-                    ActiveSWModel, null, "URDF Export Configuration", Options, ConfigurationOptions);
-            return saveExporterAttribute;
         }
     }
 }

@@ -29,6 +29,7 @@ using MathNet.Numerics.LinearAlgebra.Generic;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.CSV;
 
 namespace SW2URDF
 {
@@ -83,7 +84,7 @@ namespace SW2URDF
         #endregion class variables
 
         // Constructor for SW2URDF Exporter class
-        public URDFExporter(ISldWorks iSldWorksApp)
+        public URDFExporter(SldWorks iSldWorksApp)
         {
             ConstructExporter(iSldWorksApp);
             iSwApp.GetUserProgressBar(out progressBar);
@@ -92,7 +93,7 @@ namespace SW2URDF
             PackageName = ActiveSWModel.GetTitle();
         }
 
-        private void ConstructExporter(ISldWorks iSldWorksApp)
+        private void ConstructExporter(SldWorks iSldWorksApp)
         {
             iSwApp = iSldWorksApp;
             ActiveSWModel = (ModelDoc2)iSwApp.ActiveDoc;
@@ -115,6 +116,7 @@ namespace SW2URDF
             package.CreateDirectories();
             URDFRobot.Name = PackageName;
             string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
+            string windowsCSVFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".csv";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
@@ -170,6 +172,8 @@ namespace SW2URDF
             logger.Info("Writing URDF file to " + windowsURDFFileName);
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
             URDFRobot.WriteURDF(uWriter.writer);
+
+            ImportExport.WriteRobotToCSV(URDFRobot, windowsCSVFileName);
 
             logger.Info("Copying log file");
             CopyLogFile(package);
@@ -231,19 +235,32 @@ namespace SW2URDF
             int warnings = 0;
 
             string coordsysName = "";
-            coordsysName =
-                (link.Joint == null || link.Joint.CoordinateSystemName == null)
-                ? link.CoordSysName : link.Joint.CoordinateSystemName;
+            coordsysName = link.Joint.CoordinateSystemName;
+
             logger.Info(link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 
             Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
             ModelDoc2 ActiveDoc = ActiveSWModel;
 
-            string ComponentName = "";
-            string ConfigurationName = "";
-            string DisplayStateName = "";
-            Component2 geoComponent = default(Component2);
             logger.Info(link.Name + ": Reference geometry name " + names["component"]);
+
+            Common.ShowComponents(ActiveSWModel, link.SWcomponents);
+
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
+
+            logger.Info("Saving STL to " + windowsMeshFileName);
+            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
+                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+            Common.HideComponents(ActiveSWModel, link.SWcomponents);
+
+            CorrectSTLMesh(windowsMeshFileName);
+        }
+
+        private void ApplyConfigurationSpecificGeometry(Link link, Dictionary<string, string> names,
+            ref ModelDoc2 ActiveDoc, ref string ComponentName, ref string ConfigurationName,
+            ref string DisplayStateName, ref Component2 geoComponent)
+        {
             if (names["component"].Length > 0)
             {
                 foreach (Component2 comp in link.SWcomponents)
@@ -263,30 +280,9 @@ namespace SW2URDF
                     }
                     break;
                 }
-            }
-
-            if (ComponentName.Length == 0)
-            {
-                Common.ShowComponents(ActiveSWModel, link.SWcomponents);
-            }
-
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
-            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
-
-            logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
-                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            if (ComponentName.Length > 0)
-            {
                 iSwApp.CloseDoc(ComponentName);
                 geoComponent.ReferencedConfiguration = ConfigurationName;
             }
-            else
-            {
-                Common.HideComponents(ActiveSWModel, link.SWcomponents);
-            }
-
-            CorrectSTLMesh(windowsMeshFileName);
         }
 
         // Used only by the part exporter

@@ -23,10 +23,8 @@ THE SOFTWARE.
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using System.Xml.Serialization;
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
@@ -186,7 +184,8 @@ namespace SW2URDF
             comboBoxAxis.Items.AddRange(axesNames.ToArray());
             comboBoxOrigin.SelectedIndex =
                 comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);
-            if (String.IsNullOrWhiteSpace(Joint.AxisName))
+
+            if (!String.IsNullOrWhiteSpace(Joint.AxisName))
             {
                 comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(Joint.AxisName);
             }
@@ -270,27 +269,16 @@ namespace SW2URDF
             {
                 if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
-                    if (Joint.Limit == null)
-                    {
-                        Joint.Limit = new Limit();
-                    }
-                    else
-                    {
-                        Joint.Limit.Effort = 0;
-                        Joint.Limit.Velocity = 0;
-                    }
+                    Joint.Limit.Effort = 0;
+                    Joint.Limit.Velocity = 0;
                 }
                 else
                 {
-                    Joint.Limit = null;
+                    Joint.Limit.Unset();
                 }
             }
             else
             {
-                if (Joint.Limit == null)
-                {
-                    Joint.Limit = new Limit();
-                }
                 Joint.Limit.SetValues(textBoxLimitLower,
                                    textBoxLimitUpper,
                                    textBoxLimitEffort,
@@ -300,14 +288,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) &&
                 String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))
             {
-                Joint.Calibration = null;
+                Joint.Calibration.Unset();
             }
             else
             {
-                if (Joint.Calibration == null)
-                {
-                    Joint.Calibration = new Calibration();
-                }
                 Joint.Calibration.SetValues(textBoxCalibrationRising,
                                          textBoxCalibrationFalling);
             }
@@ -315,14 +299,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxFriction.Text) &&
                 String.IsNullOrWhiteSpace(textBoxDamping.Text))
             {
-                Joint.Dynamics = null;
+                Joint.Dynamics.Unset();
             }
             else
             {
-                if (Joint.Dynamics == null)
-                {
-                    Joint.Dynamics = new Dynamics();
-                }
                 Joint.Dynamics.SetValues(textBoxDamping,
                                       textBoxFriction);
             }
@@ -330,14 +310,10 @@ namespace SW2URDF
             if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) &&
                 String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
             {
-                Joint.Safety = null;
+                Joint.Safety.Unset();
             }
             else
             {
-                if (Joint.Safety == null)
-                {
-                    Joint.Safety = new SafetyController();
-                }
                 Joint.Safety.SetValues(textBoxSoftLower,
                                     textBoxSoftUpper,
                                     textBoxKPosition,
@@ -354,9 +330,9 @@ namespace SW2URDF
             baseNode.Text = baseLink.Name;
             baseNode.Link = baseLink;
             baseNode.IsBaseNode = true;
-            baseNode.LinkName = baseLink.Name;
-            baseNode.Components = baseLink.SWcomponents;
-            baseNode.CoordsysName = "Origin_global";
+            baseNode.Link.Name = baseLink.Name;
+            baseNode.Link.SWcomponents = baseLink.SWcomponents;
+            baseNode.Link.Joint.CoordinateSystemName = "Origin_global";
             baseNode.IsIncomplete = false;
 
             foreach (Link child in baseLink.Children)
@@ -409,27 +385,7 @@ namespace SW2URDF
         //Converts a Link to a LinkNode
         public LinkNode CreateLinkNodeFromLink(Link Link)
         {
-            LinkNode node = new LinkNode
-            {
-                Name = Link.Name,
-                Text = Link.Name,
-                Link = Link,
-                IsBaseNode = false,
-                LinkName = Link.Name,
-                JointName = Link.Joint.Name,
-                Components = Link.SWcomponents,
-                CoordsysName = Link.Joint.CoordinateSystemName,
-                AxisName = Link.Joint.AxisName,
-                JointType = Link.Joint.Type,
-                IsIncomplete = false
-            };
-
-            foreach (Link child in Link.Children)
-            {
-                node.Nodes.Add(CreateLinkNodeFromLink(child));
-            }
-
-            // Need to erase the children from the embedded link because they may be rearranged later.
+            LinkNode node = new LinkNode(Link);
             node.Link.Children.Clear();
             return node;
         }
@@ -439,7 +395,8 @@ namespace SW2URDF
         {
             //TODO: This needs to properly handle the new differences between the trees.
             Robot Robot = Exporter.URDFRobot;
-            Robot.BaseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Link baseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
+            Robot.SetBaseLink(baseLink);
             Robot.Name = Exporter.URDFRobot.Name;
             return Robot;
         }
@@ -490,56 +447,8 @@ namespace SW2URDF
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Object[] objects = model.FeatureManager.GetFeatures(true);
-            string oldData = "";
-            Parameter param;
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == "URDF Export Configuration")
-                    {
-                        param = att.GetParameter("data");
-                        oldData = param.GetStringValue();
-                    }
-                }
-            }
-
             Common.RetrieveSWComponentPIDs(model, BaseNode);
-            SerialNode sNode = new SerialNode(BaseNode);
-
-            StringWriter stringWriter;
-            XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
-            stringWriter = new StringWriter();
-            serializer.Serialize(stringWriter, sNode);
-            stringWriter.Flush();
-            stringWriter.Close();
-
-            string newData = stringWriter.ToString();
-            if (oldData != newData)
-            {
-                if (!warnUser ||
-                    (warnUser &&
-                    MessageBox.Show("The configuration has changed, would you like to save?",
-                        "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes))
-                {
-                    int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-                    SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                        CreateSWSaveAttribute(swApp, "URDF Export Configuration");
-                    param = saveExporterAttribute.GetParameter("data");
-                    param.SetStringValue2(stringWriter.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("name");
-                    param.SetStringValue2("config1", ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("date");
-                    param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
-                    param = saveExporterAttribute.GetParameter("exporterVersion");
-                    param.SetStringValue2("1.1", ConfigurationOptions, "");
-                }
-            }
+            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(ISldWorks iSwApp, string name)
@@ -565,7 +474,7 @@ namespace SW2URDF
 
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
                 saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null,
-                "URDF Export Configuration", Options, ConfigurationOptions);
+                Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
 
