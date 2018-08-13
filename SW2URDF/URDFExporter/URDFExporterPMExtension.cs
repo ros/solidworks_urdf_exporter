@@ -539,7 +539,16 @@ namespace SW2URDF
             }
             else
             {
-                Common.LoadSWComponents(ActiveSWModel, baseNode);
+                List<string> problemLinks = new List<string>();
+                Common.LoadSWComponents(ActiveSWModel, baseNode, problemLinks);
+
+                if (problemLinks.Count > 0)
+                {
+                    string msg = "The following links had issues loading their associated SolidWorks components. " +
+                        "Please inspect before exporting\r\n\r\n" +
+                        string.Join(", ", problemLinks);
+                    MessageBox.Show(msg);
+                }
             }
 
             AddDocMenu(baseNode);

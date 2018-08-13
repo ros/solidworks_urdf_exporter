@@ -251,22 +251,8 @@ namespace SW2URDF
         }
 
         // Converts the PIDs to actual references to the components and proceeds recursively
-        // through the child links
-        public static void LoadSWComponents(ModelDoc2 model, Link Link)
-        {
-            Link.SWMainComponent = LoadSWComponent(model, Link.SWMainComponentPID);
-            Link.SWcomponents = LoadSWComponents(model, Link.SWComponentPIDs);
-            logger.Info("Loading components for " + Link.Name);
-
-            foreach (Link Child in Link.Children)
-            {
-                LoadSWComponents(model, Child);
-            }
-        }
-
-        // Converts the PIDs to actual references to the components and proceeds recursively
         // through the child nodes
-        public static void LoadSWComponents(ModelDoc2 model, LinkNode node)
+        public static void LoadSWComponents(ModelDoc2 model, LinkNode node, List<string> problemLinks)
         {
             logger.Info("Loading SolidWorks components for " +
                 node.Link.Name + " from " + model.GetPathName());
@@ -274,13 +260,14 @@ namespace SW2URDF
             node.Link.SWcomponents = LoadSWComponents(model, node.Link.SWComponentPIDs);
             if (node.Link.SWcomponents.Count != node.Link.SWComponentPIDs.Count)
             {
+                problemLinks.Add(node.Link.Name);
                 logger.Error("Link " + node.Link.Name + " did not fully load all components");
             }
             logger.Info("Loaded " + node.Link.SWcomponents.Count + " components for link " + node.Link.Name);
 
             foreach (LinkNode Child in node.Nodes)
             {
-                LoadSWComponents(model, Child);
+                LoadSWComponents(model, Child, problemLinks);
             }
         }
 
