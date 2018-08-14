@@ -251,22 +251,8 @@ namespace SW2URDF
         }
 
         // Converts the PIDs to actual references to the components and proceeds recursively
-        // through the child links
-        public static void LoadSWComponents(ModelDoc2 model, Link Link)
-        {
-            Link.SWMainComponent = LoadSWComponent(model, Link.SWMainComponentPID);
-            Link.SWcomponents = LoadSWComponents(model, Link.SWComponentPIDs);
-            logger.Info("Loading components for " + Link.Name);
-
-            foreach (Link Child in Link.Children)
-            {
-                LoadSWComponents(model, Child);
-            }
-        }
-
-        // Converts the PIDs to actual references to the components and proceeds recursively
         // through the child nodes
-        public static void LoadSWComponents(ModelDoc2 model, LinkNode node)
+        public static void LoadSWComponents(ModelDoc2 model, LinkNode node, List<string> problemLinks)
         {
             logger.Info("Loading SolidWorks components for " +
                 node.Link.Name + " from " + model.GetPathName());
@@ -274,13 +260,14 @@ namespace SW2URDF
             node.Link.SWcomponents = LoadSWComponents(model, node.Link.SWComponentPIDs);
             if (node.Link.SWcomponents.Count != node.Link.SWComponentPIDs.Count)
             {
+                problemLinks.Add(node.Link.Name);
                 logger.Error("Link " + node.Link.Name + " did not fully load all components");
             }
             logger.Info("Loaded " + node.Link.SWcomponents.Count + " components for link " + node.Link.Name);
 
             foreach (LinkNode Child in node.Nodes)
             {
-                LoadSWComponents(model, Child);
+                LoadSWComponents(model, Child, problemLinks);
             }
         }
 
@@ -293,8 +280,15 @@ namespace SW2URDF
                 string byteAsString = PIDToString(PID);
                 logger.Info("Loading component with PID " + byteAsString);
                 Component2 comp = LoadSWComponent(model, PID);
-                components.Add(comp);
-                logger.Info("Successfully loaded component " + comp.GetPathName());
+                if (comp == null)
+                {
+                    logger.Warn("Component with PID " + byteAsString + " failed to load");
+                }
+                else
+                {
+                    components.Add(comp);
+                    logger.Info("Successfully loaded component " + comp.GetPathName());
+                }
             }
             return components;
         }
@@ -306,7 +300,9 @@ namespace SW2URDF
             string byteAsString = PIDToString(PID);
             if (PID != null)
             {
-                return (Component2)model.Extension.GetObjectByPersistReference3(PID, out Errors);
+                object obj = model.Extension.GetObjectByPersistReference3(PID, out Errors);
+                Component2 component = (Component2)obj;
+                return component;
             }
             else
             {
