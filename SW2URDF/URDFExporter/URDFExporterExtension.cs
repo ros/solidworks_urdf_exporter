@@ -215,6 +215,53 @@ namespace SW2URDF
             return link;
         }
 
+        /// <summary>
+        /// Gets the Moment of Inertia of specific component bodies with respect to the coordinate system.
+        /// This reuses some code with other methods because creating the mass property has to happen every time
+        /// </summary>
+        /// <param name="bodies">Component Bodies with which to get the MOI</param>
+        /// <param name="coordinateSystemTransform">The coordinate system to take the MOI with respect to</param>
+        /// <returns>Moment of Inertia array</returns>
+        private double[] GetComponentsMomentOfInertia(List<Body2> bodies, MathTransform coordinateSystemTransform)
+        {
+            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+            swMass.SetCoordinateSystem(coordinateSystemTransform);
+            bool bRet = swMass.AddBodies(bodies.ToArray());
+
+            return (double[]) swMass.GetMomentOfInertia(
+            (int) swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+        }
+
+        /// <summary>
+        /// Gets the components mass. This reuses some code with other methods because creating the 
+        /// mass property has to happen every time
+        /// </summary>
+        /// <param name="bodies">Component Bodies with which to get the mass</param>
+        /// <returns>Mass value of component bodies</returns>
+        private double GetCompomentsMass(List<Body2> bodies)
+        {
+            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+            bool bRet = swMass.AddBodies(bodies.ToArray());
+
+            return swMass.Mass;
+        }
+
+        /// <summary>
+        /// Gets the Center of Mass with respect to the coordinate system. This reuses some code 
+        /// with other similar methods because creating the mass property has to happen every time.
+        /// </summary>
+        /// <param name="bodies">Component bodies with which to get the mass</param>
+        /// <param name="coordinateSystemTransform">Coordinate system take get the centor of mess with respect to</param>
+        /// <returns>3D double array of center of mass</returns>
+        private double[] GetCompomentsCenterOfMass(List<Body2> bodies, MathTransform coordinateSystemTransform)
+        {
+            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
+            swMass.SetCoordinateSystem(coordinateSystemTransform);
+            bool bRet = swMass.AddBodies(bodies.ToArray());
+
+            return swMass.CenterOfMass;
+        }
+
         //Method which builds a single link
         public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
@@ -229,19 +276,14 @@ namespace SW2URDF
 
             // Get the SolidWorks MathTransform that corresponds to the child coordinate system
             MathTransform jointTransform = GetCoordinateSystemTransform(node.Link.Joint.CoordinateSystemName);
-
             List<Body2> bodies = GetBodies(components);
-            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-            swMass.SetCoordinateSystem(jointTransform);
 
-            bool bRet = swMass.AddBodies(bodies.ToArray());
-
-            double[] moment = (double[])swMass.GetMomentOfInertia(
-                (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
-            node.Link.Inertial.Mass.Value = swMass.Mass;
+            double[] moment = GetComponentsMomentOfInertia(bodies, jointTransform);
             node.Link.Inertial.Inertia.SetMomentMatrix(moment);
 
-            double[] centerOfMass = swMass.CenterOfMass;
+            node.Link.Inertial.Mass.Value = GetCompomentsMass(bodies);
+            
+            double[] centerOfMass = GetCompomentsCenterOfMass(bodies, jointTransform);
             node.Link.Inertial.Origin.SetXYZ(centerOfMass);
             node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
