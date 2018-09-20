@@ -1080,8 +1080,10 @@ namespace SW2URDF
                 logger.Info("Proceeding through assembly components");
                 AssemblyDoc assyDoc = (AssemblyDoc)modelDoc;
 
-                // Get top level components in an assembly. Assemblies can be quite large, so 
-                // only go down one level for features.
+                // Get top level components in an assembly. If the user wants to use a reference
+                // coordinate system or axis not located in the top level assembly, then it will 
+                // need to be in a top level component. This will probably be ok because most
+                // users keep their reference geometry in the top level assembly as it is.
                 object[] components = assyDoc.GetComponents(true);
 
                 // If there are no components in an assembly, this object will be null.
