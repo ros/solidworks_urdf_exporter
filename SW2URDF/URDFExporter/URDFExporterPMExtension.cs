@@ -261,6 +261,23 @@ namespace SW2URDF
             }
         }
 
+        private void CheckModelDocsExist(LinkNode node, List<string> problemComponents)
+        {
+            foreach (Component2 component in node.Link.SWcomponents)
+            {
+                ModelDoc2 doc = component.GetModelDoc2();
+                if (doc == null)
+                {
+                    problemComponents.Add(component.Name2);
+                }
+            }
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                CheckModelDocsExist(child, problemComponents);
+            }
+        }
+
         //Recursive function to iterate though nodes and build a message containing those that are incomplete
         public string CheckNodesComplete(LinkNode node, string incompleteNodes)
         {

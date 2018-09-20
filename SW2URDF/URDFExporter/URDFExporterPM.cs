@@ -210,6 +210,18 @@ namespace SW2URDF
                     // resolved we can continue
                     if (result == (int)swComponentResolveStatus_e.swResolveOk)
                     {
+                        List<string> unresolvedComponents = new List<string>();
+                        CheckModelDocsExist((LinkNode)Tree.Nodes[0], unresolvedComponents);
+                        if (unresolvedComponents.Count > 0)
+                        {
+                            string componentNames = string.Join("\r\n", unresolvedComponents);
+                            logger.Error("SolidWorks told us the resolve succeeded, but ModelDocs" +
+                                " could not be obtained for: " + componentNames);
+                            MessageBox.Show("Model Documents could not be obtained for the following" +
+                                " components. Plesae resolve them:\r\n" + componentNames);
+                            return;
+                        }
+
                         // Builds the links and joints from the PMPage configuration
                         LinkNode BaseNode = (LinkNode)Tree.Nodes[0];
                         automaticallySwitched = true;
