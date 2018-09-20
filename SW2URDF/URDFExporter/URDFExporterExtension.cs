@@ -308,7 +308,7 @@ namespace SW2URDF
             List<Body2> bodies = new List<Body2>();
             foreach (Component2 comp in components)
             {
-                // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
+                // Retrieving the Body2 bodies of the component. Also need to recur through the assembly tree
                 object[] componentBodies =
                     (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
                 if (componentBodies != null)
