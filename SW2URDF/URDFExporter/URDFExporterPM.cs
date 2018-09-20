@@ -216,7 +216,7 @@ namespace SW2URDF
                         Tree.Nodes.Remove(BaseNode);
 
                         Exporter.CreateRobotFromTreeView(BaseNode);
-                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode);
+                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode, Exporter);
                         exportForm.Exporter = Exporter;
                         exportForm.Show();
                     }
@@ -854,7 +854,6 @@ namespace SW2URDF
             Tree.SelectedNode = Tree.Nodes[0];
             PMSelection.SetSelectionFocus();
             PMPage.SetFocus(dotNetTree);
-            //updateNodeNames(tree);
         }
 
         #region Not implemented handler methods

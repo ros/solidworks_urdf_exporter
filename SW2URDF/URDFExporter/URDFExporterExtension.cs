@@ -1042,14 +1042,14 @@ namespace SW2URDF
         }
 
         // Creates a list of all the features of this type.
-        public Dictionary<string, List<Feature>> GetFeaturesOfType(string featureName, bool topLevelOnly)
+        private Dictionary<string, List<Feature>> GetFeaturesOfType(string featureName, bool topLevelOnly)
         {
             Dictionary<string, List<Feature>> features = new Dictionary<string, List<Feature>>();
             GetFeaturesOfType(ActiveSWModel, featureName, topLevelOnly, "", features);
             return features;
         }
 
-        public void GetFeaturesOfType(ModelDoc2 modelDoc, string featureName,
+        private void GetFeaturesOfType(ModelDoc2 modelDoc, string featureName,
             bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
             string fileName = (string.IsNullOrWhiteSpace(keyName)) ? modelDoc.GetTitle() : keyName;
@@ -1080,8 +1080,9 @@ namespace SW2URDF
                 logger.Info("Proceeding through assembly components");
                 AssemblyDoc assyDoc = (AssemblyDoc)modelDoc;
 
-                //Get all components in an assembly
-                object[] components = assyDoc.GetComponents(false);
+                // Get top level components in an assembly. Assemblies can be quite large, so 
+                // only go down one level for features.
+                object[] components = assyDoc.GetComponents(true);
 
                 // If there are no components in an assembly, this object will be null.
                 if (components != null)
@@ -1101,7 +1102,7 @@ namespace SW2URDF
             }
         }
 
-        public Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
+        private Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
         {
             string RefGeoName = StringToParse;
             string ComponentName = "";
@@ -1126,7 +1127,7 @@ namespace SW2URDF
             return dict;
         }
 
-        public List<string> FindRefGeoNames(string FeatureName)
+        private List<string> FindRefGeoNames(string FeatureName)
         {
             Dictionary<string, List<Feature>> features = GetFeaturesOfType(FeatureName, false);
             List<string> featureNames = new List<string>();
@@ -1147,6 +1148,16 @@ namespace SW2URDF
                 }
             }
             return featureNames;
+        }
+
+        public List<string> GetRefCoordinateSystems()
+        {
+            return new List<string>(ReferenceCoordinateSystemNames);
+        }
+
+        public List<string> GetRefAxes()
+        {
+            return new List<string>(ReferenceAxesNames);
         }
 
         //This method adds in the limits from a limit mate, to make a joint a revolute joint.
@@ -1297,14 +1308,12 @@ namespace SW2URDF
 
         public bool CheckRefCoordsysExists(string OriginName)
         {
-            List<string> Origins = FindRefGeoNames("CoordSys");
-            return Origins.Contains(OriginName);
+            return ReferenceCoordinateSystemNames.Contains(OriginName);
         }
 
         public bool CheckRefAxisExists(string AxisName)
         {
-            List<string> Axes = FindRefGeoNames("RefAxis");
-            return Axes.Contains(AxisName);
+            return ReferenceAxesNames.Contains(AxisName);
         }
 
         private List<Component2> GetParentAncestorComponents(Link node)
