@@ -1052,7 +1052,7 @@ namespace SW2URDF
             bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
             string fileName = (string.IsNullOrWhiteSpace(keyName)) ? modelDoc.GetTitle() : keyName;
-            logger.Info("Retreiving features of type [" + featureName + "] from " + fileName);
+            logger.Info("Retrieving features of type [" + featureName + "] from " + fileName);
 
             features[keyName] = new List<Feature>();
 
