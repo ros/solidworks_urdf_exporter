@@ -177,10 +177,10 @@ namespace SW2URDF
                 labelKVelocity.Text = "k velocity";
             }
             comboBoxOrigin.Items.Clear();
-            List<string> originNames = Exporter.FindRefGeoNames("CoordSys");
+            List<string> originNames = Exporter.GetRefCoordinateSystems();
             comboBoxOrigin.Items.AddRange(originNames.ToArray());
             comboBoxAxis.Items.Clear();
-            List<string> axesNames = Exporter.FindRefGeoNames("RefAxis");
+            List<string> axesNames = Exporter.GetRefAxes();
             comboBoxAxis.Items.AddRange(axesNames.ToArray());
             comboBoxOrigin.SelectedIndex =
                 comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);

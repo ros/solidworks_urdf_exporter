@@ -81,6 +81,9 @@ namespace SW2URDF
 
         public readonly List<Link> Links;
 
+        private readonly List<string> ReferenceCoordinateSystemNames;
+        private readonly List<string> ReferenceAxesNames;
+
         #endregion class variables
 
         // Constructor for SW2URDF Exporter class
@@ -91,6 +94,9 @@ namespace SW2URDF
 
             SavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             PackageName = ActiveSWModel.GetTitle();
+
+            ReferenceCoordinateSystemNames = FindRefGeoNames("CoordSys");
+            ReferenceAxesNames = FindRefGeoNames("RefAxis");
         }
 
         private void ConstructExporter(SldWorks iSldWorksApp)

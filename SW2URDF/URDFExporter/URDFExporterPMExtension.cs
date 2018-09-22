@@ -83,15 +83,6 @@ namespace SW2URDF
             }
         }
 
-        // Gets all the features in the SolidWorks model doc that match the specific feature name,
-        // and updates the specified combobox.
-        private void UpdateComboBoxFromFeatures(
-            PropertyManagerPageCombobox box, string featureName)
-        {
-            List<string> featureNames = Exporter.FindRefGeoNames(featureName);
-            FillComboBox(box, featureNames);
-        }
-
         // Populates the combo box with feature names
         private void FillComboBox(PropertyManagerPageCombobox box, List<string> featureNames)
         {
@@ -270,6 +261,23 @@ namespace SW2URDF
             }
         }
 
+        private void CheckModelDocsExist(LinkNode node, List<string> problemComponents)
+        {
+            foreach (Component2 component in node.Link.SWcomponents)
+            {
+                ModelDoc2 doc = component.GetModelDoc2();
+                if (doc == null)
+                {
+                    problemComponents.Add(component.Name2);
+                }
+            }
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                CheckModelDocsExist(child, problemComponents);
+            }
+        }
+
         //Recursive function to iterate though nodes and build a message containing those that are incomplete
         public string CheckNodesComplete(LinkNode node, string incompleteNodes)
         {
@@ -377,10 +385,9 @@ namespace SW2URDF
                 PMTextBoxJointName.Text = node.Link.Joint.Name;
                 PMLabelParentLink.Caption = node.Parent.Name;
 
-                UpdateComboBoxFromFeatures(PMComboBoxCoordSys, "CoordSys");
-                //checkTransforms(ActiveSWModel);
+                FillComboBox(PMComboBoxCoordSys, Exporter.GetRefCoordinateSystems());
+                FillComboBox(PMComboBoxAxes, Exporter.GetRefAxes());
 
-                UpdateComboBoxFromFeatures(PMComboBoxAxes, "RefAxis");
                 PMComboBoxAxes.AddItems("None");
                 SelectComboBox(PMComboBoxCoordSys, node.Link.Joint.CoordinateSystemName);
                 SelectComboBox(PMComboBoxAxes, node.Link.Joint.AxisName);
@@ -396,7 +403,7 @@ namespace SW2URDF
 
                 //Activate controls before changing them
                 EnableControls(!node.IsBaseNode);
-                UpdateComboBoxFromFeatures(PMComboBoxGlobalCoordsys, "CoordSys");
+                FillComboBox(PMComboBoxGlobalCoordsys, Exporter.GetRefCoordinateSystems());
                 SelectComboBox(PMComboBoxGlobalCoordsys, node.Link.Joint.CoordinateSystemName);
             }
         }

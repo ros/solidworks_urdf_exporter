@@ -48,7 +48,7 @@ namespace SW2URDF
         private Control[] linkBoxes;
         private LinkNode BaseNode;
 
-        public AssemblyExportForm(SldWorks SwApp, LinkNode node)
+        public AssemblyExportForm(SldWorks SwApp, LinkNode node, URDFExporter exporter)
         {
             Application.ThreadException +=
                 new ThreadExceptionEventHandler(ExceptionHandler);
@@ -58,7 +58,7 @@ namespace SW2URDF
             swApp = SwApp;
             BaseNode = node;
             ActiveSWModel = swApp.ActiveDoc;
-            Exporter = new URDFExporter(SwApp);
+            Exporter = exporter;
             AutoUpdatingForm = false;
 
             jointBoxes = new Control[] {
