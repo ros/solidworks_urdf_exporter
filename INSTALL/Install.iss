@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SolidWorks To URDF"
-#define MyAppVersion "2017 v1.0"
+#define MyAppVersion "2018 v1.3"
 #define MyAppPublisher "Stephen Brawner"
 #define MyAppURL "http://kforge.ros.org/robotmodel/viewvc/sw_urdf_exporter/"
 
