@@ -20,14 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Generic;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
 
 namespace SW2URDF
 {
@@ -228,12 +227,12 @@ namespace SW2URDF
             swMass.SetCoordinateSystem(coordinateSystemTransform);
             bool bRet = swMass.AddBodies(bodies.ToArray());
 
-            return (double[]) swMass.GetMomentOfInertia(
-            (int) swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+            return (double[])swMass.GetMomentOfInertia(
+            (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
         }
 
         /// <summary>
-        /// Gets the components mass. This reuses some code with other methods because creating the 
+        /// Gets the components mass. This reuses some code with other methods because creating the
         /// mass property has to happen every time
         /// </summary>
         /// <param name="bodies">Component Bodies with which to get the mass</param>
@@ -247,7 +246,7 @@ namespace SW2URDF
         }
 
         /// <summary>
-        /// Gets the Center of Mass with respect to the coordinate system. This reuses some code 
+        /// Gets the Center of Mass with respect to the coordinate system. This reuses some code
         /// with other similar methods because creating the mass property has to happen every time.
         /// </summary>
         /// <param name="bodies">Component bodies with which to get the mass</param>
@@ -282,7 +281,7 @@ namespace SW2URDF
             node.Link.Inertial.Inertia.SetMomentMatrix(moment);
 
             node.Link.Inertial.Mass.Value = GetCompomentsMass(bodies);
-            
+
             double[] centerOfMass = GetCompomentsCenterOfMass(bodies, jointTransform);
             node.Link.Inertial.Origin.SetXYZ(centerOfMass);
             node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
@@ -310,7 +309,7 @@ namespace SW2URDF
             List<Body2> bodies = new List<Body2>();
             foreach (Component2 comp in components)
             {
-                // Retreiving the Body2 bodies of the component. Also need to recur through the assembly tree
+                // Retrieving the Body2 bodies of the component. Also need to recur through the assembly tree
                 object[] componentBodies =
                     (object[])comp.GetBodies3((int)swBodyType_e.swSolidBody, out bodyInfo);
                 if (componentBodies != null)
@@ -1054,7 +1053,7 @@ namespace SW2URDF
             bool topLevelOnly, string keyName, Dictionary<string, List<Feature>> features)
         {
             string fileName = (string.IsNullOrWhiteSpace(keyName)) ? modelDoc.GetTitle() : keyName;
-            logger.Info("Retreiving features of type [" + featureName + "] from " + fileName);
+            logger.Info("Retrieving features of type [" + featureName + "] from " + fileName);
 
             features[keyName] = new List<Feature>();
 
@@ -1081,8 +1080,10 @@ namespace SW2URDF
                 logger.Info("Proceeding through assembly components");
                 AssemblyDoc assyDoc = (AssemblyDoc)modelDoc;
 
-                // Get top level components in an assembly. Assemblies can be quite large, so 
-                // only go down one level for features.
+                // Get top level components in an assembly. If the user wants to use a reference
+                // coordinate system or axis not located in the top level assembly, then it will
+                // need to be in a top level component. This will probably be ok because most
+                // users keep their reference geometry in the top level assembly as it is.
                 object[] components = assyDoc.GetComponents(true);
 
                 // If there are no components in an assembly, this object will be null.
