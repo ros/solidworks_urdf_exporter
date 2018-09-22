@@ -20,17 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swpublished;
+using SolidWorksTools;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
-using SolidWorks.Interop.swpublished;
-
-using SolidWorksTools;
 
 namespace SW2URDF
 {

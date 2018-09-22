@@ -1,10 +1,10 @@
-﻿using System.Collections;
+﻿using log4net;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using log4net;
 
 namespace SW2URDF.CSV
 {
