@@ -291,8 +291,7 @@ namespace SW2URDF
             node.Link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
             node.Link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
             node.Link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
-
-           
+            
             ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
             
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
