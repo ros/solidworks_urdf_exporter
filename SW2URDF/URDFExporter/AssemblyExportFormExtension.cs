@@ -270,31 +270,11 @@ namespace SW2URDF
                               textBoxAxisY,
                               textBoxAxisZ);
 
-            if (String.IsNullOrWhiteSpace(textBoxLimitLower.Text) &&
-                String.IsNullOrWhiteSpace(textBoxLimitUpper.Text) &&
-                String.IsNullOrWhiteSpace(textBoxLimitEffort.Text) &&
-                String.IsNullOrWhiteSpace(textBoxLimitVelocity.Text))
-            {
-                if (Joint.Type == "prismatic" || Joint.Type == "revolute")
-                {
-                    // Limits are required for prismatic and revolute joints.
-                    Joint.Limit.Lower = 0.0;
-                    Joint.Limit.Upper = 0.0;
-                    Joint.Limit.Effort = 0.0;
-                    Joint.Limit.Velocity = 0.0;
-                }
-                else
-                {
-                    Joint.Limit.Unset();
-                }
-            }
-            else
-            {
-                Joint.Limit.SetValues(textBoxLimitLower,
+            Joint.Limit.SetRequired(Joint.Type == "revolute" || Joint.Type == "prismatic");
+            Joint.Limit.SetValues(textBoxLimitLower,
                                    textBoxLimitUpper,
                                    textBoxLimitEffort,
                                    textBoxLimitVelocity);
-            }
 
             if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) &&
                 String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))

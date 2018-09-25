@@ -85,7 +85,7 @@ namespace SW2URDF
             return required;
         }
 
-        public void SetRequired(bool required)
+        public virtual void SetRequired(bool required)
         {
             this.required = required;
         }
@@ -282,7 +282,7 @@ namespace SW2URDF
             }
         }
 
-        public virtual bool GetIsRequired()
+        public bool GetIsRequired()
         {
             return IsRequired;
         }
@@ -290,6 +290,11 @@ namespace SW2URDF
         public void SetRequired(bool required)
         {
             IsRequired = required;
+        }
+
+        public bool IsSet()
+        {
+            return Value != null;
         }
     }
 
@@ -1229,6 +1234,7 @@ namespace SW2URDF
             set
             {
                 TypeAttribute.Value = value;
+                Limit.SetRequired((value == "prismatic" || value == "revolute"));
             }
         }
 
@@ -1301,7 +1307,6 @@ namespace SW2URDF
         {
             Name = boxName.Text;
             Type = boxType.Text;
-            Limit.SetRequired((Type == "prismatic" || Type == "revolute"));
         }
 
         public override bool ElementContainsData()
@@ -1567,68 +1572,57 @@ namespace SW2URDF
             Attributes.Add(VelocityAttribute);
         }
 
+        private void FillTextBox(TextBox textBox, Attribute attribute, string format)
+        {
+            if (attribute.Value != null)
+            {
+                double value = (double)attribute.Value;
+                textBox.Text = value.ToString(format);
+            }
+        }
+
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity, string format)
         {
-            if (LowerAttribute.Value != null)
-            {
-                boxLower.Text = Lower.ToString(format);
-            }
+            FillTextBox(boxLower, LowerAttribute, format);
+            FillTextBox(boxUpper, UpperAttribute, format);
+            FillTextBox(boxEffort, EffortAttribute, format);
+            FillTextBox(boxVelocity, VelocityAttribute, format);
+        }
 
-            if (UpperAttribute.Value != null)
+        private void SetValue(Attribute attribute, string text)
+        {
+            object defaultValue = null;
+            if (attribute.GetIsRequired())
             {
-                boxUpper.Text = Upper.ToString(format);
+                defaultValue = 0.0;
             }
-
-            if (EffortAttribute.Value != null)
-            {
-                boxEffort.Text = Effort.ToString(format);
-            }
-
-            if (VelocityAttribute.Value != null)
-            {
-                boxVelocity.Text = Velocity.ToString(format);
-            }
+            attribute.Value = (Double.TryParse(text, out double value)) ? value : defaultValue;
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity)
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxLower.Text))
+            if (string.IsNullOrWhiteSpace(boxLower.Text) &&
+                string.IsNullOrWhiteSpace(boxUpper.Text) &&
+                string.IsNullOrWhiteSpace(boxEffort.Text) &&
+                string.IsNullOrWhiteSpace(boxVelocity.Text) &&
+                !IsRequired())
             {
-                LowerAttribute.Value = null;
+                // If all text boxes are empty and this element isn't required, then leave blank
+                return;
             }
-            else
-            {
-                Lower = (Double.TryParse(boxLower.Text, out value)) ? value : 0;
-            }
-            if (String.IsNullOrWhiteSpace(boxUpper.Text))
-            {
-                UpperAttribute.Value = null;
-            }
-            else
-            {
-                Upper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
-            }
+            SetValue(LowerAttribute, boxLower.Text);
+            SetValue(UpperAttribute, boxUpper.Text);
+            SetValue(EffortAttribute, boxEffort.Text);
+            SetValue(VelocityAttribute, boxVelocity.Text);
+        }
 
-            if (String.IsNullOrWhiteSpace(boxEffort.Text))
-            {
-                EffortAttribute.Value = null;
-            }
-            else
-            {
-                Effort = (Double.TryParse(boxEffort.Text, out value)) ? value : 0;
-            }
-
-            if (string.IsNullOrWhiteSpace(boxVelocity.Text))
-            {
-                VelocityAttribute.Value = null;
-            }
-            else
-            {
-                Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
-            }
+        public override void SetRequired(bool required)
+        {
+            base.SetRequired(required);
+            UpperAttribute.SetRequired(required);
+            LowerAttribute.SetRequired(required);
         }
 
         public override bool AreRequiredFieldsSatisfied()
