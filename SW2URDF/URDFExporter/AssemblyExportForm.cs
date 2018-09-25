@@ -365,8 +365,8 @@ namespace SW2URDF
 
             bool parseSuccess =
                 double.TryParse(potentialText,
-                    System.Globalization.NumberStyles.Any,
-                    Thread.CurrentThread.CurrentCulture.NumberFormat,
+                    Attribute.URDFNumberStyle,
+                    Attribute.URDFNumberFormat,
                     out double result);
 
             // If the key pressed is not a digit, +/- sign or the decimal separator than ignore it (e.Handled = true)

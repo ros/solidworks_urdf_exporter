@@ -208,6 +208,11 @@ namespace SW2URDF
     {
         private static readonly string USStringFormat = "en-US";
 
+        public static readonly NumberFormatInfo URDFNumberFormat =
+            CultureInfo.CreateSpecificCulture("en-US").NumberFormat;
+
+        public static readonly NumberStyles URDFNumberStyle = NumberStyles.Any;
+
         [DataMember]
         private bool IsRequired;
 
@@ -233,14 +238,14 @@ namespace SW2URDF
                 foreach (double d in valueArray)
                 {
                     valueString +=
-                        d.ToString(CultureInfo.CreateSpecificCulture(USStringFormat)) + " ";
+                        d.ToString(URDFNumberFormat) + " ";
                 }
                 valueString = valueString.Trim();
             }
             else if (Value.GetType() == typeof(double))
             {
                 valueString =
-                    ((Double)Value).ToString(CultureInfo.CreateSpecificCulture(USStringFormat));
+                    ((Double)Value).ToString(URDFNumberFormat);
             }
             else if (Value.GetType() == typeof(string))
             {
@@ -295,6 +300,57 @@ namespace SW2URDF
         public bool IsSet()
         {
             return Value != null;
+        }
+
+        public string GetTextFromDoubleValue(string format = "G")
+        {
+            string result = "";
+            if (Value != null)
+            {
+                double dValue = (double)Value;
+                result = dValue.ToString(format, URDFNumberFormat);
+            }
+            return result;
+        }
+
+        public string[] GetTextArrayFromDoubleArray(string format = "G")
+        {
+            string[] result = null;
+            if (Value != null)
+            {
+                double[] dArray = (double[])Value;
+                result = new string[dArray.Length];
+                for (int i = 0; i < dArray.Length; i++)
+                {
+                    result[i] = dArray[i].ToString(format, URDFNumberFormat);
+                }
+            }
+            return result;
+        }
+
+        public void SetDoubleValueFromString(string text)
+        {
+            if (Double.TryParse(text, URDFNumberStyle, URDFNumberFormat, out double result))
+            {
+                Value = result;
+            }
+        }
+
+        public void SetDoubleArrayFromStringArray(string[] textArray)
+        {
+            double[] dArray = new double[textArray.Length];
+            for (int i = 0; i < textArray.Length; i++)
+            {
+                if (Double.TryParse(textArray[i], URDFNumberStyle, URDFNumberFormat, out double result))
+                {
+                    dArray[i] = result;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            Value = dArray;
         }
     }
 
@@ -683,26 +739,20 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, TextBox boxRoll,
             TextBox boxPitch, TextBox boxYaw, string format)
         {
-            if (XYZAttribute.Value != null)
+            string[] xyzText = XYZAttribute.GetTextArrayFromDoubleArray(format);
+            if (xyzText != null)
             {
-                boxX.Text = X.ToString(format);
-                boxY.Text = Y.ToString(format);
-                boxZ.Text = Z.ToString(format);
-            }
-            else
-            {
-                boxX.Text = ""; boxY.Text = ""; boxZ.Text = "";
+                boxX.Text = xyzText[0];
+                boxY.Text = xyzText[1];
+                boxZ.Text = xyzText[2];
             }
 
-            if (RPYAttribute.Value != null)
+            string[] rpyText = RPYAttribute.GetTextArrayFromDoubleArray(format);
+            if (rpyText != null)
             {
-                boxRoll.Text = Roll.ToString(format);
-                boxPitch.Text = Pitch.ToString(format);
-                boxYaw.Text = Yaw.ToString(format);
-            }
-            else
-            {
-                boxRoll.Text = ""; boxPitch.Text = ""; boxYaw.Text = "";
+                boxRoll.Text = rpyText[0];
+                boxY.Text = rpyText[1];
+                boxZ.Text = rpyText[2];
             }
         }
 
@@ -710,32 +760,8 @@ namespace SW2URDF
             TextBox boxRoll, TextBox boxPitch, TextBox boxYaw
             )
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxX.Text) &&
-                String.IsNullOrWhiteSpace(boxY.Text) &&
-                String.IsNullOrWhiteSpace(boxZ.Text))
-            {
-                XYZ = null;
-            }
-            else
-            {
-                X = (Double.TryParse(boxX.Text, out value)) ? value : 0;
-                Y = (Double.TryParse(boxY.Text, out value)) ? value : 0;
-                Z = (Double.TryParse(boxZ.Text, out value)) ? value : 0;
-            }
-
-            if (String.IsNullOrWhiteSpace(boxRoll.Text) &&
-                String.IsNullOrWhiteSpace(boxPitch.Text) &&
-                String.IsNullOrWhiteSpace(boxYaw.Text))
-            {
-                RPY = null;
-            }
-            else
-            {
-                Roll = (Double.TryParse(boxRoll.Text, out value)) ? value : 0;
-                Pitch = (Double.TryParse(boxPitch.Text, out value)) ? value : 0;
-                Yaw = (Double.TryParse(boxYaw.Text, out value)) ? value : 0;
-            }
+            XYZAttribute.SetDoubleArrayFromStringArray(new string[] { boxX.Text, boxY.Text, boxZ.Text });
+            RPYAttribute.SetDoubleArrayFromStringArray(new string[] { boxRoll.Text, boxPitch.Text, boxYaw.Text });
         }
     }
 
@@ -767,19 +793,12 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox box, string format)
         {
-            if (ValueAttribute != null)
-            {
-                box.Text = Value.ToString(format);
-            }
-            else
-            {
-                box.Text = "0";
-            }
+            box.Text = ValueAttribute.GetTextFromDoubleValue(format);
         }
 
         public void Update(TextBox box)
         {
-            Value = (Double.TryParse(box.Text, out double tmp)) ? tmp : 0;
+            ValueAttribute.SetDoubleValueFromString(box.Text);
         }
     }
 
@@ -805,8 +824,8 @@ namespace SW2URDF
         [DataMember]
         private readonly Attribute IzzAttribute;
 
-        [DataMember]
-        private List<double> Moment { get; set; }
+        //[DataMember]
+        //private List<double> Moment { get; set; }
 
         public double Ixx
         {
@@ -882,7 +901,7 @@ namespace SW2URDF
 
         public Inertia() : base("inertia", false)
         {
-            Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+            //Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
             IxxAttribute = new Attribute("ixx", true, 0.0);
             IxyAttribute = new Attribute("ixy", true, 0.0);
             IxzAttribute = new Attribute("ixz", true, 0.0);
@@ -900,7 +919,7 @@ namespace SW2URDF
 
         public void SetMomentMatrix(double[] array)
         {
-            Moment = new List<double>(array);
+            //Moment = new List<double>(array);
             Ixx = array[0];
             Ixy = -array[1];
             Ixz = -array[2];
@@ -912,29 +931,32 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz,
             TextBox boxIyy, TextBox boxIyz, TextBox boxIzz, string format)
         {
-            boxIxx.Text = Ixx.ToString(format);
-            boxIxy.Text = Ixy.ToString(format);
-            boxIxz.Text = Ixz.ToString(format);
-            boxIyy.Text = Iyy.ToString(format);
-            boxIyz.Text = Iyz.ToString(format);
-            boxIzz.Text = Izz.ToString(format);
+            boxIxx.Text = IxxAttribute.GetTextFromDoubleValue(format);
+            boxIxy.Text = IxyAttribute.GetTextFromDoubleValue(format);
+            boxIxz.Text = IxzAttribute.GetTextFromDoubleValue(format);
+            boxIyy.Text = IyyAttribute.GetTextFromDoubleValue(format);
+            boxIyz.Text = IyzAttribute.GetTextFromDoubleValue(format);
+            boxIzz.Text = IzzAttribute.GetTextFromDoubleValue(format);
         }
 
         public void Update(TextBox boxIxx, TextBox boxIxy, TextBox boxIxz,
             TextBox boxIyy, TextBox boxIyz, TextBox boxIzz)
         {
-            double value = 0;
-            Ixx = (Double.TryParse(boxIxx.Text, out value)) ? value : 0;
-            Ixy = (Double.TryParse(boxIxy.Text, out value)) ? value : 0;
-            Ixz = (Double.TryParse(boxIxz.Text, out value)) ? value : 0;
-            Iyy = (Double.TryParse(boxIyy.Text, out value)) ? value : 0;
-            Iyz = (Double.TryParse(boxIyz.Text, out value)) ? value : 0;
-            Izz = (Double.TryParse(boxIzz.Text, out value)) ? value : 0;
+            IxxAttribute.SetDoubleValueFromString(boxIxx.Text);
+            IxyAttribute.SetDoubleValueFromString(boxIxy.Text);
+            IxzAttribute.SetDoubleValueFromString(boxIxz.Text);
+            IyyAttribute.SetDoubleValueFromString(boxIyy.Text);
+            IyzAttribute.SetDoubleValueFromString(boxIyz.Text);
+            IzzAttribute.SetDoubleValueFromString(boxIzz.Text);
         }
 
         internal double[] GetMoment()
         {
-            return Moment.ToArray();
+            double Iyx = Ixy;
+            double Izx = Ixz;
+            double Izy = Iyz;
+
+            return new double[] { Ixx, Ixy, Ixz, Ixy, Iyy, Iyz, Ixz, Iyz, Izz };
         }
     }
 
@@ -1134,21 +1156,21 @@ namespace SW2URDF
         public void FillBoxes(DomainUpDown boxRed, DomainUpDown boxGreen,
             DomainUpDown boxBlue, DomainUpDown boxAlpha, string format)
         {
-            double[] rgba = (double[])RGBAAttribute.Value;
-            boxRed.Text = Red.ToString(format);
-            boxGreen.Text = Green.ToString(format);
-            boxBlue.Text = Blue.ToString(format);
-            boxAlpha.Text = Alpha.ToString(format);
+            string[] rgbaText = RGBAAttribute.GetTextArrayFromDoubleArray(format);
+            if (rgbaText != null)
+            {
+                boxRed.Text = rgbaText[0];
+                boxGreen.Text = rgbaText[0];
+                boxBlue.Text = rgbaText[0];
+                boxAlpha.Text = rgbaText[0];
+            }
         }
 
         public void Update(DomainUpDown boxRed, DomainUpDown boxGreen,
             DomainUpDown boxBlue, DomainUpDown boxAlpha)
         {
-            double value;
-            Red = (Double.TryParse(boxRed.Text, out value)) ? value : 0;
-            Green = (Double.TryParse(boxGreen.Text, out value)) ? value : 0;
-            Blue = (Double.TryParse(boxBlue.Text, out value)) ? value : 0;
-            Alpha = (Double.TryParse(boxAlpha.Text, out value)) ? value : 0;
+            RGBAAttribute.SetDoubleArrayFromStringArray(
+                new string[] { boxRed.Text, boxGreen.Text, boxBlue.Text, boxAlpha.text });
         }
     }
 
@@ -1481,17 +1503,18 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxX, TextBox boxY, TextBox boxZ, string format)
         {
-            boxX.Text = X.ToString(format);
-            boxY.Text = Y.ToString(format);
-            boxZ.Text = Z.ToString(format);
+            string[] xyzText = XYZAttribute.GetTextArrayFromDoubleArray(format);
+            if (xyzText != null)
+            {
+                boxX.Text = xyzText[0];
+                boxY.Text = xyzText[1];
+                boxZ.Text = xyzText[2];
+            }
         }
 
         public void Update(TextBox boxX, TextBox boxY, TextBox boxZ)
         {
-            double value;
-            X = (Double.TryParse(boxX.Text, out value)) ? value : 0;
-            Y = (Double.TryParse(boxY.Text, out value)) ? value : 0;
-            Z = (Double.TryParse(boxZ.Text, out value)) ? value : 0;
+            XYZAttribute.SetDoubleArrayFromStringArray(new string[] { boxX.Text, boxY.Text, boxZ.Text });
         }
     }
 
@@ -1572,32 +1595,13 @@ namespace SW2URDF
             Attributes.Add(VelocityAttribute);
         }
 
-        private void FillTextBox(TextBox textBox, Attribute attribute, string format)
-        {
-            if (attribute.Value != null)
-            {
-                double value = (double)attribute.Value;
-                textBox.Text = value.ToString(format);
-            }
-        }
-
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity, string format)
         {
-            FillTextBox(boxLower, LowerAttribute, format);
-            FillTextBox(boxUpper, UpperAttribute, format);
-            FillTextBox(boxEffort, EffortAttribute, format);
-            FillTextBox(boxVelocity, VelocityAttribute, format);
-        }
-
-        private void SetValue(Attribute attribute, string text)
-        {
-            object defaultValue = null;
-            if (attribute.GetIsRequired())
-            {
-                defaultValue = 0.0;
-            }
-            attribute.Value = (Double.TryParse(text, out double value)) ? value : defaultValue;
+            boxLower.Text = LowerAttribute.GetTextFromDoubleValue(format);
+            boxUpper.Text = UpperAttribute.GetTextFromDoubleValue(format);
+            boxEffort.Text = EffortAttribute.GetTextFromDoubleValue(format);
+            boxVelocity.Text = VelocityAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
@@ -1612,10 +1616,10 @@ namespace SW2URDF
                 // If all text boxes are empty and this element isn't required, then leave blank
                 return;
             }
-            SetValue(LowerAttribute, boxLower.Text);
-            SetValue(UpperAttribute, boxUpper.Text);
-            SetValue(EffortAttribute, boxEffort.Text);
-            SetValue(VelocityAttribute, boxVelocity.Text);
+            LowerAttribute.SetDoubleValueFromString(boxLower.Text);
+            UpperAttribute.SetDoubleValueFromString(boxUpper.Text);
+            EffortAttribute.SetDoubleValueFromString(boxEffort.Text);
+            VelocityAttribute.SetDoubleValueFromString(boxVelocity.Text);
         }
 
         public override void SetRequired(bool required)
@@ -1678,36 +1682,14 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxRising, TextBox boxFalling, string format)
         {
-            if (RisingAttribute.Value != null)
-            {
-                boxRising.Text = Rising.ToString(format);
-            }
-
-            if (FallingAttribute.Value != null)
-            {
-                boxFalling.Text = Falling.ToString(format);
-            }
+            boxRising.Text = RisingAttribute.GetTextFromDoubleValue(format);
+            boxFalling.Text = FallingAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxRising, TextBox boxFalling)
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxRising.Text))
-            {
-                RisingAttribute.Value = null;
-            }
-            else
-            {
-                Rising = (Double.TryParse(boxRising.Text, out value)) ? value : 0;
-            }
-            if (String.IsNullOrWhiteSpace(boxFalling.Text))
-            {
-                FallingAttribute.Value = null;
-            }
-            else
-            {
-                Falling = (Double.TryParse(boxFalling.Text, out value)) ? value : 0;
-            }
+            RisingAttribute.SetDoubleValueFromString(boxRising.Text);
+            FallingAttribute.SetDoubleValueFromString(boxFalling.Text);
         }
     }
 
@@ -1756,35 +1738,14 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxDamping, TextBox boxFriction, string format)
         {
-            if (DampingAttribute.Value != null)
-            {
-                boxDamping.Text = Damping.ToString(format);
-            }
-            if (FrictionAttribute.Value != null)
-            {
-                boxFriction.Text = Friction.ToString(format);
-            }
+            boxDamping.Text = DampingAttribute.GetTextFromDoubleValue();
+            boxFriction.Text = FrictionAttribute.GetTextFromDoubleValue();
         }
 
         public void SetValues(TextBox boxDamping, TextBox boxFriction)
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxDamping.Text))
-            {
-                DampingAttribute.Value = null;
-            }
-            else
-            {
-                Damping = (Double.TryParse(boxDamping.Text, out value)) ? value : 0;
-            }
-            if (String.IsNullOrWhiteSpace(boxFriction.Text))
-            {
-                FrictionAttribute.Value = null;
-            }
-            else
-            {
-                Friction = (Double.TryParse(boxFriction.Text, out value)) ? value : 0;
-            }
+            DampingAttribute.SetDoubleValueFromString(boxDamping.Text);
+            FrictionAttribute.SetDoubleValueFromString(boxFriction.Text);
         }
     }
 
@@ -1868,66 +1829,19 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxPosition, TextBox boxVelocity, string format)
         {
-            if (SoftLowerAttribute.Value != null)
-            {
-                boxLower.Text = SoftLower.ToString(format);
-            }
-
-            if (SoftUpperAttribute.Value != null)
-            {
-                boxUpper.Text = SoftUpper.ToString(format);
-            }
-
-            if (KPositionAttribute.Value != null)
-            {
-                boxPosition.Text = KPosition.ToString(format);
-            }
-
-            if (KVelocityAttribute.Value != null)
-            {
-                boxVelocity.Text = KVelocity.ToString(format);
-            }
+            boxLower.Text = SoftLowerAttribute.GetTextFromDoubleValue();
+            boxUpper.Text = SoftUpperAttribute.GetTextFromDoubleValue();
+            boxPosition.Text = KPositionAttribute.GetTextFromDoubleValue();
+            boxVelocity.Text = KVelocityAttribute.GetTextFromDoubleValue();
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
             TextBox boxPosition, TextBox boxVelocity)
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxLower.Text))
-            {
-                SoftLowerAttribute.Value = null;
-            }
-            else
-            {
-                SoftLower = (Double.TryParse(boxLower.Text, out value)) ? value : 0;
-            }
-
-            if (String.IsNullOrWhiteSpace(boxUpper.Text))
-            {
-                SoftUpperAttribute.Value = null;
-            }
-            else
-            {
-                SoftUpper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
-            }
-
-            if (String.IsNullOrWhiteSpace(boxPosition.Text))
-            {
-                KPositionAttribute.Value = null;
-            }
-            else
-            {
-                KPosition = (Double.TryParse(boxPosition.Text, out value)) ? value : 0;
-            }
-
-            if (String.IsNullOrWhiteSpace(boxVelocity.Text))
-            {
-                KVelocityAttribute.Value = null;
-            }
-            else
-            {
-                KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
-            }
+            SoftLowerAttribute.SetDoubleValueFromString(boxLower.Text);
+            SoftUpperAttribute.SetDoubleValueFromString(boxUpper.Text);
+            KPositionAttribute.SetDoubleValueFromString(boxPosition.Text);
+            KVelocityAttribute.SetDoubleValueFromString(boxVelocity.Text);
         }
     }
 
