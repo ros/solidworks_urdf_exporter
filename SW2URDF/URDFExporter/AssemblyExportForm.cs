@@ -23,6 +23,7 @@ THE SOFTWARE.
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -81,6 +82,27 @@ namespace SW2URDF
                 comboBoxMaterials,
                 textBoxTexture
             };
+
+            List<TextBox> numericTextBoxes = new List<TextBox>() {
+                textBoxAxisX, textBoxAxisY, textBoxAxisZ,
+                textBoxJointX, textBoxJointY, textBoxJointZ,
+                textBoxJointPitch, textBoxJointRoll, textBoxJointYaw,
+                textBoxLimitLower, textBoxLimitUpper, textBoxLimitEffort, textBoxLimitVelocity,
+                textBoxDamping, textBoxFriction,
+                textBoxCalibrationFalling, textBoxCalibrationRising,
+                textBoxSoftLower, textBoxSoftUpper, textBoxKPosition, textBoxKVelocity,
+                textBoxInertialOriginX, textBoxInertialOriginY, textBoxInertialOriginZ,
+                textBoxInertialOriginRoll, textBoxInertialOriginPitch, textBoxInertialOriginYaw,
+                textBoxVisualOriginX, textBoxVisualOriginY, textBoxVisualOriginZ,
+                textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
+                textBoxIxx, textBoxIxy, textBoxIxz, textBoxIyy, textBoxIyz, textBoxIzz,
+                textBoxMass,
+            };
+
+            foreach (TextBox textBox in numericTextBoxes)
+            {
+                textBox.KeyPress += TextBoxKeyPress;
+            }
 
             saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
             int Options = 0;
@@ -334,6 +356,25 @@ namespace SW2URDF
             FillLinkPropertyBoxes(node.Link);
             treeViewLinkProperties.Focus();
             previouslySelectedNode = node;
+        }
+
+        private void TextBoxKeyPress(object sender, KeyPressEventArgs e)
+        {
+            TextBox textBox = (TextBox)sender;
+            string potentialText = textBox.Text + e.KeyChar;
+
+            bool parseSuccess =
+                double.TryParse(potentialText,
+                    System.Globalization.NumberStyles.Any,
+                    Thread.CurrentThread.CurrentCulture.NumberFormat,
+                    out double result);
+
+            // If the key pressed is not a digit, +/- sign or the decimal separator than ignore it (e.Handled = true)
+            e.Handled = (!parseSuccess &&
+                         !char.IsControl(e.KeyChar) &&
+                         !char.IsDigit(e.KeyChar) &&
+                         potentialText != "-" &&
+                         potentialText != "+");
         }
 
         #region Link Properties Controls Handlers
