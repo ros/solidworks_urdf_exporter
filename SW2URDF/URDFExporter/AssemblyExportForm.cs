@@ -101,7 +101,7 @@ namespace SW2URDF
 
             foreach (TextBox textBox in numericTextBoxes)
             {
-                textBox.KeyPress += TextBoxKeyPress;
+                textBox.KeyPress += NumericalTextBoxKeyPress;
             }
 
             saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
@@ -358,8 +358,17 @@ namespace SW2URDF
             previouslySelectedNode = node;
         }
 
-        private void TextBoxKeyPress(object sender, KeyPressEventArgs e)
+        /// <summary>
+        /// Validates text entry for numerical text boxes to limit improper input. It's not perfect
+        /// because you can still copy and paste bad input into the fields, but that's addressed
+        /// elsewhere
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void NumericalTextBoxKeyPress(object sender, KeyPressEventArgs e)
         {
+            // In most cases, if we can't parse what they are trying to type, then it's not
+            // valid input.
             TextBox textBox = (TextBox)sender;
             string potentialText = textBox.Text + e.KeyChar;
 
