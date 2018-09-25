@@ -76,8 +76,43 @@ namespace SW2URDF
             Attributes = new List<Attribute>();
         }
 
+        public virtual bool CheckIfNeedToWriteElement()
+        {
+            if (isRequired)
+            {
+                return true;
+            }
+
+            foreach (Attribute attribute in Attributes)
+            {
+                if (attribute.Value != null)
+                {
+                    return true;
+                }
+            }
+
+            foreach (URDFElement element in ChildElements)
+            {
+                if (element.CheckIfNeedToWriteElement())
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public virtual void WriteURDF(XmlWriter writer)
         {
+            if (this.GetType() == typeof(Limit))
+            {
+                logger.Info("Breakponit here");
+            }
+            if (!CheckIfNeedToWriteElement())
+            {
+                return;
+            }
+
             writer.WriteStartElement(ElementName);
             foreach (Attribute attribute in Attributes)
             {
@@ -1484,8 +1519,9 @@ namespace SW2URDF
 
         public Limit() : base("limit")
         {
-            EffortAttribute = new Attribute("effort", true, 0.0);
-            VelocityAttribute = new Attribute("velocity", true, 0.0);
+            isRequired = false;
+            EffortAttribute = new Attribute("effort", true, null);
+            VelocityAttribute = new Attribute("velocity", true, null);
             LowerAttribute = new Attribute("lower", false, null);
             UpperAttribute = new Attribute("upper", false, null);
 
@@ -1540,8 +1576,23 @@ namespace SW2URDF
                 Upper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
             }
 
-            Effort = (Double.TryParse(boxEffort.Text, out value)) ? value : 0;
-            Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            if (String.IsNullOrWhiteSpace(boxEffort.Text))
+            {
+                EffortAttribute.Value = null;
+            }
+            else
+            {
+                Effort = (Double.TryParse(boxEffort.Text, out value)) ? value : 0;
+            }
+
+            if (string.IsNullOrWhiteSpace(boxVelocity.Text))
+            {
+                VelocityAttribute.Value = null;
+            }
+            else
+            {
+                Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            }
         }
 
         public bool IsValid()
@@ -1663,6 +1714,7 @@ namespace SW2URDF
 
         public Dynamics() : base("dynamics")
         {
+            isRequired = false;
             DampingAttribute = new Attribute("damping", false, null);
             FrictionAttribute = new Attribute("friction", false, null);
 
@@ -1770,10 +1822,11 @@ namespace SW2URDF
 
         public SafetyController() : base("safety_controller")
         {
+            isRequired = false;
             SoftUpperAttribute = new Attribute("soft_upper", false, null);
             SoftLowerAttribute = new Attribute("soft_lower", false, null);
             KPositionAttribute = new Attribute("k_position", false, null);
-            KVelocityAttribute = new Attribute("k_velocity", true, 0.0);
+            KVelocityAttribute = new Attribute("k_velocity", true, null);
 
             Attributes.Add(SoftUpperAttribute);
             Attributes.Add(SoftLowerAttribute);
@@ -1799,7 +1852,10 @@ namespace SW2URDF
                 boxPosition.Text = KPosition.ToString(format);
             }
 
-            boxVelocity.Text = KVelocity.ToString(format);
+            if (KVelocityAttribute.Value != null)
+            {
+                boxVelocity.Text = KVelocity.ToString(format);
+            }
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
@@ -1833,7 +1889,14 @@ namespace SW2URDF
                 KPosition = (Double.TryParse(boxPosition.Text, out value)) ? value : 0;
             }
 
-            KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            if (String.IsNullOrWhiteSpace(boxVelocity.Text))
+            {
+                KVelocityAttribute.Value = null;
+            }
+            else
+            {
+                KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            }
         }
     }
 
