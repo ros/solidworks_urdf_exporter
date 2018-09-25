@@ -104,7 +104,7 @@ namespace SW2URDF
 
         public virtual void WriteURDF(XmlWriter writer)
         {
-            if (this.GetType() == typeof(Limit))
+            if (GetType() == typeof(Limit))
             {
                 logger.Info("Breakponit here");
             }

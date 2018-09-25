@@ -81,19 +81,25 @@ namespace SW2URDF
         }
 
         //Fills the property boxes on the joint properties page
-        public void FillJointPropertyBoxes(Joint Joint)
+        public void FillJointPropertyBoxes(Joint joint)
         {
             FillBlank(jointBoxes);
             AutoUpdatingForm = true;
-            if (Joint != null) //For the base_link or if none is selected
+            if (joint != null) //For the base_link or if none is selected
             {
-                Joint.FillBoxes(textBoxJointName, comboBoxJointType);
-                Joint.Parent.FillBoxes(labelParent);
-                Joint.Child.FillBoxes(labelChild);
+                // Limits are required for prismatic and revolute joints
+                LimitRequiredLabel.Visible = (joint.Type == "prismatic" || joint.Type == "revolute");
+
+                // Axis values are required, except for a fixed joint
+                AxisRequiredLabel.Visible = (joint.Type != "fixed");
+
+                joint.FillBoxes(textBoxJointName, comboBoxJointType);
+                joint.Parent.FillBoxes(labelParent);
+                joint.Child.FillBoxes(labelChild);
 
                 //G5: Maximum decimal places to use (not counting exponential notation) is 5
 
-                Joint.Origin.FillBoxes(textBoxJointX,
+                joint.Origin.FillBoxes(textBoxJointX,
                                        textBoxJointY,
                                        textBoxJointZ,
                                        textBoxJointRoll,
@@ -101,34 +107,37 @@ namespace SW2URDF
                                        textBoxJointYaw,
                                        "G5");
 
-                Joint.Axis.FillBoxes(textBoxAxisX, textBoxAxisY, textBoxAxisZ, "G5");
-
-                if (Joint.Limit != null)
+                if (joint.Type != "fixed")
                 {
-                    Joint.Limit.FillBoxes(textBoxLimitLower,
+                    joint.Axis.FillBoxes(textBoxAxisX, textBoxAxisY, textBoxAxisZ, "G5");
+                }
+
+                if (joint.Limit != null && joint.Type != "fixed")
+                {
+                    joint.Limit.FillBoxes(textBoxLimitLower,
                                           textBoxLimitUpper,
                                           textBoxLimitEffort,
                                           textBoxLimitVelocity,
                                           "G5");
                 }
 
-                if (Joint.Calibration != null)
+                if (joint.Calibration != null)
                 {
-                    Joint.Calibration.FillBoxes(textBoxCalibrationRising,
+                    joint.Calibration.FillBoxes(textBoxCalibrationRising,
                                                 textBoxCalibrationFalling,
                                                 "G5");
                 }
 
-                if (Joint.Dynamics != null)
+                if (joint.Dynamics != null)
                 {
-                    Joint.Dynamics.FillBoxes(textBoxDamping,
+                    joint.Dynamics.FillBoxes(textBoxDamping,
                                              textBoxFriction,
                                              "G5");
                 }
 
-                if (Joint.Safety != null)
+                if (joint.Safety != null)
                 {
-                    Joint.Safety.FillBoxes(textBoxSoftLower,
+                    joint.Safety.FillBoxes(textBoxSoftLower,
                                            textBoxSoftUpper,
                                            textBoxKPosition,
                                            textBoxKVelocity,
@@ -136,7 +145,7 @@ namespace SW2URDF
                 }
             }
 
-            if (Joint != null && (Joint.Type == "revolute" || Joint.Type == "continuous"))
+            if (joint != null && (joint.Type == "revolute" || joint.Type == "continuous"))
             {
                 labelLowerLimit.Text = "lower (rad)";
                 labelLimitUpper.Text = "upper (rad)";
@@ -149,7 +158,7 @@ namespace SW2URDF
                 labelKPosition.Text = "k position";
                 labelKVelocity.Text = "k velocity";
             }
-            else if (Joint != null && Joint.Type == "prismatic")
+            else if (joint != null && joint.Type == "prismatic")
             {
                 labelLowerLimit.Text = "lower (m)";
                 labelLimitUpper.Text = "upper (m)";
@@ -182,11 +191,11 @@ namespace SW2URDF
             List<string> axesNames = Exporter.GetRefAxes();
             comboBoxAxis.Items.AddRange(axesNames.ToArray());
             comboBoxOrigin.SelectedIndex =
-                comboBoxOrigin.FindStringExact(Joint.CoordinateSystemName);
+                comboBoxOrigin.FindStringExact(joint.CoordinateSystemName);
 
-            if (!String.IsNullOrWhiteSpace(Joint.AxisName))
+            if (!String.IsNullOrWhiteSpace(joint.AxisName))
             {
-                comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(Joint.AxisName);
+                comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(joint.AxisName);
             }
             AutoUpdatingForm = false;
         }
@@ -268,8 +277,11 @@ namespace SW2URDF
             {
                 if (Joint.Type == "prismatic" || Joint.Type == "revolute")
                 {
-                    Joint.Limit.Effort = 0;
-                    Joint.Limit.Velocity = 0;
+                    // Limits are required for prismatic and revolute joints.
+                    Joint.Limit.Lower = 0.0;
+                    Joint.Limit.Upper = 0.0;
+                    Joint.Limit.Effort = 0.0;
+                    Joint.Limit.Velocity = 0.0;
                 }
                 else
                 {
