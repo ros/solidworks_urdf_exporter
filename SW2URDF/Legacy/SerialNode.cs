@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using log4net;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using log4net;
 
 namespace SW2URDF.Legacy
 {

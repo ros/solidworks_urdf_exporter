@@ -20,11 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using SolidWorks.Interop.sldworks;
 using System;
 using System.IO;
 using System.Windows.Forms;
-
-using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {

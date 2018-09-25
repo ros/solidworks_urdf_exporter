@@ -20,12 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using log4net;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows.Forms;
 
 namespace SW2URDF
 {

@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using log4net;
+using SolidWorks.Interop.sldworks;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,8 +32,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using log4net;
-using SolidWorks.Interop.sldworks;
 
 namespace SW2URDF
 {

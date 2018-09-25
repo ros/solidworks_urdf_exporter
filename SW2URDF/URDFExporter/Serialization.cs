@@ -1,13 +1,13 @@
-﻿using System;
+﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SW2URDF.Legacy;
+using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
-using SW2URDF.Legacy;
 
 namespace SW2URDF
 {

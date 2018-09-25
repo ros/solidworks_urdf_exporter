@@ -20,16 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using MathNet.Numerics.LinearAlgebra.Generic;
+using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.swconst;
+using SW2URDF.CSV;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
-
-using MathNet.Numerics.LinearAlgebra.Generic;
-
-using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
-using SW2URDF.CSV;
 
 namespace SW2URDF
 {
