@@ -152,7 +152,8 @@ namespace SW2URDF
             string errors = CheckJointsForErrors();
             if (!string.IsNullOrWhiteSpace(errors))
             {
-                string message = "The following joints mere missing required fields, please address them before continuing\r\n" + errors;
+                string message = "The following joints are missing required fields, please " +
+                    "address them before continuing\r\n\r\n" + errors;
                 MessageBox.Show(message, "URDF Joint Errors");
                 return;
             }
@@ -273,10 +274,10 @@ namespace SW2URDF
 
             if (!string.IsNullOrWhiteSpace(warnings))
             {
-                logger.Info("Link warnings encountered:\n" + warnings);
+                logger.Info("Link warnings encountered:\r\n" + warnings);
 
                 string message = "The following links contained issues that may cause problems. " +
-                "Do you wish to proceed?\n" + warnings;
+                "Do you wish to proceed?\r\n\r\n" + warnings;
                 DialogResult result =
                     MessageBox.Show(message, "URDF Warnings", MessageBoxButtons.YesNo);
 
