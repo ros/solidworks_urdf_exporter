@@ -828,9 +828,6 @@ namespace SW2URDF
         [DataMember]
         private readonly Attribute IzzAttribute;
 
-        //[DataMember]
-        //private List<double> Moment { get; set; }
-
         public double Ixx
         {
             get
@@ -905,7 +902,6 @@ namespace SW2URDF
 
         public Inertia() : base("inertia", false)
         {
-            //Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
             IxxAttribute = new Attribute("ixx", true, 0.0);
             IxyAttribute = new Attribute("ixy", true, 0.0);
             IxzAttribute = new Attribute("ixz", true, 0.0);
@@ -923,7 +919,6 @@ namespace SW2URDF
 
         public void SetMomentMatrix(double[] array)
         {
-            //Moment = new List<double>(array);
             Ixx = array[0];
             Ixy = -array[1];
             Ixz = -array[2];
