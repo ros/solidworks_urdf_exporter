@@ -69,15 +69,39 @@ namespace SW2URDF
         [DataMember]
         protected readonly string ElementName;
 
-        public URDFElement(string elementName)
+        [DataMember]
+        private bool required;
+
+        public URDFElement(string elementName, bool required)
         {
             ElementName = elementName;
+            this.required = required;
             ChildElements = new List<URDFElement>();
             Attributes = new List<Attribute>();
         }
 
+        public bool IsRequired()
+        {
+            return required;
+        }
+
+        public virtual void SetRequired(bool required)
+        {
+            this.required = required;
+        }
+
         public virtual void WriteURDF(XmlWriter writer)
         {
+            if (!AreRequiredFieldsSatisfied())
+            {
+                throw new Exception("The required fields of the element " + ElementName + " have not been satisfied");
+            }
+
+            if (!ElementContainsData())
+            {
+                return;
+            }
+
             writer.WriteStartElement(ElementName);
             foreach (Attribute attribute in Attributes)
             {
@@ -89,7 +113,7 @@ namespace SW2URDF
 
             foreach (URDFElement child in ChildElements)
             {
-                if (child.IsElementSet())
+                if (child.ElementContainsData())
                 {
                     child.WriteURDF(writer);
                 }
@@ -129,9 +153,44 @@ namespace SW2URDF
             }
         }
 
-        public virtual bool IsElementSet()
+        public virtual bool AreRequiredFieldsSatisfied()
         {
+            foreach (Attribute attribute in Attributes)
+            {
+                if (attribute.GetIsRequired() && attribute.Value == null)
+                {
+                    return false;
+                }
+            }
+            foreach (URDFElement child in ChildElements)
+            {
+                if (!child.AreRequiredFieldsSatisfied() &&
+                    (child.IsRequired() || child.ElementContainsData()))
+                {
+                    return false;
+                }
+            }
             return true;
+        }
+
+        public virtual bool ElementContainsData()
+        {
+            foreach (Attribute attribute in Attributes)
+            {
+                if (attribute.Value != null)
+                {
+                    return true;
+                }
+            }
+
+            foreach (URDFElement child in ChildElements)
+            {
+                if (child.ElementContainsData())
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static Type[] GetKnownTypes()
@@ -142,8 +201,6 @@ namespace SW2URDF
                 typeof(double[])
             }.ToArray();
         }
-
-        protected bool isRequired;
     }
 
     [DataContract(IsReference = true)]
@@ -152,7 +209,7 @@ namespace SW2URDF
         private static readonly string USStringFormat = "en-US";
 
         [DataMember]
-        private readonly bool IsRequired;
+        private bool IsRequired;
 
         [DataMember]
         private readonly string AttributeType;
@@ -160,10 +217,10 @@ namespace SW2URDF
         [DataMember]
         public object Value;
 
-        public Attribute(string type, bool isRequired, object initialValue)
+        public Attribute(string type, bool required, object initialValue)
         {
             AttributeType = type;
-            IsRequired = isRequired;
+            IsRequired = required;
             Value = initialValue;
         }
 
@@ -224,6 +281,21 @@ namespace SW2URDF
                 dictionary.Add(contextString, Value);
             }
         }
+
+        public bool GetIsRequired()
+        {
+            return IsRequired;
+        }
+
+        public void SetRequired(bool required)
+        {
+            IsRequired = required;
+        }
+
+        public bool IsSet()
+        {
+            return Value != null;
+        }
     }
 
     //The base URDF element, a robot
@@ -248,10 +320,9 @@ namespace SW2URDF
             }
         }
 
-        public Robot() : base("robot")
+        public Robot() : base("robot", true)
         {
             BaseLink = new Link(null);
-            isRequired = true;
             NameAttribute = new Attribute("name", true, "");
 
             ChildElements.Add(BaseLink);
@@ -337,7 +408,7 @@ namespace SW2URDF
         [DataMember]
         public byte[] SWMainComponentPID;
 
-        public Link() : base("link")
+        public Link() : base("link", true)
         {
             Parent = null;
             Children = new List<Link>();
@@ -350,7 +421,6 @@ namespace SW2URDF
             Collision = new Collision();
             Joint = new Joint();
 
-            isRequired = true;
             isFixedFrame = false;
 
             Attributes.Add(NameAttribute);
@@ -360,7 +430,7 @@ namespace SW2URDF
             ChildElements.Add(Joint);
         }
 
-        public Link(Link parent) : base("link")
+        public Link(Link parent) : base("link", true)
         {
             Parent = parent;
             Children = new List<Link>();
@@ -373,7 +443,6 @@ namespace SW2URDF
             Collision = new Collision();
             Joint = new Joint();
 
-            isRequired = true;
             isFixedFrame = false;
 
             Attributes.Add(NameAttribute);
@@ -402,7 +471,7 @@ namespace SW2URDF
             }
 
             writer.WriteEndElement();
-            if (Joint.IsElementSet())
+            if (Joint.ElementContainsData())
             {
                 Joint.WriteURDF(writer);
             }
@@ -443,10 +512,6 @@ namespace SW2URDF
         private void OnDeserialized(StreamingContext context)
         {
             SWcomponents = new List<Component2>();
-            if (ChildElements.Count == 3)
-            {
-                ChildElements.Add(Joint);
-            }
         }
     }
 
@@ -463,9 +528,9 @@ namespace SW2URDF
         [DataMember]
         public readonly Inertia Inertia;
 
-        public Inertial() : base("inertial")
+        public Inertial() : base("inertial", false)
         {
-            Origin = new Origin("Inertia");
+            Origin = new Origin("Inertia", false);
             Mass = new Mass();
             Inertia = new Inertia();
 
@@ -604,7 +669,7 @@ namespace SW2URDF
         [DataMember]
         public bool isCustomized;
 
-        public Origin(string csvContext) : base("origin")
+        public Origin(string csvContext, bool isRequired) : base("origin", isRequired)
         {
             isCustomized = false;
 
@@ -693,7 +758,7 @@ namespace SW2URDF
             }
         }
 
-        public Mass() : base("mass")
+        public Mass() : base("mass", false)
         {
             ValueAttribute = new Attribute("value", true, 0.0);
 
@@ -815,7 +880,7 @@ namespace SW2URDF
             }
         }
 
-        public Inertia() : base("inertia")
+        public Inertia() : base("inertia", false)
         {
             Moment = new List<double>(new double[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 });
             IxxAttribute = new Attribute("ixx", true, 0.0);
@@ -886,9 +951,9 @@ namespace SW2URDF
         [DataMember]
         public readonly Material Material;
 
-        public Visual() : base("visual")
+        public Visual() : base("visual", false)
         {
-            Origin = new Origin("Visual");
+            Origin = new Origin("Visual", false);
             Geometry = new Geometry();
             Material = new Material();
 
@@ -905,10 +970,9 @@ namespace SW2URDF
         [DataMember]
         public readonly Mesh Mesh;
 
-        public Geometry() : base("geometry")
+        public Geometry() : base("geometry", true)
         {
             Mesh = new Mesh();
-            isRequired = true;
             ChildElements.Add(Mesh);
         }
     }
@@ -932,7 +996,7 @@ namespace SW2URDF
             }
         }
 
-        public Mesh() : base("mesh")
+        public Mesh() : base("mesh", false)
         {
             FilenameAttribute = new Attribute("filename", true, null);
 
@@ -965,11 +1029,11 @@ namespace SW2URDF
             }
         }
 
-        public Material() : base("material")
+        public Material() : base("material", false)
         {
             Color = new Color();
             Texture = new Texture();
-            NameAttribute = new Attribute("name", true, null);
+            NameAttribute = new Attribute("name", false, null);
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Color);
@@ -979,6 +1043,17 @@ namespace SW2URDF
         public void FillBoxes(ComboBox box, string format)
         {
             box.Text = Name;
+        }
+
+        /// <summary>
+        /// The name was previously required, but it's not actually. We need to correct
+        /// previous serializations.
+        /// </summary>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            SetRequired(false);
+            NameAttribute.SetRequired(false);
         }
     }
 
@@ -1049,7 +1124,7 @@ namespace SW2URDF
             }
         }
 
-        public Color() : base("color")
+        public Color() : base("color", false)
         {
             RGBAAttribute = new Attribute("rgba", true, new double[] { 1, 1, 1, 1 });
 
@@ -1099,10 +1174,9 @@ namespace SW2URDF
         [DataMember]
         public string wFilename;
 
-        public Texture() : base("texture")
+        public Texture() : base("texture", false)
         {
             wFilename = "";
-            isRequired = false;
             FilenameAttribute = new Attribute("filename", true, null);
 
             Attributes.Add(FilenameAttribute);
@@ -1119,9 +1193,9 @@ namespace SW2URDF
         [DataMember]
         public readonly Geometry Geometry;
 
-        public Collision() : base("collision")
+        public Collision() : base("collision", false)
         {
-            Origin = new Origin("Colission");
+            Origin = new Origin("Colission", false);
             Geometry = new Geometry();
 
             ChildElements.Add(Origin);
@@ -1160,6 +1234,7 @@ namespace SW2URDF
             set
             {
                 TypeAttribute.Value = value;
+                Limit.SetRequired((value == "prismatic" || value == "revolute"));
             }
         }
 
@@ -1193,9 +1268,9 @@ namespace SW2URDF
         [DataMember]
         public string AxisName;
 
-        public Joint() : base("joint")
+        public Joint() : base("joint", false)
         {
-            Origin = new Origin("Joint");
+            Origin = new Origin("Joint", false);
             Parent = new ParentLink();
             Child = new ChildLink();
             Axis = new Axis();
@@ -1234,9 +1309,15 @@ namespace SW2URDF
             Type = boxType.Text;
         }
 
-        public override bool IsElementSet()
+        public override bool ElementContainsData()
         {
             return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Type);
+        }
+
+        public override bool AreRequiredFieldsSatisfied()
+        {
+            Limit.SetRequired((Type == "prismatic" || Type == "revolute"));
+            return base.AreRequiredFieldsSatisfied();
         }
 
         public override void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
@@ -1273,11 +1354,9 @@ namespace SW2URDF
             }
         }
 
-        public ParentLink() : base("parent")
+        public ParentLink() : base("parent", true)
         {
-            isRequired = true;
             NameAttribute = new Attribute("link", true, "");
-
             Attributes.Add(NameAttribute);
         }
 
@@ -1311,11 +1390,9 @@ namespace SW2URDF
             }
         }
 
-        public ChildLink() : base("child")
+        public ChildLink() : base("child", true)
         {
-            isRequired = true;
             NameAttribute = new Attribute("link", true, "");
-
             Attributes.Add(NameAttribute);
         }
 
@@ -1395,7 +1472,7 @@ namespace SW2URDF
             }
         }
 
-        public Axis() : base("axis")
+        public Axis() : base("axis", false)
         {
             XYZAttribute = new Attribute("xyz", true, new double[] { 0, 0, 0 });
 
@@ -1482,10 +1559,10 @@ namespace SW2URDF
             }
         }
 
-        public Limit() : base("limit")
+        public Limit() : base("limit", false)
         {
-            EffortAttribute = new Attribute("effort", true, 0.0);
-            VelocityAttribute = new Attribute("velocity", true, 0.0);
+            EffortAttribute = new Attribute("effort", true, null);
+            VelocityAttribute = new Attribute("velocity", true, null);
             LowerAttribute = new Attribute("lower", false, null);
             UpperAttribute = new Attribute("upper", false, null);
 
@@ -1495,58 +1572,65 @@ namespace SW2URDF
             Attributes.Add(VelocityAttribute);
         }
 
+        private void FillTextBox(TextBox textBox, Attribute attribute, string format)
+        {
+            if (attribute.Value != null)
+            {
+                double value = (double)attribute.Value;
+                textBox.Text = value.ToString(format);
+            }
+        }
+
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity, string format)
         {
-            if (LowerAttribute.Value != null)
-            {
-                boxLower.Text = Lower.ToString(format);
-            }
+            FillTextBox(boxLower, LowerAttribute, format);
+            FillTextBox(boxUpper, UpperAttribute, format);
+            FillTextBox(boxEffort, EffortAttribute, format);
+            FillTextBox(boxVelocity, VelocityAttribute, format);
+        }
 
-            if (UpperAttribute.Value != null)
+        private void SetValue(Attribute attribute, string text)
+        {
+            object defaultValue = null;
+            if (attribute.GetIsRequired())
             {
-                boxUpper.Text = Upper.ToString(format);
+                defaultValue = 0.0;
             }
-
-            if (EffortAttribute.Value != null)
-            {
-                boxEffort.Text = Effort.ToString(format);
-            }
-
-            if (VelocityAttribute.Value != null)
-            {
-                boxVelocity.Text = Velocity.ToString(format);
-            }
+            attribute.Value = (Double.TryParse(text, out double value)) ? value : defaultValue;
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
             TextBox boxEffort, TextBox boxVelocity)
         {
-            double value;
-            if (String.IsNullOrWhiteSpace(boxLower.Text))
+            if (string.IsNullOrWhiteSpace(boxLower.Text) &&
+                string.IsNullOrWhiteSpace(boxUpper.Text) &&
+                string.IsNullOrWhiteSpace(boxEffort.Text) &&
+                string.IsNullOrWhiteSpace(boxVelocity.Text) &&
+                !IsRequired())
             {
-                LowerAttribute.Value = null;
+                // If all text boxes are empty and this element isn't required, then leave blank
+                return;
             }
-            else
-            {
-                Lower = (Double.TryParse(boxLower.Text, out value)) ? value : 0;
-            }
-            if (String.IsNullOrWhiteSpace(boxUpper.Text))
-            {
-                UpperAttribute.Value = null;
-            }
-            else
-            {
-                Upper = (Double.TryParse(boxUpper.Text, out value)) ? value : 0;
-            }
-
-            Effort = (Double.TryParse(boxEffort.Text, out value)) ? value : 0;
-            Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            SetValue(LowerAttribute, boxLower.Text);
+            SetValue(UpperAttribute, boxUpper.Text);
+            SetValue(EffortAttribute, boxEffort.Text);
+            SetValue(VelocityAttribute, boxVelocity.Text);
         }
 
-        public bool IsValid()
+        public override void SetRequired(bool required)
         {
-            return ((EffortAttribute.Value != null) && (VelocityAttribute.Value != null));
+            base.SetRequired(required);
+            UpperAttribute.SetRequired(required);
+            LowerAttribute.SetRequired(required);
+        }
+
+        public override bool AreRequiredFieldsSatisfied()
+        {
+            // If a limit is required, then these fields should be as well.
+            UpperAttribute.SetRequired(IsRequired());
+            LowerAttribute.SetRequired(IsRequired());
+            return base.AreRequiredFieldsSatisfied();
         }
     }
 
@@ -1584,7 +1668,7 @@ namespace SW2URDF
             }
         }
 
-        public Calibration() : base("calibration")
+        public Calibration() : base("calibration", false)
         {
             RisingAttribute = new Attribute("rising", false, null);
             FallingAttribute = new Attribute("falling", false, null);
@@ -1661,7 +1745,7 @@ namespace SW2URDF
             }
         }
 
-        public Dynamics() : base("dynamics")
+        public Dynamics() : base("dynamics", false)
         {
             DampingAttribute = new Attribute("damping", false, null);
             FrictionAttribute = new Attribute("friction", false, null);
@@ -1768,12 +1852,12 @@ namespace SW2URDF
             }
         }
 
-        public SafetyController() : base("safety_controller")
+        public SafetyController() : base("safety_controller", false)
         {
             SoftUpperAttribute = new Attribute("soft_upper", false, null);
             SoftLowerAttribute = new Attribute("soft_lower", false, null);
             KPositionAttribute = new Attribute("k_position", false, null);
-            KVelocityAttribute = new Attribute("k_velocity", true, 0.0);
+            KVelocityAttribute = new Attribute("k_velocity", true, null);
 
             Attributes.Add(SoftUpperAttribute);
             Attributes.Add(SoftLowerAttribute);
@@ -1799,7 +1883,10 @@ namespace SW2URDF
                 boxPosition.Text = KPosition.ToString(format);
             }
 
-            boxVelocity.Text = KVelocity.ToString(format);
+            if (KVelocityAttribute.Value != null)
+            {
+                boxVelocity.Text = KVelocity.ToString(format);
+            }
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
@@ -1833,7 +1920,14 @@ namespace SW2URDF
                 KPosition = (Double.TryParse(boxPosition.Text, out value)) ? value : 0;
             }
 
-            KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            if (String.IsNullOrWhiteSpace(boxVelocity.Text))
+            {
+                KVelocityAttribute.Value = null;
+            }
+            else
+            {
+                KVelocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
+            }
         }
     }
 
