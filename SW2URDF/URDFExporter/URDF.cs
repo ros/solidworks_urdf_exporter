@@ -220,7 +220,7 @@ namespace SW2URDF
         public Attribute(string type, bool required, object initialValue)
         {
             AttributeType = type;
-            this.IsRequired = required;
+            IsRequired = required;
             Value = initialValue;
         }
 
@@ -250,7 +250,7 @@ namespace SW2URDF
             {
                 throw new Exception("Unhandled object type in write attribute");
             }
-            if (this.IsRequired && Value == null)
+            if (IsRequired && Value == null)
             {
                 throw new Exception("Required attribute " + AttributeType + " has null value");
             }
@@ -289,7 +289,7 @@ namespace SW2URDF
 
         public void SetRequired(bool required)
         {
-            this.IsRequired = required;
+            IsRequired = required;
         }
     }
 
