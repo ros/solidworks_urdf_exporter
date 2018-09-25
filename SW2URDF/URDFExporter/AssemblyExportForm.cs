@@ -127,6 +127,14 @@ namespace SW2URDF
             }
             previouslySelectedNode = null; // Need to clear this for the link properties page
 
+            string errors = CheckJointsForErrors();
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                string message = "The following joints mere missing required fields, please address them before continuing\r\n" + errors;
+                MessageBox.Show(message, "URDF Joint Errors");
+                return;
+            }
+
             while (treeViewJointTree.Nodes.Count > 0)
             {
                 LinkNode node = (LinkNode)treeViewJointTree.Nodes[0];
@@ -138,6 +146,30 @@ namespace SW2URDF
             FillLinkTree();
             panelLinkProperties.Visible = true;
             Focus();
+        }
+
+        private string CheckJointsForErrors()
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (LinkNode child in treeViewJointTree.Nodes)
+            {
+                CheckJointsForErrors(child, builder);
+            }
+            return builder.ToString();
+        }
+
+        private StringBuilder CheckJointsForErrors(LinkNode node, StringBuilder builder)
+        {
+            if (!node.Link.Joint.AreRequiredFieldsSatisfied())
+            {
+                builder.Append(node.Link.Joint.Name).Append("\r\n");
+            }
+
+            foreach (LinkNode child in node.Nodes)
+            {
+                CheckJointsForErrors(child, builder);
+            }
+            return builder;
         }
 
         private void Button_Joint_Cancel_Click(object sender, EventArgs e)
@@ -202,6 +234,19 @@ namespace SW2URDF
             }
 
             Exporter.URDFRobot = CreateRobotFromTreeView(treeViewLinkProperties);
+
+            // The UI should prevent these sorts of errors, but just in case
+            string errors = CheckLinksForErrors(Exporter.URDFRobot.BaseLink);
+            if (!string.IsNullOrWhiteSpace(errors))
+            {
+                logger.Info("Link errors encountered:\n " + errors);
+
+                string message = "The following links contained errors in either their link or joint " +
+                    "properties. Please address before continuing\r\n\r\n" + errors;
+                MessageBox.Show(message, "URDF Errors");
+                return;
+            }
+
             string warnings = CheckLinksForWarnings(Exporter.URDFRobot.BaseLink);
 
             if (!string.IsNullOrWhiteSpace(warnings))
@@ -236,6 +281,26 @@ namespace SW2URDF
                 Exporter.ExportRobot(exportSTL);
                 Close();
             }
+        }
+
+        private string CheckLinksForErrors(Link baseLink)
+        {
+            StringBuilder builder = new StringBuilder();
+            CheckLinkForErrors(baseLink, builder);
+            return builder.ToString();
+        }
+
+        private StringBuilder CheckLinkForErrors(Link link, StringBuilder builder)
+        {
+            if (!link.AreRequiredFieldsSatisfied())
+            {
+                builder.Append(link.Name).Append("\r\n");
+            }
+            foreach (Link child in link.Children)
+            {
+                CheckLinkForErrors(child, builder);
+            }
+            return builder;
         }
 
         private void TreeViewLinkPropertiesAfterSelect(object sender, TreeViewEventArgs e)
@@ -342,7 +407,5 @@ namespace SW2URDF
         }
 
         #endregion Joint Properties Controls Handlers
-
-       
     }
 }

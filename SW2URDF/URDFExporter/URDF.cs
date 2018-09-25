@@ -69,6 +69,7 @@ namespace SW2URDF
         [DataMember]
         protected readonly string ElementName;
 
+        [DataMember]
         private bool required;
 
         public URDFElement(string elementName, bool required)
@@ -89,39 +90,14 @@ namespace SW2URDF
             this.required = required;
         }
 
-        public virtual bool CheckIfNeedToWriteElement()
-        {
-            if (required)
-            {
-                return true;
-            }
-
-            foreach (Attribute attribute in Attributes)
-            {
-                if (attribute.Value != null)
-                {
-                    return true;
-                }
-            }
-
-            foreach (URDFElement element in ChildElements)
-            {
-                if (element.CheckIfNeedToWriteElement())
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public virtual void WriteURDF(XmlWriter writer)
         {
-            if (GetType() == typeof(Limit))
+            if (!AreRequiredFieldsSatisfied())
             {
-                logger.Info("Breakponit here");
+                throw new Exception("The required fields of the element " + ElementName + " have not been satisfied");
             }
-            if (!CheckIfNeedToWriteElement())
+
+            if (!ElementContainsData())
             {
                 return;
             }
@@ -137,7 +113,7 @@ namespace SW2URDF
 
             foreach (URDFElement child in ChildElements)
             {
-                if (child.IsElementSet())
+                if (child.ElementContainsData())
                 {
                     child.WriteURDF(writer);
                 }
@@ -177,7 +153,7 @@ namespace SW2URDF
             }
         }
 
-        public virtual bool IsElementSet()
+        public virtual bool AreRequiredFieldsSatisfied()
         {
             foreach (Attribute attribute in Attributes)
             {
@@ -186,15 +162,35 @@ namespace SW2URDF
                     return false;
                 }
             }
-
             foreach (URDFElement child in ChildElements)
             {
-                if (child.required && !child.IsElementSet())
+                if (!child.AreRequiredFieldsSatisfied() &&
+                    (child.IsRequired() || child.ElementContainsData()))
                 {
                     return false;
                 }
             }
             return true;
+        }
+
+        public virtual bool ElementContainsData()
+        {
+            foreach (Attribute attribute in Attributes)
+            {
+                if (attribute.Value != null)
+                {
+                    return true;
+                }
+            }
+
+            foreach (URDFElement child in ChildElements)
+            {
+                if (child.ElementContainsData())
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public static Type[] GetKnownTypes()
@@ -470,7 +466,7 @@ namespace SW2URDF
             }
 
             writer.WriteEndElement();
-            if (Joint.IsElementSet())
+            if (Joint.ElementContainsData())
             {
                 Joint.WriteURDF(writer);
             }
@@ -511,11 +507,6 @@ namespace SW2URDF
         private void OnDeserialized(StreamingContext context)
         {
             SWcomponents = new List<Component2>();
-
-            if (ChildElements.Count == 3)
-            {
-                ChildElements.Add(Joint);
-            }
         }
     }
 
@@ -1037,7 +1028,7 @@ namespace SW2URDF
         {
             Color = new Color();
             Texture = new Texture();
-            NameAttribute = new Attribute("name", true, null);
+            NameAttribute = new Attribute("name", false, null);
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Color);
@@ -1047,6 +1038,17 @@ namespace SW2URDF
         public void FillBoxes(ComboBox box, string format)
         {
             box.Text = Name;
+        }
+
+        /// <summary>
+        /// The name was previously required, but it's not actually. We need to correct
+        /// previous serializations.
+        /// </summary>
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            SetRequired(false);
+            NameAttribute.SetRequired(false);
         }
     }
 
@@ -1299,11 +1301,18 @@ namespace SW2URDF
         {
             Name = boxName.Text;
             Type = boxType.Text;
+            Limit.SetRequired((Type == "prismatic" || Type == "revolute"));
         }
 
-        public override bool IsElementSet()
+        public override bool ElementContainsData()
         {
             return !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Type);
+        }
+
+        public override bool AreRequiredFieldsSatisfied()
+        {
+            Limit.SetRequired((Type == "prismatic" || Type == "revolute"));
+            return base.AreRequiredFieldsSatisfied();
         }
 
         public override void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)

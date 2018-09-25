@@ -188,10 +188,11 @@
             this.panelLinkProperties.Controls.Add(this.groupBox5);
             this.panelLinkProperties.Controls.Add(this.groupBox4);
             this.panelLinkProperties.Controls.Add(this.treeViewLinkProperties);
+            this.panelLinkProperties.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelLinkProperties.Location = new System.Drawing.Point(0, 0);
             this.panelLinkProperties.Margin = new System.Windows.Forms.Padding(4);
             this.panelLinkProperties.Name = "panelLinkProperties";
-            this.panelLinkProperties.Size = new System.Drawing.Size(618, 846);
+            this.panelLinkProperties.Size = new System.Drawing.Size(1431, 846);
             this.panelLinkProperties.TabIndex = 222;
             this.panelLinkProperties.Visible = false;
             // 
@@ -230,7 +231,7 @@
             // buttonLinksFinish
             // 
             this.buttonLinksFinish.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonLinksFinish.Location = new System.Drawing.Point(408, 804);
+            this.buttonLinksFinish.Location = new System.Drawing.Point(1219, 804);
             this.buttonLinksFinish.Margin = new System.Windows.Forms.Padding(4);
             this.buttonLinksFinish.Name = "buttonLinksFinish";
             this.buttonLinksFinish.Size = new System.Drawing.Size(200, 28);
@@ -242,7 +243,7 @@
             // buttonLinksPrevious
             // 
             this.buttonLinksPrevious.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonLinksPrevious.Location = new System.Drawing.Point(42, 804);
+            this.buttonLinksPrevious.Location = new System.Drawing.Point(679, 804);
             this.buttonLinksPrevious.Margin = new System.Windows.Forms.Padding(4);
             this.buttonLinksPrevious.Name = "buttonLinksPrevious";
             this.buttonLinksPrevious.Size = new System.Drawing.Size(100, 28);
@@ -915,7 +916,7 @@
             this.treeViewLinkProperties.Location = new System.Drawing.Point(16, 98);
             this.treeViewLinkProperties.Margin = new System.Windows.Forms.Padding(4);
             this.treeViewLinkProperties.Name = "treeViewLinkProperties";
-            this.treeViewLinkProperties.Size = new System.Drawing.Size(65535, 698);
+            this.treeViewLinkProperties.Size = new System.Drawing.Size(614, 698);
             this.treeViewLinkProperties.TabIndex = 74;
             this.treeViewLinkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewLinkPropertiesAfterSelect);
             // 
@@ -1620,7 +1621,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1431, 846);
-            this.Controls.Add(this.label27);
             this.Controls.Add(this.LimitRequiredLabel);
             this.Controls.Add(this.AxisRequiredLabel);
             this.Controls.Add(this.label1);
@@ -1693,6 +1693,7 @@
             this.Controls.Add(this.label67);
             this.Controls.Add(this.label69);
             this.Controls.Add(this.label4);
+            this.Controls.Add(this.label27);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
