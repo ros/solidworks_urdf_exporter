@@ -1630,6 +1630,14 @@ namespace SW2URDF
                 Velocity = (Double.TryParse(boxVelocity.Text, out value)) ? value : 0;
             }
         }
+
+        public override bool AreRequiredFieldsSatisfied()
+        {
+            // If a limit is required, then these fields should be as well.
+            UpperAttribute.SetRequired(IsRequired());
+            LowerAttribute.SetRequired(IsRequired());
+            return base.AreRequiredFieldsSatisfied();
+        }
     }
 
     //The calibration element of a joint.
