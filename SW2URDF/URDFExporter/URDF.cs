@@ -181,7 +181,7 @@ namespace SW2URDF
         {
             foreach (Attribute attribute in Attributes)
             {
-                if (attribute.IsRequired() && attribute.Value == null)
+                if (attribute.GetIsRequired() && attribute.Value == null)
                 {
                     return false;
                 }
@@ -213,7 +213,7 @@ namespace SW2URDF
         private static readonly string USStringFormat = "en-US";
 
         [DataMember]
-        private bool required;
+        private bool IsRequired;
 
         [DataMember]
         private readonly string AttributeType;
@@ -224,7 +224,7 @@ namespace SW2URDF
         public Attribute(string type, bool required, object initialValue)
         {
             AttributeType = type;
-            this.required = required;
+            this.IsRequired = required;
             Value = initialValue;
         }
 
@@ -254,7 +254,7 @@ namespace SW2URDF
             {
                 throw new Exception("Unhandled object type in write attribute");
             }
-            if (required && Value == null)
+            if (this.IsRequired && Value == null)
             {
                 throw new Exception("Required attribute " + AttributeType + " has null value");
             }
@@ -286,14 +286,14 @@ namespace SW2URDF
             }
         }
 
-        public virtual bool IsRequired()
+        public virtual bool GetIsRequired()
         {
-            return required;
+            return IsRequired;
         }
 
         public void SetRequired(bool required)
         {
-            this.required = required;
+            this.IsRequired = required;
         }
     }
 
@@ -511,6 +511,7 @@ namespace SW2URDF
         private void OnDeserialized(StreamingContext context)
         {
             SWcomponents = new List<Component2>();
+
             if (ChildElements.Count == 3)
             {
                 ChildElements.Add(Joint);
