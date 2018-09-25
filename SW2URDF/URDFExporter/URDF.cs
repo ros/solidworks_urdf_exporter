@@ -334,6 +334,10 @@ namespace SW2URDF
             {
                 Value = result;
             }
+            else if (GetIsRequired())
+            {
+                Value = 0.0;
+            }
         }
 
         public void SetDoubleArrayFromStringArray(string[] textArray)
@@ -345,9 +349,9 @@ namespace SW2URDF
                 {
                     dArray[i] = result;
                 }
-                else
+                else if (GetIsRequired())
                 {
-                    return;
+                    dArray[i] = 0.0;
                 }
             }
             Value = dArray;
@@ -1170,7 +1174,7 @@ namespace SW2URDF
             DomainUpDown boxBlue, DomainUpDown boxAlpha)
         {
             RGBAAttribute.SetDoubleArrayFromStringArray(
-                new string[] { boxRed.Text, boxGreen.Text, boxBlue.Text, boxAlpha.text });
+                new string[] { boxRed.Text, boxGreen.Text, boxBlue.Text, boxAlpha.Text });
         }
     }
 
