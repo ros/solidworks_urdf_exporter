@@ -4,7 +4,7 @@
 #define MyAppName "SolidWorks To URDF"
 #define MyAppVersion "2018 v1.3"
 #define MyAppPublisher "Stephen Brawner"
-#define MyAppURL "http://kforge.ros.org/robotmodel/viewvc/sw_urdf_exporter/"
+#define MyAppURL "http://wiki.ros.org/sw_urdf_exporter"
 
 #define MainBinaryName  "SW2URDF.dll"
 #define SetupBaseName   "sw2urdfSetup_"

@@ -67,6 +67,8 @@ namespace SW2URDF
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
             logger.Info("\n" + String.Concat(Enumerable.Repeat("-", 80)));
             logger.Info("Logging commencing for SW2URDF exporter");
+
+            // Getting version with commit hash
         }
 
         public static ILog GetLogger()

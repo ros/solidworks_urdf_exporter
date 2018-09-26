@@ -209,6 +209,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GitVersionInfo1.tt.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>GitVersionInfo.tt</DependentUpon>
+    </Compile>
     <Compile Include="Legacy\SerialNode.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -294,14 +299,30 @@
     </None>
     <None Include="SW2URDF.ruleset" />
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Content Include="GitVersionInfo.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>GitVersionInfo1.tt.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <TransformOnBuild>True</TransformOnBuild>
+    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>echo $(VSToolsPath)</PreBuildEvent>
+    <PreBuildEvent>git -C $(ProjectDir) describe --tags --long --dirty --always &gt; "$(ProjectDir)git_version.txt"</PreBuildEvent>
     <PostBuildEvent>
 IF EXIST "$(TargetDir)$(TargetName).bmp" (GOTO REGISTRATION)
 XCOPY "$(ProjectDir)AddinIcon.bmp" "$(TargetDir)"  /F
-REN "$(TargetDir)AddinIcon.bmp" "$(TargetName).bmp" 
+REN "$(TargetDir)AddinIcon.bmp" "$(TargetName).bmp"
 
 :REGISTRATION
 IF "$(TargetFrameworkVersion)"=="v4.0" GOTO NET40
@@ -332,7 +353,7 @@ IF EXIST "%25Windir%25\Microsoft.NET\Framework64\%25FMWK%25\regasm.exe" "%25Wind
 GOTO END
 
 :END
-    
+
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -327,3 +327,7 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+
+# Versioning Info Temp files
+*.tt.cs
+sw2urdf/git_version.txt
