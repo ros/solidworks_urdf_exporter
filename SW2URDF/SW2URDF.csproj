@@ -303,7 +303,7 @@
     <Content Include="GitVersionInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>GitVersionInfo1.tt.cs</LastGenOutput>
-      <AutoT4RunOnBuild>BeforeBuild</AutoT4RunOnBuild>
+      <AutoT4RunOnBuild>Default</AutoT4RunOnBuild>
     </Content>
   </ItemGroup>
   <ItemGroup>
