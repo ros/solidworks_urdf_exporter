@@ -303,21 +303,14 @@
     <Content Include="GitVersionInfo.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>GitVersionInfo1.tt.cs</LastGenOutput>
+      <AutoT4RunOnBuild>BeforeBuild</AutoT4RunOnBuild>
     </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">15.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-    <TransformOnBuild>True</TransformOnBuild>
-    <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
-  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(VSToolsPath)\TextTemplating\Microsoft.TextTemplating.targets" />
   <PropertyGroup>
-    <PreBuildEvent>echo $(VSToolsPath)</PreBuildEvent>
     <PreBuildEvent>git -C $(ProjectDir) describe --tags --long --dirty --always &gt; "$(ProjectDir)git_version.txt"</PreBuildEvent>
     <PostBuildEvent>
 IF EXIST "$(TargetDir)$(TargetName).bmp" (GOTO REGISTRATION)
