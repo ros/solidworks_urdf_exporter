@@ -70,7 +70,7 @@ namespace SW2URDF
             logger.Info("Logging commencing for SW2URDF exporter");
 
             logger.Info("Commit version " + Version.GetCommitVersion());
-            logger.Info("Build version " + Version.GetBuildVersion());
+            //logger.Info("Build version " + Version.GetBuildVersion());
         }
 
         public static ILog GetLogger()

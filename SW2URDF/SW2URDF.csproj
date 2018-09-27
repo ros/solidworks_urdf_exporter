@@ -209,11 +209,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GitVersionInfo1.tt.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>GitVersionInfo.tt</DependentUpon>
-    </Compile>
     <Compile Include="Legacy\SerialNode.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -255,6 +250,7 @@
     <Compile Include="URDFExporter\URDF.cs" />
     <Compile Include="URDFExporter\URDFExporterPM.cs" />
     <Compile Include="URDFExporter\URDFPackage.cs" />
+    <Compile Include="Version.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -300,11 +296,9 @@
     <None Include="SW2URDF.ruleset" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GitVersionInfo.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>GitVersionInfo1.tt.cs</LastGenOutput>
-      <AutoT4RunOnBuild>Default</AutoT4RunOnBuild>
-    </Content>
+    <EmbeddedResource Include="git_version.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
