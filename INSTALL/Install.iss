@@ -10,7 +10,7 @@
 #define SetupBaseName   "sw2urdfSetup_"
 #define DllLocation     AddBackslash(SourcePath + "..\SW2URDF\bin\x64\Debug") + MainBinaryName
 #define AppVersion      GetFileVersion(DllLocation)
-#define CommitVersion = GetFileProductVersion(AddBackslash(SourcePath + "..\SW2URDF\bin\x64\Debug") + MainBinaryName)
+#define CommitVersion = GetFileProductVersion(DllLocation)
 #define AVF1            Copy(AppVersion, 1, Pos(".", AppVersion) - 1) + "_" + Copy(AppVersion, Pos(".", AppVersion) + 1)
 #define AVF2            Copy(AVF1,       1, Pos(".", AVF1      ) - 1) + "_" + Copy(AVF1      , Pos(".", AVF1      ) + 1)
 #define AppVersionFile  Copy(AVF2,       1, Pos(".", AVF2      ) - 1) + "_" + Copy(AVF2      , Pos(".", AVF2      ) + 1)

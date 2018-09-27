@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace SW2URDF
 {
@@ -8,17 +6,8 @@ namespace SW2URDF
     {
         public static string GetCommitVersion()
         {
+            // Getting commit version which is attached to the latest git commit
             return FileVersionInfo.GetVersionInfo(typeof(Logger).Assembly.Location).ProductVersion;
-            string gitVersion = "";
-            using (Stream stream = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("SW2URDF.git_version.txt"))
-            {
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    gitVersion = reader.ReadToEnd();
-                }
-            }
-            return gitVersion;
         }
 
         public static string GetBuildVersion()
