@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 
 namespace SW2URDF
@@ -7,6 +8,7 @@ namespace SW2URDF
     {
         public static string GetCommitVersion()
         {
+            return FileVersionInfo.GetVersionInfo(typeof(Logger).Assembly.Location).ProductVersion;
             string gitVersion = "";
             using (Stream stream = Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream("SW2URDF.git_version.txt"))

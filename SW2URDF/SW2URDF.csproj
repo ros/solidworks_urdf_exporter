@@ -297,16 +297,11 @@
     <None Include="SW2URDF.ruleset" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="git_version.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>git -C $(ProjectDir) describe --tags --long --dirty --always &gt; "$(ProjectDir)git_version.txt"</PreBuildEvent>
+    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -File $(SolutionDir)scripts\UpdateVersionInfo.ps1</PreBuildEvent>
     <PostBuildEvent>
 IF EXIST "$(TargetDir)$(TargetName).bmp" (GOTO REGISTRATION)
 XCOPY "$(ProjectDir)AddinIcon.bmp" "$(TargetDir)"  /F
