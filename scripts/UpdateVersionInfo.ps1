@@ -1,5 +1,5 @@
 param (
-    [string]$filename = "..\..\VersionInfo.cs"
+    [string]$filename
  )
 
 $CommitVersion = git describe --tags --long --dirty --always
