@@ -69,18 +69,8 @@ namespace SW2URDF
             logger.Info("\n" + String.Concat(Enumerable.Repeat("-", 80)));
             logger.Info("Logging commencing for SW2URDF exporter");
 
-            // Getting version with commit hash
-
-            object[] attributes = typeof(Logger).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false);
-            if (attributes.Length == 0)
-            {
-                throw new Exception("The AssemblyInformationalVersion is not included in this assembly");
-            }
-            else
-            {
-                string assemblyVersion = (attributes[0] as AssemblyInformationalVersionAttribute).InformationalVersion;
-                logger.Info("Version: " + assemblyVersion);
-            }
+            logger.Info("Commit version " + Version.GetCommitVersion());
+            logger.Info("Build version " + Version.GetBuildVersion());
         }
 
         public static ILog GetLogger()
