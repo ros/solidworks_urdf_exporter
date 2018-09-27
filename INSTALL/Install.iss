@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SolidWorks To URDF"
-#define MyAppVersion "2018 v1.3"
+#define MyAppVersion "2018 v1.4"
 #define MyAppPublisher "Stephen Brawner"
 #define MyAppURL "http://wiki.ros.org/sw_urdf_exporter"
 
@@ -19,7 +19,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{E43E85A9-071D-430A-91B2-84B7AB923170}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
+AppVersion={#AppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
