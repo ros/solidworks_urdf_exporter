@@ -238,13 +238,6 @@
     <Compile Include="URDFExporter\CSV\ContextToColumns.cs" />
     <Compile Include="URDFExporter\CSV\CSVImportExport.cs" />
     <Compile Include="URDFExporter\Serialization.cs" />
-    <Compile Include="URDFExporter\TreeMerge.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="URDFExporter\TreeMerge.Designer.cs">
-      <DependentUpon>TreeMerge.cs</DependentUpon>
-    </Compile>
-    <Compile Include="URDFExporter\TreeMergeHelper.cs" />
     <Compile Include="URDFExporter\URDFExporter.cs" />
     <Compile Include="URDFExporter\URDFExporterExtension.cs" />
     <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">
@@ -308,9 +301,6 @@
     <EmbeddedResource Include="MainIconLarge.bmp" />
     <EmbeddedResource Include="MainIconSmall.bmp" />
     <EmbeddedResource Include="AddinIcon.bmp" />
-    <EmbeddedResource Include="URDFExporter\TreeMerge.resx">
-      <DependentUpon>TreeMerge.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
