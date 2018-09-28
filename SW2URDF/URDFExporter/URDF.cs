@@ -231,6 +231,10 @@ namespace SW2URDF
 
         public void WriteURDF(XmlWriter writer)
         {
+            if (Value == null)
+            {
+                return;
+            }
             string valueString = "";
             if (Value.GetType() == typeof(double[]))
             {
@@ -342,6 +346,10 @@ namespace SW2URDF
 
         public void SetDoubleArrayFromStringArray(string[] textArray)
         {
+            if (textArray == null)
+            {
+                return;
+            }
             double[] dArray = new double[textArray.Length];
             for (int i = 0; i < textArray.Length; i++)
             {
@@ -1737,8 +1745,8 @@ namespace SW2URDF
 
         public void FillBoxes(TextBox boxDamping, TextBox boxFriction, string format)
         {
-            boxDamping.Text = DampingAttribute.GetTextFromDoubleValue();
-            boxFriction.Text = FrictionAttribute.GetTextFromDoubleValue();
+            boxDamping.Text = DampingAttribute.GetTextFromDoubleValue(format);
+            boxFriction.Text = FrictionAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxDamping, TextBox boxFriction)
@@ -1828,10 +1836,10 @@ namespace SW2URDF
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxPosition, TextBox boxVelocity, string format)
         {
-            boxLower.Text = SoftLowerAttribute.GetTextFromDoubleValue();
-            boxUpper.Text = SoftUpperAttribute.GetTextFromDoubleValue();
-            boxPosition.Text = KPositionAttribute.GetTextFromDoubleValue();
-            boxVelocity.Text = KVelocityAttribute.GetTextFromDoubleValue();
+            boxLower.Text = SoftLowerAttribute.GetTextFromDoubleValue(format);
+            boxUpper.Text = SoftUpperAttribute.GetTextFromDoubleValue(format);
+            boxPosition.Text = KPositionAttribute.GetTextFromDoubleValue(format);
+            boxVelocity.Text = KVelocityAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,
