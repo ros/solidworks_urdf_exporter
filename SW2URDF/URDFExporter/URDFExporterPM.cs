@@ -23,10 +23,14 @@ THE SOFTWARE.
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
+using SW2URDF.CSV;
+using SW2URDF.UI;
+using SW2URDF.URDF;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -56,6 +60,7 @@ namespace SW2URDF
         private PropertyManagerPageGroup PMGroup;
         private PropertyManagerPageSelectionbox PMSelection;
         private PropertyManagerPageButton PMButtonExport;
+        private PropertyManagerPageButton PMButtonLoad;
         private PropertyManagerPageTextbox PMTextBoxLinkName;
         private PropertyManagerPageTextbox PMTextBoxJointName;
         private PropertyManagerPageNumberbox PMNumberBoxChildCount;
@@ -108,6 +113,7 @@ namespace SW2URDF
         private const int LabelJointTypeID = 23;
         private const int IDGlobalCoordsys = 24;
         private const int IDLabelGlobalCoordsys = 25;
+        private const int LoadExternalCSVID = 26;
 
         #endregion class variables
 
@@ -191,62 +197,154 @@ namespace SW2URDF
             PMSelection.SetSelectionFocus();
         }
 
-        private void OnButtonPress(int Id)
+        private void ExportButtonPress()
         {
-            if (Id == ButtonExportID) //If the export button was pressed
+            SaveActiveNode();
+
+            if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
             {
-                SaveActiveNode();
-                if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
+                PMPage.Close(true); //It saves automatically when sending Okay as true;
+                AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
+
+                //This call can be a real sink of processing time if the model is large.
+                //Unfortunately there isn't a way around it I believe.
+                int result = assy.ResolveAllLightWeightComponents(true);
+
+                // If the user confirms to resolve the components and they are successfully
+                // resolved we can continue
+                if (result == (int)swComponentResolveStatus_e.swResolveOk)
                 {
-                    PMPage.Close(true); //It saves automatically when sending Okay as true;
-                    AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
-
-                    //This call can be a real sink of processing time if the model is large.
-                    //Unfortunately there isn't a way around it I believe.
-                    int result = assy.ResolveAllLightWeightComponents(true);
-
-                    // If the user confirms to resolve the components and they are successfully
-                    // resolved we can continue
-                    if (result == (int)swComponentResolveStatus_e.swResolveOk)
+                    List<string> unresolvedComponents = new List<string>();
+                    CheckModelDocsExist((LinkNode)Tree.Nodes[0], unresolvedComponents);
+                    if (unresolvedComponents.Count > 0)
                     {
-                        List<string> unresolvedComponents = new List<string>();
-                        CheckModelDocsExist((LinkNode)Tree.Nodes[0], unresolvedComponents);
-                        if (unresolvedComponents.Count > 0)
-                        {
-                            string componentNames = string.Join("\r\n", unresolvedComponents);
-                            logger.Error("SolidWorks told us the resolve succeeded, but ModelDocs" +
-                                " could not be obtained for: " + componentNames);
-                            MessageBox.Show("Model Documents could not be obtained for the following" +
-                                " components. Plesae resolve them:\r\n" + componentNames);
-                            return;
-                        }
-
-                        // Builds the links and joints from the PMPage configuration
-                        LinkNode BaseNode = (LinkNode)Tree.Nodes[0];
-                        automaticallySwitched = true;
-                        Tree.Nodes.Remove(BaseNode);
-
-                        Exporter.CreateRobotFromTreeView(BaseNode);
-                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode, Exporter);
-                        exportForm.Exporter = Exporter;
-                        exportForm.Show();
+                        string componentNames = string.Join("\r\n", unresolvedComponents);
+                        logger.Error("SolidWorks told us the resolve succeeded, but ModelDocs" +
+                            " could not be obtained for: " + componentNames);
+                        MessageBox.Show("Model Documents could not be obtained for the following" +
+                            " components. Plesae resolve them:\r\n" + componentNames);
+                        return;
                     }
-                    else if (result == (int)swComponentResolveStatus_e.swResolveError ||
-                        result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
+
+                    // Builds the links and joints from the PMPage configuration
+                    LinkNode BaseNode = (LinkNode)Tree.Nodes[0];
+                    automaticallySwitched = true;
+                    Tree.Nodes.Remove(BaseNode);
+
+                    Exporter.CreateRobotFromTreeView(BaseNode);
+
+                    AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode, Exporter);
+                    exportForm.Exporter = Exporter;
+                    exportForm.Show();
+                }
+                else if (result == (int)swComponentResolveStatus_e.swResolveError ||
+                    result == (int)swComponentResolveStatus_e.swResolveNotPerformed)
+                {
+                    logger.Warn("Resolving components failed. Warning user to do so on their own");
+                    MessageBox.Show("Resolving components failed. In order to export to URDF, " +
+                        " this tool needs all components to be resolved. Try resolving " +
+                        "lightweight components manually before attempting to export again");
+                }
+                else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
+                {
+                    logger.Warn("Components were not resolved by user");
+                    MessageBox.Show("In order to export to URDF, this tool needs all " +
+                        "components to be resolved. You can resolve them manually or try " +
+                        "exporting again");
+                }
+            }
+        }
+
+        private bool ExistingConfigurationEmpty()
+        {
+            if (Tree.Nodes.Count == 0)
+            {
+                return false;
+            }
+
+            LinkNode baseNode = (LinkNode)Tree.Nodes[0];
+
+            return (baseNode.Link.Name == "base_link" &&
+                baseNode.Nodes.Count == 0 &&
+                string.IsNullOrWhiteSpace(baseNode.Link.Joint.AxisName) &&
+                baseNode.Link.Joint.CoordinateSystemName == "Automatically Generate" &&
+                baseNode.Link.SWcomponents.Count == 0);
+        }
+
+        private void LoadFromCSV()
+        {
+            OpenFileDialog loadFileDialog = new OpenFileDialog
+            {
+                Filter = "CSV (.csv)|*.csv|All files (*.*)|*.*",
+                Multiselect = false,
+                ValidateNames = true,
+                CheckPathExists = true
+            };
+
+            if (loadFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                logger.Info("Loading configuration " + loadFileDialog.FileName);
+                using (Stream stream = loadFileDialog.OpenFile())
+                {
+                    Link link = ImportExport.LoadURDFRobotFromCSV(stream);
+                    if (link == null)
                     {
-                        logger.Warn("Resolving components failed. Warning user to do so on their own");
-                        MessageBox.Show("Resolving components failed. In order to export to URDF, " +
-                            " this tool needs all components to be resolved. Try resolving " +
-                            "lightweight components manually before attempting to export again");
+                        return;
                     }
-                    else if (result == (int)swComponentResolveStatus_e.swResolveAbortedByUser)
+
+                    logger.Info("Link successfully loaded");
+
+                    LinkNode loadedBaseNode = new LinkNode(link);
+
+                    if (!ExistingConfigurationEmpty())
                     {
-                        logger.Warn("Components were not resolved by user");
-                        MessageBox.Show("In order to export to URDF, this tool needs all " +
-                            "components to be resolved. You can resolve them manually or try " +
-                            "exporting again");
+                        LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
+                        TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes());
+                        wpf.SetTrees(existingBaseNode, loadedBaseNode);
+                        wpf.Show();
+                        return;
+                        TreeMerge treeMerge = new TreeMerge();
+                        treeMerge.SetTrees(existingBaseNode, loadedBaseNode);
+
+                        List<string> refCoordinates = Exporter.GetRefCoordinateSystems();
+                        List<string> refAxes = Exporter.GetRefAxes();
+                        treeMerge.FillPullDowns(refCoordinates, refAxes);
+
+                        treeMerge.MergeCompleted += TreeMergeCompleted;
+                        treeMerge.Show();
+                    }
+                    else
+                    {
+                        SetConfigTree(loadedBaseNode);
                     }
                 }
+            }
+        }
+
+        private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
+        {
+            if (e.Success)
+            {
+                LinkNode baseNode = new LinkNode(e.MergedLink);
+                Tree.Nodes.Clear();
+                Tree.Nodes.Add(baseNode);
+            }
+        }
+
+        private void OnButtonPress(int Id)
+        {
+            switch (Id)
+            {
+                case ButtonExportID:
+                    ExportButtonPress();
+                    break;
+
+                case LoadExternalCSVID:
+                    LoadFromCSV();
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -365,6 +463,12 @@ namespace SW2URDF
         // selected one is then set
         private void TreeAfterSelect(object sender, TreeViewEventArgs e)
         {
+            if (e.Action != TreeViewAction.ByMouse && e.Action != TreeViewAction.ByKeyboard)
+            {
+                logger.Info(e.Action);
+                return;
+            }
+
             try
             {
                 if (!automaticallySwitched && e.Node != null)
@@ -516,88 +620,25 @@ namespace SW2URDF
         private void DoDragDrop(DragEventArgs e)
         {
             // Retrieve the client coordinates of the drop location.
-            Point targetPoint = Tree.PointToClient(new Point(e.X, e.Y));
+            Point point = Tree.PointToClient(new Point(e.X, e.Y));
 
             // Retrieve the node at the drop location.
-            LinkNode targetNode = (LinkNode)Tree.GetNodeAt(targetPoint);
+            LinkNode targetNode = (LinkNode)Tree.GetNodeAt(point);
 
-            LinkNode draggedNode;
-            // Retrieve the node that was dragged.
+            LinkNode draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
 
-            //Retrieve the node/item that was dragged
-            if ((LinkNode)e.Data.GetData(typeof(LinkNode)) != null)
-            {
-                draggedNode = (LinkNode)e.Data.GetData(typeof(LinkNode));
-            }
-            else
-            {
-                return;
-            }
-
-            // If the node is picked up and dragged back on to itself, please don't crash
-            if (draggedNode == targetNode)
+            // Check if the move is valid, if not then we won't do anything
+            if (draggedNode == null || draggedNode == targetNode || draggedNode.TreeView != Tree)
             {
                 return;
             }
 
             // If the it was dropped into the box itself, but not onto an actual node
-            if (targetNode == null)
-            {
-                // If for some reason the tree is empty
-                if (Tree.Nodes.Count == 0)
-                {
-                    draggedNode.Remove();
-                    Tree.Nodes.Add(draggedNode);
-                    Tree.ExpandAll();
-                    return;
-                }
-                else
-                {
-                    targetNode = (LinkNode)Tree.TopNode;
-                    draggedNode.Remove();
-                    targetNode.Nodes.Add(draggedNode);
-                    targetNode.ExpandAll();
-                    return;
-                }
-            }
-            else
-            {
-                // If dragging a node closer onto its ancestor do parent swapping kungfu
-                if (draggedNode.Level < targetNode.Level)
-                {
-                    int levelDiff = targetNode.Level - draggedNode.Level;
-                    LinkNode ancestorNode = targetNode;
-                    for (int i = 0; i < levelDiff; i++)
-                    {
-                        //Ascend up the target's node (new parent) parent tree the level
-                        // difference to get the ancestoral node that is at the same level
-                        // as the dragged node (the new child)
-                        ancestorNode = (LinkNode)ancestorNode.Parent;
-                    }
-                    // If the dragged node is in the same line as the target node, then the real
-                    // kungfu begins
-                    if (ancestorNode == draggedNode)
-                    {
-                        LinkNode newParent = targetNode;
-                        LinkNode newChild = draggedNode;
-                        LinkNode sameGrandparent = (LinkNode)draggedNode.Parent;
-                        newParent.Remove(); // Remove the target node from the tree
-                        newChild.Remove();  // Remove the dragged node from the tree
-                        newParent.Nodes.Add(newChild); //
-                        if (sameGrandparent == null)
-                        {
-                            Tree.Nodes.Add(newParent);
-                        }
-                        else
-                        {
-                            sameGrandparent.Nodes.Add(newParent);
-                        }
-                    }
-                }
-                draggedNode.Remove();
-                targetNode.Nodes.Add(draggedNode);
-                targetNode.ExpandAll();
-            }
+            targetNode = targetNode ?? (LinkNode)Tree.TopNode;
+
+            draggedNode.Remove();
+            targetNode.Nodes.Add(draggedNode);
+            targetNode.ExpandAll();
         }
 
         private void TreeDragDrop(object sender, DragEventArgs e)
@@ -628,13 +669,18 @@ namespace SW2URDF
                 (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
             PMGroup = (PropertyManagerPageGroup)PMPage.AddGroupBox(GroupID, caption, (int)options);
 
+            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMButtonLoad = PMGroup.AddControl2(LoadExternalCSVID,
+                (short)swPropertyManagerPageControlType_e.swControlType_Button,
+                "Load Configuration...", 0, (int)options, "Load a URDF Export configuration from a CSV file");
+
             //Create the parent link label (static)
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Parent Link";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the parent link name label, the one that is updated
@@ -642,7 +688,7 @@ namespace SW2URDF
             caption = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelParentLink = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelParentLink = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the link name text box label
@@ -652,7 +698,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the link name text box
@@ -662,7 +708,7 @@ namespace SW2URDF
             tip = "Enter the name of the link";
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMTextBoxLinkName = (PropertyManagerPageTextbox)PMGroup.AddControl(
+            PMTextBoxLinkName = (PropertyManagerPageTextbox)PMGroup.AddControl2(
                 TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box label
@@ -671,7 +717,7 @@ namespace SW2URDF
             tip = "Enter the name of the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelJointName = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelJointName = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelJointNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create the joint name text box
@@ -680,7 +726,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             tip = "Enter the name of the joint";
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMTextBoxJointName = (PropertyManagerPageTextbox)PMGroup.AddControl(
+            PMTextBoxJointName = (PropertyManagerPageTextbox)PMGroup.AddControl2(
                 TextBoxLinkNameID, (short)(controlType), caption, (short)alignment, (int)options, tip);
 
             //Create the global origin coordinate sys label
@@ -689,7 +735,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelGlobalCoordsys = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelGlobalCoordsys = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 IDLabelGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
@@ -698,7 +744,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the global origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxGlobalCoordsys = (PropertyManagerPageCombobox)PMGroup.AddControl(
+            PMComboBoxGlobalCoordsys = (PropertyManagerPageCombobox)PMGroup.AddControl2(
                 IDGlobalCoordsys, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMComboBoxGlobalCoordsys.Style =
                 (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
@@ -709,7 +755,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = 0;
-            PMLabelCoordSys = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelCoordSys = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for Coordinate systems
@@ -718,7 +764,7 @@ namespace SW2URDF
             tip = "Select the reference coordinate system for the joint origin";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = 0;
-            PMComboBoxCoordSys = (PropertyManagerPageCombobox)PMGroup.AddControl(
+            PMComboBoxCoordSys = (PropertyManagerPageCombobox)PMGroup.AddControl2(
                 ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMComboBoxCoordSys.Style =
                 (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
@@ -729,7 +775,7 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelAxes = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelAxes = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for axes
@@ -738,7 +784,7 @@ namespace SW2URDF
             tip = "Select the reference axis for the joint";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxAxes = (PropertyManagerPageCombobox)PMGroup.AddControl(
+            PMComboBoxAxes = (PropertyManagerPageCombobox)PMGroup.AddControl2(
                 ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMComboBoxAxes.Style =
                 (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
@@ -749,7 +795,7 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMLabelJointType = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelJointType = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelAxesID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             // Create pull down menu for joint type
@@ -758,7 +804,7 @@ namespace SW2URDF
             tip = "Select the joint type";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMComboBoxJointType = (PropertyManagerPageCombobox)PMGroup.AddControl(
+            PMComboBoxJointType = (PropertyManagerPageCombobox)PMGroup.AddControl2(
                 ComboBoxCoordSysID, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMComboBoxJointType.Style =
                 (int)swPropMgrPageComboBoxStyle_e.swPropMgrPageComboBoxStyle_EditBoxReadOnly;
@@ -772,7 +818,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl(
+            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl2(
                 LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             //Create selection box
@@ -781,7 +827,7 @@ namespace SW2URDF
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
             tip = "Select components associated with this link";
-            PMSelection = (PropertyManagerPageSelectionbox)PMGroup.AddControl(
+            PMSelection = (PropertyManagerPageSelectionbox)PMGroup.AddControl2(
                 SelectionID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
             swSelectType_e[] filters = new swSelectType_e[1];
@@ -813,22 +859,22 @@ namespace SW2URDF
             tip = "Enter the number of child links and they will be automatically added";
             options = (int)swAddControlOptions_e.swControlOptions_Enabled +
                 (int)swAddControlOptions_e.swControlOptions_Visible;
-            PMNumberBoxChildCount = PMGroup.AddControl(
+            PMNumberBoxChildCount = PMGroup.AddControl2(
                 NumBoxChildCountID, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMNumberBoxChildCount.SetRange2(
                 (int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
             PMNumberBoxChildCount.Value = 0;
 
-            PMButtonExport = PMGroup.AddControl(ButtonExportID,
+            PMButtonExport = PMGroup.AddControl2(ButtonExportID,
                 (short)swPropertyManagerPageControlType_e.swControlType_Button,
-                "Preview and Export...", 0, (int)options, "");
+                "Preview and Export...", 0, (int)options, "Preview the generated URDF and export to a URDF package");
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
             caption = "Link Tree";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMTree = PMPage.AddControl(dotNetTree,
+            PMTree = PMPage.AddControl2(dotNetTree,
                 (short)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle, caption, 0, (int)options, "");
             PMTree.Height = 163;
             Tree = new TreeView

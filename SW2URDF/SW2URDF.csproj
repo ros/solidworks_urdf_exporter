@@ -5,6 +5,7 @@
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{473A16EC-06E9-4C08-B6EF-9AF0036B69E6}</ProjectGuid>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>
@@ -174,6 +175,9 @@
       <HintPath>MathNet.Numerics\lib\Net40\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="SolidWorks.Interop.sldworks">
       <HintPath>..\..\..\..\..\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SolidWorks.Interop.sldworks.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -204,9 +208,11 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.XML">
       <Name>System.XML</Name>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Legacy\SerialNode.cs" />
@@ -217,6 +223,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ROSFiles.cs" />
+    <Compile Include="UI\TreeMergeWPF.xaml.cs">
+      <DependentUpon>TreeMergeWPF.xaml</DependentUpon>
+    </Compile>
     <Compile Include="URDFExporter\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -229,6 +238,13 @@
     <Compile Include="URDFExporter\CSV\ContextToColumns.cs" />
     <Compile Include="URDFExporter\CSV\CSVImportExport.cs" />
     <Compile Include="URDFExporter\Serialization.cs" />
+    <Compile Include="URDFExporter\TreeMerge.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="URDFExporter\TreeMerge.Designer.cs">
+      <DependentUpon>TreeMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="URDFExporter\TreeMergeHelper.cs" />
     <Compile Include="URDFExporter\URDFExporter.cs" />
     <Compile Include="URDFExporter\URDFExporterExtension.cs" />
     <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">
@@ -247,9 +263,34 @@
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="URDFExporter\URDF.cs" />
+    <Compile Include="URDFExporter\URDF\Axis.cs" />
+    <Compile Include="URDFExporter\URDF\Calibration.cs" />
+    <Compile Include="URDFExporter\URDF\ChildLink.cs" />
+    <Compile Include="URDFExporter\URDF\Collision.cs" />
+    <Compile Include="URDFExporter\URDF\Color.cs" />
+    <Compile Include="URDFExporter\URDF\Dynamics.cs" />
+    <Compile Include="URDFExporter\URDF\Geometry.cs" />
+    <Compile Include="URDFExporter\URDF\Inertia.cs" />
+    <Compile Include="URDFExporter\URDF\Inertial.cs" />
+    <Compile Include="URDFExporter\URDF\Joint.cs" />
+    <Compile Include="URDFExporter\URDF\Limit.cs" />
+    <Compile Include="URDFExporter\URDF\Link.cs" />
+    <Compile Include="URDFExporter\URDF\LinkNode.cs" />
+    <Compile Include="URDFExporter\URDF\Mass.cs" />
+    <Compile Include="URDFExporter\URDF\Material.cs" />
+    <Compile Include="URDFExporter\URDF\Mesh.cs" />
+    <Compile Include="URDFExporter\URDF\Origin.cs" />
+    <Compile Include="URDFExporter\URDF\PackageXMLWriter.cs" />
+    <Compile Include="URDFExporter\URDF\ParentLink.cs" />
+    <Compile Include="URDFExporter\URDF\Robot.cs" />
+    <Compile Include="URDFExporter\URDF\SafetyController.cs" />
+    <Compile Include="URDFExporter\URDF\Texture.cs" />
+    <Compile Include="URDFExporter\URDF\URDFAttribute.cs" />
     <Compile Include="URDFExporter\URDFExporterPM.cs" />
     <Compile Include="URDFExporter\URDFPackage.cs" />
+    <Compile Include="URDFExporter\URDF\URDFElement.cs" />
+    <Compile Include="URDFExporter\URDF\URDFWriter.cs" />
+    <Compile Include="URDFExporter\URDF\Visual.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="VersionInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -267,6 +308,9 @@
     <EmbeddedResource Include="MainIconLarge.bmp" />
     <EmbeddedResource Include="MainIconSmall.bmp" />
     <EmbeddedResource Include="AddinIcon.bmp" />
+    <EmbeddedResource Include="URDFExporter\TreeMerge.resx">
+      <DependentUpon>TreeMerge.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -295,6 +339,16 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="SW2URDF.ruleset" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UI\TreeMergeWPF.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\UIResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

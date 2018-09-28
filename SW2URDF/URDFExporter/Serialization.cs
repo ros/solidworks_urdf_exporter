@@ -1,6 +1,7 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SW2URDF.Legacy;
+using SW2URDF.URDF;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -97,6 +98,10 @@ namespace SW2URDF
             }
 
             string newData = SerializeToString(BaseNode);
+            if (BaseNode != null && string.IsNullOrEmpty(newData))
+            {
+                MessageBox.Show("Serializing this link failed. Please email your maintainer with your SW assembly.");
+            }
             if (oldData != newData)
             {
                 if (!warnUser ||
@@ -149,9 +154,17 @@ namespace SW2URDF
             {
                 DataContractSerializer ser =
                     new DataContractSerializer(typeof(Link));
-                ser.WriteObject(stream, link);
-                stream.Flush();
-                data = Encoding.ASCII.GetString(stream.GetBuffer(), 0, (int)stream.Position);
+
+                try
+                {
+                    ser.WriteObject(stream, link);
+                    stream.Flush();
+                    data = Encoding.ASCII.GetString(stream.GetBuffer(), 0, (int)stream.Position);
+                }
+                catch (SerializationException e)
+                {
+                    logger.Error("Serialization failed with exception, returning empty string", e);
+                }
             }
             return data;
         }
@@ -170,8 +183,17 @@ namespace SW2URDF
                 {
                     DataContractSerializer ser =
                         new DataContractSerializer(typeof(Link));
-                    Link link = (Link)ser.ReadObject(stream);
-                    baseNode = new LinkNode(link);
+
+                    try
+                    {
+                        Link link = (Link)ser.ReadObject(stream);
+                        baseNode = new LinkNode(link);
+                    }
+                    catch (SerializationException e)
+                    {
+                        logger.Error("Deserialization failed with exception, returning empty LinkNode", e);
+                        logger.Error(data);
+                    }
                 }
             }
             return baseNode;
