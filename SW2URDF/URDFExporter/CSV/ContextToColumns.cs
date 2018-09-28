@@ -4,13 +4,16 @@ namespace SW2URDF.CSV
 {
     public static class ContextToColumns
     {
+        public static readonly string KEY_NAME = "Link Name";
+        public static readonly string KEY_PARENT_LINK = "Parent";
+
         /// <summary>
         /// Provides both the column order of CSV files that are written, but also a lookup between the
         /// URDF name of field and a common sense name
         /// </summary>
         public static OrderedDictionary Dictionary = new OrderedDictionary()
         {
-            { "Link.name", "Link Name" },
+            { "Link.name", KEY_NAME },
             { "Link.Inertial.Origin.xyz.x", "Center of Mass X" },
             {"Link.Inertial.Origin.xyz.y",  "Center of Mass Y" },
             {"Link.Inertial.Origin.xyz.z", "Center of Mass Z" },
@@ -54,7 +57,7 @@ namespace SW2URDF.CSV
             { "Link.Joint.Origin.rpy.r","Joint Origin Roll"},
             { "Link.Joint.Origin.rpy.p","Joint Origin Pitch"},
             { "Link.Joint.Origin.rpy.y","Joint Origin Yaw"},
-            { "Link.Joint.ParentLink.link","Parent"},
+            { "Link.Joint.ParentLink.link",KEY_PARENT_LINK},
             { "Link.Joint.Axis.xyz.x", "Joint Axis X"},
             { "Link.Joint.Axis.xyz.y", "Joint Axis Y"},
             { "Link.Joint.Axis.xyz.z", "Joint Axis Z"},
