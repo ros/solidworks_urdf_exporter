@@ -250,6 +250,8 @@
     <Compile Include="URDFExporter\URDF.cs" />
     <Compile Include="URDFExporter\URDFExporterPM.cs" />
     <Compile Include="URDFExporter\URDFPackage.cs" />
+    <Compile Include="Version.cs" />
+    <Compile Include="VersionInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -294,14 +296,16 @@
     </None>
     <None Include="SW2URDF.ruleset" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -File $(SolutionDir)scripts\UpdateVersionInfo.ps1 --filename $(ProjectDir)VersionInfo.cs</PreBuildEvent>
     <PostBuildEvent>
 IF EXIST "$(TargetDir)$(TargetName).bmp" (GOTO REGISTRATION)
 XCOPY "$(ProjectDir)AddinIcon.bmp" "$(TargetDir)"  /F
-REN "$(TargetDir)AddinIcon.bmp" "$(TargetName).bmp" 
+REN "$(TargetDir)AddinIcon.bmp" "$(TargetName).bmp"
 
 :REGISTRATION
 IF "$(TargetFrameworkVersion)"=="v4.0" GOTO NET40
@@ -332,7 +336,7 @@ IF EXIST "%25Windir%25\Microsoft.NET\Framework64\%25FMWK%25\regasm.exe" "%25Wind
 GOTO END
 
 :END
-    
+
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

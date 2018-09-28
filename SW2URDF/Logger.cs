@@ -7,6 +7,7 @@ using log4net.Repository.Hierarchy;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace SW2URDF
 {
@@ -63,22 +64,25 @@ namespace SW2URDF
             hierarchy.Root.Level = Level.Info;
             hierarchy.Configured = true;
             Initialized = true;
-            var logger = LogManager.GetLogger(
-                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+            ILog logger = LogManager.GetLogger(
+                MethodBase.GetCurrentMethod().DeclaringType);
             logger.Info("\n" + String.Concat(Enumerable.Repeat("-", 80)));
             logger.Info("Logging commencing for SW2URDF exporter");
+
+            logger.Info("Commit version " + Version.GetCommitVersion());
+            logger.Info("Build version " + Version.GetBuildVersion());
         }
 
         public static ILog GetLogger()
         {
             Setup();
             return LogManager.GetLogger(
-                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+                MethodBase.GetCurrentMethod().DeclaringType);
         }
 
         public static string GetFileName()
         {
-            var rootAppender =
+            RollingFileAppender rootAppender =
                 LogManager.GetRepository().GetAppenders().OfType<RollingFileAppender>()
                                          .FirstOrDefault();
             if (rootAppender != null)
