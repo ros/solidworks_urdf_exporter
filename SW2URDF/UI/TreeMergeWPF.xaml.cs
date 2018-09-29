@@ -334,14 +334,14 @@ namespace SW2URDF.UI
                     item.IsChecked = false;
                 }
             }
+
+            // During the InitializeComponents, this callback fires, but things aren't fully setup
             if (!(contextMenuParent.PlacementTarget is Button button))
             {
-                logger.Info("Button not found");
                 return;
             }
             if (!(menuItem.Header is TextBlock menuItemText))
             {
-                logger.Info("MenuItemText is null here");
                 return;
             }
             button.Content = new TextBlock
