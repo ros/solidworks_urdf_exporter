@@ -1,5 +1,6 @@
 ﻿using log4net;
 using SW2URDF.URDF;
+using SW2URDF.URDFMerge;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
@@ -26,6 +27,8 @@ namespace SW2URDF.UI
         private readonly string CSVFileName;
         private readonly string AssemblyName;
 
+        private readonly URDFTreeCorrespondance TreeCorrespondance;
+
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
             Dispatcher.UnhandledException += App_DispatcherUnhandledException;
@@ -36,6 +39,8 @@ namespace SW2URDF.UI
             InitializeComponent();
             ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
+
+            TreeCorrespondance = new URDFTreeCorrespondance();
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -63,6 +68,8 @@ namespace SW2URDF.UI
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
+
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
         private void FillExistingLinkProperties(Link link, bool isBaseLink)
@@ -72,6 +79,7 @@ namespace SW2URDF.UI
             if (isBaseLink)
             {
                 ExistingJointNameTextBox.Text = "";
+                ExistingJointNameTextBox.Visibility = Visibility.Hidden;
                 ExistingCoordinatesMenu.Visibility = Visibility.Hidden;
                 ExistingAxisMenu.Visibility = Visibility.Hidden;
                 ExistingJointTypeMenu.Visibility = Visibility.Hidden;
@@ -114,9 +122,9 @@ namespace SW2URDF.UI
             }
 
             TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
-
             Link link = (Link)selectedItem.Tag;
             bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
+
             if (tree == ExistingTreeView)
             {
                 FillExistingLinkProperties(link, isBaseLink);
@@ -124,6 +132,12 @@ namespace SW2URDF.UI
             else if (tree == LoadedTreeView)
             {
                 FillLoadedLinkProperties(link, isBaseLink);
+            }
+
+            TreeViewItem corresponding = TreeCorrespondance.GetCorrespondingTreeViewItem(selectedItem);
+            if (corresponding != null)
+            {
+                corresponding.IsSelected = true;
             }
         }
 
