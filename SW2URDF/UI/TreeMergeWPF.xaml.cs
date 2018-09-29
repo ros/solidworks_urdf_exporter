@@ -18,6 +18,9 @@ namespace SW2URDF.UI
 
         private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
         private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
+        private static readonly string DEFAULT_COORDINATE_SYSTEM_TEXT = "Select Coordinate System";
+        private static readonly string DEFAULT_AXIS_TEXT = "Select Reference Axis";
+        private static readonly string DEFAULT_JOINT_TYPE_TEXT = "Select Joint Type";
 
         private readonly string CSVFileName;
         private readonly string AssemblyName;
@@ -48,6 +51,88 @@ namespace SW2URDF.UI
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
+        }
+
+        private void FillExistingLinkProperties(Link link, bool isBaseLink)
+        {
+            ExistingLinkNameTextBox.Text = link.Name;
+
+            if (isBaseLink)
+            {
+                ExistingJointNameTextBox.Text = "";
+                ExistingCoordinatesMenu.Visibility = Visibility.Hidden;
+                ExistingAxisMenu.Visibility = Visibility.Hidden;
+                ExistingJointTypeMenu.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                ExistingJointNameTextBox.Text = link.Joint.Name;
+                SetDropdownContextMenu(ExistingCoordinatesMenu, link.Joint.CoordinateSystemName, DEFAULT_COORDINATE_SYSTEM_TEXT);
+                SetDropdownContextMenu(ExistingAxisMenu, link.Joint.AxisName, DEFAULT_AXIS_TEXT);
+                SetDropdownContextMenu(ExistingJointTypeMenu, link.Joint.Type, DEFAULT_JOINT_TYPE_TEXT);
+            }
+        }
+
+        private void FillLoadedLinkProperties(Link link, bool isBaseLink)
+        {
+            LoadedLinkNameTextBox.Text = link.Name;
+
+            if (isBaseLink)
+            {
+                LoadedJointNameTextLabel.Content = null;
+                LoadedCoordinateSystemTextLabel.Content = null;
+                LoadedAxisTextLabel.Content = null;
+                LoadedJointTypeTextLabel.Content = null;
+            }
+            else
+            {
+                LoadedJointNameTextLabel.Content = new TextBox { Text = link.Name };
+                LoadedCoordinateSystemTextLabel.Content = new TextBox { Text = link.Joint.CoordinateSystemName };
+                LoadedAxisTextLabel.Content = new TextBox { Text = link.Joint.AxisName };
+                LoadedJointTypeTextLabel.Content = new TextBox { Text = link.Joint.Type };
+            }
+        }
+
+        private void OnTreeItemClick(object sender, RoutedEventArgs e)
+        {
+            TreeView tree = (TreeView)sender;
+            if (tree.SelectedItem == null)
+            {
+                return;
+            }
+
+            TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
+
+            Link link = (Link)selectedItem.Tag;
+            bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
+            if (tree == ExistingTreeView)
+            {
+                FillExistingLinkProperties(link, isBaseLink);
+            }
+            else if (tree == LoadedTreeView)
+            {
+                FillLoadedLinkProperties(link, isBaseLink);
+            }
+        }
+
+        private void SetDropdownContextMenu(Button button, string name, string defaultText)
+        {
+            button.Visibility = Visibility.Visible;
+            TextBox buttonText = (TextBox)button.Content;
+
+            foreach (MenuItem item in button.ContextMenu.Items)
+            {
+                TextBlock header = (TextBlock)item.Header;
+                if (header.Text == name)
+                {
+                    item.IsChecked = true;
+                    buttonText.Text = name;
+                    return;
+                }
+            }
+
+            logger.Error("Item " + name + " was not found in the dropdown for " + button.Name);
+            buttonText.Text = defaultText;
         }
 
         private string ShortenStringForLabel(string text, int numCharacters)
