@@ -9,6 +9,11 @@ namespace SW2URDF.URDF
     [DataContract(IsReference = true)]
     public class Joint : URDFElement
     {
+        public static readonly List<string> AVAILABLE_TYPES = new List<string>
+        {
+            "revolute", "continuous", "prismatic", "fixed", "floating", "planar"
+        };
+
         [DataMember]
         private readonly URDFAttribute NameAttribute;
 

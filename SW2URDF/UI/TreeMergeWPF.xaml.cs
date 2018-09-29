@@ -98,10 +98,10 @@ namespace SW2URDF.UI
             }
             else
             {
-                LoadedJointNameTextLabel.Content = new TextBox { Text = link.Name };
-                LoadedCoordinateSystemTextLabel.Content = new TextBox { Text = link.Joint.CoordinateSystemName };
-                LoadedAxisTextLabel.Content = new TextBox { Text = link.Joint.AxisName };
-                LoadedJointTypeTextLabel.Content = new TextBox { Text = link.Joint.Type };
+                LoadedJointNameTextLabel.Content = new TextBlock { Text = link.Name };
+                LoadedCoordinateSystemTextLabel.Content = new TextBlock { Text = link.Joint.CoordinateSystemName };
+                LoadedAxisTextLabel.Content = new TextBlock { Text = link.Joint.AxisName };
+                LoadedJointTypeTextLabel.Content = new TextBlock { Text = link.Joint.Type };
             }
         }
 
@@ -135,7 +135,7 @@ namespace SW2URDF.UI
                 return;
             }
 
-            TextBox buttonText = (TextBox)button.Content;
+            TextBlock buttonText = (TextBlock)button.Content;
 
             foreach (MenuItem item in button.ContextMenu.Items)
             {
@@ -277,10 +277,12 @@ namespace SW2URDF.UI
         {
             SetMenu(ExistingCoordinatesMenu, coordinateSystems);
             SetMenu(ExistingAxisMenu, referenceAxes);
+            SetMenu(ExistingJointTypeMenu, Joint.AVAILABLE_TYPES);
         }
 
         private void SetMenu(Button button, List<string> menuContents)
         {
+            button.ContextMenu.Items.Clear();
             bool isFirst = true;
             foreach (string menuItemLabel in menuContents)
             {
@@ -318,9 +320,12 @@ namespace SW2URDF.UI
                     item.IsChecked = false;
                 }
             }
-            Button button = contextMenuParent.PlacementTarget as Button;
-            TextBlock menuItemText = menuItem.Header as TextBlock;
-            if (menuItemText == null)
+            if (!(contextMenuParent.PlacementTarget is Button button))
+            {
+                logger.Info("Button not found");
+                return;
+            }
+            if (!(menuItem.Header is TextBlock menuItemText))
             {
                 logger.Info("MenuItemText is null here");
                 return;
