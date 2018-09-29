@@ -1,8 +1,10 @@
 ﻿using log4net;
 using SW2URDF.URDF;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace SW2URDF.UI
@@ -14,10 +16,20 @@ namespace SW2URDF.UI
     {
         private static readonly ILog logger = Logger.GetLogger();
 
-        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes)
+        private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
+        private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
+
+        private readonly string CSVFileName;
+        private readonly string AssemblyName;
+
+        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
+            CSVFileName = csvFileName;
+            AssemblyName = assemblyName;
+
             InitializeComponent();
             ConfigureMenus(coordinateSystems, referenceAxes);
+            ConfigureLabels();
         }
 
         public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
@@ -31,16 +43,53 @@ namespace SW2URDF.UI
             ExistingTreeView.MouseMove += TreeViewMouseMove;
             ExistingTreeView.Drop += TreeViewDrop;
 
-            //ExistingTreeView.MouseLeftButtonDown += TreeViewClick;
-
             ExistingTreeView.Items.Add(existing);
             LoadedTreeView.Items.Add(loaded);
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
+        }
 
-            //ExistingTreeView.
-            //ExistingTreeView.SelectedNode = existingNode;
+        private string ShortenStringForLabel(string text, int numCharacters)
+        {
+            string result = text;
+            if (text.Length > numCharacters)
+            {
+                string extension = Path.GetExtension(text);
+                int numToKeep = numCharacters - "...".Length - extension.Length;
+                result = text.Substring(0, numToKeep) + "..." + extension;
+            }
+            return result;
+        }
+
+        private TextBlock BuildTextBlock(string boldBit, string regularBit)
+        {
+            TextBlock block = new TextBlock();
+            block.Inlines.Add(new Bold(new Run(boldBit)));
+            block.Inlines.Add(regularBit);
+            return block;
+        }
+
+        private void ConfigureLabels()
+        {
+            string longAssemblyName = ShortenStringForLabel(AssemblyName, MAX_LABEL_CHARACTER_WIDTH);
+            string shortAssemblyName = ShortenStringForLabel(AssemblyName, MAX_BUTTON_CHARACTER_WIDTH);
+
+            string longCSVFilename = ShortenStringForLabel(CSVFileName, MAX_LABEL_CHARACTER_WIDTH);
+            string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
+
+            ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
+            LoadedTreeLabel.Content = BuildTextBlock("Configuration from CSV: ", longCSVFilename);
+
+            MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            VisualExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            JointKinematicsExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            OtherJointExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+
+            MassInertiaLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            VisualLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            JointKinematicsLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            OtherJointLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
         }
 
         private void ProcessDragDrop(TreeView treeView, TreeViewItem target, TreeViewItem package)

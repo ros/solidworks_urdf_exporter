@@ -298,36 +298,20 @@ namespace SW2URDF
 
                     if (!ExistingConfigurationEmpty())
                     {
+                        string filename = loadFileDialog.SafeFileName;
+                        string assemblyTitle = ActiveSWModel.GetTitle();
+
                         LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
-                        TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes());
+                        TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
+                            filename, assemblyTitle);
                         wpf.SetTrees(existingBaseNode, loadedBaseNode);
                         wpf.Show();
-                        return;
-                        TreeMerge treeMerge = new TreeMerge();
-                        treeMerge.SetTrees(existingBaseNode, loadedBaseNode);
-
-                        List<string> refCoordinates = Exporter.GetRefCoordinateSystems();
-                        List<string> refAxes = Exporter.GetRefAxes();
-                        treeMerge.FillPullDowns(refCoordinates, refAxes);
-
-                        treeMerge.MergeCompleted += TreeMergeCompleted;
-                        treeMerge.Show();
                     }
                     else
                     {
                         SetConfigTree(loadedBaseNode);
                     }
                 }
-            }
-        }
-
-        private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
-        {
-            if (e.Success)
-            {
-                LinkNode baseNode = new LinkNode(e.MergedLink);
-                Tree.Nodes.Clear();
-                Tree.Nodes.Add(baseNode);
             }
         }
 
