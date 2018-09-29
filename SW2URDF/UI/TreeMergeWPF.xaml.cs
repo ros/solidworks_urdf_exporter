@@ -118,6 +118,11 @@ namespace SW2URDF.UI
         private void SetDropdownContextMenu(Button button, string name, string defaultText)
         {
             button.Visibility = Visibility.Visible;
+            if (name == null)
+            {
+                return;
+            }
+
             TextBox buttonText = (TextBox)button.Content;
 
             foreach (MenuItem item in button.ContextMenu.Items)
