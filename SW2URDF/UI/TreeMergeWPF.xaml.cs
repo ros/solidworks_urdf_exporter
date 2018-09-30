@@ -29,6 +29,35 @@ namespace SW2URDF.UI
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
+        /// <summary>
+        /// Property key (since this is a read-only DP) for the IsPossibleDropTarget property.
+        /// </summary>
+        private static readonly DependencyPropertyKey IsPossibleDropTargetKey =
+                                    DependencyProperty.RegisterAttachedReadOnly(
+                                        "IsPossibleDropTarget",
+                                        typeof(bool),
+                                        typeof(TreeMergeWPF),
+                                        new FrameworkPropertyMetadata(null,
+                                            new CoerceValueCallback(CalculateIsPossibleDropTarget)));
+
+        /// <summary>
+        /// Coercion method which calculates the IsPossibleDropTarget property.
+        /// </summary>
+        private static object CalculateIsPossibleDropTarget(DependencyObject item, object value)
+        {
+            //if ((item == _currentItem) && (_dropPossible))
+            return true;
+            //else
+            return false;
+        }
+
+        /// <summary>
+        /// Dependency Property IsPossibleDropTarget.
+        /// Is true if the TreeViewItem is a possible drop target (i.e., if it would receive
+        /// the OnDrop event if the mouse button is released right now).
+        /// </summary>
+        public static readonly DependencyProperty IsPossibleDropTargetProperty = IsPossibleDropTargetKey.DependencyProperty;
+
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
             Dispatcher.UnhandledException += App_DispatcherUnhandledException;
@@ -258,11 +287,13 @@ namespace SW2URDF.UI
         /// <param name="treeView"></param>
         /// <param name="target"></param>
         /// <param name="package"></param>
-        private void ProcessDragDropOnItem(TreeView treeView, TreeViewItem target, TreeViewItem package)
+        private void ProcessDragDropOnItem(TreeView treeView, TreeViewItem target, TreeViewItem package, int position = -1)
         {
             // The parent of the package could be either a TreeView or TreeViewItem
             ItemsControl packageParent = (ItemsControl)package.Parent;
 
+            // Clear background because DragLeave won't be activated
+            target.Background = null;
             if (IsTargetDescendent(target, package))
             {
                 // You are now creating a hole in the tree, to resolve, we'll promote
@@ -276,14 +307,96 @@ namespace SW2URDF.UI
 
                 // The package and its remaing branches are then added to the target
                 packageParent.Items.Remove(package);
-                target.Items.Add(package);
             }
             else
             {
                 // The simplest of cases. We can just remove the package from it's previous parent
                 // and add it to its new parent.
                 packageParent.Items.Remove(package);
+            }
+
+            if (position < 0)
+            {
                 target.Items.Add(package);
+            }
+            else
+            {
+                target.Items.Insert(position, package);
+            }
+        }
+
+        private bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
+        {
+            // You would think PointFromScreen would not mutate the point, but noooo
+
+            //Point pointOnElement = e.GetPosition(item);//new Point(pointOnScreen.X, pointOnScreen.Y);
+
+            // Translate screen point to the element's coordinate frame
+            //pointOnElement = item.PointFromScreen(pointOnScreen);
+
+            // Set the
+            pointOnElement.X = 1;
+            IInputElement result = item.InputHitTest(pointOnElement);
+            return result != null;
+        }
+
+        private TreeViewItem GetItemToSideOfPoint(List<TreeViewItem> items, DragEventArgs e)
+        {
+            TreeViewItem previous = null;
+
+            foreach (TreeViewItem item in items)
+            {
+                Point pointOnElement = e.GetPosition(item);
+                if (pointOnElement.Y < 0)
+                {
+                    // We went passed it, return the previous one
+                    return previous;
+                }
+
+                if (IsPointToSideOfElement(item, pointOnElement))
+                {
+                    return item;
+                }
+
+                previous = item;
+            }
+            return null;
+        }
+
+        private TreeViewItem GetItemClosestToPoint(TreeView tree, DragEventArgs e)
+        {
+            UIElement first = (UIElement)tree.Items[0];
+            //FrameworkElement.ActualHeightProperty
+            double treeItemHeight = first.DesiredSize.Height;
+
+            // Move the drop point up half a box width because we want to use the middle of
+            // the element to decide whether to drop above or below it.
+            //dropPointOnScreen.Offset(0.0, -treeItemHeight / 2.0);
+
+            // Call recursive method to find the item
+            List<TreeViewItem> flattened = URDFTreeCorrespondance.FlattenTreeView(tree);
+            return GetItemToSideOfPoint(flattened, e);
+        }
+
+        private void ProcessDragDropOnTree(TreeView tree, TreeViewItem package, DragEventArgs e)
+        {
+            TreeViewItem closest = GetItemClosestToPoint(tree, e);
+
+            // If no closest item was found, or if it didn't pass the qualifications then skip
+            if (closest == null)
+            {
+                return;
+            }
+
+            if (closest.Items.Count > 0)
+            {
+                ProcessDragDropOnItem(tree, closest, package, 0);
+            }
+            else
+            {
+                TreeViewItem parent = (TreeViewItem)closest.Parent;
+                int closestIndex = parent.Items.IndexOf(closest);
+                ProcessDragDropOnItem(tree, parent, package, closestIndex + 1);
             }
         }
 
@@ -292,12 +405,22 @@ namespace SW2URDF.UI
             TreeViewItem package = e.Data.GetData(typeof(TreeViewItem)) as TreeViewItem;
             if (package != null & package != e.Source)
             {
+                // Dropping onto a Tree node
                 if (e.Source.GetType() == typeof(TreeViewItem))
                 {
                     ProcessDragDropOnItem((TreeView)sender, (TreeViewItem)e.Source, package);
                 }
                 else if (e.Source.GetType() == typeof(TreeView))
                 {
+                    // Dropping outside of a node will reorder nodes
+                    TreeView tree = (TreeView)e.Source;
+
+                    Point point = e.GetPosition(this);
+                    Point pointSender = e.GetPosition((IInputElement)sender);
+                    Point pointOnTree = e.GetPosition(tree);
+
+                    Point pointOnScreen = tree.PointToScreen(point);
+                    ProcessDragDropOnTree(tree, package, e);
                 }
                 else
                 {
@@ -306,6 +429,24 @@ namespace SW2URDF.UI
             }
             // Items have been reordered probably. Rebuild the correspondance.
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+        }
+
+        private void TreeViewItemDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Source.GetType() == typeof(TreeViewItem))
+            {
+                TreeViewItem target = (TreeViewItem)e.Source;
+                target.Background = SystemColors.ActiveBorderBrush;
+            }
+        }
+
+        private void TreeViewItemDragLeave(object sender, DragEventArgs e)
+        {
+            if (e.Source.GetType() == typeof(TreeViewItem))
+            {
+                TreeViewItem target = (TreeViewItem)e.Source;
+                target.Background = null;
+            }
         }
 
         private void TreeViewMouseMove(object sender, MouseEventArgs e)
@@ -340,6 +481,9 @@ namespace SW2URDF.UI
                 Name = node.Name,
                 Header = node.Name,
             };
+
+            item.DragEnter += TreeViewItemDragEnter;
+            item.DragLeave += TreeViewItemDragLeave;
 
             foreach (LinkNode child in node.Nodes)
             {
