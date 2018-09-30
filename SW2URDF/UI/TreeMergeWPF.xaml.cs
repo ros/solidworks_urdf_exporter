@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace SW2URDF.UI
@@ -59,7 +60,11 @@ namespace SW2URDF.UI
             TreeViewItem existing = BuildTreeViewItem(existingNode);
             TreeViewItem loaded = BuildTreeViewItem(loadedNode);
 
+            ExistingTreeView.MouseMove += TreeViewMouseMove;
+            LoadedTreeView.MouseMove += TreeViewMouseMove;
+
             ExistingTreeView.Drop += TreeViewDrop;
+            LoadedTreeView.Drop += TreeViewDrop;
 
             ExistingTreeView.Items.Add(existing);
             LoadedTreeView.Items.Add(loaded);
@@ -206,37 +211,45 @@ namespace SW2URDF.UI
             OtherJointLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
         }
 
-        /// <summary>
-        /// This function checks if there will be a hole created when the package is removed from
-        /// it's parent during a drag and drop operation. This happens when the package is
-        /// dropped on a target that is direct descendent in the tree branch
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="package"></param>
-        /// <returns></returns>
-        private bool IsTargetDescendent(TreeViewItem target, TreeViewItem package)
+        private bool IsValidDrop(TreeView tree, TreeViewItem package, DragEventArgs e)
         {
-            // If these are the same thing, then target is not a descendent
-            if (target == package || target.Parent == null)
+            if (package == null)
             {
                 return false;
             }
 
-            // If the parent of the target is a TreeView and not another Item, then we're done.
-            if (target.Parent.GetType() != typeof(TreeViewItem))
+            if (package == e.Source)
             {
                 return false;
             }
 
-            // If the target's parent is the package, then yes, it's a descendent
-            if (target.Parent == package)
+            if (!tree.IsAncestorOf(package))
             {
-                return true;
+                // if dropping into the wrong tree, abort!
+                return false;
             }
 
-            // Recur up the tree from the target. If the target's parent is a descendent
-            // then the target is a descendent.
-            return IsTargetDescendent((TreeViewItem)target.Parent, package);
+            return true;
+        }
+
+        private bool IsValidDrop(TreeViewItem target, DragEventArgs e)
+        {
+            if (!(e.Data.GetData(typeof(TreeViewItem)) is TreeViewItem package))
+            {
+                return false;
+            }
+
+            if (target == package)
+            {
+                return false;
+            }
+
+            if (!target.IsAncestorOf(package) || package.IsAncestorOf(target))
+            {
+                // Don't highlight if dropping onto the wrong tree
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -263,7 +276,7 @@ namespace SW2URDF.UI
 
             // Clear background because DragLeave won't be activated
             target.Background = null;
-            if (IsTargetDescendent(target, package))
+            if (package.IsAncestorOf(target))
             {
                 // You are now creating a hole in the tree, to resolve, we'll promote
                 // the target to a child of the package's parent, and then add the package
@@ -296,14 +309,6 @@ namespace SW2URDF.UI
 
         private bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
         {
-            // You would think PointFromScreen would not mutate the point, but noooo
-
-            //Point pointOnElement = e.GetPosition(item);//new Point(pointOnScreen.X, pointOnScreen.Y);
-
-            // Translate screen point to the element's coordinate frame
-            //pointOnElement = item.PointFromScreen(pointOnScreen);
-
-            // Set the
             pointOnElement.X = 1;
             IInputElement result = item.InputHitTest(pointOnElement);
             return result != null;
@@ -375,25 +380,25 @@ namespace SW2URDF.UI
 
         private void TreeViewDrop(object sender, DragEventArgs e)
         {
+            TreeView tree = (TreeView)sender;
             TreeViewItem package = e.Data.GetData(typeof(TreeViewItem)) as TreeViewItem;
-            if (package != null & package != e.Source)
+
+            if (!IsValidDrop(tree, package, e))
+            {
+                return;
+            }
+
+            if (e.Source.GetType() == typeof(TreeViewItem))
             {
                 // Dropping onto a Tree node
-                if (e.Source.GetType() == typeof(TreeViewItem))
-                {
-                    ProcessDragDropOnItem((TreeView)sender, (TreeViewItem)e.Source, package);
-                }
-                else if (e.Source.GetType() == typeof(TreeView))
-                {
-                    // Dropping outside of a node will reorder nodes
-                    TreeView tree = (TreeView)e.Source;
-                    ProcessDragDropOnTree(tree, package, e);
-                }
-                else
-                {
-                    logger.Warn("Unhandled drop target " + e.Source.GetType());
-                }
+                ProcessDragDropOnItem(tree, (TreeViewItem)e.Source, package);
             }
+            else if (e.Source.GetType() == typeof(TreeView))
+            {
+                // Dropping outside of a node will reorder nodes
+                ProcessDragDropOnTree(tree, package, e);
+            }
+
             // Items have been reordered probably. Rebuild the correspondance.
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
@@ -405,7 +410,7 @@ namespace SW2URDF.UI
         /// <param name="e"></param>
         private void TreeViewItemDragEnter(object sender, DragEventArgs e)
         {
-            if (e.Source.GetType() == typeof(TreeViewItem))
+            if (IsValidDrop((TreeViewItem)sender, e))
             {
                 TreeViewItem target = (TreeViewItem)e.Source;
                 target.Background = SystemColors.ActiveBorderBrush;
@@ -424,6 +429,28 @@ namespace SW2URDF.UI
                 TreeViewItem target = (TreeViewItem)e.Source;
                 target.Background = null;
             }
+        }
+
+        private void TreeViewMouseMove(object sender, MouseEventArgs e)
+        {
+            TreeView treeView = sender as TreeView;
+            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
+            {
+                DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
+                //Point downPos = e.GetPosition(null);
+
+                if (treeView.SelectedValue != null)
+                {
+                    //TreeViewItem treeviewItem = e.Source as TreeViewItem;
+                    DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void TreeViewClick(object sender, MouseButtonEventArgs e)
+        {
+            TreeView treeView = sender as TreeView;
         }
 
         private TreeViewItem BuildTreeViewItem(LinkNode node)
