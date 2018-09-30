@@ -6,7 +6,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace SW2URDF.UI
@@ -60,7 +59,6 @@ namespace SW2URDF.UI
             TreeViewItem existing = BuildTreeViewItem(existingNode);
             TreeViewItem loaded = BuildTreeViewItem(loadedNode);
 
-            ExistingTreeView.MouseMove += TreeViewMouseMove;
             ExistingTreeView.Drop += TreeViewDrop;
 
             ExistingTreeView.Items.Add(existing);
@@ -311,11 +309,20 @@ namespace SW2URDF.UI
             return result != null;
         }
 
-        private TreeViewItem GetItemToSideOfPoint(List<TreeViewItem> items, DragEventArgs e)
+        /// <summary>
+        /// When reordering elements, we want to check which one is to the side of the point we drop it at.
+        /// We'll put the new one just below it.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        private TreeViewItem GetItemToSideOfPoint(TreeView tree, DragEventArgs e)
         {
+            List<TreeViewItem> flattened = URDFTreeCorrespondance.FlattenTreeView(tree);
+
             TreeViewItem previous = null;
 
-            foreach (TreeViewItem item in items)
+            foreach (TreeViewItem item in flattened)
             {
                 Point pointOnElement = e.GetPosition(item);
                 if (pointOnElement.Y < 0)
@@ -334,24 +341,16 @@ namespace SW2URDF.UI
             return null;
         }
 
-        private TreeViewItem GetItemClosestToPoint(TreeView tree, DragEventArgs e)
-        {
-            UIElement first = (UIElement)tree.Items[0];
-            //FrameworkElement.ActualHeightProperty
-            double treeItemHeight = first.DesiredSize.Height;
-
-            // Move the drop point up half a box width because we want to use the middle of
-            // the element to decide whether to drop above or below it.
-            //dropPointOnScreen.Offset(0.0, -treeItemHeight / 2.0);
-
-            // Call recursive method to find the item
-            List<TreeViewItem> flattened = URDFTreeCorrespondance.FlattenTreeView(tree);
-            return GetItemToSideOfPoint(flattened, e);
-        }
-
+        /// <summary>
+        /// If they don't drop the package directly on an item, and instead drop it on the tree
+        /// then that's how things get reordered.
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <param name="package"></param>
+        /// <param name="e"></param>
         private void ProcessDragDropOnTree(TreeView tree, TreeViewItem package, DragEventArgs e)
         {
-            TreeViewItem closest = GetItemClosestToPoint(tree, e);
+            TreeViewItem closest = GetItemToSideOfPoint(tree, e);
 
             // If no closest item was found, or if it didn't pass the qualifications then skip
             if (closest == null)
@@ -361,10 +360,13 @@ namespace SW2URDF.UI
 
             if (closest.Items.Count > 0)
             {
+                // If they drop it inbetween a parent and its first child, then that means they
+                // want to put set it as the closest's first item.
                 ProcessDragDropOnItem(tree, closest, package, 0);
             }
             else
             {
+                // If the closest was found, then add it to its parent at the appropriate index
                 TreeViewItem parent = (TreeViewItem)closest.Parent;
                 int closestIndex = parent.Items.IndexOf(closest);
                 ProcessDragDropOnItem(tree, parent, package, closestIndex + 1);
@@ -385,12 +387,6 @@ namespace SW2URDF.UI
                 {
                     // Dropping outside of a node will reorder nodes
                     TreeView tree = (TreeView)e.Source;
-
-                    Point point = e.GetPosition(this);
-                    Point pointSender = e.GetPosition((IInputElement)sender);
-                    Point pointOnTree = e.GetPosition(tree);
-
-                    Point pointOnScreen = tree.PointToScreen(point);
                     ProcessDragDropOnTree(tree, package, e);
                 }
                 else
@@ -402,6 +398,11 @@ namespace SW2URDF.UI
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
+        /// <summary>
+        /// This is how we control how TreeViewItems are highlighted when someone drags over them
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TreeViewItemDragEnter(object sender, DragEventArgs e)
         {
             if (e.Source.GetType() == typeof(TreeViewItem))
@@ -411,6 +412,11 @@ namespace SW2URDF.UI
             }
         }
 
+        /// <summary>
+        /// This disables the highlight when dragging over leaves this element
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void TreeViewItemDragLeave(object sender, DragEventArgs e)
         {
             if (e.Source.GetType() == typeof(TreeViewItem))
@@ -418,28 +424,6 @@ namespace SW2URDF.UI
                 TreeViewItem target = (TreeViewItem)e.Source;
                 target.Background = null;
             }
-        }
-
-        private void TreeViewMouseMove(object sender, MouseEventArgs e)
-        {
-            TreeView treeView = sender as TreeView;
-            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
-            {
-                DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
-                //Point downPos = e.GetPosition(null);
-
-                if (treeView.SelectedValue != null)
-                {
-                    //TreeViewItem treeviewItem = e.Source as TreeViewItem;
-                    DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
-                    e.Handled = true;
-                }
-            }
-        }
-
-        private void TreeViewClick(object sender, MouseButtonEventArgs e)
-        {
-            TreeView treeView = sender as TreeView;
         }
 
         private TreeViewItem BuildTreeViewItem(LinkNode node)
