@@ -244,9 +244,9 @@ namespace SW2URDF.UI
                 return false;
             }
 
-            if (!target.IsAncestorOf(package) || package.IsAncestorOf(target))
+            if (!target.IsAncestorOf(package) && !package.IsAncestorOf(target))
             {
-                // Don't highlight if dropping onto the wrong tree
+                // If the target and the package aren't in the same tree, then no bueno
                 return false;
             }
             return true;
