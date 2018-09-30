@@ -29,35 +29,6 @@ namespace SW2URDF.UI
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
-        /// <summary>
-        /// Property key (since this is a read-only DP) for the IsPossibleDropTarget property.
-        /// </summary>
-        private static readonly DependencyPropertyKey IsPossibleDropTargetKey =
-                                    DependencyProperty.RegisterAttachedReadOnly(
-                                        "IsPossibleDropTarget",
-                                        typeof(bool),
-                                        typeof(TreeMergeWPF),
-                                        new FrameworkPropertyMetadata(null,
-                                            new CoerceValueCallback(CalculateIsPossibleDropTarget)));
-
-        /// <summary>
-        /// Coercion method which calculates the IsPossibleDropTarget property.
-        /// </summary>
-        private static object CalculateIsPossibleDropTarget(DependencyObject item, object value)
-        {
-            //if ((item == _currentItem) && (_dropPossible))
-            return true;
-            //else
-            return false;
-        }
-
-        /// <summary>
-        /// Dependency Property IsPossibleDropTarget.
-        /// Is true if the TreeViewItem is a possible drop target (i.e., if it would receive
-        /// the OnDrop event if the mouse button is released right now).
-        /// </summary>
-        public static readonly DependencyProperty IsPossibleDropTargetProperty = IsPossibleDropTargetKey.DependencyProperty;
-
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
             Dispatcher.UnhandledException += App_DispatcherUnhandledException;
