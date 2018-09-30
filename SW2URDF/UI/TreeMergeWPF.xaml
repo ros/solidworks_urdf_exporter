@@ -26,12 +26,8 @@
             </Grid.ColumnDefinitions>
             <Label x:Name="ExistingTreeLabel" Content="Existing Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
             <Label x:Name="LoadedTreeLabel" Content="Loaded Configuration" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="0" Grid.Column="1" />
-            <TreeView x:Name="ExistingTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400">
-                <Line x:Name="ExistingItemSeparator"  X1="5" X2="120" Y1="5" Y2="5"  Width="80" StrokeThickness="2" StrokeDashArray="2 2" Stroke="Black" Fill="Black" Margin="5,5,0,0" />
-            </TreeView>
-            <TreeView x:Name="LoadedTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400">
-                <Line x:Name="LoadedItemSeparator"  X1="5" X2="120" Y1="5" Y2="5"  Width="80" StrokeThickness="2" StrokeDashArray="2 2" Stroke="Black" Fill="Black" Margin="5,5,0,0" />
-            </TreeView>
+            <TreeView x:Name="ExistingTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
+            <TreeView x:Name="LoadedTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
         </Grid>
         <Grid Margin="20,680,0,0" Width="1040" Height="120" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
