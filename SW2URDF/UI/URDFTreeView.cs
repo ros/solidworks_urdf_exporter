@@ -11,16 +11,8 @@ namespace SW2URDF.UI
     {
         public event EventHandler<TreeModifiedEventArgs> TreeModified;
 
-        //public new event RoutedEventHandler SelectedTreeItemChanged;
-
         public URDFTreeView()
         {
-            //base.SelectedItemChanged += BaseItemChanged;
-        }
-
-        private void BaseItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            //SelectedItemChanged(sender, e);
         }
 
         public void SetTree(LinkNode node)
