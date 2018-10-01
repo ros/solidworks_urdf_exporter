@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SW2URDF.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
@@ -16,26 +17,10 @@ namespace SW2URDF.URDFMerge
             RightToLeft = new Dictionary<TreeViewItem, TreeViewItem>();
         }
 
-        public static List<TreeViewItem> FlattenTreeView(TreeView tree)
+        public void BuildCorrespondance(URDFTreeView left, URDFTreeView right)
         {
-            return FlattenTreeBranch(tree.Items);
-        }
-
-        private static List<TreeViewItem> FlattenTreeBranch(ItemCollection items)
-        {
-            List<TreeViewItem> list = new List<TreeViewItem>();
-            foreach (TreeViewItem item in items)
-            {
-                list.Add(item);
-                list.AddRange(FlattenTreeBranch(item.Items));
-            }
-            return list;
-        }
-
-        public void BuildCorrespondance(TreeView left, TreeView right)
-        {
-            List<TreeViewItem> leftList = FlattenTreeBranch(left.Items);
-            List<TreeViewItem> rightList = FlattenTreeBranch(right.Items);
+            List<TreeViewItem> leftList = left.Flatten();
+            List<TreeViewItem> rightList = right.Flatten();
 
             LeftToRight.Clear();
             RightToLeft.Clear();

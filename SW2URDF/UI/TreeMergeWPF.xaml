@@ -26,8 +26,8 @@
             </Grid.ColumnDefinitions>
             <Label x:Name="ExistingTreeLabel" Content="Existing Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
             <Label x:Name="LoadedTreeLabel" Content="Loaded Configuration" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="0" Grid.Column="1" />
-            <TreeView x:Name="ExistingTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
-            <TreeView x:Name="LoadedTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
+            <local:URDFTreeView x:Name="ExistingTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
+            <local:URDFTreeView x:Name="LoadedTreeView"  HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
         </Grid>
         <Grid Margin="20,680,0,0" Width="1040" Height="120" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
