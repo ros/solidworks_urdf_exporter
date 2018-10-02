@@ -299,10 +299,12 @@ namespace SW2URDF.UI
 
             if (position < 0)
             {
+                // If the package was dropped onto a tree node, add to the end of its children
                 target.Items.Add(package);
             }
             else
             {
+                // If the package was dropped outside of a node, insert it in its appropriate position
                 target.Items.Insert(position, package);
             }
         }
@@ -366,7 +368,7 @@ namespace SW2URDF.UI
             if (closest.Items.Count > 0)
             {
                 // If they drop it inbetween a parent and its first child, then that means they
-                // want to put set it as the closest's first item.
+                // want to set it as the closest's first item.
                 ProcessDragDropOnItem(tree, closest, package, 0);
             }
             else
