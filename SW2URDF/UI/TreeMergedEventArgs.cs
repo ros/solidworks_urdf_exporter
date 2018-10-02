@@ -17,7 +17,7 @@ namespace SW2URDF.UI
             Success = false;
         }
 
-        public TreeMergedEventArgs(URDFTreeView mergedTree, bool success, TreeMergeHelper merger)
+        public TreeMergedEventArgs(URDFTreeView mergedTree, bool success, TreeMerger merger)
         {
             MergedTree = mergedTree;
             Success = success;

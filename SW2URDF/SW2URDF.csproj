@@ -259,7 +259,7 @@
     <Compile Include="SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="URDFExporter\URDFMerge\TreeMergeHelper.cs" />
+    <Compile Include="URDFExporter\URDFMerge\TreeMerger.cs" />
     <Compile Include="URDFExporter\URDFMerge\URDFTreeCorrespondance.cs" />
     <Compile Include="URDFExporter\URDF\Axis.cs" />
     <Compile Include="URDFExporter\URDF\Calibration.cs" />

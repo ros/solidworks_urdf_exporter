@@ -91,7 +91,7 @@ namespace SW2URDF.UI
                 return;
             }
 
-            TreeMergeHelper merger = new TreeMergeHelper(MassInertiaLoadedButton.IsChecked.Value,
+            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
                                                          VisualLoadedButton.IsChecked.Value,
                                                          JointKinematicsLoadedButton.IsChecked.Value,
                                                          OtherJointLoadedButton.IsChecked.Value);
