@@ -344,16 +344,9 @@ namespace SW2URDF
 
             SelectData data = manager.CreateSelectData();
             data.Mark = -1;
-            if (node.Link.SWComponent != null)
+            foreach (Component2 component in node.Link.SWcomponents)
             {
-                node.Link.SWComponent.Select4(false, data, false);
-            }
-            else
-            {
-                foreach (Component2 component in node.Link.SWcomponents)
-                {
-                    component.Select4(true, data, false);
-                }
+                component.Select4(true, data, false);
             }
             FillLinkPropertyBoxes(node.Link);
             treeViewLinkProperties.Focus();
@@ -425,16 +418,9 @@ namespace SW2URDF
 
             SelectData data = manager.CreateSelectData();
             data.Mark = -1;
-            if (node.Link.SWComponent != null)
+            foreach (Component2 component in node.Link.SWcomponents)
             {
-                node.Link.SWComponent.Select4(false, data, false);
-            }
-            else
-            {
-                foreach (Component2 component in node.Link.SWcomponents)
-                {
-                    component.Select4(true, data, false);
-                }
+                component.Select4(true, data, false);
             }
             node.NodeFont = fontBold;
             node.Text = node.Text;

@@ -286,12 +286,25 @@ namespace SW2URDF
                 {
                     Tree.Nodes.Add(LinkNodeFromTreeViewItem(item));
                 }
+
+                Tree.ExpandAll();
+                if (Tree.Nodes.Count > 0)
+                {
+                    Tree.SelectedNode = Tree.Nodes[0];
+                }
             }
         }
 
         private LinkNode LinkNodeFromTreeViewItem(System.Windows.Controls.TreeViewItem item)
         {
-            LinkNode node = new LinkNode((Link)item.Tag);
+            Link itemLink = (Link)item.Tag;
+            LinkNode node = new LinkNode
+            {
+                Link = itemLink,
+                Name = itemLink.Name,
+                Text = itemLink.Name
+            };
+            node.IsBaseNode = item.Parent.GetType() != typeof(System.Windows.Controls.TreeViewItem);
             foreach (System.Windows.Controls.TreeViewItem child in item.Items)
             {
                 node.Nodes.Add(LinkNodeFromTreeViewItem(child));

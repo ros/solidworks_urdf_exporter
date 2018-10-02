@@ -1,4 +1,5 @@
-﻿using SW2URDF.UI;
+﻿using SolidWorks.Interop.sldworks;
+using SW2URDF.UI;
 using SW2URDF.URDF;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,12 @@ namespace SW2URDF.URDFMerge
         /// </summary>
         /// <param name="useCSVInertial">Use loaded values for MoI and CoM properties of a link </param>
         /// <param name="useCSVVisualCollision">Use loaded values for meshes and material properties</param>
-        /// <param name="useCSVJointKinematics">Use loaded values for joint coordinate system, joint axis and joint type</param>
-        /// <param name="useCSVJointOther">Use loaded values for Joint Limits, Calibration, Dynamics, and Safety Controller</param>
-        public TreeMergeHelper(bool useCSVInertial, bool useCSVVisualCollision, bool useCSVJointKinematics, bool useCSVJointOther)
+        /// <param name="useCSVJointKinematics">Use loaded values for joint coordinate system, joint
+        /// axis and joint type</param>
+        /// <param name="useCSVJointOther">Use loaded values for Joint Limits, Calibration, Dynamics,
+        /// and Safety Controller</param>
+        public TreeMergeHelper(bool useCSVInertial, bool useCSVVisualCollision,
+            bool useCSVJointKinematics, bool useCSVJointOther)
         {
             UseCSVInertial = useCSVInertial;
             UseCSVVisualCollision = useCSVVisualCollision;
@@ -63,6 +67,10 @@ namespace SW2URDF.URDFMerge
             Link cadLink = (Link)cadItem.Tag;
             Link mergedLink = cadLink.Clone();
             Link csvLink = (Link)csvItem.Tag;
+
+            // SolidWorks components won't be loaded from the file. Use the components in the model
+            mergedLink.SWMainComponent = cadLink.SWMainComponent;
+            mergedLink.SWcomponents = new List<Component2>(cadLink.SWcomponents);
 
             if (UseCSVInertial)
             {
