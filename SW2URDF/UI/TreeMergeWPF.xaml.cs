@@ -31,16 +31,11 @@ namespace SW2URDF.UI
             ExistingTreeView.MouseMove += TreeViewMouseMove;
             ExistingTreeView.Drop += TreeViewDrop;
 
-            //ExistingTreeView.MouseLeftButtonDown += TreeViewClick;
-
             ExistingTreeView.Items.Add(existing);
             LoadedTreeView.Items.Add(loaded);
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
-
-            //ExistingTreeView.
-            //ExistingTreeView.SelectedNode = existingNode;
         }
 
         private void ProcessDragDrop(TreeView treeView, TreeViewItem target, TreeViewItem package)
@@ -87,11 +82,9 @@ namespace SW2URDF.UI
             if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
             {
                 DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
-                //Point downPos = e.GetPosition(null);
 
                 if (treeView.SelectedValue != null)
                 {
-                    //TreeViewItem treeviewItem = e.Source as TreeViewItem;
                     DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
                     e.Handled = true;
                 }
