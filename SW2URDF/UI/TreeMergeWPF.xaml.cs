@@ -1,6 +1,7 @@
 ﻿using log4net;
 using SW2URDF.URDF;
 using SW2URDF.URDFMerge;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
@@ -16,6 +17,8 @@ namespace SW2URDF.UI
     public partial class TreeMergeWPF : Window
     {
         private static readonly ILog logger = Logger.GetLogger();
+
+        public event EventHandler<TreeMergedEventArgs> TreeMerged = delegate { };
 
         private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
         private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
@@ -68,6 +71,42 @@ namespace SW2URDF.UI
         private void TreeViewModified(object sender, TreeModifiedEventArgs e)
         {
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+        }
+
+        private void CancelClick(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Do you wish to cancel? Any changes you have made will not be saved",
+                "Cancel Merge?", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                Close();
+            }
+        }
+
+        private void MergeClick(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Do you wish to merge these configuration trees? The configuration in the assembly" +
+                " will be overwritten.",
+                "Confirm Merge", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            TreeMergeHelper merger = new TreeMergeHelper(MassInertiaLoadedButton.IsChecked.Value,
+                                                         VisualLoadedButton.IsChecked.Value,
+                                                         JointKinematicsLoadedButton.IsChecked.Value,
+                                                         OtherJointLoadedButton.IsChecked.Value);
+            URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
+
+            if (result != null)
+            {
+                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(result, true, merger);
+                TreeMerged(this, mergedArgs);
+            }
+            else
+            {
+                TreeMerged(this, new TreeMergedEventArgs());
+            }
+            Close();
         }
 
         private void FillExistingLinkProperties(Link link, bool isBaseLink)

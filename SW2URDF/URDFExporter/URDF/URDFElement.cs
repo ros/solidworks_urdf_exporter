@@ -181,12 +181,14 @@ namespace SW2URDF.URDF
                 throw new Exception("URDFElements need to be the same type to set the internal values");
             }
 
-            foreach (var pair in Enumerable.Zip(Attributes, externalElement.Attributes, Tuple.Create))
+            foreach (Tuple<URDFAttribute, URDFAttribute> pair in
+                Enumerable.Zip(Attributes, externalElement.Attributes, Tuple.Create))
             {
                 pair.Item1.Value = pair.Item2.Value;
             }
 
-            foreach (var pair in Enumerable.Zip(ChildElements, externalElement.ChildElements, Tuple.Create))
+            foreach (Tuple<URDFElement, URDFElement> pair in
+                Enumerable.Zip(ChildElements, externalElement.ChildElements, Tuple.Create))
             {
                 pair.Item1.SetElement(pair.Item2);
             }

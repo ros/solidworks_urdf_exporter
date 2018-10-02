@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 
-namespace SW2URDF.URDFExporter.URDFMerge
+namespace SW2URDF.URDFMerge
 {
-    internal class TreeMergeHelper
+    public class TreeMergeHelper
     {
         public bool UseCSVInertial;
         public bool UseCSVVisualCollision;

@@ -271,6 +271,34 @@ namespace SW2URDF
                 baseNode.Link.SWcomponents.Count == 0);
         }
 
+        private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
+        {
+            if (!e.Success)
+            {
+                MessageBox.Show("Merging the loaded CSV configuration with the assembly's configuration " +
+                    "failed. Check your CSV file. If you continue to run into errors, delete the " +
+                    "configuration in the assembly and load a proper CSV.");
+            }
+            else
+            {
+                Tree.Nodes.Clear();
+                foreach (System.Windows.Controls.TreeViewItem item in e.MergedTree.Items)
+                {
+                    Tree.Nodes.Add(LinkNodeFromTreeViewItem(item));
+                }
+            }
+        }
+
+        private LinkNode LinkNodeFromTreeViewItem(System.Windows.Controls.TreeViewItem item)
+        {
+            LinkNode node = new LinkNode((Link)item.Tag);
+            foreach (System.Windows.Controls.TreeViewItem child in item.Items)
+            {
+                node.Nodes.Add(LinkNodeFromTreeViewItem(child));
+            }
+            return node;
+        }
+
         private void LoadFromCSV()
         {
             SaveActiveNode();
@@ -306,6 +334,7 @@ namespace SW2URDF
                         TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
                             filename, assemblyTitle);
                         wpf.SetTrees(existingBaseNode, loadedBaseNode);
+                        wpf.TreeMerged += TreeMergeCompleted;
                         wpf.Show();
                     }
                     else

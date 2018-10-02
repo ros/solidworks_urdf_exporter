@@ -223,6 +223,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ROSFiles.cs" />
+    <Compile Include="UI\TreeMergedEventArgs.cs" />
     <Compile Include="UI\TreeMergeWPF.xaml.cs">
       <DependentUpon>TreeMergeWPF.xaml</DependentUpon>
     </Compile>
