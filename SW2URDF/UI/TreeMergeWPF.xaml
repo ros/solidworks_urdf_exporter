@@ -1,0 +1,201 @@
+﻿<Window x:Class="SW2URDF.UI.TreeMergeWPF"  Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SW2URDF.UI"
+        mc:Ignorable="d"
+        Title="TreeMergeWPF" Height="900" Width="1270
+        ">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="UIResources.xaml"></ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid Margin="20,100,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="600" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420" />
+                <ColumnDefinition Width="420" />
+            </Grid.ColumnDefinitions>
+            <Label x:Name="ExistingTreeLabel" Content="Existing Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
+            <Label x:Name="LoadedTreeLabel" Content="Loaded Configuration" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="0" Grid.Column="1" />
+            <TreeView x:Name="ExistingTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
+            <TreeView x:Name="LoadedTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
+        </Grid>
+        <Grid Margin="20,680,0,0" Width="1040" Height="120" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="120" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="220" />
+            </Grid.ColumnDefinitions>
+            <GroupBox x:Name="MassInertiaGroup" Header="Mass and Inertia" HorizontalAlignment="Left" Height="100" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="140">
+                <Grid Margin="3,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="MassInertiaExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="MassInertiaGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="MassInertiaLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="MassInertiaGroup" />
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="VisualGroup" Header="Visual Properties" HorizontalAlignment="Left" Height="100" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="140">
+                <Grid Margin="3,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="VisualExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="VisualGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="VisualLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="VisualGroup" />
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="JointKinematicsGroup" Header="Joint Kinematics" HorizontalAlignment="Left" Height="100" Grid.Row="0" Grid.Column="2" VerticalAlignment="Top" Width="140">
+                <Grid Margin="3,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="JointKinematicsExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="JointKinematicsGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="JointKinematicsLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="JointKinematicsGroup" />
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="OtherJointGroup" Header="Other Joint Values" HorizontalAlignment="Left" Height="100" Grid.Row="0" Grid.Column="3" VerticalAlignment="Top" Width="140">
+                <Grid Margin="3,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="35" />
+                    </Grid.RowDefinitions>
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="OtherJointExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="OtherJointGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="OtherJointLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="OtherJointGroup" />
+                </Grid>
+            </GroupBox>
+        </Grid>
+        <Label x:Name="MergeTitle" Content="URDF Tree Merge"  HorizontalAlignment="Left" Height="31" Margin="27,10,0,0" VerticalAlignment="Top" Width="316" FontWeight="Bold" FontSize="14" />
+        <TextBlock x:Name="MergeDescription"  HorizontalAlignment="Left" Height="60" Margin="53,40,0,0" VerticalAlignment="Top" TextWrapping="Wrap" Width="482">The loaded configuration does not match the existing configuration in this document. Rearrange the loaded configuration to match the existing one</TextBlock>
+
+        <Grid Margin="860,130,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="320" />
+                <RowDefinition Height="320" />
+            </Grid.RowDefinitions>
+            <GroupBox x:Name="ExistingConfigurationLinkView" Grid.Row="0" Header="Existing Configuration" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400" BorderThickness="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label x:Name="ExistingLinkNameLabel" Grid.Row="1" Grid.Column="0" Content="Link Name:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="ExistingJointNameLabel" Grid.Row="2" Grid.Column="0" Content="Joint Name:" HorizontalAlignment="Right" FontWeight="Regular" />
+
+                    <Label x:Name="ExistingCoordinateSystemLabel" Grid.Row="4" Grid.Column="0" Content="Coordinates:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="ExistingAxisLabel" Grid.Row="5" Grid.Column="0" Content="Axis:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="ExistingJointTypeLabel" Grid.Row="6" Grid.Column="0" Content="Joint Type:" HorizontalAlignment="Right" FontWeight="Regular" />
+
+                    <TextBox x:Name="ExistingLinkNameTextBox" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" />
+                    <TextBox x:Name="ExistingJointNameTextBox" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" />
+
+                    <Button x:Name="ExistingCoordinatesMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
+                        ContextMenuService.IsEnabled="False"
+                        Grid.Row="4" Grid.Column="1" Width="300" Height="25" Click="MenuClick">
+                        <TextBlock>Select Coordinate System</TextBlock>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button x:Name="ExistingAxisMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
+                        ContextMenuService.IsEnabled="False"
+                        Grid.Row="5" Grid.Column="1" Width="300" Height="25" Click="MenuClick">
+                        <TextBlock>Select Reference Axis</TextBlock>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Button x:Name="ExistingJointTypeMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
+                        ContextMenuService.IsEnabled="False"
+                        Grid.Row="6" Grid.Column="1" Width="300" Height="25" Click="MenuClick">
+                        <TextBlock>Select Joint Type</TextBlock>
+                        <Button.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem IsChecked="True" IsCheckable="True" Checked="MenuItemChecked" Header="Revolute" />
+                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Continuous" />
+                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Prismatic" />
+                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Fixed" />
+                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Floating" />
+                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Planar" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+
+                    <Button x:Name="ExistingLinkReset" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" />
+                    <Button x:Name="ExistingLinkUpdate" Content="Update" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Right" Width="60" FontWeight="Regular" />
+                </Grid>
+            </GroupBox>
+            <GroupBox  x:Name="LoadedConfigurationLinkView" Grid.Row="1" Header="Loaded Configuration" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400"  FontWeight="Bold" BorderThickness="2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="300" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label x:Name="LoadedLinkNameLabel" Grid.Row="1" Grid.Column="0" Content="Link Name:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="LoadedJointNameLabel" Grid.Row="2" Grid.Column="0" Content="Joint Name:" HorizontalAlignment="Right" FontWeight="Regular" />
+
+                    <Label x:Name="LoadedCoordinateSystemLabel" Grid.Row="4" Grid.Column="0" Content="Coordinates:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="LoadedAxisLabel" Grid.Row="5" Grid.Column="0" Content="Axis:" HorizontalAlignment="Right" FontWeight="Regular" />
+                    <Label x:Name="LoadedJointTypeLabel" Grid.Row="6" Grid.Column="0" Content="Joint Type:" HorizontalAlignment="Right" FontWeight="Regular" />
+
+                    <TextBox x:Name="LoadedLinkNameTextBox" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" />
+                    <Label x:Name="LoadedJointNameTextLabel" Grid.Row="2" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
+
+                    <Label x:Name="LoadedCoordinateSystemTextLabel" Grid.Row="4" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
+                    <Label x:Name="LoadedAxisTextLabel" Grid.Row="5" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
+                    <Label x:Name="LoadedJointTypeTextLabel" Grid.Row="6" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
+
+                    <Button x:Name="LoadedLinkReset" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" />
+                    <Button x:Name="LoadedLinkUpdate" Content="Update" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Right" Width="60" FontWeight="Regular" />
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+        <Button x:Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="870,0,0,10" />
+        <Button x:Name="MergeButton" Content="Merge" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="1190,0,0,10" />
+    </Grid>
+</Window>
