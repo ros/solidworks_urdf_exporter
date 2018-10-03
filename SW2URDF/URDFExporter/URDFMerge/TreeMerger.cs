@@ -33,6 +33,59 @@ namespace SW2URDF.URDFMerge
             UseCSVJointOther = useCSVJointOther;
         }
 
+        public string CanTreesBeMerged(URDFTreeView cadTree, URDFTreeView csvTree)
+        {
+            string whyNot = "";
+            List<TreeViewItem> cadFlat = cadTree.Flatten();
+            List<TreeViewItem> csvFlat = csvTree.Flatten();
+
+            if (cadFlat.Count != csvFlat.Count)
+            {
+                whyNot += string.Format("The configuration trees do not have the same number of links. " +
+                    "Assembly has {0}, while CSV has {1}", cadFlat.Count, csvFlat.Count);
+            }
+            else
+            {
+                whyNot += CompareItemCollections(cadTree.Items, csvTree.Items);
+            }
+
+            return whyNot;
+        }
+
+        private string CompareItemCollections(ItemCollection cadCollection, ItemCollection csvCollection)
+        {
+            string whyNot = "";
+            List<TreeViewItem> cadItems = cadCollection.Cast<TreeViewItem>().ToList();
+            List<TreeViewItem> csvItems = csvCollection.Cast<TreeViewItem>().ToList();
+
+            foreach (Tuple<TreeViewItem, TreeViewItem> pair in
+                        Enumerable.Zip(cadItems, csvItems, Tuple.Create))
+            {
+                whyNot += CanTreeViewItemsBeMerged(pair.Item1, pair.Item2);
+            }
+
+            return whyNot;
+        }
+
+        private string CanTreeViewItemsBeMerged(TreeViewItem cadItem, TreeViewItem csvItem)
+        {
+            string whyNot = "";
+            if (cadItem.Items.Count != csvItem.Items.Count)
+            {
+                object[] messageObjects =
+                    new object[] { cadItem.Name, csvItem.Name, cadItem.Items.Count, csvItem.Items.Count };
+
+                whyNot += string.Format("Assembly configuration Link \"{0}\" and CSV configuration Link " +
+                    "\"{1}\" cannot be merged, they have differing number of children links. " +
+                    "Assembly Link \"{0}\": {2}    CSV Link \"{1}\": {3}\r\n", messageObjects);
+            }
+            else
+            {
+                whyNot += CompareItemCollections(cadItem.Items, csvItem.Items);
+            }
+            return whyNot;
+        }
+
         public URDFTreeView Merge(TreeView cadTree, TreeView csvTree)
         {
             URDFTreeView merged = new URDFTreeView();

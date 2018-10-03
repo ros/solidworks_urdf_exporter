@@ -303,8 +303,11 @@ namespace SW2URDF
         //Method which builds a single link
         public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
-            List<Component2> components = node.Link.SWcomponents;
-            node.Link.SWMainComponent = components[0];
+            if (node.Link.SWcomponents.Count > 0)
+            {
+                List<Component2> components = node.Link.SWcomponents;
+                node.Link.SWMainComponent = components[0];
+            }
 
             if (parent != null && ComputeJointKinematics)
             {

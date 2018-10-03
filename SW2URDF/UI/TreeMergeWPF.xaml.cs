@@ -84,6 +84,22 @@ namespace SW2URDF.UI
 
         private void MergeClick(object sender, EventArgs e)
         {
+            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
+                                                         VisualLoadedButton.IsChecked.Value,
+                                                         JointKinematicsLoadedButton.IsChecked.Value,
+                                                         OtherJointLoadedButton.IsChecked.Value);
+
+            string whyNotMerge = merger.CanTreesBeMerged(ExistingTreeView, LoadedTreeView);
+            if (!string.IsNullOrWhiteSpace(whyNotMerge))
+            {
+                string message = "The two configuration trees cannot be merged due to the issues " +
+                    "listed below. Modify the configuration in the assembly and/or the csv " +
+                    "file. Alternatively, you can remove the configuration from the assembly and load the " +
+                    "CSV configuration to skip merging.\r\n\r\n" + whyNotMerge;
+                MessageBox.Show(message);
+                return;
+            }
+
             if (MessageBox.Show("Do you wish to merge these configuration trees? The configuration in the assembly" +
                 " will be overwritten.",
                 "Confirm Merge", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
@@ -91,10 +107,6 @@ namespace SW2URDF.UI
                 return;
             }
 
-            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
-                                                         VisualLoadedButton.IsChecked.Value,
-                                                         JointKinematicsLoadedButton.IsChecked.Value,
-                                                         OtherJointLoadedButton.IsChecked.Value);
             URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
 
             if (result != null)
@@ -106,6 +118,7 @@ namespace SW2URDF.UI
             {
                 TreeMerged(this, new TreeMergedEventArgs());
             }
+
             Close();
         }
 
