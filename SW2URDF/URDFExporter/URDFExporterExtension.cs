@@ -262,44 +262,65 @@ namespace SW2URDF
             return swMass.CenterOfMass;
         }
 
+        private void ComputeInertialProperties(Link link)
+        {
+            // Get the SolidWorks MathTransform that corresponds to the child coordinate system
+            MathTransform jointTransform = GetCoordinateSystemTransform(link.Joint.CoordinateSystemName);
+            List<Body2> bodies = GetBodies(link.SWcomponents);
+
+            double[] moment = GetComponentsMomentOfInertia(bodies, jointTransform);
+            link.Inertial.Inertia.SetMomentMatrix(moment);
+
+            link.Inertial.Mass.Value = GetCompomentsMass(bodies);
+
+            double[] centerOfMass = GetCompomentsCenterOfMass(bodies, jointTransform);
+            link.Inertial.Origin.SetXYZ(centerOfMass);
+            link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
+        }
+
+        private void ComputeVisualCollisionProperties(Link link)
+        {
+            link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
+            link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
+
+            if (link.SWcomponents.Count == 0)
+            {
+                return;
+            }
+
+            ModelDoc2 mainCompdoc = link.SWcomponents[0].GetModelDoc2();
+
+            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
+            double[] values = mainCompdoc.MaterialPropertyValues;
+            link.Visual.Material.Color.Red = values[0];
+            link.Visual.Material.Color.Green = values[1];
+            link.Visual.Material.Color.Blue = values[2];
+            link.Visual.Material.Color.Alpha = 1.0 - values[7];
+        }
+
         //Method which builds a single link
         public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
             List<Component2> components = node.Link.SWcomponents;
             node.Link.SWMainComponent = components[0];
 
-            if (parent != null)
+            if (parent != null && ComputeJointKinematics)
             {
                 logger.Info("Creating joint " + node.Link.Name);
                 CreateJoint(parent, node.Link);
             }
 
-            // Get the SolidWorks MathTransform that corresponds to the child coordinate system
-            MathTransform jointTransform = GetCoordinateSystemTransform(node.Link.Joint.CoordinateSystemName);
-            List<Body2> bodies = GetBodies(components);
+            if (ComputeInertialValues)
+            {
+                ComputeInertialProperties(node.Link);
+            }
 
-            double[] moment = GetComponentsMomentOfInertia(bodies, jointTransform);
-            node.Link.Inertial.Inertia.SetMomentMatrix(moment);
-
-            node.Link.Inertial.Mass.Value = GetCompomentsMass(bodies);
-
-            double[] centerOfMass = GetCompomentsCenterOfMass(bodies, jointTransform);
-            node.Link.Inertial.Origin.SetXYZ(centerOfMass);
-            node.Link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
-
-            node.Link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-            node.Link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
-            node.Link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
-            node.Link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
-
-            ModelDoc2 mainCompdoc = components[0].GetModelDoc2();
-
-            // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
-            double[] values = mainCompdoc.MaterialPropertyValues;
-            node.Link.Visual.Material.Color.Red = values[0];
-            node.Link.Visual.Material.Color.Green = values[1];
-            node.Link.Visual.Material.Color.Blue = values[2];
-            node.Link.Visual.Material.Color.Alpha = 1.0 - values[7];
+            if (ComputeVisualCollision)
+            {
+                ComputeVisualCollisionProperties(node.Link);
+            }
 
             return node.Link;
         }
@@ -337,6 +358,10 @@ namespace SW2URDF
         #endregion SW to Robot and link methods
 
         #region Joint methods
+
+        private void ComputeJointKinematicProperties(Link parent, Link child)
+        {
+        }
 
         //Base method for constructing a joint from a parent link and child link.
         public void CreateJoint(Link parent, Link child)
@@ -823,7 +848,7 @@ namespace SW2URDF
                 child.Joint.Origin.SetXYZ(MathOps.Threshold(child.Joint.Origin.GetXYZ(), 0.00001));
                 child.Joint.Origin.SetRPY(MathOps.Threshold(child.Joint.Origin.GetRPY(), 0.00001));
                 UnsuppressLimitMates(limitMates);
-                if (limitMates.Count > 0)
+                if (limitMates.Count > 0 && ComputeJointLimits)
                 {
                     AddLimits(child.Joint, limitMates, parent.SWMainComponent, child.SWMainComponent);
                 }

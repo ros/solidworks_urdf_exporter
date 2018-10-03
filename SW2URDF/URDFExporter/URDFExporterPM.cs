@@ -292,6 +292,11 @@ namespace SW2URDF
                 {
                     Tree.SelectedNode = Tree.Nodes[0];
                 }
+
+                Exporter.SetComputeInertial(!e.UsedCSVInertial);
+                Exporter.SetComputeVisualCollision(!e.UsedCSVVisualCollision);
+                Exporter.SetComputeJointKinematics(!e.UsedCSVJointKinematics);
+                Exporter.SetComputeJointLimits(!e.UsedCSVJointOther);
             }
         }
 

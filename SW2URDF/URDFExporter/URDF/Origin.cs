@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Runtime.Serialization;
 using System.Windows.Forms;
 
 namespace SW2URDF.URDF
@@ -158,8 +160,8 @@ namespace SW2URDF.URDF
             if (rpyText != null)
             {
                 boxRoll.Text = rpyText[0];
-                boxY.Text = rpyText[1];
-                boxZ.Text = rpyText[2];
+                boxPitch.Text = rpyText[1];
+                boxYaw.Text = rpyText[2];
             }
         }
 
@@ -169,6 +171,37 @@ namespace SW2URDF.URDF
         {
             XYZAttribute.SetDoubleArrayFromStringArray(new string[] { boxX.Text, boxY.Text, boxZ.Text });
             RPYAttribute.SetDoubleArrayFromStringArray(new string[] { boxRoll.Text, boxPitch.Text, boxYaw.Text });
+        }
+
+        /// <summary>
+        /// Origin is a unique case in that its attributes are stored as double arrays.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="dictionary"></param>
+        public override void SetElementFromData(List<string> context, StringDictionary dictionary)
+        {
+            string typeName = GetType().Name;
+            List<string> updatedContext = new List<string>(context) { typeName };
+
+            double[] xyz = new double[3];
+            double[] rpy = new double[3];
+
+            string contextString = string.Join(".", updatedContext) + ".xyz";
+            for (int i = 0; i < 3; i++)
+            {
+                string lookupString = contextString + "." + "xyz"[i];
+                xyz[i] = (double)URDFAttribute.GetValueFromString(dictionary[lookupString]);
+            }
+
+            contextString = string.Join(".", updatedContext) + ".rpy";
+            for (int i = 0; i < 3; i++)
+            {
+                string lookupString = contextString + "." + "rpy"[i];
+                rpy[i] = (double)URDFAttribute.GetValueFromString(dictionary[lookupString]);
+            }
+
+            XYZAttribute.Value = xyz;
+            RPYAttribute.Value = rpy;
         }
     }
 }
