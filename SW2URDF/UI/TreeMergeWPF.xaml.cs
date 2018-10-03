@@ -169,11 +169,9 @@ namespace SW2URDF.UI
             if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
             {
                 DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
-                //Point downPos = e.GetPosition(null);
 
                 if (treeView.SelectedValue != null)
                 {
-                    //TreeViewItem treeviewItem = e.Source as TreeViewItem;
                     DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
                     e.Handled = true;
                 }
