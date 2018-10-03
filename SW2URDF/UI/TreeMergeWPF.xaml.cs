@@ -123,6 +123,9 @@ namespace SW2URDF.UI
 
             TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
             Link link = (Link)selectedItem.Tag;
+
+            // The base link does not have a joint associated with it, so we'll hide the joint
+            // controls
             bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
 
             if (tree == ExistingTreeView)
