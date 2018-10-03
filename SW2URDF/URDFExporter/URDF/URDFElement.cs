@@ -186,8 +186,8 @@ namespace SW2URDF.URDF
             {
                 if (pair.Item2.Value != null && pair.Item2.Value.GetType() == typeof(double[]))
                 {
-                    double[] arry = (double[])pair.Item2.Value;
-                    pair.Item1.Value = arry.Clone();
+                    double[] valueArray = (double[])pair.Item2.Value;
+                    pair.Item1.Value = valueArray.Clone();
                 }
                 else
                 {
