@@ -49,8 +49,8 @@ namespace SW2URDF.UI
                 Tag = node.Link,
                 IsExpanded = true,
                 AllowDrop = true,
-                Name = node.Name,
-                Header = node.Name,
+                Name = node.Link.Name,
+                Header = node.Link.Name,
             };
 
             item.DragEnter += ItemDragEnter;

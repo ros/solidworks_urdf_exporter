@@ -54,23 +54,40 @@ namespace SW2URDF.UI
             e.Handled = true;
         }
 
-        public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
+        public void SetMergeTree(LinkNode existingLink, List<Link> loadedLinks)
         {
-            ExistingTreeView.SetTree(existingNode);
-            LoadedTreeView.SetTree(loadedNode);
+            ExistingTreeView.SetTree(existingLink);
+
+            // Attempt to attech the loaded CSV links to the existing tree
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, loadedLinks, out List<Link> matched, out List<Link> unmatched);
+
+            UpdateList(MatchingLoadedLinks, matched);
+            UpdateList(UnmatchedLoadedLinks, unmatched);
 
             ExistingTreeView.TreeModified += TreeViewModified;
-            LoadedTreeView.TreeModified += TreeViewModified;
 
             ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
-            LoadedTreeView.SelectedItemChanged += OnTreeItemClick;
+        }
 
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+        private void UpdateList(ListBox listBox, List<Link> unmatched)
+        {
+            listBox.Items.Clear();
+            foreach (Link link in unmatched)
+            {
+                ListBoxItem item = new ListBoxItem
+                {
+                    Tag = link,
+                    Name = link.Name,
+                    Content = new TextBlock { Text = link.Name }
+                };
+                item.Selected += OnListBoxItemClick;
+                listBox.Items.Add(item);
+            }
         }
 
         private void TreeViewModified(object sender, TreeModifiedEventArgs e)
         {
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+            //TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
         private void CancelClick(object sender, EventArgs e)
@@ -89,7 +106,7 @@ namespace SW2URDF.UI
                                                          JointKinematicsLoadedButton.IsChecked.Value,
                                                          OtherJointLoadedButton.IsChecked.Value);
 
-            string whyNotMerge = merger.CanTreesBeMerged(ExistingTreeView, LoadedTreeView);
+            string whyNotMerge = "";// merger.CanTreesBeMerged(ExistingTreeView, LoadedTreeView);
             if (!string.IsNullOrWhiteSpace(whyNotMerge))
             {
                 string message = "The two configuration trees cannot be merged due to the issues " +
@@ -107,17 +124,17 @@ namespace SW2URDF.UI
                 return;
             }
 
-            URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
+            //URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
 
-            if (result != null)
-            {
-                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(result, true, merger);
-                TreeMerged(this, mergedArgs);
-            }
-            else
-            {
-                TreeMerged(this, new TreeMergedEventArgs());
-            }
+            //if (result != null)
+            //{
+            //    TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(result, true, merger);
+            //    TreeMerged(this, mergedArgs);
+            //}
+            //else
+            //{
+            //    TreeMerged(this, new TreeMergedEventArgs());
+            //}
 
             Close();
         }
@@ -143,11 +160,11 @@ namespace SW2URDF.UI
             }
         }
 
-        private void FillLoadedLinkProperties(Link link, bool isBaseLink)
+        private void FillLoadedLinkProperties(Link link)
         {
             LoadedLinkNameTextBox.Text = link.Name;
 
-            if (isBaseLink)
+            if (link.Joint == null)
             {
                 LoadedJointNameTextLabel.Content = null;
                 LoadedCoordinateSystemTextLabel.Content = null;
@@ -160,6 +177,16 @@ namespace SW2URDF.UI
                 LoadedCoordinateSystemTextLabel.Content = new TextBlock { Text = link.Joint.CoordinateSystemName };
                 LoadedAxisTextLabel.Content = new TextBlock { Text = link.Joint.AxisName };
                 LoadedJointTypeTextLabel.Content = new TextBlock { Text = link.Joint.Type };
+            }
+        }
+
+        private void OnListBoxItemClick(object sender, RoutedEventArgs e)
+        {
+            ListBoxItem item = (sender as ListBoxItem);
+            if (item != null)
+            {
+                Link link = (Link)item.Tag;
+                FillLoadedLinkProperties(link);
             }
         }
 
@@ -178,16 +205,6 @@ namespace SW2URDF.UI
             if (tree == ExistingTreeView)
             {
                 FillExistingLinkProperties(link, isBaseLink);
-            }
-            else if (tree == LoadedTreeView)
-            {
-                FillLoadedLinkProperties(link, isBaseLink);
-            }
-
-            TreeViewItem corresponding = TreeCorrespondance.GetCorrespondingTreeViewItem(selectedItem);
-            if (corresponding != null)
-            {
-                corresponding.IsSelected = true;
             }
         }
 
@@ -245,7 +262,7 @@ namespace SW2URDF.UI
             string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
 
             ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
-            LoadedTreeLabel.Content = BuildTextBlock("Configuration from CSV: ", longCSVFilename);
+            LoadedTreeLabel.Content = BuildTextBlock("Unmatched Links from CSV: ", longCSVFilename);
 
             MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
             VisualExistingButton.Content = new TextBlock { Text = shortAssemblyName };
