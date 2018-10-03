@@ -114,112 +114,30 @@
         <Label x:Name="MergeTitle" Content="URDF Tree Merge"  HorizontalAlignment="Left" Height="31" Margin="27,10,0,0" VerticalAlignment="Top" Width="316" FontWeight="Bold" FontSize="14" />
         <TextBlock x:Name="MergeDescription"  HorizontalAlignment="Left" Height="60" Margin="53,40,0,0" VerticalAlignment="Top" TextWrapping="Wrap" Width="482">The loaded configuration does not match the existing configuration in this document. Rearrange the loaded configuration to match the existing one</TextBlock>
 
-        <Grid Margin="860,130,0,0">
+        <Grid Margin="860,100,0,0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="320" />
-                <RowDefinition Height="320" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="50" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="490" />
             </Grid.RowDefinitions>
-            <GroupBox x:Name="ExistingConfigurationLinkView" Grid.Row="0" Header="Link from Assembly" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400" BorderThickness="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="53.8" />
-                        <ColumnDefinition Width="27" />
-                        <ColumnDefinition Width="11.4" />
-                        <ColumnDefinition Width="289.4" />
-                    </Grid.ColumnDefinitions>
-
-                    <Label x:Name="ExistingLinkNameLabel" Grid.Row="1" Grid.Column="0" Content="Link Name:" HorizontalAlignment="Right" FontWeight="Regular" Grid.ColumnSpan="3" Margin="0,0,10.8,29" Grid.RowSpan="2" />
-                    <Label x:Name="ExistingJointNameLabel" Grid.Row="2" Grid.Column="0" Content="Joint Name:" HorizontalAlignment="Right" FontWeight="Regular" Grid.ColumnSpan="3" Margin="0,0,10.8,0" />
-
-                    <Label x:Name="ExistingCoordinateSystemLabel" Grid.Row="4" Grid.Column="0" Content="Coordinates:" HorizontalAlignment="Right" FontWeight="Regular" Grid.ColumnSpan="3" Margin="0,0,10.8,0.4" />
-                    <Label x:Name="ExistingAxisLabel" Grid.Row="4" Grid.Column="0" Content="Axis:" HorizontalAlignment="Right" FontWeight="Regular" Grid.ColumnSpan="3" Margin="0,30,10.8,29.2" Grid.RowSpan="3" />
-                    <Label x:Name="ExistingJointTypeLabel" Grid.Row="6" Grid.Column="0" Content="Joint Type:" HorizontalAlignment="Right" FontWeight="Regular" Grid.ColumnSpan="3" Margin="0,0.2,10.8,0.2" />
-
-                    <TextBox x:Name="ExistingLinkNameTextBox" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" Grid.ColumnSpan="2" Margin="0.2,2,0,2" />
-                    <TextBox x:Name="ExistingJointNameTextBox" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" Grid.ColumnSpan="2" Margin="0.2,2,0,2" />
-
-                    <Button x:Name="ExistingCoordinatesMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
-                        ContextMenuService.IsEnabled="False"
-                        Grid.Row="4" Grid.Column="2" Width="300" Height="25" Click="MenuClick" Grid.ColumnSpan="2" Margin="1.2,3,1.2,2.4">
-                        <TextBlock>Select Coordinate System</TextBlock>
-                        <Button.ContextMenu>
-                            <ContextMenu>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                    <Button x:Name="ExistingAxisMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
-                        ContextMenuService.IsEnabled="False"
-                        Grid.Row="5" Grid.Column="2" Width="300" Height="25" Click="MenuClick" Grid.ColumnSpan="2" Margin="1.2,3.6,1.2,1.8">
-                        <TextBlock>Select Reference Axis</TextBlock>
-                        <Button.ContextMenu>
-                            <ContextMenu>
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                    <Button x:Name="ExistingJointTypeMenu" FontWeight="Regular" HorizontalContentAlignment="Left" Padding="5,2"
-                        ContextMenuService.IsEnabled="False"
-                        Grid.Row="6" Grid.Column="2" Width="300" Height="25" Click="MenuClick" Grid.ColumnSpan="2" Margin="1.2,3.2,1.2,2.2">
-                        <TextBlock>Select Joint Type</TextBlock>
-                        <Button.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem IsChecked="True" IsCheckable="True" Checked="MenuItemChecked" Header="Revolute" />
-                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Continuous" />
-                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Prismatic" />
-                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Fixed" />
-                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Floating" />
-                                <MenuItem IsChecked="False" IsCheckable="True" Checked="MenuItemChecked" Header="Planar" />
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                </Grid>
-            </GroupBox>
-            <GroupBox  x:Name="LoadedConfigurationLinkView" Grid.Row="1" Header="Link from CSV" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400"  FontWeight="Bold" BorderThickness="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="30" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80" />
-                        <ColumnDefinition Width="300" />
-                    </Grid.ColumnDefinitions>
-
-                    <Label x:Name="LoadedLinkNameLabel" Grid.Row="1" Grid.Column="0" Content="Link Name:" HorizontalAlignment="Right" FontWeight="Regular" />
-                    <Label x:Name="LoadedJointNameLabel" Grid.Row="2" Grid.Column="0" Content="Joint Name:" HorizontalAlignment="Right" FontWeight="Regular" />
-
-                    <Label x:Name="LoadedCoordinateSystemLabel" Grid.Row="4" Grid.Column="0" Content="Coordinates:" HorizontalAlignment="Right" FontWeight="Regular" />
-                    <Label x:Name="LoadedAxisLabel" Grid.Row="5" Grid.Column="0" Content="Axis:" HorizontalAlignment="Right" FontWeight="Regular" />
-                    <Label x:Name="LoadedJointTypeLabel" Grid.Row="6" Grid.Column="0" Content="Joint Type:" HorizontalAlignment="Right" FontWeight="Regular" />
-
-                    <TextBox x:Name="LoadedLinkNameTextBox" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" FontWeight="Regular" Width="300" Height="25" />
-                    <Label x:Name="LoadedJointNameTextLabel" Grid.Row="2" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
-
-                    <Label x:Name="LoadedCoordinateSystemTextLabel" Grid.Row="4" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
-                    <Label x:Name="LoadedAxisTextLabel" Grid.Row="5" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
-                    <Label x:Name="LoadedJointTypeTextLabel" Grid.Row="6" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
-
-                    <Button x:Name="LoadedLinkReset" Click="OnResetButtonClick" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" />
-                    <Button x:Name="LoadedLinkUpdate" Click="OnUpdateButtonClick" Content="Update" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Right" Width="60" FontWeight="Regular" />
-                </Grid>
-            </GroupBox>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60" />
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="60" />
+            </Grid.ColumnDefinitions>
+            <Label x:Name="SelectedLinkNameLabel" Content="Link: " Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" />
+            <TextBox x:Name="SelectedLinkName" Text="Link Name" Grid.Row="0" Grid.Column="1" Margin="-20,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="320" Height="20" />
+            <Button x:Name="UpdateSelectedLinkButton" Content="Update Name" Click="OnUpdateButtonClick" Grid.Row="2" Grid.Column="3" Margin="-40,0,0,0" Width="100" Height="30" />
+            <Button x:Name="ResetSelectedLinkButton" Content="Reset" Click="OnResetButtonClick" Grid.Row="2" Grid.Column="0"  Width="60" Height="30" />
+            <Label x:Name="PropertiesLoadedLabel" Content="Properties loaded from CSV" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" />
+            <ListView Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                <GridView>
+                    <GridViewColumn Width="60" Header="Column" />
+                    <GridViewColumn Width="300" Header="Value" />
+                </GridView>
+            </ListView>
         </Grid>
 
         <Button x:Name="CancelButton" Content="Cancel" Click="CancelClick" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="870,0,0,10" />
