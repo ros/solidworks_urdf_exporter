@@ -119,7 +119,7 @@
                 <RowDefinition Height="320" />
                 <RowDefinition Height="320" />
             </Grid.RowDefinitions>
-            <GroupBox x:Name="ExistingConfigurationLinkView" Grid.Row="0" Header="Configuration from Assembly" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400" BorderThickness="2">
+            <GroupBox x:Name="ExistingConfigurationLinkView" Grid.Row="0" Header="Link from Assembly" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400" BorderThickness="2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
@@ -182,12 +182,9 @@
                             </ContextMenu>
                         </Button.ContextMenu>
                     </Button>
-
-                    <Button x:Name="ExistingLinkReset" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" Margin="0,0.4,0,0" Grid.ColumnSpan="2" />
-                    <Button x:Name="ExistingLinkUpdate" Content="Update" Grid.Row="8" Grid.Column="3" HorizontalAlignment="Right" Width="60" FontWeight="Regular" Margin="0,0.4,-0.8,0" />
                 </Grid>
             </GroupBox>
-            <GroupBox  x:Name="LoadedConfigurationLinkView" Grid.Row="1" Header="Configuration from CSV" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400"  FontWeight="Bold" BorderThickness="2">
+            <GroupBox  x:Name="LoadedConfigurationLinkView" Grid.Row="1" Header="Link from CSV" HorizontalAlignment="Left" VerticalAlignment="Top" Width="400"  FontWeight="Bold" BorderThickness="2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30" />
@@ -219,8 +216,8 @@
                     <Label x:Name="LoadedAxisTextLabel" Grid.Row="5" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
                     <Label x:Name="LoadedJointTypeTextLabel" Grid.Row="6" Grid.Column="1"  HorizontalAlignment="Left" FontWeight="Regular" />
 
-                    <Button x:Name="LoadedLinkReset" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" />
-                    <Button x:Name="LoadedLinkUpdate" Content="Update" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Right" Width="60" FontWeight="Regular" />
+                    <Button x:Name="LoadedLinkReset" Click="OnResetButtonClick" Content="Reset" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left" Width="60" FontWeight="Regular" />
+                    <Button x:Name="LoadedLinkUpdate" Click="OnUpdateButtonClick" Content="Update" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Right" Width="60" FontWeight="Regular" />
                 </Grid>
             </GroupBox>
         </Grid>

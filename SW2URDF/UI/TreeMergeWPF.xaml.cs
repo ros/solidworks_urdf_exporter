@@ -4,6 +4,7 @@ using SW2URDF.URDFMerge;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -31,6 +32,10 @@ namespace SW2URDF.UI
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
+        private readonly List<Link> LoadedCSVLinks;
+        private readonly HashSet<string> LoadedCSVLinkNames;
+        private Link SelectedCSVLink;
+
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
             Dispatcher.UnhandledException += App_DispatcherUnhandledException;
@@ -42,6 +47,8 @@ namespace SW2URDF.UI
             ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
 
+            LoadedCSVLinks = new List<Link>();
+            LoadedCSVLinkNames = new HashSet<string>();
             TreeCorrespondance = new URDFTreeCorrespondance();
         }
 
@@ -57,16 +64,22 @@ namespace SW2URDF.UI
         public void SetMergeTree(LinkNode existingLink, List<Link> loadedLinks)
         {
             ExistingTreeView.SetTree(existingLink);
+            LoadedCSVLinks.Clear();
+            LoadedCSVLinks.AddRange(loadedLinks);
 
-            // Attempt to attech the loaded CSV links to the existing tree
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, loadedLinks, out List<Link> matched, out List<Link> unmatched);
+            UpdateForm();
 
+            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
+        }
+
+        private void UpdateForm()
+        {
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedCSVLinks, out List<Link> matched, out List<Link> unmatched);
             UpdateList(MatchingLoadedLinks, matched);
             UpdateList(UnmatchedLoadedLinks, unmatched);
 
-            ExistingTreeView.TreeModified += TreeViewModified;
-
-            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
+            LoadedCSVLinkNames.Clear();
+            LoadedCSVLinkNames.UnionWith(LoadedCSVLinks.Select(link => link.Name));
         }
 
         private void UpdateList(ListBox listBox, List<Link> unmatched)
@@ -83,11 +96,6 @@ namespace SW2URDF.UI
                 item.Selected += OnListBoxItemClick;
                 listBox.Items.Add(item);
             }
-        }
-
-        private void TreeViewModified(object sender, TreeModifiedEventArgs e)
-        {
-            //TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
         private void CancelClick(object sender, EventArgs e)
@@ -185,8 +193,8 @@ namespace SW2URDF.UI
             ListBoxItem item = (sender as ListBoxItem);
             if (item != null)
             {
-                Link link = (Link)item.Tag;
-                FillLoadedLinkProperties(link);
+                SelectedCSVLink = (Link)item.Tag;
+                FillLoadedLinkProperties(SelectedCSVLink);
             }
         }
 
@@ -206,6 +214,36 @@ namespace SW2URDF.UI
             {
                 FillExistingLinkProperties(link, isBaseLink);
             }
+        }
+
+        private bool IsValidLinkName(string name)
+        {
+            if (!string.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            if (LoadedCSVLinkNames.Contains(name))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
+        {
+            string updatedName = LoadedLinkNameTextBox.Text;
+            if (!string.IsNullOrWhiteSpace(updatedName))
+            {
+                SelectedCSVLink.Name = updatedName;
+                UpdateForm();
+            }
+        }
+
+        private void OnResetButtonClick(object sender, RoutedEventArgs e)
+        {
+            FillLoadedLinkProperties(SelectedCSVLink);
         }
 
         private void SetDropdownContextMenu(Button button, string name, string defaultText)
@@ -262,7 +300,7 @@ namespace SW2URDF.UI
             string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
 
             ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
-            LoadedTreeLabel.Content = BuildTextBlock("Unmatched Links from CSV: ", longCSVFilename);
+            MatchedListLabel.Content = BuildTextBlock("Matching Links from CSV: ", longCSVFilename);
 
             MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
             VisualExistingButton.Content = new TextBlock { Text = shortAssemblyName };
