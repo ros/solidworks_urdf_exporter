@@ -16,11 +16,22 @@ namespace SW2URDF.URDFMerge
             RightToLeft = new Dictionary<TreeViewItem, TreeViewItem>();
         }
 
+        /// <summary>
+        /// Flattens the TreeView tree into a list of Items through a preorder traversal,
+        /// starting from the top and proceeding downard.
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns></returns>
         public static List<TreeViewItem> FlattenTreeView(TreeView tree)
         {
             return FlattenTreeBranch(tree.Items);
         }
 
+        /// <summary>
+        /// This flattens the tree through a preorder traversal from the top downward
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns></returns>
         private static List<TreeViewItem> FlattenTreeBranch(ItemCollection items)
         {
             List<TreeViewItem> list = new List<TreeViewItem>();
