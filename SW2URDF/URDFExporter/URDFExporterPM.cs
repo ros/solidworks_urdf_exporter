@@ -333,15 +333,13 @@ namespace SW2URDF
                 logger.Info("Loading configuration " + loadFileDialog.FileName);
                 using (Stream stream = loadFileDialog.OpenFile())
                 {
-                    Link link = ImportExport.LoadURDFRobotFromCSV(stream);
-                    if (link == null)
+                    List<Link> loadedLinks = ImportExport.LoadURDFRobotFromCSV(stream);
+                    if (loadedLinks == null)
                     {
                         return;
                     }
 
                     logger.Info("Link successfully loaded");
-
-                    LinkNode loadedBaseNode = new LinkNode(link);
 
                     if (!ExistingConfigurationEmpty())
                     {
@@ -351,13 +349,14 @@ namespace SW2URDF
                         LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
                         TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
                             filename, assemblyTitle);
-                        wpf.SetTrees(existingBaseNode, loadedBaseNode);
+                        wpf.SetMergeTree(existingBaseNode, loadedLinks);
                         wpf.TreeMerged += TreeMergeCompleted;
                         wpf.Show();
                     }
                     else
                     {
-                        SetConfigTree(loadedBaseNode);
+                        MessageBox.Show("There is no current configuration in your assembly. Build one first and then" +
+                            " import the data.");
                     }
                 }
             }

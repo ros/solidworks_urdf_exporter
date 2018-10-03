@@ -7,7 +7,6 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace SW2URDF.CSV
 {
@@ -32,6 +31,37 @@ namespace SW2URDF.CSV
             {
                 WriteHeaderToCSV(stream);
                 WriteLinkToCSV(stream, robot.BaseLink);
+            }
+        }
+
+        /// <summary>
+        /// Loads a list of URDF Links from a CSV file
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static List<Link> LoadURDFRobotFromCSV(Stream stream)
+        {
+            List<StringDictionary> loadedFields = new List<StringDictionary>();
+            using (TextFieldParser csvParser = new TextFieldParser(stream))
+            {
+                csvParser.SetDelimiters(new string[] { "," });
+
+                string[] headers = csvParser.ReadFields();
+                while (!csvParser.EndOfData)
+                {
+                    string[] fields = csvParser.ReadFields();
+                    StringDictionary dictionary = new StringDictionary();
+                    for (int i = 0; i < fields.Length; i++)
+                    {
+                        if (!string.IsNullOrWhiteSpace(fields[i]))
+                        {
+                            dictionary[headers[i]] = fields[i];
+                        }
+                    }
+                    loadedFields.Add(dictionary);
+                }
+
+                return loadedFields.Select(fields => BuildLinkFromData(fields)).ToList();
             }
         }
 
@@ -112,103 +142,7 @@ namespace SW2URDF.CSV
             }
         }
 
-        public static Link LoadURDFRobotFromCSV(Stream stream)
-        {
-            List<StringDictionary> loadedFields = new List<StringDictionary>();
-            using (TextFieldParser csvParser = new TextFieldParser(stream))
-            {
-                csvParser.SetDelimiters(new string[] { "," });
-
-                string[] headers = csvParser.ReadFields();
-                while (!csvParser.EndOfData)
-                {
-                    string[] fields = csvParser.ReadFields();
-                    StringDictionary dictionary = new StringDictionary();
-                    for (int i = 0; i < fields.Length; i++)
-                    {
-                        if (!string.IsNullOrWhiteSpace(fields[i]))
-                        {
-                            dictionary[headers[i]] = fields[i];
-                        }
-                    }
-                    loadedFields.Add(dictionary);
-                }
-
-                Link baseLink = BuildURDFRobotFromData(loadedFields);
-                return baseLink;
-            }
-        }
-
-        public static List<StringDictionary> FindOrphanLinks(List<StringDictionary> allLinks, List<StringDictionary> linksWithParents)
-        {
-            HashSet<string> linkNames = new HashSet<string>(
-                allLinks.Select(dictionary =>
-                    dictionary[ContextToColumns.KEY_NAME]));
-
-            List<StringDictionary> orphanLinks =
-                linksWithParents.Where(dictionary =>
-                    !linkNames.Contains(dictionary[ContextToColumns.KEY_PARENT_LINK])).ToList();
-
-            return orphanLinks;
-        }
-
-        public static bool ValidateTree(List<StringDictionary> linksWithoutParents, List<StringDictionary> linksWithParents)
-        {
-            if (linksWithoutParents.Count == 0)
-            {
-                string message = "CSV Import failed. No base link was found. One link should have an empty parent field";
-                MessageBox.Show(message);
-                logger.Error(message);
-                return false;
-            }
-
-            if (linksWithoutParents.Count > 1)
-            {
-                IEnumerable<string> orphanNames = linksWithoutParents.Select(d => d[ContextToColumns.KEY_NAME]);
-                string names = string.Join(", ", orphanNames);
-
-                string message = "CSV Import failed. The following links did not contain parent links, only one base link should exist\r\n" + names;
-                MessageBox.Show(message);
-                logger.Error(message);
-                return false;
-            }
-
-            List<StringDictionary> allLinks = linksWithParents.Concat(linksWithoutParents).ToList();
-            List<StringDictionary> orphaned = FindOrphanLinks(allLinks, linksWithParents);
-
-            if (orphaned.Count > 0)
-            {
-                IEnumerable<string> orphanNames = orphaned.Select(d => d[ContextToColumns.KEY_NAME]);
-                string names = string.Join(", ", orphanNames);
-
-                string message = "CSV Import failed. The following links contained parent links that did not exist\r\n" + names;
-                MessageBox.Show(message);
-                logger.Error(message);
-                return false;
-            }
-
-            return true;
-        }
-
-        public static Link BuildURDFRobotFromData(List<StringDictionary> loadedFields)
-        {
-            Link baseLink;
-            List<StringDictionary> linksWithoutParents =
-                loadedFields.Where(dictionary => !dictionary.ContainsKey(ContextToColumns.KEY_PARENT_LINK)).ToList();
-            List<StringDictionary> linksWithParents =
-                loadedFields.Where(dictionary => dictionary.ContainsKey(ContextToColumns.KEY_PARENT_LINK)).ToList();
-
-            if (!ValidateTree(linksWithoutParents, linksWithParents))
-            {
-                return null;
-            }
-
-            baseLink = BuildLinkFromData(linksWithoutParents[0]);
-            AddLinksToParent(baseLink, linksWithParents);
-            return baseLink;
-        }
-
-        public static Link BuildLinkFromData(StringDictionary dictionary)
+        private static Link BuildLinkFromData(StringDictionary dictionary)
         {
             StringDictionary contextDictionary = new StringDictionary();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
@@ -225,20 +159,6 @@ namespace SW2URDF.CSV
             Link link = new Link();
             link.SetElementFromData(new List<string>(), contextDictionary);
             return link;
-        }
-
-        public static void AddLinksToParent(Link parent, List<StringDictionary> loadedFields)
-        {
-            IEnumerable<StringDictionary> children = loadedFields.Where(dictionary =>
-                dictionary[ContextToColumns.KEY_PARENT_LINK] == parent.Name);
-
-            foreach (StringDictionary dictionary in children)
-            {
-                Link child = BuildLinkFromData(dictionary);
-                child.Parent = parent;
-                AddLinksToParent(child, loadedFields);
-                parent.Children.Add(child);
-            }
         }
 
         #endregion Private Methods

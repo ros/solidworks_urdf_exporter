@@ -1,51 +1,61 @@
 ﻿using SW2URDF.UI;
-using System;
+using SW2URDF.URDF;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 
 namespace SW2URDF.URDFMerge
 {
-    internal class URDFTreeCorrespondance
+    public class URDFTreeCorrespondance
     {
-        private readonly Dictionary<TreeViewItem, TreeViewItem> LeftToRight;
-        private readonly Dictionary<TreeViewItem, TreeViewItem> RightToLeft;
+        private readonly Dictionary<TreeViewItem, Link> ItemToLink;
 
         public URDFTreeCorrespondance()
         {
-            LeftToRight = new Dictionary<TreeViewItem, TreeViewItem>();
-            RightToLeft = new Dictionary<TreeViewItem, TreeViewItem>();
+            ItemToLink = new Dictionary<TreeViewItem, Link>();
         }
 
-        public void BuildCorrespondance(URDFTreeView left, URDFTreeView right)
+        public void BuildCorrespondance(URDFTreeView left, List<Link> loadedLinks, out List<Link> matched, out List<Link> unmatched)
         {
             List<TreeViewItem> leftList = left.Flatten();
-            List<TreeViewItem> rightList = right.Flatten();
 
-            LeftToRight.Clear();
-            RightToLeft.Clear();
+            ItemToLink.Clear();
 
-            foreach (Tuple<TreeViewItem, TreeViewItem> pair in Enumerable.Zip(leftList, rightList, Tuple.Create))
+            Dictionary<string, TreeViewItem> existingItemsLookup = new Dictionary<string, TreeViewItem>();
+            foreach (TreeViewItem item in leftList)
             {
-                LeftToRight[pair.Item1] = pair.Item2;
-                RightToLeft[pair.Item2] = pair.Item1;
+                existingItemsLookup[item.Name] = item;
+            }
+
+            Dictionary<string, Link> loadedLinksLookup = new Dictionary<string, Link>();
+            foreach (Link link in loadedLinks)
+            {
+                loadedLinksLookup[link.Name] = link;
+            }
+
+            matched = new List<Link>();
+            foreach (KeyValuePair<string, TreeViewItem> entry in existingItemsLookup)
+            {
+                if (loadedLinksLookup.TryGetValue(entry.Key, out Link link))
+                {
+                    matched.Add(link);
+                    ItemToLink[entry.Value] = link;
+                }
+            }
+
+            unmatched = new List<Link>();
+            foreach (var entry in loadedLinksLookup)
+            {
+                if (!existingItemsLookup.ContainsKey(entry.Key))
+                {
+                    unmatched.Add(entry.Value);
+                }
             }
         }
 
-        public TreeViewItem GetCorrespondingTreeViewItem(TreeViewItem item)
+        public Link GetCorrespondingLink(TreeViewItem item)
         {
-            if (LeftToRight.ContainsKey(item))
-            {
-                return LeftToRight[item];
-            }
-            else if (RightToLeft.ContainsKey(item))
-            {
-                return RightToLeft[item];
-            }
-            else
-            {
-                return null;
-            }
+            ItemToLink.TryGetValue(item, out Link link);
+            return link;
         }
     }
 }

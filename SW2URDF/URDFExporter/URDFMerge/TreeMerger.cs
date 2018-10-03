@@ -1,7 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SW2URDF.UI;
 using SW2URDF.URDF;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
@@ -33,64 +32,11 @@ namespace SW2URDF.URDFMerge
             UseCSVJointOther = useCSVJointOther;
         }
 
-        public string CanTreesBeMerged(URDFTreeView cadTree, URDFTreeView csvTree)
-        {
-            string whyNot = "";
-            List<TreeViewItem> cadFlat = cadTree.Flatten();
-            List<TreeViewItem> csvFlat = csvTree.Flatten();
-
-            if (cadFlat.Count != csvFlat.Count)
-            {
-                whyNot += string.Format("The configuration trees do not have the same number of links. " +
-                    "Assembly has {0}, while CSV has {1}", cadFlat.Count, csvFlat.Count);
-            }
-            else
-            {
-                whyNot += CompareItemCollections(cadTree.Items, csvTree.Items);
-            }
-
-            return whyNot;
-        }
-
-        private string CompareItemCollections(ItemCollection cadCollection, ItemCollection csvCollection)
-        {
-            string whyNot = "";
-            List<TreeViewItem> cadItems = cadCollection.Cast<TreeViewItem>().ToList();
-            List<TreeViewItem> csvItems = csvCollection.Cast<TreeViewItem>().ToList();
-
-            foreach (Tuple<TreeViewItem, TreeViewItem> pair in
-                        Enumerable.Zip(cadItems, csvItems, Tuple.Create))
-            {
-                whyNot += CanTreeViewItemsBeMerged(pair.Item1, pair.Item2);
-            }
-
-            return whyNot;
-        }
-
-        private string CanTreeViewItemsBeMerged(TreeViewItem cadItem, TreeViewItem csvItem)
-        {
-            string whyNot = "";
-            if (cadItem.Items.Count != csvItem.Items.Count)
-            {
-                object[] messageObjects =
-                    new object[] { cadItem.Name, csvItem.Name, cadItem.Items.Count, csvItem.Items.Count };
-
-                whyNot += string.Format("Assembly configuration Link \"{0}\" and CSV configuration Link " +
-                    "\"{1}\" cannot be merged, they have differing number of children links. " +
-                    "Assembly Link \"{0}\": {2}    CSV Link \"{1}\": {3}\r\n", messageObjects);
-            }
-            else
-            {
-                whyNot += CompareItemCollections(cadItem.Items, csvItem.Items);
-            }
-            return whyNot;
-        }
-
-        public URDFTreeView Merge(TreeView cadTree, TreeView csvTree)
+        public URDFTreeView Merge(TreeView cadTree, URDFTreeCorrespondance correspondance)
         {
             URDFTreeView merged = new URDFTreeView();
 
-            foreach (TreeViewItem item in MergeItems(cadTree.Items, csvTree.Items))
+            foreach (TreeViewItem item in MergeItems(cadTree.Items, correspondance))
             {
                 merged.Items.Add(item);
             }
@@ -98,29 +44,46 @@ namespace SW2URDF.URDFMerge
             return merged;
         }
 
-        public List<TreeViewItem> MergeItems(ItemCollection cadCollection, ItemCollection csvCollection)
+        public List<TreeViewItem> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
         {
             List<TreeViewItem> merged = new List<TreeViewItem>();
             List<TreeViewItem> cadItems = cadCollection.Cast<TreeViewItem>().ToList();
-            List<TreeViewItem> csvItems = csvCollection.Cast<TreeViewItem>().ToList();
 
-            foreach (Tuple<TreeViewItem, TreeViewItem> pair in
-                        Enumerable.Zip(cadItems, csvItems, Tuple.Create))
+            foreach (TreeViewItem item in cadCollection)
             {
-                TreeViewItem mergedItem = MergeItem(pair.Item1, pair.Item2);
+                TreeViewItem mergedItem = MergeItem(item, correspondance);
                 merged.Add(mergedItem);
             }
 
             return merged;
         }
 
-        private TreeViewItem MergeItem(TreeViewItem cadItem, TreeViewItem csvItem)
+        private TreeViewItem MergeItem(TreeViewItem cadItem, URDFTreeCorrespondance correspondance)
         {
             TreeViewItem merged = new TreeViewItem();
             Link cadLink = (Link)cadItem.Tag;
-            Link mergedLink = cadLink.Clone();
-            Link csvLink = (Link)csvItem.Tag;
+            Link csvLink = correspondance.GetCorrespondingLink(cadItem);
 
+            Link mergedLink = MergeLink(cadLink, csvLink);
+
+            merged.Tag = mergedLink;
+
+            List<TreeViewItem> children = MergeItems(cadItem.Items, correspondance);
+            foreach (TreeViewItem child in children)
+            {
+                merged.Items.Add(child);
+            }
+            return merged;
+        }
+
+        private Link MergeLink(Link cadLink, Link csvLink)
+        {
+            if (csvLink == null)
+            {
+                return cadLink;
+            }
+
+            Link mergedLink = cadLink.Clone();
             // SolidWorks components won't be loaded from the file. Use the components in the model
             mergedLink.SWMainComponent = cadLink.SWMainComponent;
             mergedLink.SWcomponents = new List<Component2>(cadLink.SWcomponents);
@@ -155,13 +118,7 @@ namespace SW2URDF.URDFMerge
                 mergedLink.Joint.Safety.SetElement(csvLink.Joint.Safety);
             }
 
-            merged.Tag = mergedLink;
-            List<TreeViewItem> children = MergeItems(cadItem.Items, csvItem.Items);
-            foreach (TreeViewItem child in children)
-            {
-                merged.Items.Add(child);
-            }
-            return merged;
+            return mergedLink;
         }
     }
 }
