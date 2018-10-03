@@ -359,10 +359,6 @@ namespace SW2URDF
 
         #region Joint methods
 
-        private void ComputeJointKinematicProperties(Link parent, Link child)
-        {
-        }
-
         //Base method for constructing a joint from a parent link and child link.
         public void CreateJoint(Link parent, Link child)
         {

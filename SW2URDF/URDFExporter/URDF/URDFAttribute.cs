@@ -89,10 +89,6 @@ namespace SW2URDF.URDF
             }
         }
 
-        public void SetValueFromDataArray(string contextString, StringDictionary dictionary)
-        {
-        }
-
         public void SetValueFromData(List<string> context, StringDictionary dictionary)
         {
             string contextString = string.Join(".", context) + "." + AttributeType;
