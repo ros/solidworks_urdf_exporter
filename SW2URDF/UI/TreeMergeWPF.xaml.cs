@@ -177,8 +177,31 @@ namespace SW2URDF.UI
             }
         }
 
+        private void UnselectOtherBoxes(object boxWithSelection)
+        {
+            TreeViewItem selectedTreeItem = (ExistingTreeView.SelectedItem as TreeViewItem);
+            if (boxWithSelection != ExistingTreeView && selectedTreeItem != null)
+            {
+                selectedTreeItem.IsSelected = false;
+            }
+
+            ListBoxItem previouslySelected = (MatchingLoadedLinks.SelectedItem as ListBoxItem);
+            if (boxWithSelection != MatchingLoadedLinks && previouslySelected != null)
+            {
+                previouslySelected.IsSelected = false;
+            }
+
+            previouslySelected = (UnmatchedLoadedLinks.SelectedItem as ListBoxItem);
+            if (boxWithSelection != UnmatchedLoadedLinks && previouslySelected != null)
+            {
+                previouslySelected.IsSelected = false;
+            }
+        }
+
         private void OnListBoxItemClick(object sender, RoutedEventArgs e)
         {
+            UnselectOtherBoxes(sender);
+
             ListBoxItem item = (sender as ListBoxItem);
             if (item != null)
             {
@@ -190,6 +213,8 @@ namespace SW2URDF.UI
 
         private void OnTreeItemClick(object sender, RoutedEventArgs e)
         {
+            UnselectOtherBoxes(sender);
+
             TreeView tree = (TreeView)sender;
             if (tree.SelectedItem == null)
             {
