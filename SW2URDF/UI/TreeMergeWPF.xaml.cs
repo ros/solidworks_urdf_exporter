@@ -1,8 +1,12 @@
 ﻿using log4net;
+using SW2URDF.CSV;
 using SW2URDF.URDF;
 using SW2URDF.URDFMerge;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -23,9 +27,6 @@ namespace SW2URDF.UI
 
         private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
         private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
-        private static readonly string DEFAULT_COORDINATE_SYSTEM_TEXT = "Select Coordinate System";
-        private static readonly string DEFAULT_AXIS_TEXT = "Select Reference Axis";
-        private static readonly string DEFAULT_JOINT_TYPE_TEXT = "Select Joint Type";
 
         private readonly string CSVFileName;
         private readonly string AssemblyName;
@@ -35,21 +36,24 @@ namespace SW2URDF.UI
         private readonly List<Link> LoadedCSVLinks;
         private readonly HashSet<string> LoadedCSVLinkNames;
         private Link SelectedCSVLink;
+        public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; set; }
 
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
+            DataContext = this;
+            Resources["SelectedLinkProperties"] = SelectedLinkProperties;
             Dispatcher.UnhandledException += App_DispatcherUnhandledException;
 
             CSVFileName = csvFileName;
             AssemblyName = assemblyName;
 
             InitializeComponent();
-            ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
 
             LoadedCSVLinks = new List<Link>();
             LoadedCSVLinkNames = new HashSet<string>();
             TreeCorrespondance = new URDFTreeCorrespondance();
+            SelectedLinkProperties = new ObservableCollection<KeyValuePair<string, object>>();
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -67,6 +71,7 @@ namespace SW2URDF.UI
             LoadedCSVLinks.Clear();
             LoadedCSVLinks.AddRange(loadedLinks);
 
+            PropertiesListView.DataContext = SelectedLinkProperties;
             UpdateForm();
 
             ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
@@ -147,44 +152,19 @@ namespace SW2URDF.UI
             Close();
         }
 
-        private void FillExistingLinkProperties(Link link, bool isBaseLink)
+        private void FillSelectedLinkBoxes(Link link)
         {
-            ExistingLinkNameTextBox.Text = link.Name;
+            SelectedLinkName.Text = link.Name;
 
-            if (isBaseLink)
-            {
-                ExistingJointNameTextBox.Text = "";
-                ExistingJointNameTextBox.Visibility = Visibility.Hidden;
-                ExistingCoordinatesMenu.Visibility = Visibility.Hidden;
-                ExistingAxisMenu.Visibility = Visibility.Hidden;
-                ExistingJointTypeMenu.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                ExistingJointNameTextBox.Text = link.Joint.Name;
-                SetDropdownContextMenu(ExistingCoordinatesMenu, link.Joint.CoordinateSystemName, DEFAULT_COORDINATE_SYSTEM_TEXT);
-                SetDropdownContextMenu(ExistingAxisMenu, link.Joint.AxisName, DEFAULT_AXIS_TEXT);
-                SetDropdownContextMenu(ExistingJointTypeMenu, link.Joint.Type, DEFAULT_JOINT_TYPE_TEXT);
-            }
-        }
+            OrderedDictionary dictionary = new OrderedDictionary();
+            link.AppendToCSVDictionary(new List<string>(), dictionary);
 
-        private void FillLoadedLinkProperties(Link link)
-        {
-            LoadedLinkNameTextBox.Text = link.Name;
-
-            if (link.Joint == null)
+            SelectedLinkProperties.Clear();
+            foreach (DictionaryEntry entry in dictionary)
             {
-                LoadedJointNameTextLabel.Content = null;
-                LoadedCoordinateSystemTextLabel.Content = null;
-                LoadedAxisTextLabel.Content = null;
-                LoadedJointTypeTextLabel.Content = null;
-            }
-            else
-            {
-                LoadedJointNameTextLabel.Content = new TextBlock { Text = link.Name };
-                LoadedCoordinateSystemTextLabel.Content = new TextBlock { Text = link.Joint.CoordinateSystemName };
-                LoadedAxisTextLabel.Content = new TextBlock { Text = link.Joint.AxisName };
-                LoadedJointTypeTextLabel.Content = new TextBlock { Text = link.Joint.Type };
+                string context = (string)entry.Key;
+                string columnName = (string)ContextToColumns.Dictionary[context];
+                SelectedLinkProperties.Add(new KeyValuePair<string, object>(columnName, entry.Value));
             }
         }
 
@@ -193,8 +173,9 @@ namespace SW2URDF.UI
             ListBoxItem item = (sender as ListBoxItem);
             if (item != null)
             {
+                SelectedLinkName.IsReadOnly = false;
                 SelectedCSVLink = (Link)item.Tag;
-                FillLoadedLinkProperties(SelectedCSVLink);
+                FillSelectedLinkBoxes(SelectedCSVLink);
             }
         }
 
@@ -212,13 +193,14 @@ namespace SW2URDF.UI
 
             if (tree == ExistingTreeView)
             {
-                FillExistingLinkProperties(link, isBaseLink);
+                SelectedLinkName.IsReadOnly = true;
+                FillSelectedLinkBoxes(link);
             }
         }
 
         private bool IsValidLinkName(string name)
         {
-            if (!string.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(name))
             {
                 return false;
             }
@@ -233,7 +215,7 @@ namespace SW2URDF.UI
 
         private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
         {
-            string updatedName = LoadedLinkNameTextBox.Text;
+            string updatedName = SelectedLinkName.Text;
             if (!string.IsNullOrWhiteSpace(updatedName))
             {
                 SelectedCSVLink.Name = updatedName;
@@ -243,7 +225,7 @@ namespace SW2URDF.UI
 
         private void OnResetButtonClick(object sender, RoutedEventArgs e)
         {
-            FillLoadedLinkProperties(SelectedCSVLink);
+            FillSelectedLinkBoxes(SelectedCSVLink);
         }
 
         private void SetDropdownContextMenu(Button button, string name, string defaultText)
@@ -311,13 +293,6 @@ namespace SW2URDF.UI
             VisualLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
             JointKinematicsLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
             OtherJointLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
-        }
-
-        private void ConfigureMenus(List<string> coordinateSystems, List<string> referenceAxes)
-        {
-            SetMenu(ExistingCoordinatesMenu, coordinateSystems);
-            SetMenu(ExistingAxisMenu, referenceAxes);
-            SetMenu(ExistingJointTypeMenu, Joint.AVAILABLE_TYPES);
         }
 
         private void SetMenu(Button button, List<string> menuContents)

@@ -112,7 +112,7 @@
             </GroupBox>
         </Grid>
         <Label x:Name="MergeTitle" Content="URDF Tree Merge"  HorizontalAlignment="Left" Height="31" Margin="27,10,0,0" VerticalAlignment="Top" Width="316" FontWeight="Bold" FontSize="14" />
-        <TextBlock x:Name="MergeDescription"  HorizontalAlignment="Left" Height="60" Margin="53,40,0,0" VerticalAlignment="Top" TextWrapping="Wrap" Width="482">The loaded configuration does not match the existing configuration in this document. Rearrange the loaded configuration to match the existing one</TextBlock>
+        <TextBlock x:Name="MergeDescription"  HorizontalAlignment="Left" Height="60" Margin="53,40,0,0" VerticalAlignment="Top" TextWrapping="Wrap" Width="482">Match loaded CSV links to the Assembly configuration by renaming links in the "Unmatched Links" box</TextBlock>
 
         <Grid Margin="860,100,0,0">
             <Grid.RowDefinitions>
@@ -132,11 +132,15 @@
             <Button x:Name="UpdateSelectedLinkButton" Content="Update Name" Click="OnUpdateButtonClick" Grid.Row="2" Grid.Column="3" Margin="-40,0,0,0" Width="100" Height="30" />
             <Button x:Name="ResetSelectedLinkButton" Content="Reset" Click="OnResetButtonClick" Grid.Row="2" Grid.Column="0"  Width="60" Height="30" />
             <Label x:Name="PropertiesLoadedLabel" Content="Properties loaded from CSV" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" />
-            <ListView Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
-                <GridView>
-                    <GridViewColumn Width="60" Header="Column" />
-                    <GridViewColumn Width="300" Header="Value" />
-                </GridView>
+            <ListView x:Name="PropertiesListView" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" ItemsSource="{Binding Path=SelectedLinkProperties , RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                <ListView.View>
+                    <GridView>
+                        <GridView.Columns>
+                            <GridViewColumn Width="Auto" Header="Column" DisplayMemberBinding="{Binding Key}" />
+                            <GridViewColumn Width="Auto" Header="Value" DisplayMemberBinding="{Binding Value}" />
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
             </ListView>
         </Grid>
 
