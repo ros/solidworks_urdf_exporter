@@ -33,12 +33,13 @@ namespace SW2URDF.UI
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
+        private readonly Link existingBaseLink;
         private readonly List<Link> LoadedCSVLinks;
         private readonly HashSet<string> LoadedCSVLinkNames;
         private Link SelectedCSVLink;
         public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; set; }
 
-        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
+        public TreeMergeWPF(Link existingLink, List<Link> loadedLinks, string csvFileName, string assemblyName)
         {
             DataContext = this;
             Resources["SelectedLinkProperties"] = SelectedLinkProperties;
@@ -50,10 +51,16 @@ namespace SW2URDF.UI
             InitializeComponent();
             ConfigureLabels();
 
-            LoadedCSVLinks = new List<Link>();
+            existingBaseLink = existingLink;
+            LoadedCSVLinks = new List<Link>(loadedLinks);
             LoadedCSVLinkNames = new HashSet<string>();
             TreeCorrespondance = new URDFTreeCorrespondance();
             SelectedLinkProperties = new ObservableCollection<KeyValuePair<string, object>>();
+
+            PropertiesListView.DataContext = SelectedLinkProperties;
+
+            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
+            MergeAndUpdate();
         }
 
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -65,26 +72,37 @@ namespace SW2URDF.UI
             e.Handled = true;
         }
 
-        public void SetMergeTree(LinkNode existingLink, List<Link> loadedLinks)
+        /// <summary>
+        /// This method performs a merge between the Loaded links and the existing configuration
+        /// based the names of the loaded links. It also updates the form to match the most
+        /// updated merge
+        /// </summary>
+        /// <returns></returns>
+        private TreeMerger MergeAndUpdate()
         {
-            ExistingTreeView.SetTree(existingLink);
-            LoadedCSVLinks.Clear();
-            LoadedCSVLinks.AddRange(loadedLinks);
+            // Setup merge to start with a fresh link,
+            ExistingTreeView.SetTree(existingBaseLink.Clone());
+            LoadedCSVLinkNames.Clear();
+            LoadedCSVLinkNames.UnionWith(LoadedCSVLinks.Select(link => link.Name));
 
-            PropertiesListView.DataContext = SelectedLinkProperties;
-            UpdateForm();
-
-            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
-        }
-
-        private void UpdateForm()
-        {
+            // Update correspondance with the most up-to-date names as well as the
+            // appropriate list boxes
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedCSVLinks, out List<Link> matched, out List<Link> unmatched);
             UpdateList(MatchingLoadedLinks, matched);
             UpdateList(UnmatchedLoadedLinks, unmatched);
 
-            LoadedCSVLinkNames.Clear();
-            LoadedCSVLinkNames.UnionWith(LoadedCSVLinks.Select(link => link.Name));
+            // Perform merge
+            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
+                                                        VisualLoadedButton.IsChecked.Value,
+                                                        JointKinematicsLoadedButton.IsChecked.Value,
+                                                        OtherJointLoadedButton.IsChecked.Value);
+
+            Link mergedRoot = merger.Merge(ExistingTreeView, TreeCorrespondance);
+
+            // Update Form Tree
+            ExistingTreeView.SetTree(mergedRoot);
+
+            return merger;
         }
 
         private void UpdateList(ListBox listBox, List<Link> unmatched)
@@ -114,40 +132,16 @@ namespace SW2URDF.UI
 
         private void MergeClick(object sender, EventArgs e)
         {
-            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
-                                                         VisualLoadedButton.IsChecked.Value,
-                                                         JointKinematicsLoadedButton.IsChecked.Value,
-                                                         OtherJointLoadedButton.IsChecked.Value);
-
-            string whyNotMerge = "";// merger.CanTreesBeMerged(ExistingTreeView, LoadedTreeView);
-            if (!string.IsNullOrWhiteSpace(whyNotMerge))
+            TreeMerger merger = MergeAndUpdate();
+            if (merger != null)
             {
-                string message = "The two configuration trees cannot be merged due to the issues " +
-                    "listed below. Modify the configuration in the assembly and/or the csv " +
-                    "file. Alternatively, you can remove the configuration from the assembly and load the " +
-                    "CSV configuration to skip merging.\r\n\r\n" + whyNotMerge;
-                MessageBox.Show(message);
-                return;
+                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
+                TreeMerged(this, mergedArgs);
             }
-
-            if (MessageBox.Show("Do you wish to merge these configuration trees? The configuration in the assembly" +
-                " will be overwritten.",
-                "Confirm Merge", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            else
             {
-                return;
+                TreeMerged(this, new TreeMergedEventArgs());
             }
-
-            //URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
-
-            //if (result != null)
-            //{
-            //    TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(result, true, merger);
-            //    TreeMerged(this, mergedArgs);
-            //}
-            //else
-            //{
-            //    TreeMerged(this, new TreeMergedEventArgs());
-            //}
 
             Close();
         }
@@ -219,7 +213,7 @@ namespace SW2URDF.UI
             if (!string.IsNullOrWhiteSpace(updatedName))
             {
                 SelectedCSVLink.Name = updatedName;
-                UpdateForm();
+                MergeAndUpdate();
             }
         }
 

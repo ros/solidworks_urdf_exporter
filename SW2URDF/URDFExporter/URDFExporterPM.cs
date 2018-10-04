@@ -347,9 +347,9 @@ namespace SW2URDF
                         string assemblyTitle = ActiveSWModel.GetTitle();
 
                         LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
-                        TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
+                        Link existingBaseLink = existingBaseNode.GetLink();
+                        TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
                             filename, assemblyTitle);
-                        wpf.SetMergeTree(existingBaseNode, loadedLinks);
                         wpf.TreeMerged += TreeMergeCompleted;
                         wpf.Show();
                     }

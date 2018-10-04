@@ -1,5 +1,4 @@
 ﻿using SolidWorks.Interop.sldworks;
-using SW2URDF.UI;
 using SW2URDF.URDF;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,33 +31,31 @@ namespace SW2URDF.URDFMerge
             UseCSVJointOther = useCSVJointOther;
         }
 
-        public URDFTreeView Merge(TreeView cadTree, URDFTreeCorrespondance correspondance)
+        public Link Merge(TreeView cadTree, URDFTreeCorrespondance correspondance)
         {
-            URDFTreeView merged = new URDFTreeView();
-
-            foreach (TreeViewItem item in MergeItems(cadTree.Items, correspondance))
+            if (cadTree.Items.Count != 1)
             {
-                merged.Items.Add(item);
+                return null;
             }
 
-            return merged;
+            Link mergedRoot = MergeItem((TreeViewItem)cadTree.Items[0], correspondance);
+            return mergedRoot;
         }
 
-        public List<TreeViewItem> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
+        public List<Link> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
         {
-            List<TreeViewItem> merged = new List<TreeViewItem>();
-            List<TreeViewItem> cadItems = cadCollection.Cast<TreeViewItem>().ToList();
-
+            List<Link> merged = new List<Link>();
+            
             foreach (TreeViewItem item in cadCollection)
             {
-                TreeViewItem mergedItem = MergeItem(item, correspondance);
+                Link mergedItem = MergeItem(item, correspondance);
                 merged.Add(mergedItem);
             }
 
             return merged;
         }
 
-        private TreeViewItem MergeItem(TreeViewItem cadItem, URDFTreeCorrespondance correspondance)
+        private Link MergeItem(TreeViewItem cadItem, URDFTreeCorrespondance correspondance)
         {
             TreeViewItem merged = new TreeViewItem();
             Link cadLink = (Link)cadItem.Tag;
@@ -66,14 +63,10 @@ namespace SW2URDF.URDFMerge
 
             Link mergedLink = MergeLink(cadLink, csvLink);
 
-            merged.Tag = mergedLink;
-
-            List<TreeViewItem> children = MergeItems(cadItem.Items, correspondance);
-            foreach (TreeViewItem child in children)
-            {
-                merged.Items.Add(child);
-            }
-            return merged;
+            List<Link> children = MergeItems(cadItem.Items, correspondance);
+            mergedLink.Children.Clear();
+            mergedLink.Children.AddRange(children);
+            return mergedLink;
         }
 
         private Link MergeLink(Link cadLink, Link csvLink)

@@ -43,7 +43,7 @@ namespace SW2URDF.URDFMerge
             }
 
             unmatched = new List<Link>();
-            foreach (var entry in loadedLinksLookup)
+            foreach (KeyValuePair<string, Link> entry in loadedLinksLookup)
             {
                 if (!existingItemsLookup.ContainsKey(entry.Key))
                 {
