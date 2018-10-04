@@ -1,7 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SW2URDF.URDF;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 
 namespace SW2URDF.URDFMerge
@@ -45,7 +44,7 @@ namespace SW2URDF.URDFMerge
         public List<Link> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
         {
             List<Link> merged = new List<Link>();
-            
+
             foreach (TreeViewItem item in cadCollection)
             {
                 Link mergedItem = MergeItem(item, correspondance);

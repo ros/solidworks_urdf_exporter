@@ -37,7 +37,7 @@ namespace SW2URDF.UI
         private readonly List<Link> LoadedCSVLinks;
         private readonly HashSet<string> LoadedCSVLinkNames;
         private Link SelectedCSVLink;
-        public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; set; }
+        public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; }
 
         public TreeMergeWPF(Link existingLink, List<Link> loadedLinks, string csvFileName, string assemblyName)
         {
@@ -87,7 +87,8 @@ namespace SW2URDF.UI
 
             // Update correspondance with the most up-to-date names as well as the
             // appropriate list boxes
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedCSVLinks, out List<Link> matched, out List<Link> unmatched);
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedCSVLinks,
+                out List<Link> matched, out List<Link> unmatched);
             UpdateList(MatchingLoadedLinks, matched);
             UpdateList(UnmatchedLoadedLinks, unmatched);
 

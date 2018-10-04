@@ -204,7 +204,7 @@ namespace SW2URDF.URDF
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            SWcomponents = new List<SolidWorks.Interop.sldworks.Component2>();
+            SWcomponents = new List<Component2>();
         }
     }
 }
