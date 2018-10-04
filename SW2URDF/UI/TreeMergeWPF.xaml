@@ -26,7 +26,7 @@
                 <ColumnDefinition Width="420" />
                 <ColumnDefinition Width="420" />
             </Grid.ColumnDefinitions>
-            <Label x:Name="ExistingTreeLabel" Content="Existing Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
+            <Label x:Name="ExistingTreeLabel" Content="Preview of Updated Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
             <Label x:Name="MatchedListLabel" Content="Matching Links from CSV: " HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="0" Grid.Column="1" />
             <local:URDFTreeView x:Name="ExistingTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" Grid.RowSpan ="3" VerticalAlignment="Top" Width="400" />
             <Label x:Name="UnmatchedListLabel" Content="Unmatched Links" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="2" Grid.Column="1" />
