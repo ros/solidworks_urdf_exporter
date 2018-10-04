@@ -128,7 +128,7 @@
                 <ColumnDefinition Width="60" />
             </Grid.ColumnDefinitions>
             <Label x:Name="SelectedLinkNameLabel" Content="Link: " Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" />
-            <TextBox x:Name="SelectedLinkName" Text="Link Name" Grid.Row="0" Grid.Column="1" Margin="-20,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="320" Height="20" />
+            <TextBox x:Name="SelectedLinkName" Grid.Row="0" Grid.Column="1" Margin="-20,0,0,0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Left" Width="320" Height="20" />
             <Button x:Name="UpdateSelectedLinkButton" Content="Change Name" Click="OnUpdateButtonClick" Grid.Row="2" Grid.Column="3" Margin="-40,0,0,0" Width="100" Height="30" />
             <Button x:Name="ResetSelectedLinkButton" Content="Reset" Click="OnResetButtonClick" Grid.Row="2" Grid.Column="0"  Width="60" Height="30" />
             <Label x:Name="PropertiesLoadedLabel" Content="Properties loaded from CSV" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" />

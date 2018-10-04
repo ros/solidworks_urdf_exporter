@@ -225,11 +225,33 @@ namespace SW2URDF.UI
         private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
         {
             string updatedName = SelectedLinkName.Text;
-            if (!string.IsNullOrWhiteSpace(updatedName))
+            HashSet<string> existingNames = new HashSet<string>(LoadedCSVLinkNames);
+            existingNames.Remove(SelectedCSVLink.Name);
+
+            if (string.IsNullOrWhiteSpace(updatedName))
             {
-                SelectedCSVLink.Name = updatedName;
-                MergeAndUpdate();
+                SelectedLinkName.ToolTip = new ToolTip
+                {
+                    Content = "Link name cannot be empty",
+                    IsOpen = true,
+                    StaysOpen = false,
+                };
+                return;
             }
+
+            if (existingNames.Contains(updatedName))
+            {
+                SelectedLinkName.ToolTip = new ToolTip
+                {
+                    Content = "\"" + updatedName + "\" already exists",
+                    IsOpen = true,
+                    StaysOpen = false,
+                };
+                return;
+            }
+            SelectedLinkName.ToolTip = null;
+            SelectedCSVLink.Name = updatedName;
+            MergeAndUpdate();
         }
 
         private void OnResetButtonClick(object sender, RoutedEventArgs e)
