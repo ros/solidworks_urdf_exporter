@@ -134,15 +134,29 @@ namespace SW2URDF.UI
         private void MergeClick(object sender, EventArgs e)
         {
             TreeMerger merger = MergeAndUpdate();
-            if (merger != null)
+            if (UnmatchedLoadedLinks.Items.Count > 0)
             {
-                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
-                TreeMerged(this, mergedArgs);
+                IEnumerable<string> unmatchedLinkNames =
+                    UnmatchedLoadedLinks.Items
+                                        .Cast<ListBoxItem>()
+                                        .Select(item => ((Link)item.Tag).Name);
+
+                string unmatchedLinksStr = string.Join("\r\n", unmatchedLinkNames);
+
+                string message = "The follow links loaded from the CSV " + CSVFileName + " have not " +
+                    "been matched with links in the assembly configuration, would you like to " +
+                    "continue?\r\n\r\n" + unmatchedLinksStr;
+
+                MessageBoxResult result =
+                    MessageBox.Show(message, "Merge with unmatched links?", MessageBoxButton.YesNo);
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
             }
-            else
-            {
-                TreeMerged(this, new TreeMergedEventArgs());
-            }
+
+            TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
+            TreeMerged(this, mergedArgs);
 
             Close();
         }
