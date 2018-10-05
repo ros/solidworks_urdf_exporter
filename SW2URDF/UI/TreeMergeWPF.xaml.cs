@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace SW2URDF.UI
 {
@@ -24,12 +25,23 @@ namespace SW2URDF.UI
 
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
+            Dispatcher.UnhandledException += AppDispatcherUnhandledException;
+
             CSVFileName = csvFileName;
             AssemblyName = assemblyName;
 
             InitializeComponent();
             ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
+        }
+
+        private void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            logger.Error("Exception encountered in TreeMerge form", e.Exception);
+            MessageBox.Show("There was a problem with the TreeMerge form: \n\"" +
+                e.Exception.Message + "\"\nEmail your maintainer with the log file found at " +
+                Logger.GetFileName());
+            e.Handled = true;
         }
 
         public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
