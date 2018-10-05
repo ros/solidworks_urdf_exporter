@@ -211,6 +211,11 @@ namespace SW2URDF
         {
             SaveActiveNode();
 
+            Exporter.SetComputeInertial(PMComputeMassInertia.Checked);
+            Exporter.SetComputeVisualCollision(PMComputeVisualCollision.Checked);
+            Exporter.SetComputeJointKinematics(PMComputeJointKinematics.Checked);
+            Exporter.SetComputeJointLimits(PMComputeJointLimits.Checked);
+
             if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
             {
                 PMPage.Close(true); //It saves automatically when sending Okay as true;
@@ -281,6 +286,12 @@ namespace SW2URDF
                 baseNode.Link.SWComponents.Count == 0);
         }
 
+        private void EnableControl(IPropertyManagerPageControl control, bool isEnabled = true)
+        {
+            control.Enabled = isEnabled;
+            control.Visible = true;
+        }
+
         private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
         {
             if (!e.Success)
@@ -288,26 +299,34 @@ namespace SW2URDF
                 MessageBox.Show("Merging the loaded CSV configuration with the assembly's configuration " +
                     "failed. Check your CSV file. If you continue to run into errors, delete the " +
                     "configuration in the assembly and load a proper CSV.");
+                return;
             }
-            else
+
+            Tree.Nodes.Clear();
+            foreach (System.Windows.Controls.TreeViewItem item in e.MergedTree.Items)
             {
-                Tree.Nodes.Clear();
-                foreach (System.Windows.Controls.TreeViewItem item in e.MergedTree.Items)
-                {
-                    Tree.Nodes.Add(LinkNodeFromTreeViewItem(item));
-                }
-
-                Tree.ExpandAll();
-                if (Tree.Nodes.Count > 0)
-                {
-                    Tree.SelectedNode = Tree.Nodes[0];
-                }
-
-                Exporter.SetComputeInertial(!e.UsedCSVInertial);
-                Exporter.SetComputeVisualCollision(!e.UsedCSVVisualCollision);
-                Exporter.SetComputeJointKinematics(!e.UsedCSVJointKinematics);
-                Exporter.SetComputeJointLimits(!e.UsedCSVJointOther);
+                Tree.Nodes.Add(LinkNodeFromTreeViewItem(item));
             }
+
+            Tree.ExpandAll();
+            if (Tree.Nodes.Count > 0)
+            {
+                Tree.SelectedNode = Tree.Nodes[0];
+            }
+
+            PMComputeMassInertia.Checked = !e.UsedCSVInertial;
+            PMComputeVisualCollision.Checked = !e.UsedCSVVisualCollision;
+            PMComputeJointKinematics.Checked = !e.UsedCSVJointKinematics;
+            PMComputeJointLimits.Checked = !e.UsedCSVJointOther;
+            PMLabelCSVFilename.Caption = "Filename: " + e.CSVFilename;
+
+            // Make the controls visible, but only enable them if values have been loaded from the CSV
+            // otherwise they do need to be computed.
+            EnableControl((IPropertyManagerPageControl)PMComputeMassInertia, e.UsedCSVInertial);
+            EnableControl((IPropertyManagerPageControl)PMComputeVisualCollision, e.UsedCSVVisualCollision);
+            EnableControl((IPropertyManagerPageControl)PMComputeJointKinematics, e.UsedCSVJointKinematics);
+            EnableControl((IPropertyManagerPageControl)PMComputeJointLimits, e.UsedCSVJointOther);
+            EnableControl((IPropertyManagerPageControl)PMLabelCSVFilename);
         }
 
         private LinkNode LinkNodeFromTreeViewItem(System.Windows.Controls.TreeViewItem item)
@@ -330,6 +349,7 @@ namespace SW2URDF
         private void LoadFromCSV()
         {
             SaveActiveNode();
+
             OpenFileDialog loadFileDialog = new OpenFileDialog
             {
                 Filter = "CSV (.csv)|*.csv|All files (*.*)|*.*",
@@ -351,23 +371,15 @@ namespace SW2URDF
 
                     logger.Info("Link successfully loaded");
 
-                    if (!ExistingConfigurationEmpty())
-                    {
-                        string filename = loadFileDialog.SafeFileName;
-                        string assemblyTitle = ActiveSWModel.GetTitle();
+                    string filename = loadFileDialog.SafeFileName;
+                    string assemblyTitle = ActiveSWModel.GetTitle();
 
-                        LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
-                        Link existingBaseLink = existingBaseNode.GetLink();
-                        TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
-                            filename, assemblyTitle);
-                        wpf.TreeMerged += TreeMergeCompleted;
-                        wpf.Show();
-                    }
-                    else
-                    {
-                        MessageBox.Show("There is no current configuration in your assembly. Build one first and then" +
-                            " import the data.");
-                    }
+                    LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
+                    Link existingBaseLink = existingBaseNode.GetLink();
+                    TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
+                        filename, assemblyTitle);
+                    wpf.TreeMerged += TreeMergeCompleted;
+                    wpf.Show();
                 }
             }
         }
@@ -902,22 +914,22 @@ namespace SW2URDF
             PMNumberBoxChildCount.Value = 0;
 
             // Load Configuration button
-            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Button;
             caption = "Load Configuration...";
             tip = "Import values from a CSV file";
-            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_DoubleIndent;
+            alignment = 0;// (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_DoubleIndent;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
             PMButtonLoad = PMGroup.AddControl2(
                 LoadConfigurationID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            (PMButtonLoad as IPropertyManagerPageControl).Width = 200;
 
             // Loaded CSV Filename label
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Imported File: ";
             tip = "";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
-            options = (int)swAddControlOptions_e.swControlOptions_Visible +
-                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            options = 0;
             PMLabelCSVFilename = PMGroup.AddControl2(
                 LoadedCSVFilenameID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
@@ -926,8 +938,7 @@ namespace SW2URDF
             caption = "Compute Mass and Inertia";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             tip = "External values have been loaded. Check this box to recompute the Mass and Inertia values";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
-                (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             PMComputeMassInertia = PMGroup.AddControl2(
                 ComputeMassInertiaID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
@@ -935,8 +946,7 @@ namespace SW2URDF
             caption = "Compute Visual and Collision";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             tip = "External values have been loaded. Check this box to recompute the visual and collision values";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
-                (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             PMComputeVisualCollision = PMGroup.AddControl2(
                 ComputeVisualCollisionID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
@@ -944,8 +954,7 @@ namespace SW2URDF
             caption = "Compute Joint Kinematics";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             tip = "External values have been loaded. Check this box to recompute the joint kinematics";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
-                (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             PMComputeJointKinematics = PMGroup.AddControl2(
                 ComputeJointKinematicsID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
@@ -953,19 +962,16 @@ namespace SW2URDF
             caption = "Compute Joint Limits";
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             tip = "External values have been loaded. Check this box to recompute the joint limits";
-            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
-                (int)swAddControlOptions_e.swControlOptions_Visible;
+            options = 0;
             PMComputeJointLimits = PMGroup.AddControl2(
                 ComputeJointLimitsID, (short)controlType, caption, (short)alignment, (int)options, tip);
 
-            //;
-            //private PropertyManagerPageCheckbox PMComputeVisualCollision;
-            //private PropertyManagerPageCheckbox PMComputeJointKinematics;
-            //private PropertyManagerPageCheckbox PMComputeJointLimits;
-
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
             PMButtonExport = PMGroup.AddControl2(ButtonExportID,
                 (short)swPropertyManagerPageControlType_e.swControlType_Button,
                 "Preview and Export...", 0, (int)options, "Preview the generated URDF and export to a URDF package");
+            (PMButtonExport as IPropertyManagerPageControl).Width = 200;
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_WindowFromHandle;
             caption = "Link Tree";
