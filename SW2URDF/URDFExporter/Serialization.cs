@@ -101,6 +101,7 @@ namespace SW2URDF
             if (BaseNode != null && string.IsNullOrEmpty(newData))
             {
                 MessageBox.Show("Serializing this link failed. Please email your maintainer with your SW assembly.");
+                return;
             }
             if (oldData != newData)
             {

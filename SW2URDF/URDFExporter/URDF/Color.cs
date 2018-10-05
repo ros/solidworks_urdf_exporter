@@ -84,9 +84,9 @@ namespace SW2URDF.URDF
             if (rgbaText != null)
             {
                 boxRed.Text = rgbaText[0];
-                boxGreen.Text = rgbaText[0];
-                boxBlue.Text = rgbaText[0];
-                boxAlpha.Text = rgbaText[0];
+                boxGreen.Text = rgbaText[1];
+                boxBlue.Text = rgbaText[2];
+                boxAlpha.Text = rgbaText[3];
             }
         }
 

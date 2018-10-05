@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 
 namespace SW2URDF.CSV
 {
@@ -140,6 +141,58 @@ namespace SW2URDF.CSV
             {
                 WriteLinkToCSV(stream, child);
             }
+        }
+
+        public static List<StringDictionary> FindOrphanLinks(
+          List<StringDictionary> allLinks, List<StringDictionary> linksWithParents)
+        {
+            HashSet<string> linkNames = new HashSet<string>(
+                allLinks.Select(dictionary =>
+                    dictionary[ContextToColumns.KEY_NAME]));
+
+            List<StringDictionary> orphanLinks =
+                linksWithParents.Where(dictionary =>
+                    !linkNames.Contains(dictionary[ContextToColumns.KEY_PARENT_LINK])).ToList();
+
+            return orphanLinks;
+        }
+
+        public static bool ValidateTree(List<StringDictionary> linksWithoutParents, List<StringDictionary> linksWithParents)
+        {
+            if (linksWithoutParents.Count == 0)
+            {
+                string message = "CSV Import failed. No base link was found. One link should have an empty parent field";
+                MessageBox.Show(message);
+                logger.Error(message);
+                return false;
+            }
+
+            if (linksWithoutParents.Count > 1)
+            {
+                IEnumerable<string> orphanNames = linksWithoutParents.Select(d => d[ContextToColumns.KEY_NAME]);
+                string names = string.Join(", ", orphanNames);
+
+                string message = "CSV Import failed. The following links did not contain parent links, only one base link should exist\r\n" + names;
+                MessageBox.Show(message);
+                logger.Error(message);
+                return false;
+            }
+
+            List<StringDictionary> allLinks = linksWithParents.Concat(linksWithoutParents).ToList();
+            List<StringDictionary> orphaned = FindOrphanLinks(allLinks, linksWithParents);
+
+            if (orphaned.Count > 0)
+            {
+                IEnumerable<string> orphanNames = orphaned.Select(d => d[ContextToColumns.KEY_NAME]);
+                string names = string.Join(", ", orphanNames);
+
+                string message = "CSV Import failed. The following links contained parent links that did not exist\r\n" + names;
+                MessageBox.Show(message);
+                logger.Error(message);
+                return false;
+            }
+
+            return true;
         }
 
         private static Link BuildLinkFromData(StringDictionary dictionary)
