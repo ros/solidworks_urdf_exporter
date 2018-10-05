@@ -25,7 +25,7 @@ namespace SW2URDF.UI
 
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
-            Dispatcher.UnhandledException += App_DispatcherUnhandledException;
+            Dispatcher.UnhandledException += AppDispatcherUnhandledException;
 
             CSVFileName = csvFileName;
             AssemblyName = assemblyName;
@@ -35,7 +35,7 @@ namespace SW2URDF.UI
             ConfigureLabels();
         }
 
-        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        private void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             logger.Error("Exception encountered in TreeMerge form", e.Exception);
             MessageBox.Show("There was a problem with the TreeMerge form: \n\"" +
