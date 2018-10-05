@@ -26,8 +26,8 @@
             </Grid.ColumnDefinitions>
             <Label x:Name="ExistingTreeLabel" Content="Existing Configuration"  HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="316" Grid.Row="0" Grid.Column="0" />
             <Label x:Name="LoadedTreeLabel" Content="Loaded Configuration" HorizontalAlignment="Left" Height="34" VerticalAlignment="Top" Width="385" Grid.Row="0" Grid.Column="1" />
-            <TreeView x:Name="ExistingTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
-            <TreeView x:Name="LoadedTreeView" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
+            <TreeView x:Name="ExistingTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Width="400" />
+            <TreeView x:Name="LoadedTreeView" SelectedItemChanged="OnTreeItemClick" HorizontalAlignment="Left" Height="600" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="400" />
         </Grid>
         <Grid Margin="20,680,0,0" Width="1040" Height="120" HorizontalAlignment="Left" VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
@@ -52,7 +52,7 @@
                     <Label x:Name="UseLabel1" Content="Use:" Grid.Column="0" Grid.Row ="0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <Label x:Name="UseLabel2" Content="Use:" Grid.Column="0" Grid.Row ="1" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="MassInertiaExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="MassInertiaGroup" />
-                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="MassInertiaLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="MassInertiaGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="MassInertiaLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="MassInertiaGroup" IsChecked="True" />
                 </Grid>
             </GroupBox>
 
@@ -69,7 +69,7 @@
                     <Label x:Name="UseLabel3" Content="Use:" Grid.Column="0" Grid.Row ="0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <Label x:Name="UseLabel4" Content="Use:" Grid.Column="0" Grid.Row ="1" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="VisualExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="VisualGroup" />
-                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="VisualLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="VisualGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="VisualLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="VisualGroup" IsChecked="True" />
                 </Grid>
             </GroupBox>
 
@@ -85,7 +85,7 @@
                     </Grid.ColumnDefinitions>
                     <Label x:Name="UseLabel5" Content="Use:" Grid.Column="0" Grid.Row ="0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <Label x:Name="UseLabel6" Content="Use:" Grid.Column="0" Grid.Row ="1" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="JointKinematicsExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="JointKinematicsGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="JointKinematicsExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="JointKinematicsGroup" IsChecked="True" />
                     <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="JointKinematicsLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="JointKinematicsGroup" />
                 </Grid>
             </GroupBox>
@@ -103,7 +103,7 @@
                     <Label x:Name="UseLabel7" Content="Use:" Grid.Column="0" Grid.Row ="0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <Label x:Name="UseLabel8" Content="Use:" Grid.Column="0" Grid.Row ="1" HorizontalAlignment="Left" VerticalAlignment="Top" />
                     <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="OtherJointExistingButton" HorizontalAlignment="Left" Height="25" Grid.Row="0" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Existing Values" GroupName="OtherJointGroup" />
-                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="OtherJointLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="OtherJointGroup" />
+                    <RadioButton Style="{StaticResource {x:Type ToggleButton}}" x:Name="OtherJointLoadedButton" HorizontalAlignment="Left" Height="25" Grid.Row="1" Grid.Column ="1" VerticalAlignment="Top" Width="120" Content="Loaded Values" GroupName="OtherJointGroup" IsChecked="True" />
                 </Grid>
             </GroupBox>
         </Grid>

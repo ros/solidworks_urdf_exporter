@@ -1,5 +1,6 @@
 ﻿using log4net;
 using SW2URDF.URDF;
+using SW2URDF.URDFMerge;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
@@ -19,9 +20,14 @@ namespace SW2URDF.UI
 
         private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
         private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
+        private static readonly string DEFAULT_COORDINATE_SYSTEM_TEXT = "Select Coordinate System";
+        private static readonly string DEFAULT_AXIS_TEXT = "Select Reference Axis";
+        private static readonly string DEFAULT_JOINT_TYPE_TEXT = "Select Joint Type";
 
         private readonly string CSVFileName;
         private readonly string AssemblyName;
+
+        private readonly URDFTreeCorrespondance TreeCorrespondance;
 
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
@@ -33,6 +39,8 @@ namespace SW2URDF.UI
             InitializeComponent();
             ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
+
+            TreeCorrespondance = new URDFTreeCorrespondance();
         }
 
         private void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -60,6 +68,105 @@ namespace SW2URDF.UI
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
+
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+        }
+
+        private void FillExistingLinkProperties(Link link, bool isBaseLink)
+        {
+            ExistingLinkNameTextBox.Text = link.Name;
+
+            if (isBaseLink)
+            {
+                ExistingJointNameTextBox.Text = "";
+                ExistingJointNameTextBox.Visibility = Visibility.Hidden;
+                ExistingCoordinatesMenu.Visibility = Visibility.Hidden;
+                ExistingAxisMenu.Visibility = Visibility.Hidden;
+                ExistingJointTypeMenu.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                ExistingJointNameTextBox.Text = link.Joint.Name;
+                SetDropdownContextMenu(ExistingCoordinatesMenu, link.Joint.CoordinateSystemName, DEFAULT_COORDINATE_SYSTEM_TEXT);
+                SetDropdownContextMenu(ExistingAxisMenu, link.Joint.AxisName, DEFAULT_AXIS_TEXT);
+                SetDropdownContextMenu(ExistingJointTypeMenu, link.Joint.Type, DEFAULT_JOINT_TYPE_TEXT);
+            }
+        }
+
+        private void FillLoadedLinkProperties(Link link, bool isBaseLink)
+        {
+            LoadedLinkNameTextBox.Text = link.Name;
+
+            if (isBaseLink)
+            {
+                LoadedJointNameTextLabel.Content = null;
+                LoadedCoordinateSystemTextLabel.Content = null;
+                LoadedAxisTextLabel.Content = null;
+                LoadedJointTypeTextLabel.Content = null;
+            }
+            else
+            {
+                LoadedJointNameTextLabel.Content = new TextBlock { Text = link.Name };
+                LoadedCoordinateSystemTextLabel.Content = new TextBlock { Text = link.Joint.CoordinateSystemName };
+                LoadedAxisTextLabel.Content = new TextBlock { Text = link.Joint.AxisName };
+                LoadedJointTypeTextLabel.Content = new TextBlock { Text = link.Joint.Type };
+            }
+        }
+
+        private void OnTreeItemClick(object sender, RoutedEventArgs e)
+        {
+            TreeView tree = (TreeView)sender;
+            if (tree.SelectedItem == null)
+            {
+                return;
+            }
+
+            TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
+            Link link = (Link)selectedItem.Tag;
+
+            // The base link does not have a joint associated with it, so we'll hide the joint
+            // controls
+            bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
+
+            if (tree == ExistingTreeView)
+            {
+                FillExistingLinkProperties(link, isBaseLink);
+            }
+            else if (tree == LoadedTreeView)
+            {
+                FillLoadedLinkProperties(link, isBaseLink);
+            }
+
+            TreeViewItem corresponding = TreeCorrespondance.GetCorrespondingTreeViewItem(selectedItem);
+            if (corresponding != null)
+            {
+                corresponding.IsSelected = true;
+            }
+        }
+
+        private void SetDropdownContextMenu(Button button, string name, string defaultText)
+        {
+            button.Visibility = Visibility.Visible;
+            if (name == null)
+            {
+                return;
+            }
+
+            TextBlock buttonText = (TextBlock)button.Content;
+
+            foreach (MenuItem item in button.ContextMenu.Items)
+            {
+                TextBlock header = (TextBlock)item.Header;
+                if (header.Text == name)
+                {
+                    item.IsChecked = true;
+                    buttonText.Text = name;
+                    return;
+                }
+            }
+
+            logger.Error("Item " + name + " was not found in the dropdown for " + button.Name);
+            buttonText.Text = defaultText;
         }
 
         private string ShortenStringForLabel(string text, int numCharacters)
@@ -218,10 +325,12 @@ namespace SW2URDF.UI
         {
             SetMenu(ExistingCoordinatesMenu, coordinateSystems);
             SetMenu(ExistingAxisMenu, referenceAxes);
+            SetMenu(ExistingJointTypeMenu, Joint.AVAILABLE_TYPES);
         }
 
         private void SetMenu(Button button, List<string> menuContents)
         {
+            button.ContextMenu.Items.Clear();
             bool isFirst = true;
             foreach (string menuItemLabel in menuContents)
             {
@@ -259,11 +368,14 @@ namespace SW2URDF.UI
                     item.IsChecked = false;
                 }
             }
-            Button button = contextMenuParent.PlacementTarget as Button;
-            TextBlock menuItemText = menuItem.Header as TextBlock;
-            if (menuItemText == null)
+
+            // During the InitializeComponents, this callback fires, but things aren't fully setup
+            if (!(contextMenuParent.PlacementTarget is Button button))
             {
-                logger.Info("MenuItemText is null here");
+                return;
+            }
+            if (!(menuItem.Header is TextBlock menuItemText))
+            {
                 return;
             }
             button.Content = new TextBlock

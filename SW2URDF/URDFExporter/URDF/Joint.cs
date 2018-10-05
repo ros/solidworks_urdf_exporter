@@ -9,6 +9,11 @@ namespace SW2URDF.URDF
     [DataContract(IsReference = true)]
     public class Joint : URDFElement
     {
+        public static readonly List<string> AVAILABLE_TYPES = new List<string>
+        {
+            "revolute", "continuous", "prismatic", "fixed", "floating", "planar"
+        };
+
         [DataMember]
         private readonly URDFAttribute NameAttribute;
 
@@ -132,6 +137,18 @@ namespace SW2URDF.URDF
             dictionary.Add(axisContext, AxisName);
 
             base.AppendToCSVDictionary(context, dictionary);
+        }
+
+        public override void SetElement(URDFElement externalElement)
+        {
+            base.SetElement(externalElement);
+
+            // The base method already performs the type check, so we don't have to for this cast
+            Joint joint = (Joint)externalElement;
+
+            // These strings aren't kept as URDFAttribute objects and so they are tracked separately
+            CoordinateSystemName = joint.CoordinateSystemName;
+            AxisName = joint.AxisName;
         }
 
         public override void SetElementFromData(List<string> context, StringDictionary dictionary)

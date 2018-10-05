@@ -273,6 +273,7 @@ namespace SW2URDF
 
         private void LoadFromCSV()
         {
+            SaveActiveNode();
             OpenFileDialog loadFileDialog = new OpenFileDialog
             {
                 Filter = "CSV (.csv)|*.csv|All files (*.*)|*.*",
