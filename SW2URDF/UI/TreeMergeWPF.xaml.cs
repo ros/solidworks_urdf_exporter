@@ -1,8 +1,10 @@
 ﻿using log4net;
 using SW2URDF.URDF;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace SW2URDF.UI
@@ -14,10 +16,20 @@ namespace SW2URDF.UI
     {
         private static readonly ILog logger = Logger.GetLogger();
 
-        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes)
+        private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
+        private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
+
+        private readonly string CSVFileName;
+        private readonly string AssemblyName;
+
+        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
+            CSVFileName = csvFileName;
+            AssemblyName = assemblyName;
+
             InitializeComponent();
             ConfigureMenus(coordinateSystems, referenceAxes);
+            ConfigureLabels();
         }
 
         public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
@@ -36,6 +48,81 @@ namespace SW2URDF.UI
 
             ExistingTreeView.AllowDrop = true;
             LoadedTreeView.AllowDrop = true;
+        }
+
+        private string ShortenStringForLabel(string text, int numCharacters)
+        {
+            string result = text;
+            if (text.Length > numCharacters)
+            {
+                string extension = Path.GetExtension(text);
+                int numToKeep = numCharacters - "...".Length - extension.Length;
+                result = text.Substring(0, numToKeep) + "..." + extension;
+            }
+            return result;
+        }
+
+        private TextBlock BuildTextBlock(string boldBit, string regularBit)
+        {
+            TextBlock block = new TextBlock();
+            block.Inlines.Add(new Bold(new Run(boldBit)));
+            block.Inlines.Add(regularBit);
+            return block;
+        }
+
+        private void ConfigureLabels()
+        {
+            string longAssemblyName = ShortenStringForLabel(AssemblyName, MAX_LABEL_CHARACTER_WIDTH);
+            string shortAssemblyName = ShortenStringForLabel(AssemblyName, MAX_BUTTON_CHARACTER_WIDTH);
+
+            string longCSVFilename = ShortenStringForLabel(CSVFileName, MAX_LABEL_CHARACTER_WIDTH);
+            string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
+
+            ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
+            ExistingTreeLabel.ToolTip =
+                new TextBlock { Text = "Configuration from Assembly: " + AssemblyName };
+
+            LoadedTreeLabel.Content = BuildTextBlock("Configuration from CSV: ", longCSVFilename);
+            LoadedTreeLabel.ToolTip =
+                new TextBlock { Text = "Configuration from CSV: " + CSVFileName };
+
+            MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            MassInertiaExistingButton.ToolTip =
+                new TextBlock { Text = "Use Mass and Inertia properties loaded from: " + AssemblyName };
+
+            VisualExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            VisualExistingButton.ToolTip =
+                new TextBlock { Text = "Use Mesh and Material properties loaded from: " + AssemblyName };
+
+            JointKinematicsExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            JointKinematicsExistingButton.ToolTip =
+                new TextBlock { Text = "Use Joint Kinematic properties loaded from: " + AssemblyName };
+
+            OtherJointExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            OtherJointExistingButton.ToolTip = new TextBlock
+            {
+                Text =
+                "Use Limits, Dynamics, Calibration and Safety Controller values loaded from: " +
+                AssemblyName
+            };
+
+            MassInertiaLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            MassInertiaLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Mass and Inertia properties loaded from: " + CSVFileName };
+
+            VisualLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            VisualLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Mesh and Material properties loaded from: " + CSVFileName };
+
+            JointKinematicsLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            JointKinematicsLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Joint Kinematic properties loaded from: " + CSVFileName };
+
+            OtherJointLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            OtherJointLoadedButton.ToolTip = new TextBlock
+            {
+                Text = "Use Limits, Dynamics, Calibration and Safety Controller values loaded from: " + CSVFileName
+            };
         }
 
         private void ProcessDragDrop(TreeView treeView, TreeViewItem target, TreeViewItem package)
