@@ -31,7 +31,7 @@ namespace SW2URDF.UI
 
         public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
         {
-            Dispatcher.UnhandledException += App_DispatcherUnhandledException;
+            Dispatcher.UnhandledException += AppDispatcherUnhandledException;
 
             CSVFileName = csvFileName;
             AssemblyName = assemblyName;
@@ -43,7 +43,7 @@ namespace SW2URDF.UI
             TreeCorrespondance = new URDFTreeCorrespondance();
         }
 
-        private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        private void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             logger.Error("Exception encountered in TreeMerge form", e.Exception);
             MessageBox.Show("There was a problem with the TreeMerge form: \n\"" +
@@ -126,6 +126,9 @@ namespace SW2URDF.UI
 
             TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
             Link link = (Link)selectedItem.Tag;
+
+            // The base link does not have a joint associated with it, so we'll hide the joint
+            // controls
             bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
 
             if (tree == ExistingTreeView)
@@ -198,17 +201,50 @@ namespace SW2URDF.UI
             string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
 
             ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
+            ExistingTreeLabel.ToolTip =
+                new TextBlock { Text = "Configuration from Assembly: " + AssemblyName };
+
             LoadedTreeLabel.Content = BuildTextBlock("Configuration from CSV: ", longCSVFilename);
+            LoadedTreeLabel.ToolTip =
+                new TextBlock { Text = "Configuration from CSV: " + CSVFileName };
 
             MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            MassInertiaExistingButton.ToolTip =
+                new TextBlock { Text = "Use Mass and Inertia properties loaded from: " + AssemblyName };
+
             VisualExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            VisualExistingButton.ToolTip =
+                new TextBlock { Text = "Use Mesh and Material properties loaded from: " + AssemblyName };
+
             JointKinematicsExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            JointKinematicsExistingButton.ToolTip =
+                new TextBlock { Text = "Use Joint Kinematic properties loaded from: " + AssemblyName };
+
             OtherJointExistingButton.Content = new TextBlock { Text = shortAssemblyName };
+            OtherJointExistingButton.ToolTip = new TextBlock
+            {
+                Text =
+                "Use Limits, Dynamics, Calibration and Safety Controller values loaded from: " +
+                AssemblyName
+            };
 
             MassInertiaLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            MassInertiaLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Mass and Inertia properties loaded from: " + CSVFileName };
+
             VisualLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            VisualLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Mesh and Material properties loaded from: " + CSVFileName };
+
             JointKinematicsLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            JointKinematicsLoadedButton.ToolTip =
+                new TextBlock { Text = "Use Joint Kinematic properties loaded from: " + CSVFileName };
+
             OtherJointLoadedButton.Content = new TextBlock { Text = shortCSVFilename };
+            OtherJointLoadedButton.ToolTip = new TextBlock
+            {
+                Text = "Use Limits, Dynamics, Calibration and Safety Controller values loaded from: " + CSVFileName
+            };
         }
 
         private bool IsValidDrop(TreeView tree, TreeViewItem package, DragEventArgs e)
@@ -439,11 +475,9 @@ namespace SW2URDF.UI
             if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
             {
                 DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
-                //Point downPos = e.GetPosition(null);
 
                 if (treeView.SelectedValue != null)
                 {
-                    //TreeViewItem treeviewItem = e.Source as TreeViewItem;
                     DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
                     e.Handled = true;
                 }
