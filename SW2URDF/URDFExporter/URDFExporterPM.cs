@@ -941,6 +941,7 @@ namespace SW2URDF
             options = 0;
             PMComputeMassInertia = PMGroup.AddControl2(
                 ComputeMassInertiaID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComputeMassInertia.Checked = true;
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
             caption = "Compute Visual and Collision";
@@ -949,6 +950,7 @@ namespace SW2URDF
             options = 0;
             PMComputeVisualCollision = PMGroup.AddControl2(
                 ComputeVisualCollisionID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComputeVisualCollision.Checked = true;
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
             caption = "Compute Joint Kinematics";
@@ -957,6 +959,7 @@ namespace SW2URDF
             options = 0;
             PMComputeJointKinematics = PMGroup.AddControl2(
                 ComputeJointKinematicsID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComputeJointKinematics.Checked = true;
 
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
             caption = "Compute Joint Limits";
@@ -965,6 +968,7 @@ namespace SW2URDF
             options = 0;
             PMComputeJointLimits = PMGroup.AddControl2(
                 ComputeJointLimitsID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMComputeJointLimits.Checked = true;
 
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
