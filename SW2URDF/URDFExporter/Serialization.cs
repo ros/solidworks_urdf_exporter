@@ -43,8 +43,6 @@ namespace SW2URDF
 
         public const string V1_URDF_CONFIGURATION_ATTRIBUTE_NAME = "URDF Export Configuration";
 
-        public const double MIN_LOAD_CSV_VERSION = 1.3;
-
         #region Public Methods
 
         /// <summary>
@@ -115,13 +113,6 @@ namespace SW2URDF
                     SaveDataToModelDoc(swApp, model, newData);
                 }
             }
-        }
-
-        public static double GetConfigurationVersion(SldWorks swApp, ModelDoc2 model, out bool error)
-        {
-            string data = GetConfigTreeData(model, out double configVersion);
-            error = (data == null || configVersion <= 0.0);
-            return configVersion;
         }
 
         #endregion Public Methods

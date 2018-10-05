@@ -579,10 +579,9 @@ namespace SW2URDF
             SetConfigTree(baseNode);
 
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
-            double configVersion = Serialization.GetConfigurationVersion(swApp, ActiveSWModel, out abortProcess);
             Link baseLink = baseNode.GetLink();
 
-            if (configVersion < Serialization.MIN_LOAD_CSV_VERSION || !baseLink.AreRequiredFieldsSatisfied())
+            if (!baseLink.AreRequiredFieldsSatisfied())
             {
                 loadConfigurationControl.Enabled = false;
                 loadConfigurationControl.Tip = "This feature will be available once you have " +
