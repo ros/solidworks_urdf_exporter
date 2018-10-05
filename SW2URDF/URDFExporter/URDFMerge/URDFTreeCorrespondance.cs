@@ -26,8 +26,41 @@ namespace SW2URDF.URDFMerge
                 existingItemsLookup[item.Name] = item;
             }
 
+<<<<<<< HEAD
             Dictionary<string, Link> loadedLinksLookup = new Dictionary<string, Link>();
             foreach (Link link in loadedLinks)
+=======
+        /// <summary>
+        /// Flattens the TreeView tree into a list of Items through a preorder traversal,
+        /// starting from the top and proceeding downard.
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns></returns>
+        public static List<TreeViewItem> FlattenTreeView(TreeView tree)
+        {
+            return FlattenTreeBranch(tree.Items);
+        }
+
+        /// <summary>
+        /// This flattens the tree through a preorder traversal from the top downward
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <returns></returns>
+        private static List<TreeViewItem> FlattenTreeBranch(ItemCollection items)
+        {
+            List<TreeViewItem> list = new List<TreeViewItem>();
+            foreach (TreeViewItem item in items)
+            {
+                list.Add(item);
+                list.AddRange(FlattenTreeBranch(item.Items));
+            }
+            return list;
+        }
+
+        public TreeViewItem GetCorrespondingTreeViewItem(TreeViewItem item)
+        {
+            if (LeftToRight.ContainsKey(item))
+>>>>>>> master
             {
                 loadedLinksLookup[link.Name] = link;
             }

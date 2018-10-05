@@ -3,7 +3,6 @@ using System.Windows.Forms;
 
 namespace SW2URDF.URDF
 {
-    //The axis element of a joint.
     [DataContract(IsReference = true)]
     public class Axis : URDFElement
     {
