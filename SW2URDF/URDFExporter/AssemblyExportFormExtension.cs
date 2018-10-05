@@ -323,7 +323,7 @@ namespace SW2URDF
             baseNode.Link = baseLink;
             baseNode.IsBaseNode = true;
             baseNode.Link.Name = baseLink.Name;
-            baseNode.Link.SWcomponents = baseLink.SWcomponents;
+            baseNode.Link.SWComponents = baseLink.SWComponents;
             baseNode.Link.Joint.CoordinateSystemName = "Origin_global";
             baseNode.IsIncomplete = false;
 

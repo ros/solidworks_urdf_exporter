@@ -45,7 +45,7 @@ namespace SW2URDF
             SelectionMgr manager = model.SelectionManager;
             SelectData data = manager.CreateSelectData();
             data.Mark = mark;
-            SelectComponents(model, Link.SWcomponents, false);
+            SelectComponents(model, Link.SWComponents, false);
             foreach (Link child in Link.Children)
             {
                 SelectComponents(model, child, false, mark);
@@ -180,10 +180,10 @@ namespace SW2URDF
 
         public static void RetrieveSWComponentPIDs(ModelDoc2 model, LinkNode node)
         {
-            if (node.Link.SWcomponents != null)
+            if (node.Link.SWComponents != null)
             {
                 node.Link.SWComponentPIDs = new List<byte[]>();
-                foreach (IComponent2 comp in node.Link.SWcomponents)
+                foreach (IComponent2 comp in node.Link.SWComponents)
                 {
                     byte[] PID = model.Extension.GetPersistReference3(comp);
                     node.Link.SWComponentPIDs.Add(PID);
@@ -212,7 +212,7 @@ namespace SW2URDF
             {
                 Link.SWMainComponentPID = PID;
             }
-            Link.SWComponentPIDs = SaveSWComponents(model, Link.SWcomponents);
+            Link.SWComponentPIDs = SaveSWComponents(model, Link.SWComponents);
 
             foreach (Link Child in Link.Children)
             {
@@ -251,13 +251,13 @@ namespace SW2URDF
             logger.Info("Loading SolidWorks components for " +
                 node.Link.Name + " from " + model.GetPathName());
 
-            node.Link.SWcomponents = LoadSWComponents(model, node.Link.SWComponentPIDs);
-            if (node.Link.SWcomponents.Count != node.Link.SWComponentPIDs.Count)
+            node.Link.SWComponents = LoadSWComponents(model, node.Link.SWComponentPIDs);
+            if (node.Link.SWComponents.Count != node.Link.SWComponentPIDs.Count)
             {
                 problemLinks.Add(node.Link.Name);
                 logger.Error("Link " + node.Link.Name + " did not fully load all components");
             }
-            logger.Info("Loaded " + node.Link.SWcomponents.Count + " components for link " + node.Link.Name);
+            logger.Info("Loaded " + node.Link.SWComponents.Count + " components for link " + node.Link.Name);
 
             foreach (LinkNode Child in node.Nodes)
             {

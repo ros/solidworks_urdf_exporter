@@ -266,7 +266,7 @@ namespace SW2URDF
         {
             // Get the SolidWorks MathTransform that corresponds to the child coordinate system
             MathTransform jointTransform = GetCoordinateSystemTransform(link.Joint.CoordinateSystemName);
-            List<Body2> bodies = GetBodies(link.SWcomponents);
+            List<Body2> bodies = GetBodies(link.SWComponents);
 
             double[] moment = GetComponentsMomentOfInertia(bodies, jointTransform);
             link.Inertial.Inertia.SetMomentMatrix(moment);
@@ -285,12 +285,12 @@ namespace SW2URDF
             link.Collision.Origin.SetXYZ(new double[3] { 0, 0, 0 });
             link.Collision.Origin.SetRPY(new double[3] { 0, 0, 0 });
 
-            if (link.SWcomponents.Count == 0)
+            if (link.SWComponents.Count == 0)
             {
                 return;
             }
 
-            ModelDoc2 mainCompdoc = link.SWcomponents[0].GetModelDoc2();
+            ModelDoc2 mainCompdoc = link.SWComponents[0].GetModelDoc2();
 
             // [ R, G, B, Ambient, Diffuse, Specular, Shininess, Transparency, Emission ]
             double[] values = mainCompdoc.MaterialPropertyValues;
@@ -303,9 +303,9 @@ namespace SW2URDF
         //Method which builds a single link
         public Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
-            if (node.Link.SWcomponents.Count > 0)
+            if (node.Link.SWComponents.Count > 0)
             {
-                List<Component2> components = node.Link.SWcomponents;
+                List<Component2> components = node.Link.SWComponents;
                 node.Link.SWMainComponent = components[0];
             }
 
@@ -924,7 +924,7 @@ namespace SW2URDF
             double zMin = Double.MaxValue;
             double[] points;
 
-            foreach (Component2 comp in nonLocalizedChild.SWcomponents)
+            foreach (Component2 comp in nonLocalizedChild.SWComponents)
             {
                 // Returns box as [ XCorner1, YCorner1, ZCorner1, XCorner2, YCorner2, ZCorner2 ]
                 points = comp.GetBox(false, false);
@@ -1345,7 +1345,7 @@ namespace SW2URDF
 
         private List<Component2> GetParentAncestorComponents(Link node)
         {
-            List<Component2> components = new List<Component2>(node.SWcomponents);
+            List<Component2> components = new List<Component2>(node.SWComponents);
             if (node.Parent != null)
             {
                 components.AddRange(GetParentAncestorComponents(node.Parent));
