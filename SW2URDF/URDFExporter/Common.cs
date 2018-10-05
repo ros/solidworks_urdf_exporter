@@ -23,6 +23,7 @@ THE SOFTWARE.
 using log4net;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.URDF;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;

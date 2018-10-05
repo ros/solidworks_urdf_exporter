@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.URDF;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -375,8 +376,8 @@ namespace SW2URDF
 
             bool parseSuccess =
                 double.TryParse(potentialText,
-                    Attribute.URDFNumberStyle,
-                    Attribute.URDFNumberFormat,
+                    URDFAttribute.URDFNumberStyle,
+                    URDFAttribute.URDFNumberFormat,
                     out double result);
 
             // If the key pressed is not a digit, +/- sign or the decimal separator than ignore it (e.Handled = true)

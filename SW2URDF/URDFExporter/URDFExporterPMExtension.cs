@@ -23,6 +23,7 @@ THE SOFTWARE.
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
+using SW2URDF.URDF;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -229,6 +230,53 @@ namespace SW2URDF
             return null;
         }
 
+        private void CheckNodeInertialComplete(LinkNode node)
+        {
+            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
+            {
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        Links with children cannot be empty. Select its associated components\r\n";
+            }
+        }
+
+        private void CheckNodeVisualComplete(LinkNode node)
+        {
+            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
+            {
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        Links with children cannot be empty. Select its associated components\r\n";
+            }
+        }
+
+        private void CheckNodeJointComplete(LinkNode node)
+        {
+            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
+            {
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        The origin reference coordinate system cannot be automatically generated\r\n" +
+                    "        without components. Either select an origin or at least one component.\r\n";
+            }
+
+            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.AxisName == "Automatically Generate")
+            {
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        The reference axis cannot be automatically generated\r\n" +
+                    "        without components. Either select an axis or at least one component.";
+            }
+
+            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.Type == "Automatically Generate")
+            {
+                node.IsIncomplete = true;
+                node.WhyIncomplete +=
+                    "        The joint type cannot be automatically detected\r\n" +
+                    "        without components. Either select an joint type or at least one component.";
+            }
+        }
+
         //Sets the node's isIncomplete flag if the node has key items that need to be completed
         public void CheckNodeComplete(LinkNode node)
         {
@@ -239,25 +287,15 @@ namespace SW2URDF
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Link name is empty. Fill in a unique link name\r\n";
             }
-            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        Links with children cannot be empty. Select its associated components\r\n";
-            }
-            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        The origin reference coordinate system cannot be automatically generated\r\n";
-                node.WhyIncomplete +=
-                    "        without components. Either select an origin or at least one component.";
-            }
             if (String.IsNullOrWhiteSpace(node.Link.Joint.Name) && !node.IsBaseNode)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
             }
+
+            CheckNodeInertialComplete(node);
+            CheckNodeVisualComplete(node);
+            CheckNodeJointComplete(node);
         }
 
         private void CheckModelDocsExist(LinkNode node, List<string> problemComponents)
@@ -538,6 +576,12 @@ namespace SW2URDF
                 return false;
             }
 
+            SetConfigTree(baseNode);
+            return true;
+        }
+
+        private void SetConfigTree(LinkNode baseNode)
+        {
             if (baseNode == null)
             {
                 logger.Info("Starting new configuration");
@@ -563,7 +607,6 @@ namespace SW2URDF
             Tree.Nodes.Add(baseNode);
             Tree.ExpandAll();
             Tree.SelectedNode = Tree.Nodes[0];
-            return true;
         }
 
         public void MoveComponentsToFolder(LinkNode node)
