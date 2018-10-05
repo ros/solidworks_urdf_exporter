@@ -139,7 +139,8 @@ namespace SW2URDF.CSV
             }
         }
 
-        public static List<StringDictionary> FindOrphanLinks(List<StringDictionary> allLinks, List<StringDictionary> linksWithParents)
+        public static List<StringDictionary> FindOrphanLinks(
+          List<StringDictionary> allLinks, List<StringDictionary> linksWithParents)
         {
             HashSet<string> linkNames = new HashSet<string>(
                 allLinks.Select(dictionary =>
