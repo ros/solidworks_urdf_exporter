@@ -68,6 +68,10 @@ namespace SW2URDF
         private PropertyManagerPageCombobox PMComboBoxAxes;
         private PropertyManagerPageCombobox PMComboBoxCoordSys;
         private PropertyManagerPageCombobox PMComboBoxJointType;
+        private PropertyManagerPageCheckbox PMComputeMassInertia;
+        private PropertyManagerPageCheckbox PMComputeVisualCollision;
+        private PropertyManagerPageCheckbox PMComputeJointKinematics;
+        private PropertyManagerPageCheckbox PMComputeJointLimits;
 
         private PropertyManagerPageLabel PMLabelLinkName;
         private PropertyManagerPageLabel PMLabelJointName;
@@ -79,6 +83,7 @@ namespace SW2URDF
         private PropertyManagerPageLabel PMLabelCoordSys;
         private PropertyManagerPageLabel PMLabelJointType;
         private PropertyManagerPageLabel PMLabelGlobalCoordsys;
+        private PropertyManagerPageLabel PMLabelCSVFilename;
 
         private PropertyManagerPageWindowFromHandle PMTree;
 
@@ -113,7 +118,12 @@ namespace SW2URDF
         private const int LabelJointTypeID = 23;
         private const int IDGlobalCoordsys = 24;
         private const int IDLabelGlobalCoordsys = 25;
-        private const int LoadExternalCSVID = 26;
+        private const int LoadConfigurationID = 26;
+        private const int ComputeMassInertiaID = 27;
+        private const int ComputeVisualCollisionID = 28;
+        private const int ComputeJointKinematicsID = 29;
+        private const int ComputeJointLimitsID = 30;
+        private const int LoadedCSVFilenameID = 31;
 
         #endregion class variables
 
@@ -370,7 +380,7 @@ namespace SW2URDF
                     ExportButtonPress();
                     break;
 
-                case LoadExternalCSVID:
+                case LoadConfigurationID:
                     LoadFromCSV();
                     break;
 
@@ -700,11 +710,6 @@ namespace SW2URDF
                 (int)swAddGroupBoxOptions_e.swGroupBoxOptions_Expanded;
             PMGroup = (PropertyManagerPageGroup)PMPage.AddGroupBox(GroupID, caption, (int)options);
 
-            options = (int)swAddControlOptions_e.swControlOptions_Visible + (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMButtonLoad = PMGroup.AddControl2(LoadExternalCSVID,
-                (short)swPropertyManagerPageControlType_e.swControlType_Button,
-                "Load Configuration...", 0, (int)options, "Load a URDF Export configuration from a CSV file");
-
             //Create the parent link label (static)
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
             caption = "Parent Link";
@@ -895,6 +900,68 @@ namespace SW2URDF
             PMNumberBoxChildCount.SetRange2(
                 (int)swNumberboxUnitType_e.swNumberBox_UnitlessInteger, 0, int.MaxValue, true, 1, 1, 1);
             PMNumberBoxChildCount.Value = 0;
+
+            // Load Configuration button
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Load Configuration...";
+            tip = "Import values from a CSV file";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_DoubleIndent;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMButtonLoad = PMGroup.AddControl2(
+                LoadConfigurationID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            // Loaded CSV Filename label
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Imported File: ";
+            tip = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMLabelCSVFilename = PMGroup.AddControl2(
+                LoadedCSVFilenameID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            // Create Check Boxes to select whether to recompute values
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Compute Mass and Inertia";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "External values have been loaded. Check this box to recompute the Mass and Inertia values";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
+                (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMComputeMassInertia = PMGroup.AddControl2(
+                ComputeMassInertiaID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Compute Visual and Collision";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "External values have been loaded. Check this box to recompute the visual and collision values";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
+                (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMComputeVisualCollision = PMGroup.AddControl2(
+                ComputeVisualCollisionID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Compute Joint Kinematics";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "External values have been loaded. Check this box to recompute the joint kinematics";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
+                (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMComputeJointKinematics = PMGroup.AddControl2(
+                ComputeJointKinematicsID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Compute Joint Limits";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "External values have been loaded. Check this box to recompute the joint limits";
+            options = (int)swAddControlOptions_e.swControlOptions_Enabled +
+                (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMComputeJointLimits = PMGroup.AddControl2(
+                ComputeJointLimitsID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
+            //;
+            //private PropertyManagerPageCheckbox PMComputeVisualCollision;
+            //private PropertyManagerPageCheckbox PMComputeJointKinematics;
+            //private PropertyManagerPageCheckbox PMComputeJointLimits;
 
             PMButtonExport = PMGroup.AddControl2(ButtonExportID,
                 (short)swPropertyManagerPageControlType_e.swControlType_Button,
