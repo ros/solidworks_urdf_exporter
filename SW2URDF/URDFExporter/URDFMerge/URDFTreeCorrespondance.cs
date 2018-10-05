@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SW2URDF.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
@@ -14,6 +15,21 @@ namespace SW2URDF.URDFMerge
         {
             LeftToRight = new Dictionary<TreeViewItem, TreeViewItem>();
             RightToLeft = new Dictionary<TreeViewItem, TreeViewItem>();
+        }
+
+        public void BuildCorrespondance(URDFTreeView left, URDFTreeView right)
+        {
+            List<TreeViewItem> leftList = left.Flatten();
+            List<TreeViewItem> rightList = right.Flatten();
+
+            LeftToRight.Clear();
+            RightToLeft.Clear();
+
+            foreach (Tuple<TreeViewItem, TreeViewItem> pair in Enumerable.Zip(leftList, rightList, Tuple.Create))
+            {
+                LeftToRight[pair.Item1] = pair.Item2;
+                RightToLeft[pair.Item2] = pair.Item1;
+            }
         }
 
         /// <summary>
@@ -41,21 +57,6 @@ namespace SW2URDF.URDFMerge
                 list.AddRange(FlattenTreeBranch(item.Items));
             }
             return list;
-        }
-
-        public void BuildCorrespondance(TreeView left, TreeView right)
-        {
-            List<TreeViewItem> leftList = FlattenTreeBranch(left.Items);
-            List<TreeViewItem> rightList = FlattenTreeBranch(right.Items);
-
-            LeftToRight.Clear();
-            RightToLeft.Clear();
-
-            foreach (Tuple<TreeViewItem, TreeViewItem> pair in Enumerable.Zip(leftList, rightList, Tuple.Create))
-            {
-                LeftToRight[pair.Item1] = pair.Item2;
-                RightToLeft[pair.Item2] = pair.Item1;
-            }
         }
 
         public TreeViewItem GetCorrespondingTreeViewItem(TreeViewItem item)

@@ -226,6 +226,8 @@
     <Compile Include="UI\TreeMergeWPF.xaml.cs">
       <DependentUpon>TreeMergeWPF.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\TreeModifiedEventArgs.cs" />
+    <Compile Include="UI\URDFTreeView.cs" />
     <Compile Include="URDFExporter\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>

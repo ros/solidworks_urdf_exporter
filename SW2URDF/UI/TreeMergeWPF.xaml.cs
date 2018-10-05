@@ -6,7 +6,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace SW2URDF.UI
@@ -54,24 +53,20 @@ namespace SW2URDF.UI
 
         public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
         {
-            ExistingTreeView.Items.Clear();
-            LoadedTreeView.Items.Clear();
+            ExistingTreeView.SetTree(existingNode);
+            LoadedTreeView.SetTree(loadedNode);
 
-            TreeViewItem existing = BuildTreeViewItem(existingNode);
-            TreeViewItem loaded = BuildTreeViewItem(loadedNode);
+            ExistingTreeView.TreeModified += TreeViewModified;
+            LoadedTreeView.TreeModified += TreeViewModified;
 
-            ExistingTreeView.MouseMove += TreeViewMouseMove;
-            LoadedTreeView.MouseMove += TreeViewMouseMove;
+            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
+            LoadedTreeView.SelectedItemChanged += OnTreeItemClick;
 
-            ExistingTreeView.Drop += TreeViewDrop;
-            LoadedTreeView.Drop += TreeViewDrop;
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+        }
 
-            ExistingTreeView.Items.Add(existing);
-            LoadedTreeView.Items.Add(loaded);
-
-            ExistingTreeView.AllowDrop = true;
-            LoadedTreeView.AllowDrop = true;
-
+        private void TreeViewModified(object sender, TreeModifiedEventArgs e)
+        {
             TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
@@ -467,26 +462,6 @@ namespace SW2URDF.UI
                 TreeViewItem target = (TreeViewItem)e.Source;
                 target.Background = null;
             }
-        }
-
-        private void TreeViewMouseMove(object sender, MouseEventArgs e)
-        {
-            TreeView treeView = sender as TreeView;
-            if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
-            {
-                DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
-
-                if (treeView.SelectedValue != null)
-                {
-                    DragDrop.DoDragDrop(treeView, treeView.SelectedValue, DragDropEffects.Move);
-                    e.Handled = true;
-                }
-            }
-        }
-
-        private void TreeViewClick(object sender, MouseButtonEventArgs e)
-        {
-            TreeView treeView = sender as TreeView;
         }
 
         private TreeViewItem BuildTreeViewItem(LinkNode node)
