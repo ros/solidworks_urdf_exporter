@@ -2,7 +2,7 @@
 
 namespace SW2URDF.URDF
 {
-    //The geometry element the visual element
+    //The geometry element of the visual and collision elements
     [DataContract(IsReference = true)]
     public class Geometry : URDFElement
     {
