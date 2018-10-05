@@ -256,17 +256,15 @@ namespace SW2URDF
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
-                    "        The origin reference coordinate system cannot be automatically generated\r\n";
-                node.WhyIncomplete +=
-                    "        without components. Either select an origin or at least one component.";
+                    "        The origin reference coordinate system cannot be automatically generated\r\n" +
+                    "        without components. Either select an origin or at least one component.\r\n";
             }
 
             if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.AxisName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
-                    "        The reference axis cannot be automatically generated\r\n";
-                node.WhyIncomplete +=
+                    "        The reference axis cannot be automatically generated\r\n" +
                     "        without components. Either select an axis or at least one component.";
             }
 
@@ -274,8 +272,7 @@ namespace SW2URDF
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
-                    "        The joint type cannot be automatically detected\r\n";
-                node.WhyIncomplete +=
+                    "        The joint type cannot be automatically detected\r\n" +
                     "        without components. Either select an joint type or at least one component.";
             }
         }
