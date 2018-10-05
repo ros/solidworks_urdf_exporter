@@ -45,14 +45,7 @@ namespace SW2URDF
             SelectionMgr manager = model.SelectionManager;
             SelectData data = manager.CreateSelectData();
             data.Mark = mark;
-            if (Link.SWComponent != null)
-            {
-                Link.SWComponent.Select4(true, data, false);
-            }
-            else
-            {
-                SelectComponents(model, Link.SWcomponents, false);
-            }
+            SelectComponents(model, Link.SWcomponents, false);
             foreach (Link child in Link.Children)
             {
                 SelectComponents(model, child, false, mark);

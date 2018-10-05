@@ -9,7 +9,7 @@ namespace SW2URDF.UI
 {
     public class URDFTreeView : TreeView
     {
-        public event EventHandler<TreeModifiedEventArgs> TreeModified;
+        public event EventHandler<TreeModifiedEventArgs> TreeModified = delegate { };
 
         public URDFTreeView()
         {

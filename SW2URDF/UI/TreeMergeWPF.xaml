@@ -221,7 +221,7 @@
             </GroupBox>
         </Grid>
 
-        <Button x:Name="CancelButton" Content="Cancel" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="870,0,0,10" />
-        <Button x:Name="MergeButton" Content="Merge" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="1190,0,0,10" />
+        <Button x:Name="CancelButton" Content="Cancel" Click="CancelClick" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="870,0,0,10" />
+        <Button x:Name="MergeButton" Content="Merge" Click="MergeClick" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="60" Height="30" Margin="1190,0,0,10" />
     </Grid>
 </Window>

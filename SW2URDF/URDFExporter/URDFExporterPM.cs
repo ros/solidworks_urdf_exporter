@@ -271,6 +271,47 @@ namespace SW2URDF
                 baseNode.Link.SWcomponents.Count == 0);
         }
 
+        private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
+        {
+            if (!e.Success)
+            {
+                MessageBox.Show("Merging the loaded CSV configuration with the assembly's configuration " +
+                    "failed. Check your CSV file. If you continue to run into errors, delete the " +
+                    "configuration in the assembly and load a proper CSV.");
+            }
+            else
+            {
+                Tree.Nodes.Clear();
+                foreach (System.Windows.Controls.TreeViewItem item in e.MergedTree.Items)
+                {
+                    Tree.Nodes.Add(LinkNodeFromTreeViewItem(item));
+                }
+
+                Tree.ExpandAll();
+                if (Tree.Nodes.Count > 0)
+                {
+                    Tree.SelectedNode = Tree.Nodes[0];
+                }
+            }
+        }
+
+        private LinkNode LinkNodeFromTreeViewItem(System.Windows.Controls.TreeViewItem item)
+        {
+            Link itemLink = (Link)item.Tag;
+            LinkNode node = new LinkNode
+            {
+                Link = itemLink,
+                Name = itemLink.Name,
+                Text = itemLink.Name
+            };
+            node.IsBaseNode = item.Parent.GetType() != typeof(System.Windows.Controls.TreeViewItem);
+            foreach (System.Windows.Controls.TreeViewItem child in item.Items)
+            {
+                node.Nodes.Add(LinkNodeFromTreeViewItem(child));
+            }
+            return node;
+        }
+
         private void LoadFromCSV()
         {
             SaveActiveNode();
@@ -306,6 +347,7 @@ namespace SW2URDF
                         TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
                             filename, assemblyTitle);
                         wpf.SetTrees(existingBaseNode, loadedBaseNode);
+                        wpf.TreeMerged += TreeMergeCompleted;
                         wpf.Show();
                     }
                     else

@@ -53,8 +53,6 @@ namespace SW2URDF.URDF
         [DataMember]
         public bool isFixedFrame;
 
-        public Component2 SWComponent;
-
         public Component2 SWMainComponent;
 
         public List<Component2> SWcomponents;
@@ -87,7 +85,7 @@ namespace SW2URDF.URDF
             ChildElements.Add(Joint);
         }
 
-        internal Link Clone()
+        public Link Clone()
         {
             Link cloned = new Link();
             cloned.SetElement(this);
@@ -162,6 +160,12 @@ namespace SW2URDF.URDF
             base.AppendToCSVDictionary(context, dictionary);
         }
 
+        public override void SetElement(URDFElement externalElement)
+        {
+            base.SetElement(externalElement);
+            SetSWComponents((Link)externalElement);
+        }
+
         public override void SetElementFromData(List<string> context, StringDictionary dictionary)
         {
             string componentsContext = "Link.SWComponents";
@@ -173,8 +177,8 @@ namespace SW2URDF.URDF
 
         public void SetSWComponents(Link externalLink)
         {
-            SWcomponents.AddRange(externalLink.SWcomponents);
-            SWComponentPIDs.AddRange(externalLink.SWComponentPIDs);
+            SWcomponents = new List<Component2>(externalLink.SWcomponents);
+            SWComponentPIDs = new List<byte[]>(externalLink.SWComponentPIDs);
             SWMainComponent = externalLink.SWMainComponent;
             SWMainComponentPID = externalLink.SWMainComponentPID;
 
