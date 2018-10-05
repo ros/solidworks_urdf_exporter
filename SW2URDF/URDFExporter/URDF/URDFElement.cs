@@ -184,7 +184,15 @@ namespace SW2URDF.URDF
             foreach (Tuple<URDFAttribute, URDFAttribute> pair in
                 Enumerable.Zip(Attributes, externalElement.Attributes, Tuple.Create))
             {
-                pair.Item1.Value = pair.Item2.Value;
+                if (pair.Item2.Value != null && pair.Item2.Value.GetType() == typeof(double[]))
+                {
+                    double[] valueArray = (double[])pair.Item2.Value;
+                    pair.Item1.Value = valueArray.Clone();
+                }
+                else
+                {
+                    pair.Item1.Value = pair.Item2.Value;
+                }
             }
 
             foreach (Tuple<URDFElement, URDFElement> pair in

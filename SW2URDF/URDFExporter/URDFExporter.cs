@@ -83,6 +83,11 @@ namespace SW2URDF
         private readonly List<string> ReferenceCoordinateSystemNames;
         private readonly List<string> ReferenceAxesNames;
 
+        private bool ComputeInertialValues;
+        private bool ComputeVisualCollision;
+        private bool ComputeJointKinematics;
+        private bool ComputeJointLimits;
+
         #endregion class variables
 
         // Constructor for SW2URDF Exporter class
@@ -96,6 +101,31 @@ namespace SW2URDF
 
             ReferenceCoordinateSystemNames = FindRefGeoNames("CoordSys");
             ReferenceAxesNames = FindRefGeoNames("RefAxis");
+
+            ComputeInertialValues = true;
+            ComputeVisualCollision = true;
+            ComputeJointKinematics = true;
+            ComputeJointLimits = true;
+        }
+
+        public void SetComputeInertial(bool computeInertial)
+        {
+            ComputeInertialValues = computeInertial;
+        }
+
+        public void SetComputeVisualCollision(bool computeVisual)
+        {
+            ComputeVisualCollision = computeVisual;
+        }
+
+        public void SetComputeJointKinematics(bool computeKinematics)
+        {
+            ComputeJointKinematics = computeKinematics;
+        }
+
+        public void SetComputeJointLimits(bool computeJointLimits)
+        {
+            ComputeJointLimits = computeJointLimits;
         }
 
         private void ConstructExporter(SldWorks iSldWorksApp)

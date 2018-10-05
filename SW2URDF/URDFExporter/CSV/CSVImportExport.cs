@@ -134,7 +134,8 @@ namespace SW2URDF.CSV
                     loadedFields.Add(dictionary);
                 }
 
-                return BuildURDFRobotFromData(loadedFields);
+                Link baseLink = BuildURDFRobotFromData(loadedFields);
+                return baseLink;
             }
         }
 
