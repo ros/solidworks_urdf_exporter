@@ -33,7 +33,7 @@ namespace SW2URDF.UI
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
-        private readonly Link existingBaseLink;
+        private readonly Link ExistingBaseLink;
         private readonly List<Link> LoadedCSVLinks;
         private readonly HashSet<string> LoadedCSVLinkNames;
         private Link SelectedCSVLink;
@@ -51,7 +51,7 @@ namespace SW2URDF.UI
             InitializeComponent();
             ConfigureLabels();
 
-            existingBaseLink = existingLink;
+            ExistingBaseLink = existingLink;
             LoadedCSVLinks = new List<Link>(loadedLinks);
             LoadedCSVLinkNames = new HashSet<string>();
             TreeCorrespondance = new URDFTreeCorrespondance();
@@ -74,14 +74,14 @@ namespace SW2URDF.UI
 
         /// <summary>
         /// This method performs a merge between the Loaded links and the existing configuration
-        /// based the names of the loaded links. It also updates the form to match the most
+        /// based on the names of the loaded links. It also updates the form to match the most
         /// updated merge
         /// </summary>
         /// <returns></returns>
         private TreeMerger MergeAndUpdate()
         {
             // Setup merge to start with a fresh link,
-            ExistingTreeView.SetTree(existingBaseLink.Clone());
+            ExistingTreeView.SetTree(ExistingBaseLink.Clone());
             LoadedCSVLinkNames.Clear();
             LoadedCSVLinkNames.UnionWith(LoadedCSVLinks.Select(link => link.Name));
 
@@ -147,6 +147,12 @@ namespace SW2URDF.UI
             Close();
         }
 
+        /// <summary>
+        /// When an item in any of the list boxes or treeview is selected, the box and properties list view
+        /// need to be populated. The link name TextBox is directly set, while the the properties ListView is
+        /// bound to the SelectedLinkProperties dictionary
+        /// </summary>
+        /// <param name="link"></param>
         private void FillSelectedLinkBoxes(Link link)
         {
             SelectedLinkName.Text = link.Name;
@@ -198,7 +204,7 @@ namespace SW2URDF.UI
 
         private bool IsValidLinkName(string name)
         {
-            if (!string.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 return false;
             }

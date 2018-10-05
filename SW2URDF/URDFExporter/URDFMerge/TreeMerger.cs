@@ -78,7 +78,7 @@ namespace SW2URDF.URDFMerge
             Link mergedLink = cadLink.Clone();
             // SolidWorks components won't be loaded from the file. Use the components in the model
             mergedLink.SWMainComponent = cadLink.SWMainComponent;
-            mergedLink.SWcomponents = new List<Component2>(cadLink.SWcomponents);
+            mergedLink.SWComponents = new List<Component2>(cadLink.SWComponents);
 
             if (UseCSVInertial)
             {

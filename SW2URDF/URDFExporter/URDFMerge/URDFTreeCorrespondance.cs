@@ -14,40 +14,37 @@ namespace SW2URDF.URDFMerge
             ItemToLink = new Dictionary<TreeViewItem, Link>();
         }
 
-        public void BuildCorrespondance(URDFTreeView left, List<Link> loadedLinks, out List<Link> matched, out List<Link> unmatched)
+        public void BuildCorrespondance(URDFTreeView existingTree, List<Link> loadedLinks, out List<Link> matchedLinks, out List<Link> unmatchedLinks)
         {
-            List<TreeViewItem> leftList = left.Flatten();
+            List<TreeViewItem> existingItemsList = existingTree.Flatten();
 
             ItemToLink.Clear();
 
-            Dictionary<string, TreeViewItem> existingItemsLookup = new Dictionary<string, TreeViewItem>();
-            foreach (TreeViewItem item in leftList)
+            Dictionary<string, TreeViewItem> existingNameToItemsLookup = new Dictionary<string, TreeViewItem>();
+            foreach (TreeViewItem item in existingItemsList)
             {
-                existingItemsLookup[item.Name] = item;
+                existingNameToItemsLookup[item.Name] = item;
             }
 
-            Dictionary<string, Link> loadedLinksLookup = new Dictionary<string, Link>();
+            Dictionary<string, Link> loadedNameToLinkLookup = new Dictionary<string, Link>();
             foreach (Link link in loadedLinks)
             {
-                loadedLinksLookup[link.Name] = link;
+                loadedNameToLinkLookup[link.Name] = link;
             }
 
-            matched = new List<Link>();
-            foreach (KeyValuePair<string, TreeViewItem> entry in existingItemsLookup)
+            matchedLinks = new List<Link>();
+            unmatchedLinks = new List<Link>();
+            foreach (KeyValuePair<string, Link> entry in loadedNameToLinkLookup)
             {
-                if (loadedLinksLookup.TryGetValue(entry.Key, out Link link))
+                Link loadedLink = entry.Value;
+                if (existingNameToItemsLookup.TryGetValue(entry.Key, out TreeViewItem item))
                 {
-                    matched.Add(link);
-                    ItemToLink[entry.Value] = link;
+                    matchedLinks.Add(loadedLink);
+                    ItemToLink[item] = loadedLink;
                 }
-            }
-
-            unmatched = new List<Link>();
-            foreach (KeyValuePair<string, Link> entry in loadedLinksLookup)
-            {
-                if (!existingItemsLookup.ContainsKey(entry.Key))
+                else
                 {
-                    unmatched.Add(entry.Value);
+                    unmatchedLinks.Add(loadedLink);
                 }
             }
         }

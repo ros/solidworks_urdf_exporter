@@ -268,7 +268,7 @@ namespace SW2URDF
                 baseNode.Nodes.Count == 0 &&
                 string.IsNullOrWhiteSpace(baseNode.Link.Joint.AxisName) &&
                 baseNode.Link.Joint.CoordinateSystemName == "Automatically Generate" &&
-                baseNode.Link.SWcomponents.Count == 0);
+                baseNode.Link.SWComponents.Count == 0);
         }
 
         private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
