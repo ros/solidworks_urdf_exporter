@@ -250,10 +250,6 @@ namespace SW2URDF
             logger.Info("Adding Part export to file menu");
         }
 
-        public void UpdateURDFExporter()
-        {
-        }
-
         public void RemoveCommandMgr()
         {
             SwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as URDF@&File", "");
