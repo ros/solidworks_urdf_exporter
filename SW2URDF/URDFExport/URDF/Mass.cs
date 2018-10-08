@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Windows.Forms;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //mass element, belongs to the inertial element
     [DataContract(IsReference = true)]

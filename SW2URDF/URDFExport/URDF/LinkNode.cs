@@ -1,7 +1,7 @@
 ﻿using log4net;
 using System.Windows.Forms;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //A LinkNode is derived from a TreeView TreeNode. I've added many new fields to it so
     // that information can be passed around from the TreeView itself.

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Windows.Forms;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //parent_link element of a joint.
     [DataContract(IsReference = true)]

@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The Origin element, used in several other elements
     [DataContract]

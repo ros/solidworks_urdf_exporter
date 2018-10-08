@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The texture element of the material element.
     [DataContract(IsReference = true)]

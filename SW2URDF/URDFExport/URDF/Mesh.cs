@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The mesh element of the geometry element. This contains only a filename location of the mesh.
     [DataContract(IsReference = true)]

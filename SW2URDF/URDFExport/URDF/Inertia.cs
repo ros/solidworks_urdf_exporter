@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Windows.Forms;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //Inertia element, which means moment of inertia. In the inertial element
     [DataContract(IsReference = true)]

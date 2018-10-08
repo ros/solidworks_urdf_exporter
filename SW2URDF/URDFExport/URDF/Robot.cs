@@ -1,7 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Xml;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The base URDF element, a robot
     [DataContract(IsReference = true)]

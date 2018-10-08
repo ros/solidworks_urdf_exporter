@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The inertial element of a link
     [DataContract(IsReference = true)]

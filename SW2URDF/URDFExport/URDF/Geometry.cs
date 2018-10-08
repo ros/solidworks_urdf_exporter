@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SW2URDF.URDF
+namespace SW2URDF.URDFExport.URDF
 {
     //The geometry element of the visual and collision elements
     [DataContract(IsReference = true)]
