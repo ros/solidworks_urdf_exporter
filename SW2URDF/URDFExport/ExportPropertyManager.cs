@@ -23,9 +23,9 @@ THE SOFTWARE.
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
-using SW2URDF.CSV;
 using SW2URDF.UI;
 using SW2URDF.URDF;
+using SW2URDF.URDFExport.CSV;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

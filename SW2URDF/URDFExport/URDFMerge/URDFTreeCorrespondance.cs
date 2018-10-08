@@ -3,7 +3,7 @@ using SW2URDF.URDF;
 using System.Collections.Generic;
 using System.Windows.Controls;
 
-namespace SW2URDF.URDFMerge
+namespace SW2URDF.URDFExport.URDFMerge
 {
     public class URDFTreeCorrespondance
     {

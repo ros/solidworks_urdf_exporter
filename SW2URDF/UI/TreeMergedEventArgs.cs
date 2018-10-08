@@ -1,4 +1,4 @@
-﻿using SW2URDF.URDFMerge;
+﻿using SW2URDF.URDFExport.URDFMerge;
 using System;
 
 namespace SW2URDF.UI

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Specialized;
 
-namespace SW2URDF.CSV
+namespace SW2URDF.URDFExport.CSV
 {
     public static class ContextToColumns
     {

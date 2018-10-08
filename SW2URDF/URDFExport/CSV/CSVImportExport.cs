@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace SW2URDF.CSV
+namespace SW2URDF.URDFExport.CSV
 {
     /// <summary>
     /// Class to perform exporting to CSV and eventually importing of data from a CSV file
