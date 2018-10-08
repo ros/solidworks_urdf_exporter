@@ -1,4 +1,4 @@
-﻿namespace SW2URDF
+﻿namespace SW2URDF.UI
 {
     partial class PartExportForm
     {

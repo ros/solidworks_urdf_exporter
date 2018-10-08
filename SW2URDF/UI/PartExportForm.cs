@@ -21,11 +21,12 @@ THE SOFTWARE.
 */
 
 using SolidWorks.Interop.sldworks;
+using SW2URDF.URDFExport;
 using System;
 using System.IO;
 using System.Windows.Forms;
 
-namespace SW2URDF
+namespace SW2URDF.UI
 {
     public partial class PartExportForm : Form
     {

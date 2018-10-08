@@ -250,10 +250,10 @@
     <Compile Include="URDFExport\ExportPropertyManagerExtension.cs" />
     <Compile Include="MathOPS.cs" />
     <Compile Include="EventHandling.cs" />
-    <Compile Include="URDFExport\PartExportForm.cs">
+    <Compile Include="UI\PartExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExport\PartExportForm.Designer.cs">
+    <Compile Include="UI\PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SwAddin.cs">
@@ -298,7 +298,7 @@
     <EmbeddedResource Include="UI\AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="URDFExport\PartExportForm.resx">
+    <EmbeddedResource Include="UI\PartExportForm.resx">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ToolbarLarge.bmp" />

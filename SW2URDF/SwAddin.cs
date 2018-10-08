@@ -24,6 +24,8 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
 using SolidWorksTools;
+using SW2URDF.UI;
+using SW2URDF.URDFExport;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
