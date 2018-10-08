@@ -309,7 +309,7 @@ namespace SW2URDF
 
         public void SetupPropertyManager()
         {
-            URDFExporterPM pm = new URDFExporterPM((SldWorks)SwApp);
+            ExportPropertyManager pm = new ExportPropertyManager((SldWorks)SwApp);
             logger.Info("Loading config tree");
             bool success = pm.LoadConfigTree();
 
