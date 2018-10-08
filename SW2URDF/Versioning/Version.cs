@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿using SW2URDF.Utilities;
+using System.Diagnostics;
 
-namespace SW2URDF
+namespace SW2URDF.Versioning
 {
     internal class Version
     {

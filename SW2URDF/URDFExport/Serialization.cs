@@ -2,6 +2,7 @@
 using SolidWorks.Interop.swconst;
 using SW2URDF.Legacy;
 using SW2URDF.URDF;
+using SW2URDF.Utilities;
 using System;
 using System.IO;
 using System.Runtime.Serialization;

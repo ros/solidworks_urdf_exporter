@@ -25,6 +25,7 @@ using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SW2URDF.URDF;
+using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

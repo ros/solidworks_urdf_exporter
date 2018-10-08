@@ -24,6 +24,7 @@ using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
+using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

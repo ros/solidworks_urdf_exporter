@@ -216,7 +216,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Legacy\SerialNode.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -248,15 +248,15 @@
     </Compile>
     <Compile Include="URDFExport\Common.cs" />
     <Compile Include="URDFExport\ExportPropertyManagerExtension.cs" />
-    <Compile Include="MathOPS.cs" />
-    <Compile Include="EventHandling.cs" />
+    <Compile Include="Utilities\MathOPS.cs" />
+    <Compile Include="SW\EventHandling.cs" />
     <Compile Include="UI\PartExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SwAddin.cs">
+    <Compile Include="SW\SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="URDFExport\URDFMerge\TreeMerger.cs" />
@@ -289,8 +289,8 @@
     <Compile Include="URDF\URDFElement.cs" />
     <Compile Include="URDF\URDFWriter.cs" />
     <Compile Include="URDF\Visual.cs" />
-    <Compile Include="Version.cs" />
-    <Compile Include="VersionInfo.cs" />
+    <Compile Include="Versioning\Version.cs" />
+    <Compile Include="Versioning\VersionInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
