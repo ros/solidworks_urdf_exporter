@@ -29,7 +29,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SW2URDF
+namespace SW2URDF.UI
 {
     //This source file contains all the non-handler methods for the assembly export form,
     // the ones that are helpers.

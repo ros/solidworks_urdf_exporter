@@ -229,10 +229,10 @@
     </Compile>
     <Compile Include="UI\TreeModifiedEventArgs.cs" />
     <Compile Include="UI\URDFTreeView.cs" />
-    <Compile Include="URDFExport\AssemblyExportForm.cs">
+    <Compile Include="UI\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExport\AssemblyExportForm.Designer.cs">
+    <Compile Include="UI\AssemblyExportForm.Designer.cs">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs">
@@ -243,7 +243,7 @@
     <Compile Include="URDFExport\Serialization.cs" />
     <Compile Include="URDFExport\ExportHelper.cs" />
     <Compile Include="URDFExport\ExportHelperExtension.cs" />
-    <Compile Include="URDFExport\AssemblyExportFormExtension.cs">
+    <Compile Include="UI\AssemblyExportFormExtension.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="URDFExport\Common.cs" />
@@ -295,7 +295,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="URDFExport\AssemblyExportForm.resx">
+    <EmbeddedResource Include="UI\AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="URDFExport\PartExportForm.resx">

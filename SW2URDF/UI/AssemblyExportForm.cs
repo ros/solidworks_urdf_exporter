@@ -31,7 +31,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace SW2URDF
+namespace SW2URDF.UI
 {
     public partial class AssemblyExportForm : Form
     {
