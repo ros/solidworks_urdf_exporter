@@ -1,6 +1,6 @@
 ﻿using log4net;
 using Microsoft.VisualBasic.FileIO;
-using SW2URDF.URDFExport.URDF;
+using SW2URDF.URDF;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;

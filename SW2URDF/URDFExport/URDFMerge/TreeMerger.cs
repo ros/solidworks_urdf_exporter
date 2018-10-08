@@ -1,5 +1,5 @@
 ﻿using SolidWorks.Interop.sldworks;
-using SW2URDF.URDFExport.URDF;
+using SW2URDF.URDF;
 using System.Collections.Generic;
 using System.Windows.Controls;
 

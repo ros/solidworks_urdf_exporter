@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Runtime.Serialization;
 using System.Xml;
 
-namespace SW2URDF.URDFExport.URDF
+namespace SW2URDF.URDF
 {
     [DataContract(IsReference = true)]
     public class URDFAttribute

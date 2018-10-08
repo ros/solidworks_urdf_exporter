@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
 
-namespace SW2URDF.URDFExport.URDF
+namespace SW2URDF.URDF
 {
     //The link class, it contains many other elements not found in the URDF.
     [DataContract(IsReference = true)]

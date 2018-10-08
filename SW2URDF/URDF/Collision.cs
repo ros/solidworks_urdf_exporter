@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SW2URDF.URDFExport.URDF
+namespace SW2URDF.URDF
 {
     //The collision element of a link.
     [DataContract]

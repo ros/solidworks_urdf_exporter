@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml;
 
-namespace SW2URDF.URDFExport.URDF
+namespace SW2URDF.URDF
 {
     // Base class of each URDFElement. The goal is to minimize the amount of code in the derived classes;s
     [DataContract(IsReference = true)]
