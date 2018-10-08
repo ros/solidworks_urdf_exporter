@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace SW2URDF
+namespace SW2URDF.URDFExport
 {
     /// <summary>
     /// Class to serialize URDF trees to string so they can be saved to an SW Attribute in the

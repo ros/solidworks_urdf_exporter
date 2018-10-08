@@ -29,7 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SW2URDF
+namespace SW2URDF.URDFExport
 {
     public partial class ExportHelper
     {

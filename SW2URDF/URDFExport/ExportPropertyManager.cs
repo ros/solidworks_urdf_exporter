@@ -35,7 +35,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace SW2URDF
+namespace SW2URDF.URDFExport
 {
     [ComVisible(true)]
     [Serializable]

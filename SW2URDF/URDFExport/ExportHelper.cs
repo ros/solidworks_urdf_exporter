@@ -30,7 +30,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 
-namespace SW2URDF
+namespace SW2URDF.URDFExport
 {
     // This class contains a long list of methods that are used throughout the export process.
     // Methods for building links and joints are contained in here.

@@ -23,7 +23,7 @@ THE SOFTWARE.
 using System;
 using System.IO;
 
-namespace SW2URDF
+namespace SW2URDF.URDFExport
 {
     public class URDFPackage
     {
