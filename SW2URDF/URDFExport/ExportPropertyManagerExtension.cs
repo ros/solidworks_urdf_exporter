@@ -23,7 +23,7 @@ THE SOFTWARE.
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
-using SW2URDF.URDF;
+using SW2URDF.URDFExport.URDF;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

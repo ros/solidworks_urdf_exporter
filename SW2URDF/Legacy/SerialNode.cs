@@ -1,5 +1,5 @@
 ﻿using log4net;
-using SW2URDF.URDF;
+using SW2URDF.URDFExport.URDF;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;

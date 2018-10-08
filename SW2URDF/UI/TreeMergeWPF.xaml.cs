@@ -1,6 +1,6 @@
 ﻿using log4net;
-using SW2URDF.URDF;
 using SW2URDF.URDFExport.CSV;
+using SW2URDF.URDFExport.URDF;
 using SW2URDF.URDFExport.URDFMerge;
 using System;
 using System.Collections;

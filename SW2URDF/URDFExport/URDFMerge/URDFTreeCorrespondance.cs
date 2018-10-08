@@ -1,5 +1,5 @@
 ﻿using SW2URDF.UI;
-using SW2URDF.URDF;
+using SW2URDF.URDFExport.URDF;
 using System.Collections.Generic;
 using System.Windows.Controls;
 
