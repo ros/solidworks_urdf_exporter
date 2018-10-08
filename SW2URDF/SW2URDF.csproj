@@ -222,7 +222,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ROSFiles.cs" />
+    <Compile Include="ROS\ROSFiles.cs" />
     <Compile Include="UI\TreeMergedEventArgs.cs" />
     <Compile Include="UI\TreeMergeWPF.xaml.cs">
       <DependentUpon>TreeMergeWPF.xaml</DependentUpon>
@@ -301,11 +301,11 @@
     <EmbeddedResource Include="UI\PartExportForm.resx">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolbarLarge.bmp" />
-    <EmbeddedResource Include="ToolbarSmall.bmp" />
-    <EmbeddedResource Include="MainIconLarge.bmp" />
-    <EmbeddedResource Include="MainIconSmall.bmp" />
-    <EmbeddedResource Include="AddinIcon.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\ToolbarLarge.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\ToolbarSmall.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\MainIconLarge.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\MainIconSmall.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\AddinIcon.bmp" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
