@@ -44,14 +44,6 @@
                 <ColumnDefinition Width="220" />
             </Grid.ColumnDefinitions>
             <GroupBox x:Name="MassInertiaGroup" Header="Mass and Inertia" HorizontalAlignment="Left" Height="100" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="160">
-                <GroupBox.Resources>
-                    <Style TargetType="RadioButton">
-                        <Style.Triggers>
-                            <Trigger Property="IsFocused" Value="false">
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </GroupBox.Resources>
                 <Grid Margin="-20,10,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="35" />
