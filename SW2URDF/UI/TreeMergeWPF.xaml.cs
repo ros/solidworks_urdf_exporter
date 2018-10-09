@@ -36,7 +36,7 @@ namespace SW2URDF.UI
         private readonly Link ExistingBaseLink;
         private readonly List<Link> LoadedCSVLinks;
         private readonly HashSet<string> LoadedCSVLinkNames;
-        private Link SelectedCSVLink;
+        private Link SelectedLink;
         public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; }
 
         public TreeMergeWPF(Link existingLink, List<Link> loadedLinks, string csvFileName, string assemblyName)
@@ -183,6 +183,12 @@ namespace SW2URDF.UI
             }
         }
 
+        private void ClearLinkBoxes()
+        {
+            SelectedLinkName.Text = null;
+            SelectedLinkProperties.Clear();
+        }
+
         private void UnselectOtherBoxes(object boxWithSelection)
         {
             TreeViewItem selectedTreeItem = (ExistingTreeView.SelectedItem as TreeViewItem);
@@ -208,19 +214,13 @@ namespace SW2URDF.UI
         {
             UnselectOtherBoxes(sender);
 
-            ListBoxItem item = (sender as ListBoxItem);
-            if (item != null)
-            {
-                SelectedLinkName.IsReadOnly = false;
-                SelectedCSVLink = (Link)item.Tag;
-                FillSelectedLinkBoxes(SelectedCSVLink);
-            }
+            ListBoxItem selectedItem = (sender as ListBoxItem);
+            Link selectedLink = (Link)selectedItem.Tag;
+            ProcessItemClick(sender, selectedLink, true);
         }
 
         private void OnTreeItemClick(object sender, RoutedEventArgs e)
         {
-            UnselectOtherBoxes(sender);
-
             TreeView tree = (TreeView)sender;
             if (tree.SelectedItem == null)
             {
@@ -230,15 +230,18 @@ namespace SW2URDF.UI
             TreeViewItem selectedItem = (TreeViewItem)tree.SelectedItem;
             Link link = (Link)selectedItem.Tag;
 
-            // The base link does not have a joint associated with it, so we'll hide the joint
-            // controls
-            bool isBaseLink = selectedItem.Parent.GetType() == typeof(TreeView);
+            ProcessItemClick(sender, link, false);
+        }
 
-            if (tree == ExistingTreeView)
-            {
-                SelectedLinkName.IsReadOnly = true;
-                FillSelectedLinkBoxes(link);
-            }
+        private void ProcessItemClick(object sender, Link link, bool isLoadedFromCSV)
+        {
+            UnselectOtherBoxes(sender);
+            SelectedLinkName.IsReadOnly = true;
+            SelectedLink = link;
+            FillSelectedLinkBoxes(link);
+
+            string labelText = (isLoadedFromCSV) ? "Properties loaded from CSV" : "Preview of Merged Properties";
+            PropertiesLoadedLabel.Content = new TextBlock { Text = labelText };
         }
 
         private bool IsValidLinkName(string name)
@@ -260,7 +263,7 @@ namespace SW2URDF.UI
         {
             string updatedName = SelectedLinkName.Text;
             HashSet<string> existingNames = new HashSet<string>(LoadedCSVLinkNames);
-            existingNames.Remove(SelectedCSVLink.Name);
+            existingNames.Remove(SelectedLink.Name);
 
             if (string.IsNullOrWhiteSpace(updatedName))
             {
@@ -284,13 +287,20 @@ namespace SW2URDF.UI
                 return;
             }
             SelectedLinkName.ToolTip = null;
-            SelectedCSVLink.Name = updatedName;
+            SelectedLink.Name = updatedName;
             MergeAndUpdate();
         }
 
         private void OnResetButtonClick(object sender, RoutedEventArgs e)
         {
-            FillSelectedLinkBoxes(SelectedCSVLink);
+            FillSelectedLinkBoxes(SelectedLink);
+        }
+
+        private void OnRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            MergeAndUpdate();
+            ClearLinkBoxes();
+            SelectedLink = null;
         }
 
         private void SetDropdownContextMenu(Button button, string name, string defaultText)
@@ -346,7 +356,6 @@ namespace SW2URDF.UI
             string longCSVFilename = ShortenStringForLabel(CSVFileName, MAX_LABEL_CHARACTER_WIDTH);
             string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
 
-            ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
             MatchedListLabel.Content = BuildTextBlock("Matching Links from CSV: ", longCSVFilename);
             ExistingTreeLabel.ToolTip =
                 new TextBlock { Text = "Configuration from Assembly: " + AssemblyName };
