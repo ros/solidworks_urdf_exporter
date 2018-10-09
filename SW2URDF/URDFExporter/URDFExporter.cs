@@ -311,7 +311,8 @@ namespace SW2URDF
             bool success = CorrectSTLMesh(windowsMeshFileName);
             if (!success)
             {
-                MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". Retry " +
+                MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
+                    "may not be readable by CAD programs that aren't SolidWorks. Retry " +
                     "the export, and if it continues to create an issue, email your maintainer with " +
                     "the log file found at " + Logger.GetFileName());
             }
@@ -408,8 +409,6 @@ namespace SW2URDF
             logger.Info("Removing SW header in STL file");
             try
             {
-                throw new Exception("I'm a bug");
-
                 using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Write, FileShare.None))
                 {
                     byte[] emptyHeader = new byte[80];
@@ -419,7 +418,7 @@ namespace SW2URDF
             catch (Exception e)
             {
                 logger.Warn("Correcting the STL " + filename + " failed. This STL may not be " +
-                    "readable by ROS or other CAD programs");
+                    "readable by ROS or other CAD programs", e);
                 return false;
             }
             return true;
