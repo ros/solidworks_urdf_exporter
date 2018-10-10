@@ -236,7 +236,7 @@ namespace SW2URDF.UI
         private void ProcessItemClick(object sender, Link link, bool isLoadedFromCSV)
         {
             UnselectOtherBoxes(sender);
-            SelectedLinkName.IsReadOnly = true;
+            SelectedLinkName.IsReadOnly = !isLoadedFromCSV;
             SelectedLink = link;
             FillSelectedLinkBoxes(link);
 
