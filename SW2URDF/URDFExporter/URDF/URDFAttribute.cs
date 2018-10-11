@@ -100,6 +100,11 @@ namespace SW2URDF.URDF
 
         public static object GetValueFromString(string valueStr)
         {
+            if (valueStr == null)
+            {
+                return null;
+            }
+
             double resultDouble;
             if (valueStr.Contains(";"))
             {

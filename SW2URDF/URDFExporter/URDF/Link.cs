@@ -166,14 +166,18 @@ namespace SW2URDF.URDF
             SetSWComponents((Link)externalElement);
         }
 
-        public override void SetElementFromData(List<string> context, StringDictionary dictionary)
-        {
-            string componentsContext = "Link.SWComponents";
-            string componentsValue = dictionary[componentsContext];
-            string[] componentNames = componentsValue.Split(';');
+        //public override void SetElementFromData(List<string> context, StringDictionary dictionary)
+        //{
+        //    string componentsContext = "Link.SWComponents";
+        //    string[] componentNames
+        //    if (dictionary.ContainsKey(componentsContext))
+        //    {
+        //        string componentsValue = dictionary[componentsContext];
+        //    }
+        //    string[] componentNames = componentsValue.Split(';');
 
-            base.SetElementFromData(context, dictionary);
-        }
+        //    base.SetElementFromData(context, dictionary);
+        //}
 
         public void SetSWComponents(Link externalLink)
         {
