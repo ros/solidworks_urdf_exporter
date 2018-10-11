@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace SW2URDF.URDF
 {
     //The dynamics element of a joint.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Dynamics : URDFElement
     {
         [DataMember]

@@ -3,7 +3,7 @@
 namespace SW2URDF.URDF
 {
     //The texture element of the material element.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Texture : URDFElement
     {
         [DataMember]

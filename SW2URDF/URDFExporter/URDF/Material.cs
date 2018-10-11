@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace SW2URDF.URDF
 {
     //The material element of the visual element.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Material : URDFElement
     {
         [DataMember]

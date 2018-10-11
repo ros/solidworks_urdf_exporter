@@ -8,7 +8,7 @@ using System.Xml;
 namespace SW2URDF.URDF
 {
     //The link class, it contains many other elements not found in the URDF.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Link : URDFElement//, ISerializable
     {
         [DataMember]
@@ -223,6 +223,11 @@ namespace SW2URDF.URDF
         private void OnDeserialized(StreamingContext context)
         {
             SWComponents = new List<Component2>();
+        }
+
+        public LinkNode BuildLinkNode()
+        {
+            return new LinkNode(this);
         }
     }
 }

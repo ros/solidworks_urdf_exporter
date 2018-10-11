@@ -7,7 +7,7 @@ using System.Xml;
 
 namespace SW2URDF.URDF
 {
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Name = "Attribute", Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class URDFAttribute
     {
         public static readonly NumberFormatInfo URDFNumberFormat =

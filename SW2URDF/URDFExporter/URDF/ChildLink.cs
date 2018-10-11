@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace SW2URDF.URDF
 {
     //The child link element
-    [DataContract]
+    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class ChildLink : URDFElement
     {
         [DataMember]

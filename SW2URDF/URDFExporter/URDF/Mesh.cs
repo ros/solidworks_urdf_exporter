@@ -3,7 +3,7 @@
 namespace SW2URDF.URDF
 {
     //The mesh element of the geometry element. This contains only a filename location of the mesh.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Mesh : URDFElement
     {
         [DataMember]

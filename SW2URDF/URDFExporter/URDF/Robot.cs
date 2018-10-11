@@ -4,7 +4,7 @@ using System.Xml;
 namespace SW2URDF.URDF
 {
     //The base URDF element, a robot
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Robot : URDFElement
     {
         [DataMember]

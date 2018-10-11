@@ -4,7 +4,7 @@ using System.Windows.Forms;
 namespace SW2URDF.URDF
 {
     //The color element of the material element. Contains a single RGBA.
-    [DataContract]
+    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Color : URDFElement
     {
         [DataMember]

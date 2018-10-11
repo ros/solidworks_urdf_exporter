@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace SW2URDF.URDF
 {
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Axis : URDFElement
     {
         [DataMember]
