@@ -1,6 +1,7 @@
 ﻿using log4net;
 using Microsoft.VisualBasic.FileIO;
 using SW2URDF.URDF;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -51,7 +52,8 @@ namespace SW2URDF.CSV
                 {
                     string[] fields = csvParser.ReadFields();
                     StringDictionary dictionary = new StringDictionary();
-                    for (int i = 0; i < fields.Length; i++)
+                    int minArrayLength = Math.Min(fields.Length, headers.Length);
+                    for (int i = 0; i < minArrayLength; i++)
                     {
                         if (!string.IsNullOrWhiteSpace(fields[i]))
                         {

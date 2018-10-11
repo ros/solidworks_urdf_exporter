@@ -148,7 +148,7 @@ namespace SW2URDF.URDF
         public string GetTextFromDoubleValue(string format = "G")
         {
             string result = "";
-            if (Value != null)
+            if (Value != null && Value.GetType() == typeof(double))
             {
                 double dValue = (double)Value;
                 result = dValue.ToString(format, URDFNumberFormat);
