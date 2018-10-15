@@ -211,6 +211,8 @@ namespace SW2URDF
         {
             SaveActiveNode();
 
+            // These checkboxes keep track of what the user wants to compute or use from the loaded
+            // CSV file and sets the export helper accordingly
             Exporter.SetComputeInertial(PMComputeMassInertia.Checked);
             Exporter.SetComputeVisualCollision(PMComputeVisualCollision.Checked);
             Exporter.SetComputeJointKinematics(PMComputeJointKinematics.Checked);
