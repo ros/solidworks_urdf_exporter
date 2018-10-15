@@ -224,10 +224,5 @@ namespace SW2URDF.URDF
         {
             SWComponents = new List<Component2>();
         }
-
-        public LinkNode BuildLinkNode()
-        {
-            return new LinkNode(this);
-        }
     }
 }
