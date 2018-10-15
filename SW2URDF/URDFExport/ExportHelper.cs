@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2015 Stephen Brawner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,6 +30,7 @@ using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 using System.Xml.Serialization;
 
 namespace SW2URDF.URDFExport
@@ -196,15 +197,32 @@ namespace SW2URDF.URDFExport
             ActiveSWModel.Extension.SelectAll();
             ActiveSWModel.HideComponent2();
 
-            string filename = ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL);
+            bool success = false;
+            try
+            {
+                logger.Info("Beginning individual files export");
+                ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL);
+                success = true;
+            }
+            catch (Exception e)
+            {
+                logger.Error("An exception was thrown attempting to export the URDF", e);
+            }
+            finally
+            {
+                logger.Info("Showing all components except previously hidden components");
+                Common.ShowAllComponents(ActiveSWModel, hiddenComponents);
 
-            logger.Info("Beginning individual files export");
-            URDFRobot.BaseLink.Visual.Geometry.Mesh.Filename = filename;
-            URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = filename;
+                logger.Info("Resetting STL preferences");
+                ResetUserPreferences();
+            }
 
-            logger.Info("Showing all components except previously hidden components");
-            Common.ShowAllComponents(ActiveSWModel, hiddenComponents);
-            //Writing URDF to file
+            if (!success)
+            {
+                MessageBox.Show("Exporting the URDF failed unexpectedly. Email your maintainer " +
+                    "with the log file found at " + Logger.GetFileName());
+                return;
+            }
 
             logger.Info("Writing URDF file to " + windowsURDFFileName);
             URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
@@ -221,52 +239,51 @@ namespace SW2URDF.URDFExport
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public string ExportFiles(Link Link, URDFPackage package, int count, bool exportSTL = true)
+        public void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true)
         {
             progressBar.UpdateProgress(count);
-            progressBar.UpdateTitle("Exporting mesh: " + Link.Name);
-            logger.Info("Exporting link: " + Link.Name);
+            progressBar.UpdateTitle("Exporting mesh: " + link.Name);
+            logger.Info("Exporting link: " + link.Name);
             // Iterate through each child and export its files
-            logger.Info("Link " + Link.Name + " has " + Link.Children.Count + " children");
-            foreach (Link child in Link.Children)
+            logger.Info("Link " + link.Name + " has " + link.Children.Count + " children");
+            foreach (Link child in link.Children)
             {
                 count += 1;
                 if (!child.isFixedFrame)
                 {
-                    string filename = ExportFiles(child, package, count, exportSTL);
-                    child.Visual.Geometry.Mesh.Filename = filename;
-                    child.Collision.Geometry.Mesh.Filename = filename;
+                    ExportFiles(child, package, count, exportSTL);
                 }
             }
 
             // Copy the texture file (if it was specified) to the textures directory
-            if (!Link.isFixedFrame && !String.IsNullOrWhiteSpace(Link.Visual.Material.Texture.wFilename))
+            if (!link.isFixedFrame && !String.IsNullOrWhiteSpace(link.Visual.Material.Texture.wFilename))
             {
-                if (File.Exists(Link.Visual.Material.Texture.wFilename))
+                if (File.Exists(link.Visual.Material.Texture.wFilename))
                 {
-                    Link.Visual.Material.Texture.Filename =
+                    link.Visual.Material.Texture.Filename =
 
-                        package.TexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
+                        package.TexturesDirectory + Path.GetFileName(link.Visual.Material.Texture.wFilename);
                     string textureSavePath =
-                        package.WindowsTexturesDirectory + Path.GetFileName(Link.Visual.Material.Texture.wFilename);
-                    File.Copy(Link.Visual.Material.Texture.wFilename, textureSavePath, true);
+                        package.WindowsTexturesDirectory + Path.GetFileName(link.Visual.Material.Texture.wFilename);
+                    File.Copy(link.Visual.Material.Texture.wFilename, textureSavePath, true);
                 }
             }
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
-            string linkName = Link.Name.Replace('/', '_');
-            string meshFileName = package.MeshesDirectory + linkName + ".STL";
+            string linkName = link.Name.Replace('/', '_');
+            string meshFilename = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
             // Export STL
             if (exportSTL)
             {
-                SaveSTL(Link, windowsMeshFileName);
+                SaveSTL(link, windowsMeshFileName);
             }
 
-            return meshFileName;
+            link.Visual.Geometry.Mesh.Filename = meshFilename;
+            link.Collision.Geometry.Mesh.Filename = meshFilename;
         }
 
-        private void SaveSTL(Link link, string windowsMeshFileName)
+        private bool SaveSTL(Link link, string windowsMeshFilename)
         {
             int errors = 0;
             int warnings = 0;
@@ -286,12 +303,20 @@ namespace SW2URDF.URDFExport
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
-            logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
+            logger.Info("Saving STL to " + windowsMeshFilename);
+            ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
-            CorrectSTLMesh(windowsMeshFileName);
+            bool success = CorrectSTLMesh(windowsMeshFilename);
+            if (!success)
+            {
+                MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
+                    "may not be readable by CAD programs that aren't SolidWorks. Retry " +
+                    "the export, and if it continues to create an issue, email your maintainer with " +
+                    "the log file found at " + Logger.GetFileName());
+            }
+            return success;
         }
 
         private void ApplyConfigurationSpecificGeometry(Link link, Dictionary<string, string> names,
@@ -379,13 +404,24 @@ namespace SW2URDF.URDFExport
         }
 
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
-        public void CorrectSTLMesh(string filename)
+        public bool CorrectSTLMesh(string filename)
         {
             logger.Info("Removing SW header in STL file");
-            FileStream fileStream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-            byte[] emptyHeader = new byte[80];
-            fileStream.Write(emptyHeader, 0, emptyHeader.Length);
-            fileStream.Close();
+            try
+            {
+                using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Write, FileShare.None))
+                {
+                    byte[] emptyHeader = new byte[80];
+                    fileStream.Write(emptyHeader, 0, emptyHeader.Length);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Warn("Correcting the STL " + filename + " failed. This STL may not be " +
+                    "readable by ROS or other CAD programs", e);
+                return false;
+            }
+            return true;
         }
 
         #endregion Export Methods
