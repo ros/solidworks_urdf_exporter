@@ -134,15 +134,29 @@ namespace SW2URDF.UI
         private void MergeClick(object sender, EventArgs e)
         {
             TreeMerger merger = MergeAndUpdate();
-            if (merger != null)
+            if (UnmatchedLoadedLinks.Items.Count > 0)
             {
-                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
-                TreeMerged(this, mergedArgs);
+                IEnumerable<string> unmatchedLinkNames =
+                    UnmatchedLoadedLinks.Items
+                                        .Cast<ListBoxItem>()
+                                        .Select(item => ((Link)item.Tag).Name);
+
+                string unmatchedLinksStr = string.Join("\r\n", unmatchedLinkNames);
+
+                string message = "The follow links loaded from the CSV " + CSVFileName + " have not " +
+                    "been matched with links in the assembly configuration, would you like to " +
+                    "continue?\r\n\r\n" + unmatchedLinksStr;
+
+                MessageBoxResult result =
+                    MessageBox.Show(message, "Merge with unmatched links?", MessageBoxButton.YesNo);
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
             }
-            else
-            {
-                TreeMerged(this, new TreeMergedEventArgs());
-            }
+
+            TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
+            TreeMerged(this, mergedArgs);
 
             Close();
         }
@@ -169,8 +183,31 @@ namespace SW2URDF.UI
             }
         }
 
+        private void UnselectOtherBoxes(object boxWithSelection)
+        {
+            TreeViewItem selectedTreeItem = (ExistingTreeView.SelectedItem as TreeViewItem);
+            if (boxWithSelection != ExistingTreeView && selectedTreeItem != null)
+            {
+                selectedTreeItem.IsSelected = false;
+            }
+
+            ListBoxItem previouslySelected = (MatchingLoadedLinks.SelectedItem as ListBoxItem);
+            if (boxWithSelection != MatchingLoadedLinks && previouslySelected != null)
+            {
+                previouslySelected.IsSelected = false;
+            }
+
+            previouslySelected = (UnmatchedLoadedLinks.SelectedItem as ListBoxItem);
+            if (boxWithSelection != UnmatchedLoadedLinks && previouslySelected != null)
+            {
+                previouslySelected.IsSelected = false;
+            }
+        }
+
         private void OnListBoxItemClick(object sender, RoutedEventArgs e)
         {
+            UnselectOtherBoxes(sender);
+
             ListBoxItem item = (sender as ListBoxItem);
             if (item != null)
             {
@@ -182,6 +219,8 @@ namespace SW2URDF.UI
 
         private void OnTreeItemClick(object sender, RoutedEventArgs e)
         {
+            UnselectOtherBoxes(sender);
+
             TreeView tree = (TreeView)sender;
             if (tree.SelectedItem == null)
             {
@@ -220,11 +259,33 @@ namespace SW2URDF.UI
         private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
         {
             string updatedName = SelectedLinkName.Text;
-            if (!string.IsNullOrWhiteSpace(updatedName))
+            HashSet<string> existingNames = new HashSet<string>(LoadedCSVLinkNames);
+            existingNames.Remove(SelectedCSVLink.Name);
+
+            if (string.IsNullOrWhiteSpace(updatedName))
             {
-                SelectedCSVLink.Name = updatedName;
-                MergeAndUpdate();
+                SelectedLinkName.ToolTip = new ToolTip
+                {
+                    Content = "Link name cannot be empty",
+                    IsOpen = true,
+                    StaysOpen = false,
+                };
+                return;
             }
+
+            if (existingNames.Contains(updatedName))
+            {
+                SelectedLinkName.ToolTip = new ToolTip
+                {
+                    Content = "\"" + updatedName + "\" already exists",
+                    IsOpen = true,
+                    StaysOpen = false,
+                };
+                return;
+            }
+            SelectedLinkName.ToolTip = null;
+            SelectedCSVLink.Name = updatedName;
+            MergeAndUpdate();
         }
 
         private void OnResetButtonClick(object sender, RoutedEventArgs e)

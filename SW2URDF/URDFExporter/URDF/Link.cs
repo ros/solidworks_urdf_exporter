@@ -201,6 +201,24 @@ namespace SW2URDF.URDF
             return names.ToArray();
         }
 
+        public override bool AreRequiredFieldsSatisfied()
+        {
+            if (!base.AreRequiredFieldsSatisfied())
+            {
+                return false;
+            }
+
+            foreach (Link child in Children)
+            {
+                if (!child.AreRequiredFieldsSatisfied())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
