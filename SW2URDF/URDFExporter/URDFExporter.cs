@@ -151,8 +151,8 @@ namespace SW2URDF
             URDFPackage package = new URDFPackage(PackageName, SavePath);
             package.CreateDirectories();
             URDFRobot.Name = PackageName;
-            string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
-            string windowsCSVFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".csv";
+            string windowsURDFFilename = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
+            string windowsCSVFilename = package.WindowsRobotsDirectory + URDFRobot.Name + ".csv";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
 
             //Create CMakeLists
@@ -224,11 +224,11 @@ namespace SW2URDF
 
             //Writing URDF to file
 
-            logger.Info("Writing URDF file to " + windowsURDFFileName);
-            URDFWriter uWriter = new URDFWriter(windowsURDFFileName);
+            logger.Info("Writing URDF file to " + windowsURDFFilename);
+            URDFWriter uWriter = new URDFWriter(windowsURDFFilename);
             URDFRobot.WriteURDF(uWriter.writer);
 
-            ImportExport.WriteRobotToCSV(URDFRobot, windowsCSVFileName);
+            ImportExport.WriteRobotToCSV(URDFRobot, windowsCSVFilename);
 
             logger.Info("Copying log file");
             CopyLogFile(package);
@@ -270,7 +270,7 @@ namespace SW2URDF
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
             string linkName = link.Name.Replace('/', '_');
-            string meshFileName = package.MeshesDirectory + linkName + ".STL";
+            string meshFilename = package.MeshesDirectory + linkName + ".STL";
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
 
             // Export STL
@@ -279,11 +279,11 @@ namespace SW2URDF
                 SaveSTL(link, windowsMeshFileName);
             }
 
-            link.Visual.Geometry.Mesh.Filename = meshFileName;
-            link.Collision.Geometry.Mesh.Filename = meshFileName;
+            link.Visual.Geometry.Mesh.Filename = meshFilename;
+            link.Collision.Geometry.Mesh.Filename = meshFilename;
         }
 
-        private bool SaveSTL(Link link, string windowsMeshFileName)
+        private bool SaveSTL(Link link, string windowsMeshFilename)
         {
             int errors = 0;
             int warnings = 0;
@@ -303,12 +303,12 @@ namespace SW2URDF
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
-            logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
+            logger.Info("Saving STL to " + windowsMeshFilename);
+            ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
-            bool success = CorrectSTLMesh(windowsMeshFileName);
+            bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
             {
                 MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
@@ -429,19 +429,19 @@ namespace SW2URDF
         private void CopyLogFile(URDFPackage package)
         {
             string destination = package.WindowsPackageDirectory + "export.log";
-            string log_filename = Logger.GetFileName();
+            string logFilename = Logger.GetFileName();
 
-            if (log_filename != null)
+            if (logFilename != null)
             {
-                if (!File.Exists(log_filename))
+                if (!File.Exists(logFilename))
                 {
-                    System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + log_filename +
+                    System.Windows.Forms.MessageBox.Show("The log file was expected to be located at " + logFilename +
                         ", but it was not found. Please contact your maintainer with this error message.");
                 }
                 else
                 {
-                    logger.Info("Copying " + log_filename + " to " + destination);
-                    File.Copy(log_filename, destination);
+                    logger.Info("Copying " + logFilename + " to " + destination);
+                    File.Copy(logFilename, destination);
                 }
             }
         }
