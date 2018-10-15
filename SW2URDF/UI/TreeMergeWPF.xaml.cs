@@ -155,7 +155,7 @@ namespace SW2URDF.UI
                 }
             }
 
-            TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
+            TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger, CSVFileName);
             TreeMerged(this, mergedArgs);
 
             Close();
