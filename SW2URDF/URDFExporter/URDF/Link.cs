@@ -55,7 +55,7 @@ namespace SW2URDF.URDF
 
         public Component2 SWMainComponent;
 
-        public List<Component2> SWcomponents;
+        public List<Component2> SWComponents;
 
         [DataMember]
         public List<byte[]> SWComponentPIDs;
@@ -67,7 +67,7 @@ namespace SW2URDF.URDF
         {
             Parent = null;
             Children = new List<Link>();
-            SWcomponents = new List<Component2>();
+            SWComponents = new List<Component2>();
             SWComponentPIDs = new List<byte[]>();
             NameAttribute = new URDFAttribute("name", true, "");
 
@@ -102,7 +102,7 @@ namespace SW2URDF.URDF
         {
             Parent = parent;
             Children = new List<Link>();
-            SWcomponents = new List<Component2>();
+            SWComponents = new List<Component2>();
             SWComponentPIDs = new List<byte[]>();
             NameAttribute = new URDFAttribute("name", true, "");
 
@@ -152,7 +152,7 @@ namespace SW2URDF.URDF
 
         public override void AppendToCSVDictionary(List<string> context, OrderedDictionary dictionary)
         {
-            IEnumerable<string> componentNames = SWcomponents.Select(component => component.Name2);
+            IEnumerable<string> componentNames = SWComponents.Select(component => component.Name2);
             string componentNamesStr = string.Join(";", componentNames);
             string componentsContext = "Link.SWComponents";
             dictionary.Add(componentsContext, componentNamesStr);
@@ -177,7 +177,7 @@ namespace SW2URDF.URDF
 
         public void SetSWComponents(Link externalLink)
         {
-            SWcomponents = new List<Component2>(externalLink.SWcomponents);
+            SWComponents = new List<Component2>(externalLink.SWComponents);
             SWComponentPIDs = new List<byte[]>(externalLink.SWComponentPIDs);
             SWMainComponent = externalLink.SWMainComponent;
             SWMainComponentPID = externalLink.SWMainComponentPID;
@@ -204,7 +204,7 @@ namespace SW2URDF.URDF
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            SWcomponents = new List<SolidWorks.Interop.sldworks.Component2>();
+            SWComponents = new List<Component2>();
         }
     }
 }

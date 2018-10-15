@@ -15,11 +15,11 @@ namespace SW2URDF.UI
         {
         }
 
-        public void SetTree(LinkNode node)
+        public void SetTree(Link link)
         {
             Items.Clear();
 
-            TreeViewItem item = BuildTreeViewItem(node);
+            TreeViewItem item = BuildTreeViewItem(link);
             MouseMove += TreeMouseMove;
             Drop += TreeViewDrop;
             Items.Add(item);
@@ -42,21 +42,21 @@ namespace SW2URDF.UI
             return list;
         }
 
-        private TreeViewItem BuildTreeViewItem(LinkNode node)
+        private TreeViewItem BuildTreeViewItem(Link link)
         {
             TreeViewItem item = new TreeViewItem
             {
-                Tag = node.Link,
+                Tag = link,
                 IsExpanded = true,
                 AllowDrop = true,
-                Name = node.Name,
-                Header = node.Name,
+                Name = link.Name,
+                Header = link.Name,
             };
 
             item.DragEnter += ItemDragEnter;
             item.DragLeave += ItemDragLeave;
 
-            foreach (LinkNode child in node.Nodes)
+            foreach (Link child in link.Children)
             {
                 item.Items.Add(BuildTreeViewItem(child));
             }

@@ -1,9 +1,14 @@
 ﻿using log4net;
+using SW2URDF.CSV;
 using SW2URDF.URDF;
 using SW2URDF.URDFMerge;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -22,27 +27,40 @@ namespace SW2URDF.UI
 
         private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
         private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
-        private static readonly string DEFAULT_COORDINATE_SYSTEM_TEXT = "Select Coordinate System";
-        private static readonly string DEFAULT_AXIS_TEXT = "Select Reference Axis";
-        private static readonly string DEFAULT_JOINT_TYPE_TEXT = "Select Joint Type";
 
         private readonly string CSVFileName;
         private readonly string AssemblyName;
 
         private readonly URDFTreeCorrespondance TreeCorrespondance;
 
-        public TreeMergeWPF(List<string> coordinateSystems, List<string> referenceAxes, string csvFileName, string assemblyName)
+        private readonly Link ExistingBaseLink;
+        private readonly List<Link> LoadedCSVLinks;
+        private readonly HashSet<string> LoadedCSVLinkNames;
+        private Link SelectedCSVLink;
+        public ObservableCollection<KeyValuePair<string, object>> SelectedLinkProperties { get; }
+
+        public TreeMergeWPF(Link existingLink, List<Link> loadedLinks, string csvFileName, string assemblyName)
         {
+            DataContext = this;
+            Resources["SelectedLinkProperties"] = SelectedLinkProperties;
             Dispatcher.UnhandledException += AppDispatcherUnhandledException;
 
             CSVFileName = csvFileName;
             AssemblyName = assemblyName;
 
             InitializeComponent();
-            ConfigureMenus(coordinateSystems, referenceAxes);
             ConfigureLabels();
 
+            ExistingBaseLink = existingLink;
+            LoadedCSVLinks = new List<Link>(loadedLinks);
+            LoadedCSVLinkNames = new HashSet<string>();
             TreeCorrespondance = new URDFTreeCorrespondance();
+            SelectedLinkProperties = new ObservableCollection<KeyValuePair<string, object>>();
+
+            PropertiesListView.DataContext = SelectedLinkProperties;
+
+            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
+            MergeAndUpdate();
         }
 
         private void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -54,23 +72,54 @@ namespace SW2URDF.UI
             e.Handled = true;
         }
 
-        public void SetTrees(LinkNode existingNode, LinkNode loadedNode)
+        /// <summary>
+        /// This method performs a merge between the Loaded links and the existing configuration
+        /// based on the names of the loaded links. It also updates the form to match the most
+        /// updated merge
+        /// </summary>
+        /// <returns></returns>
+        private TreeMerger MergeAndUpdate()
         {
-            ExistingTreeView.SetTree(existingNode);
-            LoadedTreeView.SetTree(loadedNode);
+            // Setup merge to start with a fresh link,
+            ExistingTreeView.SetTree(ExistingBaseLink.Clone());
+            LoadedCSVLinkNames.Clear();
+            LoadedCSVLinkNames.UnionWith(LoadedCSVLinks.Select(link => link.Name));
 
-            ExistingTreeView.TreeModified += TreeViewModified;
-            LoadedTreeView.TreeModified += TreeViewModified;
+            // Update correspondance with the most up-to-date names as well as the
+            // appropriate list boxes
+            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedCSVLinks,
+                out List<Link> matched, out List<Link> unmatched);
+            UpdateList(MatchingLoadedLinks, matched);
+            UpdateList(UnmatchedLoadedLinks, unmatched);
 
-            ExistingTreeView.SelectedItemChanged += OnTreeItemClick;
-            LoadedTreeView.SelectedItemChanged += OnTreeItemClick;
+            // Perform merge
+            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
+                                                        VisualLoadedButton.IsChecked.Value,
+                                                        JointKinematicsLoadedButton.IsChecked.Value,
+                                                        OtherJointLoadedButton.IsChecked.Value);
 
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+            Link mergedRoot = merger.Merge(ExistingTreeView, TreeCorrespondance);
+
+            // Update Form Tree
+            ExistingTreeView.SetTree(mergedRoot);
+
+            return merger;
         }
 
-        private void TreeViewModified(object sender, TreeModifiedEventArgs e)
+        private void UpdateList(ListBox listBox, List<Link> unmatched)
         {
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
+            listBox.Items.Clear();
+            foreach (Link link in unmatched)
+            {
+                ListBoxItem item = new ListBoxItem
+                {
+                    Tag = link,
+                    Name = link.Name,
+                    Content = new TextBlock { Text = link.Name }
+                };
+                item.Selected += OnListBoxItemClick;
+                listBox.Items.Add(item);
+            }
         }
 
         private void CancelClick(object sender, EventArgs e)
@@ -84,69 +133,50 @@ namespace SW2URDF.UI
 
         private void MergeClick(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Do you wish to merge these configuration trees? The configuration in the assembly" +
-                " will be overwritten.",
-                "Confirm Merge", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+            TreeMerger merger = MergeAndUpdate();
+            if (merger != null)
             {
-                return;
-            }
-
-            TreeMerger merger = new TreeMerger(MassInertiaLoadedButton.IsChecked.Value,
-                                                         VisualLoadedButton.IsChecked.Value,
-                                                         JointKinematicsLoadedButton.IsChecked.Value,
-                                                         OtherJointLoadedButton.IsChecked.Value);
-            URDFTreeView result = merger.Merge(ExistingTreeView, LoadedTreeView);
-
-            if (result != null)
-            {
-                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(result, true, merger);
+                TreeMergedEventArgs mergedArgs = new TreeMergedEventArgs(ExistingTreeView, true, merger);
                 TreeMerged(this, mergedArgs);
             }
             else
             {
                 TreeMerged(this, new TreeMergedEventArgs());
             }
+
             Close();
         }
 
-        private void FillExistingLinkProperties(Link link, bool isBaseLink)
+        /// <summary>
+        /// When an item in any of the list boxes or treeview is selected, the box and properties list view
+        /// need to be populated. The link name TextBox is directly set, while the the properties ListView is
+        /// bound to the SelectedLinkProperties dictionary
+        /// </summary>
+        /// <param name="link"></param>
+        private void FillSelectedLinkBoxes(Link link)
         {
-            ExistingLinkNameTextBox.Text = link.Name;
+            SelectedLinkName.Text = link.Name;
 
-            if (isBaseLink)
+            OrderedDictionary dictionary = new OrderedDictionary();
+            link.AppendToCSVDictionary(new List<string>(), dictionary);
+
+            SelectedLinkProperties.Clear();
+            foreach (DictionaryEntry entry in dictionary)
             {
-                ExistingJointNameTextBox.Text = "";
-                ExistingJointNameTextBox.Visibility = Visibility.Hidden;
-                ExistingCoordinatesMenu.Visibility = Visibility.Hidden;
-                ExistingAxisMenu.Visibility = Visibility.Hidden;
-                ExistingJointTypeMenu.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                ExistingJointNameTextBox.Text = link.Joint.Name;
-                SetDropdownContextMenu(ExistingCoordinatesMenu, link.Joint.CoordinateSystemName, DEFAULT_COORDINATE_SYSTEM_TEXT);
-                SetDropdownContextMenu(ExistingAxisMenu, link.Joint.AxisName, DEFAULT_AXIS_TEXT);
-                SetDropdownContextMenu(ExistingJointTypeMenu, link.Joint.Type, DEFAULT_JOINT_TYPE_TEXT);
+                string context = (string)entry.Key;
+                string columnName = (string)ContextToColumns.Dictionary[context];
+                SelectedLinkProperties.Add(new KeyValuePair<string, object>(columnName, entry.Value));
             }
         }
 
-        private void FillLoadedLinkProperties(Link link, bool isBaseLink)
+        private void OnListBoxItemClick(object sender, RoutedEventArgs e)
         {
-            LoadedLinkNameTextBox.Text = link.Name;
-
-            if (isBaseLink)
+            ListBoxItem item = (sender as ListBoxItem);
+            if (item != null)
             {
-                LoadedJointNameTextLabel.Content = null;
-                LoadedCoordinateSystemTextLabel.Content = null;
-                LoadedAxisTextLabel.Content = null;
-                LoadedJointTypeTextLabel.Content = null;
-            }
-            else
-            {
-                LoadedJointNameTextLabel.Content = new TextBlock { Text = link.Name };
-                LoadedCoordinateSystemTextLabel.Content = new TextBlock { Text = link.Joint.CoordinateSystemName };
-                LoadedAxisTextLabel.Content = new TextBlock { Text = link.Joint.AxisName };
-                LoadedJointTypeTextLabel.Content = new TextBlock { Text = link.Joint.Type };
+                SelectedLinkName.IsReadOnly = false;
+                SelectedCSVLink = (Link)item.Tag;
+                FillSelectedLinkBoxes(SelectedCSVLink);
             }
         }
 
@@ -167,18 +197,39 @@ namespace SW2URDF.UI
 
             if (tree == ExistingTreeView)
             {
-                FillExistingLinkProperties(link, isBaseLink);
+                SelectedLinkName.IsReadOnly = true;
+                FillSelectedLinkBoxes(link);
             }
-            else if (tree == LoadedTreeView)
+        }
+
+        private bool IsValidLinkName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
             {
-                FillLoadedLinkProperties(link, isBaseLink);
+                return false;
             }
 
-            TreeViewItem corresponding = TreeCorrespondance.GetCorrespondingTreeViewItem(selectedItem);
-            if (corresponding != null)
+            if (LoadedCSVLinkNames.Contains(name))
             {
-                corresponding.IsSelected = true;
+                return false;
             }
+
+            return true;
+        }
+
+        private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
+        {
+            string updatedName = SelectedLinkName.Text;
+            if (!string.IsNullOrWhiteSpace(updatedName))
+            {
+                SelectedCSVLink.Name = updatedName;
+                MergeAndUpdate();
+            }
+        }
+
+        private void OnResetButtonClick(object sender, RoutedEventArgs e)
+        {
+            FillSelectedLinkBoxes(SelectedCSVLink);
         }
 
         private void SetDropdownContextMenu(Button button, string name, string defaultText)
@@ -235,12 +286,9 @@ namespace SW2URDF.UI
             string shortCSVFilename = ShortenStringForLabel(CSVFileName, MAX_BUTTON_CHARACTER_WIDTH);
 
             ExistingTreeLabel.Content = BuildTextBlock("Configuration from Assembly: ", longAssemblyName);
+            MatchedListLabel.Content = BuildTextBlock("Matching Links from CSV: ", longCSVFilename);
             ExistingTreeLabel.ToolTip =
                 new TextBlock { Text = "Configuration from Assembly: " + AssemblyName };
-
-            LoadedTreeLabel.Content = BuildTextBlock("Configuration from CSV: ", longCSVFilename);
-            LoadedTreeLabel.ToolTip =
-                new TextBlock { Text = "Configuration from CSV: " + CSVFileName };
 
             MassInertiaExistingButton.Content = new TextBlock { Text = shortAssemblyName };
             MassInertiaExistingButton.ToolTip =
@@ -393,9 +441,9 @@ namespace SW2URDF.UI
         /// <param name="items"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private TreeViewItem GetItemToSideOfPoint(TreeView tree, DragEventArgs e)
+        private TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
         {
-            List<TreeViewItem> flattened = URDFTreeCorrespondance.FlattenTreeView(tree);
+            List<TreeViewItem> flattened = tree.Flatten();
 
             TreeViewItem previous = null;
 
@@ -425,7 +473,7 @@ namespace SW2URDF.UI
         /// <param name="tree"></param>
         /// <param name="package"></param>
         /// <param name="e"></param>
-        private void ProcessDragDropOnTree(TreeView tree, TreeViewItem package, DragEventArgs e)
+        private void ProcessDragDropOnTree(URDFTreeView tree, TreeViewItem package, DragEventArgs e)
         {
             TreeViewItem closest = GetItemToSideOfPoint(tree, e);
 
@@ -452,7 +500,7 @@ namespace SW2URDF.UI
 
         private void TreeViewDrop(object sender, DragEventArgs e)
         {
-            TreeView tree = (TreeView)sender;
+            URDFTreeView tree = (URDFTreeView)sender;
             TreeViewItem package = e.Data.GetData(typeof(TreeViewItem)) as TreeViewItem;
 
             if (!IsValidDrop(tree, package, e))
@@ -470,9 +518,6 @@ namespace SW2URDF.UI
                 // Dropping outside of a node will reorder nodes
                 ProcessDragDropOnTree(tree, package, e);
             }
-
-            // Items have been reordered probably. Rebuild the correspondance.
-            TreeCorrespondance.BuildCorrespondance(ExistingTreeView, LoadedTreeView);
         }
 
         /// <summary>
@@ -523,13 +568,6 @@ namespace SW2URDF.UI
             }
 
             return item;
-        }
-
-        private void ConfigureMenus(List<string> coordinateSystems, List<string> referenceAxes)
-        {
-            SetMenu(ExistingCoordinatesMenu, coordinateSystems);
-            SetMenu(ExistingAxisMenu, referenceAxes);
-            SetMenu(ExistingJointTypeMenu, Joint.AVAILABLE_TYPES);
         }
 
         private void SetMenu(Button button, List<string> menuContents)

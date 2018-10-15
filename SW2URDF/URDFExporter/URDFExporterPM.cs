@@ -268,7 +268,7 @@ namespace SW2URDF
                 baseNode.Nodes.Count == 0 &&
                 string.IsNullOrWhiteSpace(baseNode.Link.Joint.AxisName) &&
                 baseNode.Link.Joint.CoordinateSystemName == "Automatically Generate" &&
-                baseNode.Link.SWcomponents.Count == 0);
+                baseNode.Link.SWComponents.Count == 0);
         }
 
         private void TreeMergeCompleted(object sender, TreeMergedEventArgs e)
@@ -333,15 +333,13 @@ namespace SW2URDF
                 logger.Info("Loading configuration " + loadFileDialog.FileName);
                 using (Stream stream = loadFileDialog.OpenFile())
                 {
-                    Link link = ImportExport.LoadURDFRobotFromCSV(stream);
-                    if (link == null)
+                    List<Link> loadedLinks = ImportExport.LoadURDFRobotFromCSV(stream);
+                    if (loadedLinks == null)
                     {
                         return;
                     }
 
                     logger.Info("Link successfully loaded");
-
-                    LinkNode loadedBaseNode = new LinkNode(link);
 
                     if (!ExistingConfigurationEmpty())
                     {
@@ -349,15 +347,16 @@ namespace SW2URDF
                         string assemblyTitle = ActiveSWModel.GetTitle();
 
                         LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
-                        TreeMergeWPF wpf = new TreeMergeWPF(Exporter.GetRefCoordinateSystems(), Exporter.GetRefAxes(),
+                        Link existingBaseLink = existingBaseNode.GetLink();
+                        TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
                             filename, assemblyTitle);
-                        wpf.SetTrees(existingBaseNode, loadedBaseNode);
                         wpf.TreeMerged += TreeMergeCompleted;
                         wpf.Show();
                     }
                     else
                     {
-                        SetConfigTree(loadedBaseNode);
+                        MessageBox.Show("There is no current configuration in your assembly. Build one first and then" +
+                            " import the data.");
                     }
                 }
             }

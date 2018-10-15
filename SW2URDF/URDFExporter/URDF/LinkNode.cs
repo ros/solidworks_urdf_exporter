@@ -63,5 +63,15 @@ namespace SW2URDF.URDF
             cloned.Link = Link.Clone();
             return cloned;
         }
+
+        public Link GetLink()
+        {
+            Link.Children.Clear();
+            foreach (LinkNode child in Nodes)
+            {
+                Link.Children.Add(child.GetLink());
+            }
+            return Link;
+        }
     }
 }

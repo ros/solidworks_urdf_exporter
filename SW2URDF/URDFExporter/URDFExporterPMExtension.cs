@@ -232,7 +232,7 @@ namespace SW2URDF
 
         private void CheckNodeInertialComplete(LinkNode node)
         {
-            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
+            if (node.Nodes.Count > 0 && node.Link.SWComponents.Count == 0)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -242,7 +242,7 @@ namespace SW2URDF
 
         private void CheckNodeVisualComplete(LinkNode node)
         {
-            if (node.Nodes.Count > 0 && node.Link.SWcomponents.Count == 0)
+            if (node.Nodes.Count > 0 && node.Link.SWComponents.Count == 0)
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -252,7 +252,7 @@ namespace SW2URDF
 
         private void CheckNodeJointComplete(LinkNode node)
         {
-            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
+            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -260,7 +260,7 @@ namespace SW2URDF
                     "        without components. Either select an origin or at least one component.\r\n";
             }
 
-            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.AxisName == "Automatically Generate")
+            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.AxisName == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -268,7 +268,7 @@ namespace SW2URDF
                     "        without components. Either select an axis or at least one component.";
             }
 
-            if (node.Link.SWcomponents.Count == 0 && node.Link.Joint.Type == "Automatically Generate")
+            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.Type == "Automatically Generate")
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -300,7 +300,7 @@ namespace SW2URDF
 
         private void CheckModelDocsExist(LinkNode node, List<string> problemComponents)
         {
-            foreach (Component2 component in node.Link.SWcomponents)
+            foreach (Component2 component in node.Link.SWComponents)
             {
                 ModelDoc2 doc = component.GetModelDoc2();
                 if (doc == null)
@@ -367,7 +367,7 @@ namespace SW2URDF
                         PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
                 Common.GetSelectedComponents(
-                    ActiveSWModel, previouslySelectedNode.Link.SWcomponents, PMSelection.Mark);
+                    ActiveSWModel, previouslySelectedNode.Link.SWComponents, PMSelection.Mark);
             }
         }
 
@@ -381,7 +381,7 @@ namespace SW2URDF
                 node.Link.Name = "base_link";
                 node.Link.Joint.AxisName = "";
                 node.Link.Joint.CoordinateSystemName = "Automatically Generate";
-                node.Link.SWcomponents = new List<Component2>();
+                node.Link.SWComponents = new List<Component2>();
                 node.IsBaseNode = true;
                 node.IsIncomplete = true;
             }
@@ -392,7 +392,7 @@ namespace SW2URDF
                 node.Link.Joint.AxisName = "Automatically Generate";
                 node.Link.Joint.CoordinateSystemName = "Automatically Generate";
                 node.Link.Joint.Type = "Automatically Detect";
-                node.Link.SWcomponents = new List<Component2>();
+                node.Link.SWComponents = new List<Component2>();
                 node.IsBaseNode = false;
                 node.IsIncomplete = true;
             }
@@ -409,7 +409,7 @@ namespace SW2URDF
             PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.SelectComponents(ActiveSWModel, node.Link.SWcomponents, true, PMSelection.Mark);
+            Common.SelectComponents(ActiveSWModel, node.Link.SWComponents, true, PMSelection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)

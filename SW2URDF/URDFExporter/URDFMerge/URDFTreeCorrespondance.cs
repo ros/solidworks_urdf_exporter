@@ -1,78 +1,58 @@
 ﻿using SW2URDF.UI;
-using System;
+using SW2URDF.URDF;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Controls;
 
 namespace SW2URDF.URDFMerge
 {
-    internal class URDFTreeCorrespondance
+    public class URDFTreeCorrespondance
     {
-        private readonly Dictionary<TreeViewItem, TreeViewItem> LeftToRight;
-        private readonly Dictionary<TreeViewItem, TreeViewItem> RightToLeft;
+        private readonly Dictionary<TreeViewItem, Link> ItemToLink;
 
         public URDFTreeCorrespondance()
         {
-            LeftToRight = new Dictionary<TreeViewItem, TreeViewItem>();
-            RightToLeft = new Dictionary<TreeViewItem, TreeViewItem>();
+            ItemToLink = new Dictionary<TreeViewItem, Link>();
         }
 
-        public void BuildCorrespondance(URDFTreeView left, URDFTreeView right)
+        public void BuildCorrespondance(URDFTreeView existingTree, List<Link> loadedLinks, out List<Link> matchedLinks, out List<Link> unmatchedLinks)
         {
-            List<TreeViewItem> leftList = left.Flatten();
-            List<TreeViewItem> rightList = right.Flatten();
+            List<TreeViewItem> existingItemsList = existingTree.Flatten();
 
-            LeftToRight.Clear();
-            RightToLeft.Clear();
+            ItemToLink.Clear();
 
-            foreach (Tuple<TreeViewItem, TreeViewItem> pair in Enumerable.Zip(leftList, rightList, Tuple.Create))
+            Dictionary<string, TreeViewItem> existingNameToItemsLookup = new Dictionary<string, TreeViewItem>();
+            foreach (TreeViewItem item in existingItemsList)
             {
-                LeftToRight[pair.Item1] = pair.Item2;
-                RightToLeft[pair.Item2] = pair.Item1;
+                existingNameToItemsLookup[item.Name] = item;
+            }
+
+            Dictionary<string, Link> loadedNameToLinkLookup = new Dictionary<string, Link>();
+            foreach (Link link in loadedLinks)
+            {
+                loadedNameToLinkLookup[link.Name] = link;
+            }
+
+            matchedLinks = new List<Link>();
+            unmatchedLinks = new List<Link>();
+            foreach (KeyValuePair<string, Link> entry in loadedNameToLinkLookup)
+            {
+                Link loadedLink = entry.Value;
+                if (existingNameToItemsLookup.TryGetValue(entry.Key, out TreeViewItem item))
+                {
+                    matchedLinks.Add(loadedLink);
+                    ItemToLink[item] = loadedLink;
+                }
+                else
+                {
+                    unmatchedLinks.Add(loadedLink);
+                }
             }
         }
 
-        /// <summary>
-        /// Flattens the TreeView tree into a list of Items through a preorder traversal,
-        /// starting from the top and proceeding downard.
-        /// </summary>
-        /// <param name="tree"></param>
-        /// <returns></returns>
-        public static List<TreeViewItem> FlattenTreeView(TreeView tree)
+        public Link GetCorrespondingLink(TreeViewItem item)
         {
-            return FlattenTreeBranch(tree.Items);
-        }
-
-        /// <summary>
-        /// This flattens the tree through a preorder traversal from the top downward
-        /// </summary>
-        /// <param name="tree"></param>
-        /// <returns></returns>
-        private static List<TreeViewItem> FlattenTreeBranch(ItemCollection items)
-        {
-            List<TreeViewItem> list = new List<TreeViewItem>();
-            foreach (TreeViewItem item in items)
-            {
-                list.Add(item);
-                list.AddRange(FlattenTreeBranch(item.Items));
-            }
-            return list;
-        }
-
-        public TreeViewItem GetCorrespondingTreeViewItem(TreeViewItem item)
-        {
-            if (LeftToRight.ContainsKey(item))
-            {
-                return LeftToRight[item];
-            }
-            else if (RightToLeft.ContainsKey(item))
-            {
-                return RightToLeft[item];
-            }
-            else
-            {
-                return null;
-            }
+            ItemToLink.TryGetValue(item, out Link link);
+            return link;
         }
     }
 }

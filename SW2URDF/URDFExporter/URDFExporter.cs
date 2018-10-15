@@ -279,7 +279,7 @@ namespace SW2URDF
 
             logger.Info(link.Name + ": Reference geometry name " + names["component"]);
 
-            Common.ShowComponents(ActiveSWModel, link.SWcomponents);
+            Common.ShowComponents(ActiveSWModel, link.SWComponents);
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
@@ -287,7 +287,7 @@ namespace SW2URDF
             logger.Info("Saving STL to " + windowsMeshFileName);
             ActiveDoc.Extension.SaveAs(windowsMeshFileName,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            Common.HideComponents(ActiveSWModel, link.SWcomponents);
+            Common.HideComponents(ActiveSWModel, link.SWComponents);
 
             CorrectSTLMesh(windowsMeshFileName);
         }
@@ -298,7 +298,7 @@ namespace SW2URDF
         {
             if (names["component"].Length > 0)
             {
-                foreach (Component2 comp in link.SWcomponents)
+                foreach (Component2 comp in link.SWComponents)
                 {
                     if (comp.Name2 == names["component"])
                     {
