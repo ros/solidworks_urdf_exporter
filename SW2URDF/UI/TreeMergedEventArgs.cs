@@ -11,13 +11,14 @@ namespace SW2URDF.UI
         public readonly bool UsedCSVVisualCollision;
         public readonly bool UsedCSVJointKinematics;
         public readonly bool UsedCSVJointOther;
+        public readonly string CSVFilename;
 
         public TreeMergedEventArgs()
         {
             Success = false;
         }
 
-        public TreeMergedEventArgs(URDFTreeView mergedTree, bool success, TreeMerger merger)
+        public TreeMergedEventArgs(URDFTreeView mergedTree, bool success, TreeMerger merger, string csvFilename)
         {
             MergedTree = mergedTree;
             Success = success;
@@ -25,6 +26,7 @@ namespace SW2URDF.UI
             UsedCSVVisualCollision = merger.UseCSVVisualCollision;
             UsedCSVJointKinematics = merger.UseCSVJointKinematics;
             UsedCSVJointOther = merger.UseCSVJointOther;
+            CSVFilename = csvFilename;
         }
     }
 }
