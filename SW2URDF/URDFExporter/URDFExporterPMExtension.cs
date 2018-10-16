@@ -579,9 +579,8 @@ namespace SW2URDF
             SetConfigTree(baseNode);
 
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
-            Link baseLink = baseNode.GetLink();
 
-            if (!baseLink.AreRequiredFieldsSatisfied())
+            if (baseNode == null || !baseNode.GetLink().AreRequiredFieldsSatisfied())
             {
                 loadConfigurationControl.Enabled = false;
                 loadConfigurationControl.Tip = "This feature will be available once you have " +
