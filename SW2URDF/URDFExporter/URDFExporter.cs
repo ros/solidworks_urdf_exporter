@@ -285,6 +285,7 @@ namespace SW2URDF
 
         private bool SaveSTL(Link link, string windowsMeshFileName)
         {
+            string solidWorksFilename = windowsMeshFileName.Replace(".STL", "_TEMPORARY.STL");
             int errors = 0;
             int warnings = 0;
 
@@ -303,12 +304,12 @@ namespace SW2URDF
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
-            logger.Info("Saving STL to " + windowsMeshFileName);
-            ActiveDoc.Extension.SaveAs(windowsMeshFileName,
+            logger.Info("Saving STL to " + solidWorksFilename);
+            ActiveDoc.Extension.SaveAs(solidWorksFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
-            bool success = CorrectSTLMesh(windowsMeshFileName);
+            bool success = CorrectSTLMesh(solidWorksFilename, windowsMeshFileName);
             if (!success)
             {
                 MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
@@ -379,12 +380,13 @@ namespace SW2URDF
 
             //Saving part as STL mesh
 
-            ActiveSWModel.Extension.SaveAs(windowsMeshFileName, (int)swSaveAsVersion_e.swSaveAsCurrentVersion,
+            string solidWorksFilename = windowsMeshFileName.Replace(".STL", "_TEMPORARY.STL");
+            ActiveSWModel.Extension.SaveAs(solidWorksFilename, (int)swSaveAsVersion_e.swSaveAsCurrentVersion,
                 (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             URDFRobot.BaseLink.Visual.Geometry.Mesh.Filename = meshFileName;
             URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = meshFileName;
 
-            CorrectSTLMesh(windowsMeshFileName);
+            CorrectSTLMesh(solidWorksFilename, windowsMeshFileName);
 
             URDFRobot.BaseLink.Visual.Material.Texture.Filename =
                 package.TexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);
@@ -404,12 +406,13 @@ namespace SW2URDF
         }
 
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
-        public bool CorrectSTLMesh(string filename)
+        public bool CorrectSTLMesh(string oldFilename, string newFilename)
         {
             logger.Info("Removing SW header in STL file");
+            File.Copy(oldFilename, newFilename);
             try
             {
-                using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Write, FileShare.None))
+                using (FileStream fileStream = new FileStream(newFilename, FileMode.Open, FileAccess.Write, FileShare.None))
                 {
                     byte[] emptyHeader = new byte[80];
                     fileStream.Write(emptyHeader, 0, emptyHeader.Length);
@@ -417,7 +420,7 @@ namespace SW2URDF
             }
             catch (Exception e)
             {
-                logger.Warn("Correcting the STL " + filename + " failed. This STL may not be " +
+                logger.Warn("Correcting the STL " + newFilename + " failed. This STL may not be " +
                     "readable by ROS or other CAD programs", e);
                 return false;
             }
