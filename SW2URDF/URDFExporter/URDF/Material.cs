@@ -32,7 +32,7 @@ namespace SW2URDF.URDF
         {
             Color = new Color();
             Texture = new Texture();
-            NameAttribute = new URDFAttribute("name", false, null);
+            NameAttribute = new URDFAttribute("name", true, "");
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Color);
