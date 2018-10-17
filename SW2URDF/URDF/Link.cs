@@ -1,4 +1,4 @@
-﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.sldworks;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Xml;
 namespace SW2URDF.URDF
 {
     //The link class, it contains many other elements not found in the URDF.
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Link : URDFElement//, ISerializable
     {
         [DataMember]

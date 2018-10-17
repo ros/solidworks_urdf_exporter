@@ -1,10 +1,10 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using System.Windows.Forms;
 
 namespace SW2URDF.URDF
 {
     //Inertia element, which means moment of inertia. In the inertial element
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Inertia : URDFElement
     {
         [DataMember]

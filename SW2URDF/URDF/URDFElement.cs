@@ -1,4 +1,4 @@
-﻿using log4net;
+using log4net;
 using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Xml;
 namespace SW2URDF.URDF
 {
     // Base class of each URDFElement. The goal is to minimize the amount of code in the derived classes;s
-    [DataContract(IsReference = true)]
+    [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     [KnownType("GetKnownTypes")]
     public class URDFElement// : ISerializable
     {

@@ -1,9 +1,9 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 
 namespace SW2URDF.URDF
 {
     //The collision element of a link.
-    [DataContract]
+    [DataContract(Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Collision : URDFElement
     {
         [DataMember]

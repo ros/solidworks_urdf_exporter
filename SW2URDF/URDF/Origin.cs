@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
@@ -6,7 +6,7 @@ using System.Windows.Forms;
 namespace SW2URDF.URDF
 {
     //The Origin element, used in several other elements
-    [DataContract]
+    [DataContract(Name = "Origin", Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Origin : URDFElement
     {
         [DataMember]
