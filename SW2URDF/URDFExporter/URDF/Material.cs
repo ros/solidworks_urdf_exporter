@@ -53,6 +53,10 @@ namespace SW2URDF.URDF
         {
             SetRequired(false);
             NameAttribute.SetRequired(true);
+            if (NameAttribute.Value == null)
+            {
+                NameAttribute.Value = "";
+            }
         }
     }
 }
