@@ -306,6 +306,10 @@ namespace SW2URDF
             logger.Info("Saving STL to " + windowsMeshFileName);
             ActiveDoc.Extension.SaveAs(windowsMeshFileName,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+            if (errors + warnings != 0)
+            {
+                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + " or warnings " + warnings);
+            }
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
             bool success = CorrectSTLMesh(windowsMeshFileName);
