@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2015 Stephen Brawner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -419,7 +419,7 @@ namespace SW2URDF.UI
 
         private void CheckLinksForWarnings(Link node, StringBuilder builder)
         {
-            string msg = CheckLinkAlpha(node);
+            string msg = "";
 
             if (!string.IsNullOrWhiteSpace(msg))
             {
