@@ -100,6 +100,10 @@ namespace SW2URDF.URDF
 
         public static object GetValueFromString(string valueStr)
         {
+            if (valueStr == null)
+            {
+                return null;
+            }
             double resultDouble;
             if (valueStr.Contains(";"))
             {
@@ -143,7 +147,7 @@ namespace SW2URDF.URDF
         public string GetTextFromDoubleValue(string format = "G")
         {
             string result = "";
-            if (Value != null)
+            if (Value != null && Value.GetType() == typeof(double))
             {
                 double dValue = (double)Value;
                 result = dValue.ToString(format, URDFNumberFormat);

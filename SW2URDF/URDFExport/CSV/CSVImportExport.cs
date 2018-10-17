@@ -1,7 +1,8 @@
-﻿using log4net;
+using log4net;
 using Microsoft.VisualBasic.FileIO;
 using SW2URDF.URDF;
 using SW2URDF.Utilities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -52,7 +53,9 @@ namespace SW2URDF.URDFExport.CSV
                 {
                     string[] fields = csvParser.ReadFields();
                     StringDictionary dictionary = new StringDictionary();
-                    for (int i = 0; i < fields.Length; i++)
+                    int minArrayLength = Math.Min(fields.Length, headers.Length);
+                    logger.Warn("The number of columns in the row do not match the number of columns in the header");
+                    for (int i = 0; i < minArrayLength; i++)
                     {
                         if (!string.IsNullOrWhiteSpace(fields[i]))
                         {

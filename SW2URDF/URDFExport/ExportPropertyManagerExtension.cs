@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2015 Stephen Brawner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -580,9 +580,8 @@ namespace SW2URDF.URDFExport
             SetConfigTree(baseNode);
 
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
-            Link baseLink = baseNode.GetLink();
 
-            if (!baseLink.AreRequiredFieldsSatisfied())
+            if (baseNode == null || !baseNode.GetLink().AreRequiredFieldsSatisfied())
             {
                 loadConfigurationControl.Enabled = false;
                 loadConfigurationControl.Tip = "This feature will be available once you have " +

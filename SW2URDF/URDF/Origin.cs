@@ -5,7 +5,6 @@ using System.Windows.Forms;
 
 namespace SW2URDF.URDF
 {
-    //The Origin element, used in several other elements
     [DataContract(Name = "Origin", Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Origin : URDFElement
     {
@@ -190,14 +189,34 @@ namespace SW2URDF.URDF
             for (int i = 0; i < 3; i++)
             {
                 string lookupString = contextString + "." + "xyz"[i];
-                xyz[i] = (double)URDFAttribute.GetValueFromString(dictionary[lookupString]);
+                if (!dictionary.ContainsKey(lookupString))
+                {
+                    logger.Info("CSV file does not contain column for " + lookupString);
+                    continue;
+                }
+
+                object value = URDFAttribute.GetValueFromString(dictionary[lookupString]);
+                if (value != null && value.GetType() == typeof(double))
+                {
+                    xyz[i] = (double)value;
+                }
             }
 
             contextString = string.Join(".", updatedContext) + ".rpy";
             for (int i = 0; i < 3; i++)
             {
-                string lookupString = contextString + "." + "rpy"[i];
-                rpy[i] = (double)URDFAttribute.GetValueFromString(dictionary[lookupString]);
+                string lookupString = contextString + "." + "xyz"[i];
+                if (!dictionary.ContainsKey(lookupString))
+                {
+                    logger.Info("CSV file does not contain column for " + lookupString);
+                    continue;
+                }
+
+                object value = URDFAttribute.GetValueFromString(dictionary[lookupString]);
+                if (value != null && value.GetType() == typeof(double))
+                {
+                    rpy[i] = (double)value;
+                }
             }
 
             XYZAttribute.Value = xyz;
