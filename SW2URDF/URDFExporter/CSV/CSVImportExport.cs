@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CsvHelper;
+using log4net;
 using Microsoft.VisualBasic.FileIO;
 using SW2URDF.URDF;
 using System;
@@ -30,8 +31,9 @@ namespace SW2URDF.CSV
             logger.Info("Writing CSV file " + filename);
             using (StreamWriter stream = new StreamWriter(filename))
             {
-                WriteHeaderToCSV(stream);
-                WriteLinkToCSV(stream, robot.BaseLink);
+                CsvWriter writer = new CsvWriter(stream);
+                WriteHeaderToCSV(writer);
+                WriteLinkToCSV(writer, robot.BaseLink);
             }
         }
 
@@ -75,17 +77,15 @@ namespace SW2URDF.CSV
         /// Iterates through the column names and writes them to a file stream
         /// </summary>
         /// <param name="stream">Stream to write to</param>
-        private static void WriteHeaderToCSV(StreamWriter stream)
+        private static void WriteHeaderToCSV(CsvWriter writer)
         {
             StringBuilder builder = new StringBuilder();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
-                string context = (string)entry.Key;
-                string column = (string)entry.Value;
-
-                builder = builder.Append(column).Append(",");
+                string columnName = (string)entry.Value;
+                writer.WriteField(columnName);
             }
-            stream.WriteLine(builder.ToString() + "\n");
+            writer.NextRecord();
         }
 
         /// <summary>
@@ -93,9 +93,8 @@ namespace SW2URDF.CSV
         /// </summary>
         /// <param name="stream">Stream representing opened CSV file</param>
         /// <param name="dictionary">Dictionary of values</param>
-        private static void WriteValuesToCSV(StreamWriter stream, OrderedDictionary dictionary)
+        private static void WriteValuesToCSV(CsvWriter writer, OrderedDictionary dictionary)
         {
-            StringBuilder builder = new StringBuilder();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
                 string context = (string)entry.Key;
@@ -103,14 +102,15 @@ namespace SW2URDF.CSV
                 if (dictionary.Contains(context))
                 {
                     object value = dictionary[context];
-                    builder = builder.Append(value).Append(",");
+                    writer.WriteField(value);
                 }
                 else
                 {
-                    builder = builder.Append("").Append(",");
+                    writer.WriteField(null);
                 }
             }
 
+            writer.NextRecord();
             HashSet<string> keys1 = new HashSet<string>(ContextToColumns.Dictionary.Keys.Cast<string>());
             HashSet<string> keys2 = new HashSet<string>(dictionary.Keys.Cast<string>());
 
@@ -123,8 +123,6 @@ namespace SW2URDF.CSV
             {
                 logger.Error("The following columns were not written to the CSV: " + missingColumns.ToString());
             }
-
-            stream.WriteLine(builder.ToString() + "\n");
         }
 
         /// <summary>
@@ -132,15 +130,15 @@ namespace SW2URDF.CSV
         /// </summary>
         /// <param name="stream">StreamWriter of opened CSV document</param>
         /// <param name="link">URDF link to append to the file</param>
-        private static void WriteLinkToCSV(StreamWriter stream, Link link)
+        private static void WriteLinkToCSV(CsvWriter writer, Link link)
         {
             OrderedDictionary dictionary = new OrderedDictionary();
             link.AppendToCSVDictionary(new List<string>(), dictionary);
-            WriteValuesToCSV(stream, dictionary);
+            WriteValuesToCSV(writer, dictionary);
 
             foreach (Link child in link.Children)
             {
-                WriteLinkToCSV(stream, child);
+                WriteLinkToCSV(writer, child);
             }
         }
 
