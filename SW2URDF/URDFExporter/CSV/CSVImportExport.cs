@@ -53,6 +53,7 @@ namespace SW2URDF.CSV
                     string[] fields = csvParser.ReadFields();
                     StringDictionary dictionary = new StringDictionary();
                     int minArrayLength = Math.Min(fields.Length, headers.Length);
+                    logger.Warn("The number of columns in the row do not match the number of columns in the header");
                     for (int i = 0; i < minArrayLength; i++)
                     {
                         if (!string.IsNullOrWhiteSpace(fields[i]))

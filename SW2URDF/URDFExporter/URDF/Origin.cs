@@ -192,6 +192,7 @@ namespace SW2URDF.URDF
                 string lookupString = contextString + "." + "xyz"[i];
                 if (!dictionary.ContainsKey(lookupString))
                 {
+                    logger.Info("CSV file does not contain column for " + lookupString);
                     continue;
                 }
 
@@ -208,6 +209,7 @@ namespace SW2URDF.URDF
                 string lookupString = contextString + "." + "xyz"[i];
                 if (!dictionary.ContainsKey(lookupString))
                 {
+                    logger.Info("CSV file does not contain column for " + lookupString);
                     continue;
                 }
 
