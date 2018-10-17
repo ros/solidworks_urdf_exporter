@@ -225,96 +225,96 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Legacy\SerialNode.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ROSFiles.cs" />
+    <Compile Include="ROS\ROSFiles.cs" />
     <Compile Include="UI\TreeMergedEventArgs.cs" />
     <Compile Include="UI\TreeMergeWPF.xaml.cs">
       <DependentUpon>TreeMergeWPF.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\TreeModifiedEventArgs.cs" />
     <Compile Include="UI\URDFTreeView.cs" />
-    <Compile Include="URDFExporter\AssemblyExportForm.cs">
+    <Compile Include="UI\AssemblyExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExporter\AssemblyExportForm.Designer.cs">
+    <Compile Include="UI\AssemblyExportForm.Designer.cs">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="URDFExporter\CSV\ContextToColumns.cs" />
-    <Compile Include="URDFExporter\CSV\CSVImportExport.cs" />
-    <Compile Include="URDFExporter\Serialization.cs" />
-    <Compile Include="URDFExporter\URDFExporter.cs" />
-    <Compile Include="URDFExporter\URDFExporterExtension.cs" />
-    <Compile Include="URDFExporter\AssemblyExportFormExtension.cs">
+    <Compile Include="URDFExport\CSV\ContextToColumns.cs" />
+    <Compile Include="URDFExport\CSV\CSVImportExport.cs" />
+    <Compile Include="URDFExport\Serialization.cs" />
+    <Compile Include="URDFExport\ExportHelper.cs" />
+    <Compile Include="URDFExport\ExportHelperExtension.cs" />
+    <Compile Include="UI\AssemblyExportFormExtension.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExporter\Common.cs" />
-    <Compile Include="URDFExporter\URDFExporterPMExtension.cs" />
-    <Compile Include="MathOPS.cs" />
-    <Compile Include="EventHandling.cs" />
-    <Compile Include="URDFExporter\PartExportForm.cs">
+    <Compile Include="URDFExport\Common.cs" />
+    <Compile Include="URDFExport\ExportPropertyManagerExtension.cs" />
+    <Compile Include="Utilities\MathOPS.cs" />
+    <Compile Include="SW\EventHandling.cs" />
+    <Compile Include="UI\PartExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExporter\PartExportForm.Designer.cs">
+    <Compile Include="UI\PartExportForm.Designer.cs">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="SwAddin.cs">
+    <Compile Include="SW\SwAddin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="URDFExporter\URDFMerge\TreeMerger.cs" />
-    <Compile Include="URDFExporter\URDFMerge\URDFTreeCorrespondance.cs" />
-    <Compile Include="URDFExporter\URDF\Axis.cs" />
-    <Compile Include="URDFExporter\URDF\Calibration.cs" />
-    <Compile Include="URDFExporter\URDF\ChildLink.cs" />
-    <Compile Include="URDFExporter\URDF\Collision.cs" />
-    <Compile Include="URDFExporter\URDF\Color.cs" />
-    <Compile Include="URDFExporter\URDF\Dynamics.cs" />
-    <Compile Include="URDFExporter\URDF\Geometry.cs" />
-    <Compile Include="URDFExporter\URDF\Inertia.cs" />
-    <Compile Include="URDFExporter\URDF\Inertial.cs" />
-    <Compile Include="URDFExporter\URDF\Joint.cs" />
-    <Compile Include="URDFExporter\URDF\Limit.cs" />
-    <Compile Include="URDFExporter\URDF\Link.cs" />
-    <Compile Include="URDFExporter\URDF\LinkNode.cs" />
-    <Compile Include="URDFExporter\URDF\Mass.cs" />
-    <Compile Include="URDFExporter\URDF\Material.cs" />
-    <Compile Include="URDFExporter\URDF\Mesh.cs" />
-    <Compile Include="URDFExporter\URDF\Origin.cs" />
-    <Compile Include="URDFExporter\URDF\PackageXMLWriter.cs" />
-    <Compile Include="URDFExporter\URDF\ParentLink.cs" />
-    <Compile Include="URDFExporter\URDF\Robot.cs" />
-    <Compile Include="URDFExporter\URDF\SafetyController.cs" />
-    <Compile Include="URDFExporter\URDF\Texture.cs" />
-    <Compile Include="URDFExporter\URDF\URDFAttribute.cs" />
-    <Compile Include="URDFExporter\URDFExporterPM.cs" />
-    <Compile Include="URDFExporter\URDFPackage.cs" />
-    <Compile Include="URDFExporter\URDF\URDFElement.cs" />
-    <Compile Include="URDFExporter\URDF\URDFWriter.cs" />
-    <Compile Include="URDFExporter\URDF\Visual.cs" />
-    <Compile Include="Version.cs" />
-    <Compile Include="VersionInfo.cs" />
+    <Compile Include="URDFExport\URDFMerge\TreeMerger.cs" />
+    <Compile Include="URDFExport\URDFMerge\URDFTreeCorrespondance.cs" />
+    <Compile Include="URDF\Axis.cs" />
+    <Compile Include="URDF\Calibration.cs" />
+    <Compile Include="URDF\ChildLink.cs" />
+    <Compile Include="URDF\Collision.cs" />
+    <Compile Include="URDF\Color.cs" />
+    <Compile Include="URDF\Dynamics.cs" />
+    <Compile Include="URDF\Geometry.cs" />
+    <Compile Include="URDF\Inertia.cs" />
+    <Compile Include="URDF\Inertial.cs" />
+    <Compile Include="URDF\Joint.cs" />
+    <Compile Include="URDF\Limit.cs" />
+    <Compile Include="URDF\Link.cs" />
+    <Compile Include="URDF\LinkNode.cs" />
+    <Compile Include="URDF\Mass.cs" />
+    <Compile Include="URDF\Material.cs" />
+    <Compile Include="URDF\Mesh.cs" />
+    <Compile Include="URDF\Origin.cs" />
+    <Compile Include="URDF\PackageXMLWriter.cs" />
+    <Compile Include="URDF\ParentLink.cs" />
+    <Compile Include="URDF\Robot.cs" />
+    <Compile Include="URDF\SafetyController.cs" />
+    <Compile Include="URDF\Texture.cs" />
+    <Compile Include="URDF\URDFAttribute.cs" />
+    <Compile Include="URDFExport\ExportPropertyManager.cs" />
+    <Compile Include="URDFExport\URDFPackage.cs" />
+    <Compile Include="URDF\URDFElement.cs" />
+    <Compile Include="URDF\URDFWriter.cs" />
+    <Compile Include="URDF\Visual.cs" />
+    <Compile Include="Versioning\Version.cs" />
+    <Compile Include="Versioning\VersionInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="URDFExporter\AssemblyExportForm.resx">
+    <EmbeddedResource Include="UI\AssemblyExportForm.resx">
       <DependentUpon>AssemblyExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="URDFExporter\PartExportForm.resx">
+    <EmbeddedResource Include="UI\PartExportForm.resx">
       <DependentUpon>PartExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolbarLarge.bmp" />
-    <EmbeddedResource Include="ToolbarSmall.bmp" />
-    <EmbeddedResource Include="MainIconLarge.bmp" />
-    <EmbeddedResource Include="MainIconSmall.bmp" />
-    <EmbeddedResource Include="AddinIcon.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\ToolbarLarge.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\ToolbarSmall.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\MainIconLarge.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\MainIconSmall.bmp" />
+    <EmbeddedResource Include="UI\Resources\Images\AddinIcon.bmp" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
