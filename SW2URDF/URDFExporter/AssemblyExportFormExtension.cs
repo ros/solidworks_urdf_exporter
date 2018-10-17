@@ -418,8 +418,7 @@ namespace SW2URDF
 
         private void CheckLinksForWarnings(Link node, StringBuilder builder)
         {
-            string msg = CheckLinkAlpha(node);
-
+            string msg = "";
             if (!string.IsNullOrWhiteSpace(msg))
             {
                 builder.Append(node.Name + " - " + msg + "\r\n");
