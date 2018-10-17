@@ -315,10 +315,8 @@ namespace SW2URDF.URDFExport
             bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
             {
-                MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
-                    "may not be readable by CAD programs that aren't SolidWorks. Retry " +
-                    "the export, and if it continues to create an issue, email your maintainer with " +
-                    "the log file found at " + Logger.GetFileName());
+                logger.Warn("There was an issue exporting the STL for " + link.Name + ". They " +
+                    "may not be readable by CAD programs that aren't SolidWorks");
             }
             return success;
         }
