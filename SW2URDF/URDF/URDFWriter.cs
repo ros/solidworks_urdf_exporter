@@ -13,7 +13,6 @@ namespace SW2URDF.URDF
             XmlWriterSettings settings = new XmlWriterSettings
             {
                 Encoding = new UTF8Encoding(false),
-                OmitXmlDeclaration = true,
                 Indent = true,
                 NewLineOnAttributes = true,
             };
