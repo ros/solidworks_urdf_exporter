@@ -1642,6 +1642,7 @@
             this.MimicJointComboBox.Name = "MimicJointComboBox";
             this.MimicJointComboBox.Size = new System.Drawing.Size(228, 24);
             this.MimicJointComboBox.TabIndex = 236;
+            this.MimicJointComboBox.Visible = false;
             // 
             // MimicJointLabel
             // 
@@ -1652,6 +1653,7 @@
             this.MimicJointLabel.Size = new System.Drawing.Size(112, 17);
             this.MimicJointLabel.TabIndex = 237;
             this.MimicJointLabel.Text = "Joint to Mimic:";
+            this.MimicJointLabel.Visible = false;
             // 
             // MimicMultiplierTextBox
             // 
@@ -1659,6 +1661,7 @@
             this.MimicMultiplierTextBox.Name = "MimicMultiplierTextBox";
             this.MimicMultiplierTextBox.Size = new System.Drawing.Size(86, 22);
             this.MimicMultiplierTextBox.TabIndex = 238;
+            this.MimicMultiplierTextBox.Visible = false;
             // 
             // MimicOffsetTextBox
             // 
@@ -1666,6 +1669,7 @@
             this.MimicOffsetTextBox.Name = "MimicOffsetTextBox";
             this.MimicOffsetTextBox.Size = new System.Drawing.Size(86, 22);
             this.MimicOffsetTextBox.TabIndex = 239;
+            this.MimicOffsetTextBox.Visible = false;
             // 
             // MimicMultiplierLabel
             // 
@@ -1677,6 +1681,7 @@
             this.MimicMultiplierLabel.TabIndex = 240;
             this.MimicMultiplierLabel.Text = "Multiplier";
             this.MimicMultiplierLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.MimicMultiplierLabel.Visible = false;
             // 
             // MimicOffsetLabel
             // 
@@ -1688,6 +1693,7 @@
             this.MimicOffsetLabel.TabIndex = 241;
             this.MimicOffsetLabel.Text = "Offset";
             this.MimicOffsetLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.MimicOffsetLabel.Visible = false;
             // 
             // MimicEquationLabel
             // 
@@ -1699,6 +1705,7 @@
             this.MimicEquationLabel.Size = new System.Drawing.Size(231, 17);
             this.MimicEquationLabel.TabIndex = 242;
             this.MimicEquationLabel.Text = "pos = multiplier * pos_other + offset";
+            this.MimicEquationLabel.Visible = false;
             // 
             // AssemblyExportForm
             // 
