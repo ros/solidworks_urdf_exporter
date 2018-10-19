@@ -188,7 +188,9 @@ namespace SW2URDF.URDFExport
 
                     try
                     {
-                        Link link = (Link)ser.ReadObject(stream);
+                        XmlDictionaryReader reader = XmlDictionaryReader.CreateDictionaryReader(XmlReader.Create(stream));
+                        SerializationResolver resolver = new SerializationResolver();
+                        Link link = (Link)ser.ReadObject(reader, false, resolver);
                         baseNode = new LinkNode(link);
                     }
                     catch (SerializationException e)
@@ -377,5 +379,25 @@ namespace SW2URDF.URDFExport
         }
 
         #endregion Private Methods
+    }
+
+    public class SerializationResolver : DataContractResolver
+    {
+        public override bool TryResolveType(Type dataContractType, Type declaredType, DataContractResolver knownTypeResolver, out XmlDictionaryString typeName, out XmlDictionaryString typeNamespace)
+        {
+            return knownTypeResolver.TryResolveType(dataContractType, declaredType, null, out typeName, out typeNamespace);
+        }
+
+        public override Type ResolveName(string typeName, string typeNamespace, Type declaredType, DataContractResolver knownTypeResolver)
+        {
+            try
+            {
+                return knownTypeResolver.ResolveName(typeName, typeNamespace, declaredType, null);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }
