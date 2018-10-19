@@ -315,7 +315,7 @@ namespace SW2URDF.URDFExport
             bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
             {
-                logger.Warn("There was an issue exporting the STL for " + link.Name + ". They " +
+                logger.Warn("There was an issue exporting the STL for " + link.Name + ". It " +
                     "may not be readable by CAD programs that aren't SolidWorks");
             }
             return success;
