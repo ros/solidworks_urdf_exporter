@@ -300,7 +300,8 @@ namespace SW2URDF.URDFExport
 
             Common.ShowComponents(ActiveSWModel, link.SWComponents);
 
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent | (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
+                (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFilename);
