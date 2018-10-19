@@ -308,7 +308,8 @@ namespace SW2URDF.URDFExport
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             if (errors + warnings != 0)
             {
-                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + " or warnings " + warnings);
+                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + 
+                    " or warnings " + warnings);
             }
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
