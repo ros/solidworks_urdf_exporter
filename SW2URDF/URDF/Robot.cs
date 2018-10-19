@@ -40,7 +40,8 @@ namespace SW2URDF.URDF
             string buildVersion = Versioning.Version.GetBuildVersion();
             string commitVersion = Versioning.Version.GetCommitVersion();
 
-            writer.WriteComment(" This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) \r\n" +
+            writer.WriteComment(" This URDF was automatically created by SolidWorks to URDF Exporter! " +
+                "zOriginally created by Stephen Brawner (brawner@gmail.com) \r\n" +
                 string.Format("     Commit Version: {0}  Build Version: {1}\r\n", commitVersion, buildVersion) +
                 "     For more information, please see http://wiki.ros.org/sw_urdf_exporter ");
 
