@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Windows.Forms;
 
 namespace SW2URDF.URDF
 {
@@ -13,7 +14,7 @@ namespace SW2URDF.URDF
             get => (string)JointNameAttribute.Value;
             set
             {
-                if (value.GetType() == typeof(double))
+                if (value.GetType() == typeof(string))
                 {
                     JointNameAttribute.Value = value;
                 }
@@ -55,6 +56,10 @@ namespace SW2URDF.URDF
             JointNameAttribute = new URDFAttribute("joint", true, null);
             MultiplierAttribute = new URDFAttribute("multiplier", false, null);
             OffsetAttribute = new URDFAttribute("offset", false, null);
+
+            Attributes.Add(JointNameAttribute);
+            Attributes.Add(MultiplierAttribute);
+            Attributes.Add(OffsetAttribute);
         }
 
         /// <summary>
@@ -69,6 +74,12 @@ namespace SW2URDF.URDF
             JointName = mimicJointName;
             MultiplierAttribute.SetDoubleValueFromString(multiplierText);
             OffsetAttribute.SetDoubleValueFromString(offsetText);
+        }
+
+        internal void FillBoxes(TextBox textBoxMimicMultiplier, TextBox textBoxMimicOffset)
+        {
+            textBoxMimicMultiplier.Text = MultiplierAttribute.GetTextFromDoubleValue();
+            textBoxMimicOffset.Text = OffsetAttribute.GetTextFromDoubleValue();
         }
     }
 }

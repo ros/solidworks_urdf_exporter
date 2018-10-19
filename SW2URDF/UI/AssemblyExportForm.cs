@@ -449,10 +449,8 @@ namespace SW2URDF.UI
 
         #endregion Joint Properties Controls Handlers
 
-        private void MimicCheckBoxCheckedChanged(object sender, EventArgs e)
+        private void ShowMimicControls(bool showControls)
         {
-            bool showControls = (sender as CheckBox).Checked;
-
             MimicEquationLabel.Visible = showControls;
             MimicJointComboBox.Visible = showControls;
             MimicJointLabel.Visible = showControls;
@@ -460,6 +458,14 @@ namespace SW2URDF.UI
             textBoxMimicMultiplier.Visible = showControls;
             MimicOffsetLabel.Visible = showControls;
             textBoxMimicOffset.Visible = showControls;
+        }
+
+        private void MimicCheckBoxCheckedChanged(object sender, EventArgs e)
+        {
+            bool showControls = (sender as CheckBox).Checked;
+            ShowMimicControls(showControls);
+            textBoxMimicMultiplier.Text = "1.0";
+            textBoxMimicOffset.Text = "0.0";
         }
     }
 }

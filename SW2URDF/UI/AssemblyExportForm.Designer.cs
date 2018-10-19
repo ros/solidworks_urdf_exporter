@@ -79,7 +79,6 @@
             this.buttonTextureBrowse = new System.Windows.Forms.Button();
             this.label28 = new System.Windows.Forms.Label();
             this.textBoxVisualOriginRoll = new System.Windows.Forms.TextBox();
-            this.textBoxTexture = new System.Windows.Forms.TextBox();
             this.comboBoxMaterials = new System.Windows.Forms.ComboBox();
             this.label26 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
@@ -99,6 +98,7 @@
             this.label23 = new System.Windows.Forms.Label();
             this.textBoxVisualOriginY = new System.Windows.Forms.TextBox();
             this.label30 = new System.Windows.Forms.Label();
+            this.textBoxTexture = new System.Windows.Forms.TextBox();
             this.treeViewLinkProperties = new System.Windows.Forms.TreeView();
             this.buttonJointNext = new System.Windows.Forms.Button();
             this.buttonJointCancel = new System.Windows.Forms.Button();
@@ -726,14 +726,6 @@
             this.textBoxVisualOriginRoll.Size = new System.Drawing.Size(86, 22);
             this.textBoxVisualOriginRoll.TabIndex = 43;
             // 
-            // textBoxTexture
-            // 
-            this.textBoxTexture.Location = new System.Drawing.Point(21, 371);
-            this.textBoxTexture.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxTexture.Name = "textBoxTexture";
-            this.textBoxTexture.Size = new System.Drawing.Size(468, 22);
-            this.textBoxTexture.TabIndex = 58;
-            // 
             // comboBoxMaterials
             // 
             this.comboBoxMaterials.FormattingEnabled = true;
@@ -914,6 +906,14 @@
             this.label30.Size = new System.Drawing.Size(34, 17);
             this.label30.TabIndex = 53;
             this.label30.Text = "Red";
+            // 
+            // textBoxTexture
+            // 
+            this.textBoxTexture.Location = new System.Drawing.Point(21, 371);
+            this.textBoxTexture.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxTexture.Name = "textBoxTexture";
+            this.textBoxTexture.Size = new System.Drawing.Size(468, 22);
+            this.textBoxTexture.TabIndex = 58;
             // 
             // treeViewLinkProperties
             // 
@@ -1640,7 +1640,7 @@
             this.MimicJointComboBox.FormattingEnabled = true;
             this.MimicJointComboBox.Location = new System.Drawing.Point(709, 763);
             this.MimicJointComboBox.Name = "MimicJointComboBox";
-            this.MimicJointComboBox.Size = new System.Drawing.Size(228, 24);
+            this.MimicJointComboBox.Size = new System.Drawing.Size(210, 24);
             this.MimicJointComboBox.TabIndex = 236;
             this.MimicJointComboBox.Visible = false;
             // 
@@ -1655,18 +1655,18 @@
             this.MimicJointLabel.Text = "Joint to Mimic:";
             this.MimicJointLabel.Visible = false;
             // 
-            // MimicMultiplierTextBox
+            // textBoxMimicMultiplier
             // 
-            this.textBoxMimicMultiplier.Location = new System.Drawing.Point(1023, 737);
-            this.textBoxMimicMultiplier.Name = "MimicMultiplierTextBox";
+            this.textBoxMimicMultiplier.Location = new System.Drawing.Point(1022, 738);
+            this.textBoxMimicMultiplier.Name = "textBoxMimicMultiplier";
             this.textBoxMimicMultiplier.Size = new System.Drawing.Size(86, 22);
             this.textBoxMimicMultiplier.TabIndex = 238;
             this.textBoxMimicMultiplier.Visible = false;
             // 
-            // MimicOffsetTextBox
+            // textBoxMimicOffset
             // 
-            this.textBoxMimicOffset.Location = new System.Drawing.Point(1023, 765);
-            this.textBoxMimicOffset.Name = "MimicOffsetTextBox";
+            this.textBoxMimicOffset.Location = new System.Drawing.Point(1022, 766);
+            this.textBoxMimicOffset.Name = "textBoxMimicOffset";
             this.textBoxMimicOffset.Size = new System.Drawing.Size(86, 22);
             this.textBoxMimicOffset.TabIndex = 239;
             this.textBoxMimicOffset.Visible = false;
@@ -1674,7 +1674,7 @@
             // MimicMultiplierLabel
             // 
             this.MimicMultiplierLabel.AutoSize = true;
-            this.MimicMultiplierLabel.Location = new System.Drawing.Point(952, 738);
+            this.MimicMultiplierLabel.Location = new System.Drawing.Point(939, 737);
             this.MimicMultiplierLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.MimicMultiplierLabel.Name = "MimicMultiplierLabel";
             this.MimicMultiplierLabel.Size = new System.Drawing.Size(64, 17);
@@ -1686,12 +1686,12 @@
             // MimicOffsetLabel
             // 
             this.MimicOffsetLabel.AutoSize = true;
-            this.MimicOffsetLabel.Location = new System.Drawing.Point(970, 765);
+            this.MimicOffsetLabel.Location = new System.Drawing.Point(931, 766);
             this.MimicOffsetLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.MimicOffsetLabel.Name = "MimicOffsetLabel";
-            this.MimicOffsetLabel.Size = new System.Drawing.Size(46, 17);
+            this.MimicOffsetLabel.Size = new System.Drawing.Size(81, 17);
             this.MimicOffsetLabel.TabIndex = 241;
-            this.MimicOffsetLabel.Text = "Offset";
+            this.MimicOffsetLabel.Text = "Offset (rad)";
             this.MimicOffsetLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.MimicOffsetLabel.Visible = false;
             // 
