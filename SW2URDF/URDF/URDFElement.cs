@@ -13,7 +13,7 @@ namespace SW2URDF.URDF
     // Base class of each URDFElement. The goal is to minimize the amount of code in the derived classes;s
     [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     [KnownType("GetKnownTypes")]
-    public class URDFElement// : ISerializable
+    public class URDFElement : IExtensibleDataObject
     {
         protected static readonly ILog logger = Logger.GetLogger();
 
@@ -28,6 +28,8 @@ namespace SW2URDF.URDF
 
         [DataMember]
         protected bool required;
+
+        public ExtensionDataObject ExtensionData { get; set; }
 
         public URDFElement(string elementName, bool required)
         {
