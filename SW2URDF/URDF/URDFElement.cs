@@ -29,7 +29,13 @@ namespace SW2URDF.URDF
         [DataMember]
         protected bool required;
 
-        public ExtensionDataObject ExtensionData { get; set; }
+        private ExtensionDataObject ExtensionDataValue;
+
+        public virtual ExtensionDataObject ExtensionData
+        {
+            get { return ExtensionDataValue; }
+            set { ExtensionDataValue = value; }
+        }
 
         public URDFElement(string elementName, bool required)
         {
