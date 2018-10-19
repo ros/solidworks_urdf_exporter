@@ -218,11 +218,5 @@ namespace SW2URDF.URDF
 
             return true;
         }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            SWComponents = new List<Component2>();
-        }
     }
 }
