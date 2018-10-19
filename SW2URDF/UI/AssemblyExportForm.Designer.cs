@@ -175,8 +175,8 @@
             this.MimicCheckBox = new System.Windows.Forms.CheckBox();
             this.MimicJointComboBox = new System.Windows.Forms.ComboBox();
             this.MimicJointLabel = new System.Windows.Forms.Label();
-            this.MimicMultiplierTextBox = new System.Windows.Forms.TextBox();
-            this.MimicOffsetTextBox = new System.Windows.Forms.TextBox();
+            this.textBoxMimicMultiplier = new System.Windows.Forms.TextBox();
+            this.textBoxMimicOffset = new System.Windows.Forms.TextBox();
             this.MimicMultiplierLabel = new System.Windows.Forms.Label();
             this.MimicOffsetLabel = new System.Windows.Forms.Label();
             this.MimicEquationLabel = new System.Windows.Forms.Label();
@@ -1657,19 +1657,19 @@
             // 
             // MimicMultiplierTextBox
             // 
-            this.MimicMultiplierTextBox.Location = new System.Drawing.Point(1023, 737);
-            this.MimicMultiplierTextBox.Name = "MimicMultiplierTextBox";
-            this.MimicMultiplierTextBox.Size = new System.Drawing.Size(86, 22);
-            this.MimicMultiplierTextBox.TabIndex = 238;
-            this.MimicMultiplierTextBox.Visible = false;
+            this.textBoxMimicMultiplier.Location = new System.Drawing.Point(1023, 737);
+            this.textBoxMimicMultiplier.Name = "MimicMultiplierTextBox";
+            this.textBoxMimicMultiplier.Size = new System.Drawing.Size(86, 22);
+            this.textBoxMimicMultiplier.TabIndex = 238;
+            this.textBoxMimicMultiplier.Visible = false;
             // 
             // MimicOffsetTextBox
             // 
-            this.MimicOffsetTextBox.Location = new System.Drawing.Point(1023, 765);
-            this.MimicOffsetTextBox.Name = "MimicOffsetTextBox";
-            this.MimicOffsetTextBox.Size = new System.Drawing.Size(86, 22);
-            this.MimicOffsetTextBox.TabIndex = 239;
-            this.MimicOffsetTextBox.Visible = false;
+            this.textBoxMimicOffset.Location = new System.Drawing.Point(1023, 765);
+            this.textBoxMimicOffset.Name = "MimicOffsetTextBox";
+            this.textBoxMimicOffset.Size = new System.Drawing.Size(86, 22);
+            this.textBoxMimicOffset.TabIndex = 239;
+            this.textBoxMimicOffset.Visible = false;
             // 
             // MimicMultiplierLabel
             // 
@@ -1790,8 +1790,8 @@
             this.Controls.Add(this.MimicJointComboBox);
             this.Controls.Add(this.MimicOffsetLabel);
             this.Controls.Add(this.MimicMultiplierLabel);
-            this.Controls.Add(this.MimicOffsetTextBox);
-            this.Controls.Add(this.MimicMultiplierTextBox);
+            this.Controls.Add(this.textBoxMimicOffset);
+            this.Controls.Add(this.textBoxMimicMultiplier);
             this.Controls.Add(this.MimicEquationLabel);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "AssemblyExportForm";
@@ -1956,8 +1956,8 @@
         private System.Windows.Forms.CheckBox MimicCheckBox;
         private System.Windows.Forms.ComboBox MimicJointComboBox;
         private System.Windows.Forms.Label MimicJointLabel;
-        private System.Windows.Forms.TextBox MimicMultiplierTextBox;
-        private System.Windows.Forms.TextBox MimicOffsetTextBox;
+        private System.Windows.Forms.TextBox textBoxMimicMultiplier;
+        private System.Windows.Forms.TextBox textBoxMimicOffset;
         private System.Windows.Forms.Label MimicMultiplierLabel;
         private System.Windows.Forms.Label MimicOffsetLabel;
         private System.Windows.Forms.Label MimicEquationLabel;

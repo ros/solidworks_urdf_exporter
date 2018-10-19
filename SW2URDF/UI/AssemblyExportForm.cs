@@ -100,6 +100,7 @@ namespace SW2URDF.UI
                 textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
                 textBoxIxx, textBoxIxy, textBoxIxz, textBoxIyy, textBoxIyz, textBoxIzz,
                 textBoxMass,
+                textBoxMimicMultiplier, textBoxMimicOffset,
             };
 
             foreach (TextBox textBox in numericTextBoxes)
@@ -456,9 +457,9 @@ namespace SW2URDF.UI
             MimicJointComboBox.Visible = showControls;
             MimicJointLabel.Visible = showControls;
             MimicMultiplierLabel.Visible = showControls;
-            MimicMultiplierTextBox.Visible = showControls;
+            textBoxMimicMultiplier.Visible = showControls;
             MimicOffsetLabel.Visible = showControls;
-            MimicOffsetTextBox.Visible = showControls;
+            textBoxMimicOffset.Visible = showControls;
         }
     }
 }

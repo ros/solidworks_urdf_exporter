@@ -56,5 +56,19 @@ namespace SW2URDF.URDF
             MultiplierAttribute = new URDFAttribute("multiplier", false, null);
             OffsetAttribute = new URDFAttribute("offset", false, null);
         }
+
+        /// <summary>
+        ///
+        /// This Joint Position = multiplier * (other joint position) + offset
+        /// </summary>
+        /// <param name="mimicJointName"></param>
+        /// <param name="multiplierText"></param>
+        /// <param name="offsetText"></param>
+        public void Update(string mimicJointName, string multiplierText, string offsetText)
+        {
+            JointName = mimicJointName;
+            MultiplierAttribute.SetDoubleValueFromString(multiplierText);
+            OffsetAttribute.SetDoubleValueFromString(offsetText);
+        }
     }
 }

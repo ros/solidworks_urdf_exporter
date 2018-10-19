@@ -202,5 +202,9 @@ namespace SW2URDF.URDF
                 pair.Item1.SetElement(pair.Item2);
             }
         }
+
+        public void CheckChildElements(params URDFElement[] children)
+        {
+        }
     }
 }
