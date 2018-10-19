@@ -189,7 +189,10 @@ namespace SW2URDF.URDFExport
                     try
                     {
                         Link link = (Link)ser.ReadObject(stream);
-                        baseNode = new LinkNode(link);
+
+                        // By copying this link, we can ensure that all non-serialized properties are setup correctly
+                        Link copy = link.Clone();
+                        baseNode = new LinkNode(copy);
                     }
                     catch (SerializationException e)
                     {

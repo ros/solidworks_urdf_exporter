@@ -43,20 +43,5 @@ namespace SW2URDF.URDF
         {
             box.Text = Name;
         }
-
-        /// <summary>
-        /// Material is not required, but name is if the material is specified. We must populate it
-        /// with something
-        /// </summary>
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            SetRequired(false);
-            NameAttribute.SetRequired(true);
-            if (NameAttribute.Value == null)
-            {
-                NameAttribute.Value = "";
-            }
-        }
     }
 }
