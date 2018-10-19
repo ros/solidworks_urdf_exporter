@@ -301,7 +301,9 @@ namespace SW2URDF.UI
             }
 
             if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) &&
-                String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
+                String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && 
+                String.IsNullOrWhiteSpace(textBoxKPosition.Text) && 
+                String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
             {
                 Joint.Safety.Unset();
             }
