@@ -68,7 +68,7 @@ namespace SW2URDF.URDF
         [DataMember]
         public readonly SafetyController Safety;
 
-        [DataMember]
+        [DataMember(IsRequired = false)]
         public readonly Mimic Mimic;
 
         [DataMember]
