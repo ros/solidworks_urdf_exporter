@@ -323,7 +323,8 @@ namespace SW2URDF.URDFExport
 
             Common.ShowComponents(ActiveSWModel, link.SWComponents);
 
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent | (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
+                (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFilename);
@@ -331,14 +332,15 @@ namespace SW2URDF.URDFExport
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
             if (errors + warnings != 0)
             {
-                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + " or warnings " + warnings);
+                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + 
+                    " or warnings " + warnings);
             }
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
             bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
             {
-                logger.Warn("There was an issue exporting the STL for " + link.Name + ". They " +
+                logger.Warn("There was an issue exporting the STL for " + link.Name + ". It " +
                     "may not be readable by CAD programs that aren't SolidWorks");
             }
             return success;
