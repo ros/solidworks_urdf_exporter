@@ -4,6 +4,7 @@ using SW2URDF.Legacy;
 using SW2URDF.URDF;
 using SW2URDF.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
@@ -28,7 +29,7 @@ namespace SW2URDF.URDFExport
         /// <summary>
         /// Current Serialization version
         /// </summary>
-        private const double SERIALIZATION_VERSION = 1.3;
+        private const double SERIALIZATION_VERSION = 1.4;
 
         /// <summary>
         /// Previous versions of serialization were set at 1 in the SW Document. This is
@@ -40,9 +41,12 @@ namespace SW2URDF.URDFExport
         /// The name given to the URDF configuration in the ModelDoc Feature tree. This is displayed to the
         /// user
         /// </summary>
-        public const string URDF_CONFIGURATION_SW_ATTRIBUTE_NAME = "URDF Export Configuration (v1.3)";
+        public const string URDF_CONFIGURATION_SW_ATTRIBUTE_NAME = "URDF Export Configuration (v1.4)";
 
-        public const string V1_URDF_CONFIGURATION_ATTRIBUTE_NAME = "URDF Export Configuration";
+        public static List<string> PREVIOUS_URDF_CONFIGURATION_NAMES = new List<string>() {
+            "URDF Export Configuration (v1.3)",
+            "URDF Export Configuration"
+            };
 
         #region Public Methods
 
@@ -231,10 +235,15 @@ namespace SW2URDF.URDFExport
         /// <returns>SolidWorks Attribute with older serialization schemes if found, otherwise null.</returns>
         private static SolidWorks.Interop.sldworks.Attribute CheckForOldAttributes(ModelDoc2 model)
         {
-            SolidWorks.Interop.sldworks.Attribute swAtt =
-                FindSWSaveAttribute(model, V1_URDF_CONFIGURATION_ATTRIBUTE_NAME);
-
-            return swAtt;
+            foreach (string configurationName in PREVIOUS_URDF_CONFIGURATION_NAMES)
+            {
+                SolidWorks.Interop.sldworks.Attribute swAtt = FindSWSaveAttribute(model, configurationName);
+                if (swAtt != null)
+                {
+                    return swAtt;
+                }
+            }
+            return null;
         }
 
         /// <summary>

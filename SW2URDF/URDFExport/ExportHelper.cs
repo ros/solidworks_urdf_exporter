@@ -238,6 +238,29 @@ namespace SW2URDF.URDFExport
             progressBar.End();
         }
 
+        public List<string> GetJointNames()
+        {
+            List<string> jointNames = new List<string>();
+
+            Queue<Link> queue = new Queue<Link>();
+            queue.Enqueue(URDFRobot.BaseLink);
+            while (queue.Count > 0)
+            {
+                Link current = queue.Dequeue();
+                if (current.Parent != null)
+                {
+                    jointNames.Add(current.Joint.Name);
+                }
+
+                foreach (Link child in current.Children)
+                {
+                    queue.Enqueue(child);
+                }
+            }
+
+            return jointNames;
+        }
+
         //Recursive method for exporting each link (and writing it to the URDF)
         public void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true)
         {

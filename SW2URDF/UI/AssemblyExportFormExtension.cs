@@ -196,6 +196,30 @@ namespace SW2URDF.UI
             comboBoxOrigin.SelectedIndex =
                 comboBoxOrigin.FindStringExact(joint.CoordinateSystemName);
 
+            // Updating Mimic Element Fields
+            List<string> jointNames = Exporter.GetJointNames();
+
+            // We'll be setting this automatically, so unsubscribe callback
+            MimicCheckBox.CheckedChanged -= MimicCheckBoxCheckedChanged;
+
+            MimicJointComboBox.Items.Clear();
+            MimicJointComboBox.Items.AddRange(jointNames.ToArray());
+            if (joint.Mimic != null && joint.Mimic.AreRequiredFieldsSatisfied())
+            {
+                ShowMimicControls(true);
+                MimicCheckBox.Checked = true;
+                MimicJointComboBox.SelectedIndex =
+                    MimicJointComboBox.FindStringExact(joint.Mimic.JointName);
+                joint.Mimic.FillBoxes(textBoxMimicMultiplier, textBoxMimicOffset);
+            }
+            else
+            {
+                ShowMimicControls(false);
+                MimicCheckBox.Checked = false;
+            }
+            // Resubscribe to callback
+            MimicCheckBox.CheckedChanged += MimicCheckBoxCheckedChanged;
+
             if (!String.IsNullOrWhiteSpace(joint.AxisName))
             {
                 comboBoxAxis.SelectedIndex = comboBoxAxis.FindStringExact(joint.AxisName);
@@ -314,6 +338,11 @@ namespace SW2URDF.UI
                                     textBoxSoftUpper,
                                     textBoxKPosition,
                                     textBoxKVelocity);
+            }
+
+            if (MimicCheckBox.Checked)
+            {
+                Joint.Mimic.Update(MimicJointComboBox.Text, textBoxMimicMultiplier.Text, textBoxMimicOffset.Text);
             }
         }
 

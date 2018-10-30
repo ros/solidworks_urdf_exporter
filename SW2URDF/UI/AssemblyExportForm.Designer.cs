@@ -79,7 +79,6 @@
             this.buttonTextureBrowse = new System.Windows.Forms.Button();
             this.label28 = new System.Windows.Forms.Label();
             this.textBoxVisualOriginRoll = new System.Windows.Forms.TextBox();
-            this.textBoxTexture = new System.Windows.Forms.TextBox();
             this.comboBoxMaterials = new System.Windows.Forms.ComboBox();
             this.label26 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
@@ -99,6 +98,7 @@
             this.label23 = new System.Windows.Forms.Label();
             this.textBoxVisualOriginY = new System.Windows.Forms.TextBox();
             this.label30 = new System.Windows.Forms.Label();
+            this.textBoxTexture = new System.Windows.Forms.TextBox();
             this.treeViewLinkProperties = new System.Windows.Forms.TreeView();
             this.buttonJointNext = new System.Windows.Forms.Button();
             this.buttonJointCancel = new System.Windows.Forms.Button();
@@ -172,6 +172,14 @@
             this.AxisRequiredLabel = new System.Windows.Forms.Label();
             this.LimitRequiredLabel = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
+            this.MimicCheckBox = new System.Windows.Forms.CheckBox();
+            this.MimicJointComboBox = new System.Windows.Forms.ComboBox();
+            this.MimicJointLabel = new System.Windows.Forms.Label();
+            this.textBoxMimicMultiplier = new System.Windows.Forms.TextBox();
+            this.textBoxMimicOffset = new System.Windows.Forms.TextBox();
+            this.MimicMultiplierLabel = new System.Windows.Forms.Label();
+            this.MimicOffsetLabel = new System.Windows.Forms.Label();
+            this.MimicEquationLabel = new System.Windows.Forms.Label();
             this.panelLinkProperties.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -582,7 +590,6 @@
             this.groupBox4.Controls.Add(this.buttonTextureBrowse);
             this.groupBox4.Controls.Add(this.label28);
             this.groupBox4.Controls.Add(this.textBoxVisualOriginRoll);
-            this.groupBox4.Controls.Add(this.textBoxTexture);
             this.groupBox4.Controls.Add(this.comboBoxMaterials);
             this.groupBox4.Controls.Add(this.label26);
             this.groupBox4.Controls.Add(this.label20);
@@ -602,6 +609,7 @@
             this.groupBox4.Controls.Add(this.label23);
             this.groupBox4.Controls.Add(this.textBoxVisualOriginY);
             this.groupBox4.Controls.Add(this.label30);
+            this.groupBox4.Controls.Add(this.textBoxTexture);
             this.groupBox4.Location = new System.Drawing.Point(658, 370);
             this.groupBox4.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox4.Name = "groupBox4";
@@ -717,14 +725,6 @@
             this.textBoxVisualOriginRoll.Name = "textBoxVisualOriginRoll";
             this.textBoxVisualOriginRoll.Size = new System.Drawing.Size(86, 22);
             this.textBoxVisualOriginRoll.TabIndex = 43;
-            // 
-            // textBoxTexture
-            // 
-            this.textBoxTexture.Location = new System.Drawing.Point(21, 371);
-            this.textBoxTexture.Margin = new System.Windows.Forms.Padding(4);
-            this.textBoxTexture.Name = "textBoxTexture";
-            this.textBoxTexture.Size = new System.Drawing.Size(468, 22);
-            this.textBoxTexture.TabIndex = 58;
             // 
             // comboBoxMaterials
             // 
@@ -907,6 +907,14 @@
             this.label30.TabIndex = 53;
             this.label30.Text = "Red";
             // 
+            // textBoxTexture
+            // 
+            this.textBoxTexture.Location = new System.Drawing.Point(21, 371);
+            this.textBoxTexture.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxTexture.Name = "textBoxTexture";
+            this.textBoxTexture.Size = new System.Drawing.Size(468, 22);
+            this.textBoxTexture.TabIndex = 58;
+            // 
             // treeViewLinkProperties
             // 
             this.treeViewLinkProperties.AllowDrop = true;
@@ -916,7 +924,7 @@
             this.treeViewLinkProperties.Location = new System.Drawing.Point(16, 98);
             this.treeViewLinkProperties.Margin = new System.Windows.Forms.Padding(4);
             this.treeViewLinkProperties.Name = "treeViewLinkProperties";
-            this.treeViewLinkProperties.Size = new System.Drawing.Size(614, 698);
+            this.treeViewLinkProperties.Size = new System.Drawing.Size(600, 698);
             this.treeViewLinkProperties.TabIndex = 74;
             this.treeViewLinkProperties.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeViewLinkPropertiesAfterSelect);
             // 
@@ -1569,7 +1577,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(695, 780);
+            this.label4.Location = new System.Drawing.Point(695, 804);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(316, 17);
@@ -1610,11 +1618,94 @@
             // label27
             // 
             this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(695, 798);
+            this.label27.Location = new System.Drawing.Point(695, 822);
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(159, 17);
             this.label27.TabIndex = 234;
             this.label27.Text = "* Field group is required";
+            // 
+            // MimicCheckBox
+            // 
+            this.MimicCheckBox.AutoSize = true;
+            this.MimicCheckBox.Location = new System.Drawing.Point(707, 714);
+            this.MimicCheckBox.Name = "MimicCheckBox";
+            this.MimicCheckBox.Size = new System.Drawing.Size(139, 21);
+            this.MimicCheckBox.TabIndex = 235;
+            this.MimicCheckBox.Text = "Mimic Other Joint";
+            this.MimicCheckBox.UseVisualStyleBackColor = true;
+            this.MimicCheckBox.CheckedChanged += new System.EventHandler(this.MimicCheckBoxCheckedChanged);
+            // 
+            // MimicJointComboBox
+            // 
+            this.MimicJointComboBox.FormattingEnabled = true;
+            this.MimicJointComboBox.Location = new System.Drawing.Point(709, 763);
+            this.MimicJointComboBox.Name = "MimicJointComboBox";
+            this.MimicJointComboBox.Size = new System.Drawing.Size(210, 24);
+            this.MimicJointComboBox.TabIndex = 236;
+            this.MimicJointComboBox.Visible = false;
+            // 
+            // MimicJointLabel
+            // 
+            this.MimicJointLabel.AutoSize = true;
+            this.MimicJointLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MimicJointLabel.Location = new System.Drawing.Point(706, 743);
+            this.MimicJointLabel.Name = "MimicJointLabel";
+            this.MimicJointLabel.Size = new System.Drawing.Size(112, 17);
+            this.MimicJointLabel.TabIndex = 237;
+            this.MimicJointLabel.Text = "Joint to Mimic:";
+            this.MimicJointLabel.Visible = false;
+            // 
+            // textBoxMimicMultiplier
+            // 
+            this.textBoxMimicMultiplier.Location = new System.Drawing.Point(1022, 738);
+            this.textBoxMimicMultiplier.Name = "textBoxMimicMultiplier";
+            this.textBoxMimicMultiplier.Size = new System.Drawing.Size(86, 22);
+            this.textBoxMimicMultiplier.TabIndex = 238;
+            this.textBoxMimicMultiplier.Visible = false;
+            // 
+            // textBoxMimicOffset
+            // 
+            this.textBoxMimicOffset.Location = new System.Drawing.Point(1022, 766);
+            this.textBoxMimicOffset.Name = "textBoxMimicOffset";
+            this.textBoxMimicOffset.Size = new System.Drawing.Size(86, 22);
+            this.textBoxMimicOffset.TabIndex = 239;
+            this.textBoxMimicOffset.Visible = false;
+            // 
+            // MimicMultiplierLabel
+            // 
+            this.MimicMultiplierLabel.AutoSize = true;
+            this.MimicMultiplierLabel.Location = new System.Drawing.Point(939, 737);
+            this.MimicMultiplierLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.MimicMultiplierLabel.Name = "MimicMultiplierLabel";
+            this.MimicMultiplierLabel.Size = new System.Drawing.Size(64, 17);
+            this.MimicMultiplierLabel.TabIndex = 240;
+            this.MimicMultiplierLabel.Text = "Multiplier";
+            this.MimicMultiplierLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.MimicMultiplierLabel.Visible = false;
+            // 
+            // MimicOffsetLabel
+            // 
+            this.MimicOffsetLabel.AutoSize = true;
+            this.MimicOffsetLabel.Location = new System.Drawing.Point(931, 766);
+            this.MimicOffsetLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.MimicOffsetLabel.Name = "MimicOffsetLabel";
+            this.MimicOffsetLabel.Size = new System.Drawing.Size(81, 17);
+            this.MimicOffsetLabel.TabIndex = 241;
+            this.MimicOffsetLabel.Text = "Offset (rad)";
+            this.MimicOffsetLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.MimicOffsetLabel.Visible = false;
+            // 
+            // MimicEquationLabel
+            // 
+            this.MimicEquationLabel.AutoSize = true;
+            this.MimicEquationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MimicEquationLabel.Location = new System.Drawing.Point(1128, 766);
+            this.MimicEquationLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.MimicEquationLabel.Name = "MimicEquationLabel";
+            this.MimicEquationLabel.Size = new System.Drawing.Size(231, 17);
+            this.MimicEquationLabel.TabIndex = 242;
+            this.MimicEquationLabel.Text = "pos = multiplier * pos_other + offset";
+            this.MimicEquationLabel.Visible = false;
             // 
             // AssemblyExportForm
             // 
@@ -1694,6 +1785,14 @@
             this.Controls.Add(this.label69);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label27);
+            this.Controls.Add(this.MimicJointLabel);
+            this.Controls.Add(this.MimicCheckBox);
+            this.Controls.Add(this.MimicJointComboBox);
+            this.Controls.Add(this.MimicOffsetLabel);
+            this.Controls.Add(this.MimicMultiplierLabel);
+            this.Controls.Add(this.textBoxMimicOffset);
+            this.Controls.Add(this.textBoxMimicMultiplier);
+            this.Controls.Add(this.MimicEquationLabel);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
@@ -1854,5 +1953,13 @@
         private System.Windows.Forms.Label AxisRequiredLabel;
         private System.Windows.Forms.Label LimitRequiredLabel;
         private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.CheckBox MimicCheckBox;
+        private System.Windows.Forms.ComboBox MimicJointComboBox;
+        private System.Windows.Forms.Label MimicJointLabel;
+        private System.Windows.Forms.TextBox textBoxMimicMultiplier;
+        private System.Windows.Forms.TextBox textBoxMimicOffset;
+        private System.Windows.Forms.Label MimicMultiplierLabel;
+        private System.Windows.Forms.Label MimicOffsetLabel;
+        private System.Windows.Forms.Label MimicEquationLabel;
     }
 }

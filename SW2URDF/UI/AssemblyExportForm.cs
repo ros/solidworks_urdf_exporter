@@ -100,6 +100,7 @@ namespace SW2URDF.UI
                 textBoxVisualOriginRoll, textBoxVisualOriginPitch, textBoxVisualOriginYaw,
                 textBoxIxx, textBoxIxy, textBoxIxz, textBoxIyy, textBoxIyz, textBoxIzz,
                 textBoxMass,
+                textBoxMimicMultiplier, textBoxMimicOffset,
             };
 
             foreach (TextBox textBox in numericTextBoxes)
@@ -447,5 +448,24 @@ namespace SW2URDF.UI
         }
 
         #endregion Joint Properties Controls Handlers
+
+        private void ShowMimicControls(bool showControls)
+        {
+            MimicEquationLabel.Visible = showControls;
+            MimicJointComboBox.Visible = showControls;
+            MimicJointLabel.Visible = showControls;
+            MimicMultiplierLabel.Visible = showControls;
+            textBoxMimicMultiplier.Visible = showControls;
+            MimicOffsetLabel.Visible = showControls;
+            textBoxMimicOffset.Visible = showControls;
+        }
+
+        private void MimicCheckBoxCheckedChanged(object sender, EventArgs e)
+        {
+            bool showControls = (sender as CheckBox).Checked;
+            ShowMimicControls(showControls);
+            textBoxMimicMultiplier.Text = "1.0";
+            textBoxMimicOffset.Text = "0.0";
+        }
     }
 }

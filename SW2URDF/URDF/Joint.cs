@@ -68,6 +68,9 @@ namespace SW2URDF.URDF
         [DataMember]
         public readonly SafetyController Safety;
 
+        [DataMember(IsRequired = false)]
+        public readonly Mimic Mimic;
+
         [DataMember]
         public string CoordinateSystemName;
 
@@ -85,6 +88,7 @@ namespace SW2URDF.URDF
             Calibration = new Calibration();
             Dynamics = new Dynamics();
             Safety = new SafetyController();
+            Mimic = new Mimic();
 
             NameAttribute = new URDFAttribute("name", true, "");
             TypeAttribute = new URDFAttribute("type", true, "");
@@ -101,6 +105,7 @@ namespace SW2URDF.URDF
             ChildElements.Add(Calibration);
             ChildElements.Add(Dynamics);
             ChildElements.Add(Safety);
+            ChildElements.Add(Mimic);
         }
 
         public void FillBoxes(TextBox boxName, ComboBox boxType)

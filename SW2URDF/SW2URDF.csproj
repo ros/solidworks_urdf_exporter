@@ -225,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Legacy\SerialNode.cs" />
+    <Compile Include="URDF\Mimic.cs" />
     <Compile Include="Utilities\Logger.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -360,7 +361,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -File $(SolutionDir)scripts\UpdateVersionInfo.ps1 --filename $(ProjectDir)VersionInfo.cs</PreBuildEvent>
+    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -File $(SolutionDir)scripts\UpdateVersionInfo.ps1 --filename $(ProjectDir)Versioning\VersionInfo.cs</PreBuildEvent>
     <PostBuildEvent>
 IF EXIST "$(TargetDir)$(TargetName).bmp" (GOTO REGISTRATION)
 XCOPY "$(ProjectDir)AddinIcon.bmp" "$(TargetDir)"  /F
