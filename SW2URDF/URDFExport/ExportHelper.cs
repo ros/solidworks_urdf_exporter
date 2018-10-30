@@ -300,21 +300,25 @@ namespace SW2URDF.URDFExport
 
             Common.ShowComponents(ActiveSWModel, link.SWComponents);
 
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent;
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
+                (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFilename);
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+            if (errors + warnings != 0)
+            {
+                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + 
+                    " or warnings " + warnings);
+            }
             Common.HideComponents(ActiveSWModel, link.SWComponents);
 
             bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
             {
-                MessageBox.Show("There was an issue exporting the STL for " + link.Name + ". They " +
-                    "may not be readable by CAD programs that aren't SolidWorks. Retry " +
-                    "the export, and if it continues to create an issue, email your maintainer with " +
-                    "the log file found at " + Logger.GetFileName());
+                logger.Warn("There was an issue exporting the STL for " + link.Name + ". It " +
+                    "may not be readable by CAD programs that aren't SolidWorks");
             }
             return success;
         }
@@ -383,8 +387,6 @@ namespace SW2URDF.URDFExport
                 (int)swSaveAsOptions_e.swSaveAsOptions_Silent, null, ref errors, ref warnings);
             URDFRobot.BaseLink.Visual.Geometry.Mesh.Filename = meshFileName;
             URDFRobot.BaseLink.Collision.Geometry.Mesh.Filename = meshFileName;
-
-            CorrectSTLMesh(windowsMeshFileName);
 
             URDFRobot.BaseLink.Visual.Material.Texture.Filename =
                 package.TexturesDirectory + Path.GetFileName(URDFRobot.BaseLink.Visual.Material.Texture.wFilename);

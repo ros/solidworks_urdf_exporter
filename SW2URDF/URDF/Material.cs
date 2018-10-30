@@ -32,7 +32,7 @@ namespace SW2URDF.URDF
         {
             Color = new Color();
             Texture = new Texture();
-            NameAttribute = new URDFAttribute("name", false, null);
+            NameAttribute = new URDFAttribute("name", true, "");
 
             Attributes.Add(NameAttribute);
             ChildElements.Add(Color);
@@ -45,14 +45,18 @@ namespace SW2URDF.URDF
         }
 
         /// <summary>
-        /// The name was previously required, but it's not actually. We need to correct
-        /// previous serializations.
+        /// Material is not required, but name is if the material is specified. We must populate it
+        /// with something
         /// </summary>
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
             SetRequired(false);
-            NameAttribute.SetRequired(false);
+            NameAttribute.SetRequired(true);
+            if (NameAttribute.Value == null)
+            {
+                NameAttribute.Value = "";
+            }
         }
     }
 }
