@@ -181,10 +181,19 @@ namespace SW2URDF.URDF
             {
                 SWComponents = new List<Component2>(externalLink.SWComponents);
             }
+            else
+            {
+                SWComponents = new List<Component2>();
+            }
             if (externalLink.SWComponentPIDs != null)
             {
                 SWComponentPIDs = new List<byte[]>(externalLink.SWComponentPIDs);
             }
+            else
+            {
+                SWComponentPIDs = new List<byte[]>();
+            }
+
             SWMainComponent = externalLink.SWMainComponent;
             SWMainComponentPID = externalLink.SWMainComponentPID;
 
