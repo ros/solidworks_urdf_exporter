@@ -42,6 +42,7 @@ namespace SW2URDF.UI
             FillBlank(linkBoxes);
             if (!Link.isFixedFrame)
             {
+                //G5: Maximum decimal places to use (not counting exponential notation) is 5
                 Link.Visual.Origin.FillBoxes(textBoxVisualOriginX,
                                              textBoxVisualOriginY,
                                              textBoxVisualOriginZ,
@@ -274,9 +275,9 @@ namespace SW2URDF.UI
 
             Joint.Limit.SetRequired(Joint.Type == "revolute" || Joint.Type == "prismatic");
             Joint.Limit.SetValues(textBoxLimitLower,
-                                   textBoxLimitUpper,
-                                   textBoxLimitEffort,
-                                   textBoxLimitVelocity);
+                                  textBoxLimitUpper,
+                                  textBoxLimitEffort,
+                                  textBoxLimitVelocity);
 
             if (String.IsNullOrWhiteSpace(textBoxCalibrationRising.Text) &&
                 String.IsNullOrWhiteSpace(textBoxCalibrationFalling.Text))
@@ -301,7 +302,9 @@ namespace SW2URDF.UI
             }
 
             if (String.IsNullOrWhiteSpace(textBoxSoftLower.Text) &&
-                String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) && String.IsNullOrWhiteSpace(textBoxKPosition.Text) && String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
+                String.IsNullOrWhiteSpace(textBoxSoftUpper.Text) &&
+                String.IsNullOrWhiteSpace(textBoxKPosition.Text) &&
+                String.IsNullOrWhiteSpace(textBoxKVelocity.Text))
             {
                 Joint.Safety.Unset();
             }
@@ -386,7 +389,6 @@ namespace SW2URDF.UI
         //Converts a TreeView back into a robot
         public Robot CreateRobotFromTreeView(TreeView tree)
         {
-            //TODO: This needs to properly handle the new differences between the trees.
             Robot Robot = Exporter.URDFRobot;
             Link baseLink = CreateLinkFromLinkNode((LinkNode)tree.Nodes[0]);
             Robot.SetBaseLink(baseLink);
