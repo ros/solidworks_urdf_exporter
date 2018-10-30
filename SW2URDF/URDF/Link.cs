@@ -177,8 +177,23 @@ namespace SW2URDF.URDF
 
         public void SetSWComponents(Link externalLink)
         {
-            SWComponents = new List<Component2>(externalLink.SWComponents);
-            SWComponentPIDs = new List<byte[]>(externalLink.SWComponentPIDs);
+            if (externalLink.SWComponents != null)
+            {
+                SWComponents = new List<Component2>(externalLink.SWComponents);
+            }
+            else
+            {
+                SWComponents = new List<Component2>();
+            }
+            if (externalLink.SWComponentPIDs != null)
+            {
+                SWComponentPIDs = new List<byte[]>(externalLink.SWComponentPIDs);
+            }
+            else
+            {
+                SWComponentPIDs = new List<byte[]>();
+            }
+
             SWMainComponent = externalLink.SWMainComponent;
             SWMainComponentPID = externalLink.SWMainComponentPID;
 
@@ -217,12 +232,6 @@ namespace SW2URDF.URDF
             }
 
             return true;
-        }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            SWComponents = new List<Component2>();
         }
     }
 }
