@@ -157,7 +157,6 @@ namespace SW2URDF.URDFExport
         // The one used by the Assembly Exporter
         public bool CreateRobotFromTreeView(LinkNode baseNode)
         {
-            bool success = true;
             ExportErrorWhy = "";
             URDFRobot = new Robot();
 
@@ -172,13 +171,15 @@ namespace SW2URDF.URDFExport
             if (baseLink == null || !string.IsNullOrWhiteSpace(ExportErrorWhy))
             {
                 MessageBox.Show(ExportErrorWhy);
-                success = false;
+                logger.Warn(ExportErrorWhy);
+                progressBar.End();
+                return false;
             }
             URDFRobot.SetBaseLink(baseLink);
             baseNode.Link = baseLink;
 
             progressBar.End();
-            return success;
+            return true;
         }
 
         public Link CreateBaseLinkFromComponents(LinkNode node)
@@ -336,6 +337,12 @@ namespace SW2URDF.URDFExport
             {
                 logger.Info("Creating joint " + node.Link.Name);
                 bool error = CreateJoint(parent, node.Link);
+                if (error)
+                {
+                    logger.Warn(
+                        string.Format("Creating joint from parent {0} to child {1} failed", 
+                            parent.Name, node.Link.Name));
+                }
             }
 
             if (ComputeInertialValues)
@@ -399,8 +406,6 @@ namespace SW2URDF.URDFExport
 
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
-            bool unfix = false;
-            bool autoGenerateError = false;
             if (child.isFixedFrame)
             {
                 axisName = "";
@@ -412,20 +417,22 @@ namespace SW2URDF.URDFExport
             {
                 // We have to estimate the joint if the user specifies automatic for either the
                 // reference coordinate system, the reference axis or the joint type.
-                unfix = EstimateGlobalJointFromComponents(assy, parent, child);
-                autoGenerateError = (
+                EstimateGlobalJointFromComponents(assy, parent, child);
+                bool autoGenerateError = (
                     child.Joint.Origin.X == 0.0 && child.Joint.Origin.Y == 0.0 && child.Joint.Origin.Z == 0.0 &&
                     child.Joint.Origin.Roll == 0.0 && child.Joint.Origin.Pitch == 0.0 && child.Joint.Origin.Yaw == 0.0);
+
+                if (autoGenerateError)
+                {
+                    ExportErrorWhy = string.Format("Inferring the joint geometry failed for the joint {0} " +
+                        "from link {1} to {2} failed. Check that the mates have not fully defined the " +
+                        "components in link {1} and that there is exactly one degree of freedom.",
+                        child.Joint.Name, child.Name, parent.Name);
+                    return false;
+                }
             }
 
-            if (autoGenerateError)
-            {
-                ExportErrorWhy = string.Format("Inferring the joint geometry failed for the joint {0} " +
-                    "from link {1} to {2} failed. Check that the mates have not fully defined the " +
-                    "components in link {1} and that there is exactly one degree of freedom.", 
-                    child.Joint.Name, child.Name, parent.Name);
-                return false;
-            }
+            
 
 
             if (coordSysName == "Automatically Generate")
@@ -904,6 +911,9 @@ namespace SW2URDF.URDFExport
                 GetCoordinateSystemTransform(child.Joint.CoordinateSystemName);
             if (GlobalCoordsysTransform == null)
             {
+                logger.Warn(
+                    string.Format("Joint transform for coordinate system {0} could not be computed for joint {1}", 
+                        child.Joint.CoordinateSystemName, child.Joint.Name));
                 return;
             }
             child.Joint.Origin.SetXYZ(MathOps.GetXYZ(GlobalCoordsysTransform));
