@@ -247,11 +247,13 @@ namespace SW2URDF.URDFExport
                     automaticallySwitched = true;
                     Tree.Nodes.Remove(BaseNode);
 
-                    Exporter.CreateRobotFromTreeView(BaseNode);
-
-                    AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode, Exporter);
-                    exportForm.Exporter = Exporter;
-                    exportForm.Show();
+                    bool exportSuccess = Exporter.CreateRobotFromTreeView(BaseNode);
+                    if (exportSuccess)
+                    {
+                        AssemblyExportForm exportForm = new AssemblyExportForm(swApp, BaseNode, Exporter);
+                        exportForm.Exporter = Exporter;
+                        exportForm.Show();
+                    }
                 }
                 else if (result == (int)swComponentResolveStatus_e.swResolveError ||
                     result == (int)swComponentResolveStatus_e.swResolveNotPerformed)

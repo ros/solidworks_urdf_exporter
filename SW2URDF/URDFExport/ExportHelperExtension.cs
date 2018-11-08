@@ -29,12 +29,14 @@ using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 
 namespace SW2URDF.URDFExport
 {
     public partial class ExportHelper
     {
         private string referenceSketchName;
+        private string ExportErrorWhy;
 
         #region SW to Robot and link methods
 
@@ -153,8 +155,9 @@ namespace SW2URDF.URDFExport
         }
 
         // The one used by the Assembly Exporter
-        public void CreateRobotFromTreeView(LinkNode baseNode)
+        public bool CreateRobotFromTreeView(LinkNode baseNode)
         {
+            ExportErrorWhy = "";
             URDFRobot = new Robot();
 
             progressBar.Start(0, Common.GetCount(baseNode.Nodes) + 1, "Building links");
@@ -165,10 +168,18 @@ namespace SW2URDF.URDFExport
             count++;
 
             Link baseLink = CreateLink(baseNode, 1);
+            if (baseLink == null || !string.IsNullOrWhiteSpace(ExportErrorWhy))
+            {
+                MessageBox.Show(ExportErrorWhy);
+                logger.Warn(ExportErrorWhy);
+                progressBar.End();
+                return false;
+            }
             URDFRobot.SetBaseLink(baseLink);
             baseNode.Link = baseLink;
 
             progressBar.End();
+            return true;
         }
 
         public Link CreateBaseLinkFromComponents(LinkNode node)
@@ -205,13 +216,25 @@ namespace SW2URDF.URDFExport
                 link = CreateLinkFromComponents(parentNode.Link, node);
             }
             node.Link = link;
+            if (!string.IsNullOrWhiteSpace(ExportErrorWhy))
+            {
+                return null;
+            }
 
             // Reset list of children, don't worry the links that were saved are still attached to the child nodes
             link.Children.Clear();
             foreach (LinkNode child in node.Nodes)
             {
                 Link childLink = CreateLink(child, count + 1);
-                link.Children.Add(childLink);
+
+                if (!string.IsNullOrWhiteSpace(ExportErrorWhy))
+                {
+                    return null;
+                }
+                else
+                {
+                    link.Children.Add(childLink);
+                }
             }
             return link;
         }
@@ -313,7 +336,13 @@ namespace SW2URDF.URDFExport
             if (parent != null && ComputeJointKinematics)
             {
                 logger.Info("Creating joint " + node.Link.Name);
-                CreateJoint(parent, node.Link);
+                bool error = CreateJoint(parent, node.Link);
+                if (error)
+                {
+                    logger.Warn(
+                        string.Format("Creating joint from parent {0} to child {1} failed", 
+                            parent.Name, node.Link.Name));
+                }
             }
 
             if (ComputeInertialValues)
@@ -364,7 +393,7 @@ namespace SW2URDF.URDFExport
         #region Joint methods
 
         //Base method for constructing a joint from a parent link and child link.
-        public void CreateJoint(Link parent, Link child)
+        public bool CreateJoint(Link parent, Link child)
         {
             CheckRefGeometryExists(child);
 
@@ -377,7 +406,6 @@ namespace SW2URDF.URDFExport
 
             child.Joint.Parent.Name = parent.Name;
             child.Joint.Child.Name = child.Name;
-            Boolean unfix = false;
             if (child.isFixedFrame)
             {
                 axisName = "";
@@ -389,8 +417,23 @@ namespace SW2URDF.URDFExport
             {
                 // We have to estimate the joint if the user specifies automatic for either the
                 // reference coordinate system, the reference axis or the joint type.
-                unfix = EstimateGlobalJointFromComponents(assy, parent, child);
+                EstimateGlobalJointFromComponents(assy, parent, child);
+                bool autoGenerateError = (
+                    child.Joint.Origin.X == 0.0 && child.Joint.Origin.Y == 0.0 && child.Joint.Origin.Z == 0.0 &&
+                    child.Joint.Origin.Roll == 0.0 && child.Joint.Origin.Pitch == 0.0 && child.Joint.Origin.Yaw == 0.0);
+
+                if (autoGenerateError)
+                {
+                    ExportErrorWhy = string.Format("Inferring the joint geometry failed for the joint {0} " +
+                        "from link {1} to {2} failed. Check that the mates have not fully defined the " +
+                        "components in link {1} and that there is exactly one degree of freedom.",
+                        child.Joint.Name, child.Name, parent.Name);
+                    return false;
+                }
             }
+
+            
+
 
             if (coordSysName == "Automatically Generate")
             {
@@ -405,6 +448,7 @@ namespace SW2URDF.URDFExport
                         "Origin_" + child.Joint.Name + i.ToString();
                     i++;
                 }
+
                 CreateRefOrigin(child.Joint);
             }
 
@@ -431,6 +475,7 @@ namespace SW2URDF.URDFExport
             coordSysName = parent.Joint.CoordinateSystemName;
 
             LocalizeJoint(child.Joint, coordSysName);
+            return true;
         }
 
         // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
@@ -864,6 +909,13 @@ namespace SW2URDF.URDFExport
         {
             MathTransform GlobalCoordsysTransform =
                 GetCoordinateSystemTransform(child.Joint.CoordinateSystemName);
+            if (GlobalCoordsysTransform == null)
+            {
+                logger.Warn(
+                    string.Format("Joint transform for coordinate system {0} could not be computed for joint {1}", 
+                        child.Joint.CoordinateSystemName, child.Joint.Name));
+                return;
+            }
             child.Joint.Origin.SetXYZ(MathOps.GetXYZ(GlobalCoordsysTransform));
             child.Joint.Origin.SetRPY(MathOps.GetRPY(GlobalCoordsysTransform));
             if (child.Joint.Type != "fixed")
