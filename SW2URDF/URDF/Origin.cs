@@ -205,7 +205,7 @@ namespace SW2URDF.URDF
             contextString = string.Join(".", updatedContext) + ".rpy";
             for (int i = 0; i < 3; i++)
             {
-                string lookupString = contextString + "." + "xyz"[i];
+                string lookupString = contextString + "." + "rpy"[i];
                 if (!dictionary.ContainsKey(lookupString))
                 {
                     logger.Info("CSV file does not contain column for " + lookupString);

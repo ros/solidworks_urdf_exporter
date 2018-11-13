@@ -44,7 +44,7 @@ namespace SW2URDF.URDFExport.CSV
             {"Link.Collision.Origin.rpy.r", "Collision Roll"},
             {"Link.Collision.Origin.rpy.p", "Collision Pitch"},
             {"Link.Collision.Origin.rpy.y", "Collision Yaw"},
-            {"Link.Collision.Geometry.Mesh.filename","Mesh Filename"},
+            {"Link.Collision.Geometry.Mesh.filename","Collision Mesh Filename"},
             {"Link.Visual.Material.name","Material Name"},
             {"Link.SWComponents","SW Components"},
             { "Link.CoordSysName","Coordinate System"},
