@@ -353,6 +353,20 @@ namespace SW2URDF.URDFExport
         {
             SaveActiveNode();
 
+            LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
+            IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
+
+            if (existingBaseNode == null || !existingBaseNode.GetLink().AreRequiredFieldsSatisfied())
+            {
+                logger.Warn("Loading a configuration with an incomplete export");
+                if (MessageBox.Show(
+                    "This model has not been fully exported and saved. Merging may result in an incomplete URDF, " +
+                    "would you like to continue?", "Continue with incomplete export?", MessageBoxButtons.YesNo) == 
+                        DialogResult.No) {
+                    return;
+                }
+            }
+
             OpenFileDialog loadFileDialog = new OpenFileDialog
             {
                 Filter = "CSV (.csv)|*.csv|All files (*.*)|*.*",
@@ -377,7 +391,6 @@ namespace SW2URDF.URDFExport
                     string filename = loadFileDialog.SafeFileName;
                     string assemblyTitle = ActiveSWModel.GetTitle();
 
-                    LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
                     Link existingBaseLink = existingBaseNode.GetLink();
                     TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
                         filename, assemblyTitle);

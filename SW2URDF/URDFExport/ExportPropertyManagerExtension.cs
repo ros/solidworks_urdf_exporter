@@ -583,9 +583,8 @@ namespace SW2URDF.URDFExport
 
             if (baseNode == null || !baseNode.GetLink().AreRequiredFieldsSatisfied())
             {
-                loadConfigurationControl.Enabled = false;
-                loadConfigurationControl.Tip = "This feature will be available once you have " +
-                    "completed a full export with the current version";
+                loadConfigurationControl.Tip = 
+                    "Your configuration has not been fully exported. This feature may not work correctly";
             }
 
             return true;

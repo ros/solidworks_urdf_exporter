@@ -327,3 +327,8 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+
+# Ignore installer zip files
+*.zip
+
+SW2URDF/Versioning/VersionInfo.cs
