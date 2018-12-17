@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using System.Windows.Forms;
 
@@ -88,6 +90,38 @@ namespace SW2URDF.URDF
         public void Update(TextBox boxX, TextBox boxY, TextBox boxZ)
         {
             XYZAttribute.SetDoubleArrayFromStringArray(new string[] { boxX.Text, boxY.Text, boxZ.Text });
+        }
+
+        /// <summary>
+        /// Axis is similar to Origin in that its attribute is stored as a double array.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="dictionary"></param>
+        public override void SetElementFromData(List<string> context, StringDictionary dictionary)
+        {
+            string typeName = GetType().Name;
+            List<string> updatedContext = new List<string>(context) { typeName };
+
+            double[] xyz = new double[3];
+            
+            string contextString = string.Join(".", updatedContext) + ".xyz";
+            for (int i = 0; i < xyz.Length; i++)
+            {
+                string lookupString = contextString + "." + "xyz"[i];
+                if (!dictionary.ContainsKey(lookupString))
+                {
+                    logger.Info("CSV file does not contain column for " + lookupString);
+                    continue;
+                }
+
+                object value = URDFAttribute.GetValueFromString(dictionary[lookupString]);
+                if (value != null && value.GetType() == typeof(double))
+                {
+                    xyz[i] = (double)value;
+                }
+            }
+
+            XYZAttribute.Value = xyz;
         }
     }
 }

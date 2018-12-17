@@ -55,8 +55,14 @@ namespace SW2URDF.URDFExport.CSV
                 {
                     string[] fields = csvParser.ReadFields();
                     StringDictionary dictionary = new StringDictionary();
+                    
                     int minArrayLength = Math.Min(fields.Length, headers.Length);
-                    logger.Warn("The number of columns in the row do not match the number of columns in the header");
+                    if (fields.Length != headers.Length)
+                    {
+                        logger.Warn(string.Format(
+                            "The number of columns in the row do not match the number of columns in the header {0} != {1}",
+                            fields.Length, headers.Length));
+                    }
                     for (int i = 0; i < minArrayLength; i++)
                     {
                         if (!string.IsNullOrWhiteSpace(fields[i]))
