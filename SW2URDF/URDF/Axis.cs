@@ -105,7 +105,7 @@ namespace SW2URDF.URDF
             double[] xyz = new double[3];
             
             string contextString = string.Join(".", updatedContext) + ".xyz";
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < xyz.Length; i++)
             {
                 string lookupString = contextString + "." + "xyz"[i];
                 if (!dictionary.ContainsKey(lookupString))
