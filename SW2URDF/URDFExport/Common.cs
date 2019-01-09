@@ -150,6 +150,7 @@ namespace SW2URDF.URDFExport
             int count = 0;
             foreach (LinkNode node in nodes)
             {
+                count += 1;
                 count += GetCount(node.Nodes);
             }
             return count;
