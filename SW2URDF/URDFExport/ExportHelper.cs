@@ -262,7 +262,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        public void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true)
+        private void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true)
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + link.Name);
@@ -346,35 +346,6 @@ namespace SW2URDF.URDFExport
             return success;
         }
 
-        private void ApplyConfigurationSpecificGeometry(Link link, Dictionary<string, string> names,
-            ref ModelDoc2 ActiveDoc, ref string ComponentName, ref string ConfigurationName,
-            ref string DisplayStateName, ref Component2 geoComponent)
-        {
-            if (names["component"].Length > 0)
-            {
-                foreach (Component2 comp in link.SWComponents)
-                {
-                    if (comp.Name2 == names["component"])
-                    {
-                        geoComponent = comp;
-                        ComponentName = comp.GetPathName();
-                        ConfigurationName = comp.ReferencedConfiguration;
-                        DisplayStateName = comp.ReferencedDisplayState;
-                        bool usenamed = comp.UseNamedConfiguration;
-                        ActiveDoc = (ModelDoc2)iSwApp.ActivateDoc3(ComponentName, false, 0, 0);
-
-                        Configuration config = ActiveDoc.GetConfigurationByName(ConfigurationName);
-                        ActiveDoc.ShowConfiguration2(ConfigurationName);
-                        config.ApplyDisplayState(DisplayStateName);
-                    }
-                    break;
-                }
-                iSwApp.CloseDoc(ComponentName);
-                geoComponent.ReferencedConfiguration = ConfigurationName;
-            }
-        }
-
-        // Used only by the part exporter
         public void ExportLink(bool zIsUp)
         {
             CreateBaseRefOrigin(zIsUp);
@@ -474,7 +445,7 @@ namespace SW2URDF.URDFExport
         #region STL Preference shuffling
 
         //Saves the preferences that the user had setup so that I can change them and revert back to their configuration
-        public void SaveUserPreferences()
+        private void SaveUserPreferences()
         {
             logger.Info("Saving users preferences");
             mBinary = iSwApp.GetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat);
@@ -488,7 +459,7 @@ namespace SW2URDF.URDFExport
         }
 
         //This is how the STL export preferences need to be to properly export
-        public void SetSTLExportPreferences()
+        private void SetSTLExportPreferences()
         {
             logger.Info("Setting STL preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, true);
@@ -502,7 +473,7 @@ namespace SW2URDF.URDFExport
         }
 
         //This resets the user preferences back to what they were.
-        public void ResetUserPreferences()
+        private void ResetUserPreferences()
         {
             logger.Info("Returning STL preferences to user preferences");
             iSwApp.SetUserPreferenceToggle((int)swUserPreferenceToggle_e.swSTLBinaryFormat, mBinary);
@@ -516,7 +487,7 @@ namespace SW2URDF.URDFExport
         }
 
         //If the user selected something specific for a particular link, that is handled here.
-        public void SetLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
+        private void SetLinkSpecificSTLPreferences(string CoordinateSystemName, bool qualityFine, ModelDoc2 doc)
         {
             doc.Extension.SetUserPreferenceString((int)swUserPreferenceStringValue_e.swFileSaveAsCoordinateSystem,
                 (int)swUserPreferenceOption_e.swDetailingNoOptionSpecified, CoordinateSystemName);
