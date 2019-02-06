@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TestRunner": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\\\Users\\\\brawner\\\\workspace\\\\sw2urdf\\\\SW2URDF\\\\bin\\\\x64\\\\Debug\\\\SW2URDF.dll\""
+    }
+  }
+}
