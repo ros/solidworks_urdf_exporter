@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.4.4-6-g2742936-dirty  Build Version: 1.4.6968.15956
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="ORIGINAL_3_DOF_ARM_description">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.00857185004749454 0.0277890770314089 0.0379884681378223"
+        rpy="0 0 0" />
+      <mass
+        value="0.0450462948917676" />
+      <inertia
+        ixx="3.73760183746963E-05"
+        ixy="7.37175916246715E-37"
+        ixz="-3.67341984631965E-37"
+        iyy="3.73760183746963E-05"
+        iyz="3.21685897560652E-21"
+        izz="7.33038758972795E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0 0 1 0.5" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link1">
+    <inertial>
+      <origin
+        xyz="0.110757629166325 -8.47845058049579E-12 8.47839853879151E-12"
+        rpy="0 0 0" />
+      <mass
+        value="0.0483301725897621" />
+      <inertia
+        ixx="2.34046418523273E-05"
+        ixy="-9.12469035853591E-15"
+        ixz="-9.1246965685776E-15"
+        iyy="6.7625497098099E-05"
+        iyz="-1.78995347833815E-11"
+        izz="6.79761299610003E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint1"
+    type="continuous">
+    <origin
+      xyz="0.0085719 0.027789 0.020415"
+      rpy="2.8348 -1.5708 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="link1" />
+    <axis
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="link2">
+    <inertial>
+      <origin
+        xyz="0.0943407218386796 5.81092854596774E-07 -9.84910960399876E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.0585758042581199" />
+      <inertia
+        ixx="2.38164941843817E-05"
+        ixy="9.72727997584935E-10"
+        ixz="7.81793935667511E-10"
+        iyy="6.97154129782386E-05"
+        iyz="-1.99343905502661E-09"
+        izz="6.97122641242123E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint2"
+    type="revolute">
+    <origin
+      xyz="0.18177 0 0"
+      rpy="-1.5708 0 -1.7091" />
+    <parent
+      link="link1" />
+    <child
+      link="link2" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="link3">
+    <inertial>
+      <origin
+        xyz="0.0943408063355609 4.37197531205635E-07 -3.60101098773047E-07"
+        rpy="0 0 0" />
+      <mass
+        value="0.0585758669634938" />
+      <inertia
+        ixx="2.38167246601106E-05"
+        ixy="-8.54495980074359E-12"
+        ixz="-6.80054618075403E-11"
+        iyy="6.97192250758933E-05"
+        iyz="-3.89114521030646E-09"
+        izz="6.97121157840842E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ORIGINAL_3_DOF_ARM_description/meshes/link3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint3"
+    type="revolute">
+    <origin
+      xyz="0.18177 0 0"
+      rpy="-1.5708 0 -1.8796" />
+    <parent
+      link="link2" />
+    <child
+      link="link3" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+</robot>

@@ -1,20 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.4.4-6-g2742936-dirty  Build Version: 1.4.6968.15956
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="3_DOF_ARM_description">
   <link
     name="base_link">
     <inertial>
       <origin
-        xyz="0.00249115384615384 -0.00884615384615385 -0.00579027972027972"
+        xyz="0.00249115384615384 2.34558007901714E-18 0.00305587412587413"
         rpy="0 0 0" />
       <mass
-        value="0.0510508806208342" />
+        value="0.0510508806208341" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="3.5234044049786E-05"
+        ixy="6.98466777397284E-37"
+        ixz="-2.22339710804804E-37"
+        iyy="3.5234044049786E-05"
+        iyz="-5.44519126841819E-22"
+        izz="6.24882413753095E-05" />
     </inertial>
     <visual>
       <origin
@@ -44,17 +48,17 @@
     name="prox_link">
     <inertial>
       <origin
-        xyz="0.0952733818315821 0.00828143287166189 0.00249115410455718"
+        xyz="6.94771684018737E-10 -0.0881460587278585 2.58403333886631E-10"
         rpy="0 0 0" />
       <mass
         value="0.132570921155528" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="0.000425622211946537"
+        ixy="7.66166107697545E-12"
+        ixz="1.12207653869985E-10"
+        iyy="6.78913907046572E-05"
+        iyz="2.10847233866869E-12"
+        izz="0.000427554426874909" />
     </inertial>
     <visual>
       <origin
@@ -85,29 +89,31 @@
     type="continuous">
     <origin
       xyz="0.00249115384615384 0 0"
-      rpy="-1.5707963267949 -6.12303176911189E-17 -1.5707963267949" />
+      rpy="-1.5707963267949 0 -1.5707963267949" />
     <parent
       link="base_link" />
     <child
       link="prox_link" />
     <axis
-      xyz="0 -1 0" />
+      xyz="0 1 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
   <link
     name="dist_Link">
     <inertial>
       <origin
-        xyz="0.095273381831582 -0.197491153151382 -0.00249115410455719"
+        xyz="6.94771724770697E-10 -0.101063661551862 -2.58403354269632E-10"
         rpy="0 0 0" />
       <mass
         value="0.132570921155528" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="0.000425622211946537"
+        ixy="-7.66166112117889E-12"
+        ixz="-1.12207653890081E-10"
+        iyy="6.78913907046571E-05"
+        iyz="2.10847240386709E-12"
+        izz="0.000427554426874909" />
     </inertial>
     <visual>
       <origin
@@ -138,29 +144,31 @@
     type="continuous">
     <origin
       xyz="0 -0.18920972027972 0"
-      rpy="-1.5707963267949 -1.78622307916987E-17 -4.68021606411955E-34" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="prox_link" />
     <child
       link="dist_Link" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
   <link
     name="effector_link">
     <inertial>
       <origin
-        xyz="0.186101612171612 -0.00249115384615409 0.0174911538461536"
+        xyz="7.89909498403104E-17 -1.94289029309402E-16 0.0118918918918916"
         rpy="0 0 0" />
       <mass
-        value="0.0290597320457047" />
+        value="0.0290597320457048" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="4.42470815817501E-06"
+        ixy="1.74806527887155E-21"
+        ixz="-1.05670524275547E-20"
+        iyy="4.424708158175E-06"
+        iyz="4.84594662178836E-20"
+        izz="5.90275807178375E-06" />
     </inertial>
     <visual>
       <origin
@@ -191,12 +199,14 @@
     type="continuous">
     <origin
       xyz="0 -0.18 0"
-      rpy="1.5707963267949 7.49830360911068E-33 6.12303176911189E-17" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="dist_Link" />
     <child
       link="effector_link" />
     <axis
-      xyz="0 0 1" />
+      xyz="0 0 -1" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
 </robot>
