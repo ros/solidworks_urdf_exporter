@@ -7,7 +7,8 @@ using Xunit;
 namespace SW2URDF.Test
 {
     /// <summary>
-    ///  TODO (brawner), pm.show() crashes SolidWorks. 
+    ///  TODO (SIMINT-164), code in UI components needs to be tested, but
+    ///  pm.show() crashes SolidWorks. 
     /// </summary>
     [Collection("Requires SW Test Collection")]
     public class TestPropertyManager : SW2URDFTest
@@ -17,7 +18,7 @@ namespace SW2URDF.Test
         }
 
 
-        // TODO pm.Show() crashes with drag drop 
+        // TODO(SIMINT-164) pm.Show() crashes with drag drop 
         //[Theory]
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpens(string modelName)
@@ -29,7 +30,7 @@ namespace SW2URDF.Test
             SwApp.CloseAllDocuments(true);
         }
 
-        // TODO pm.Show() crashes with drag drop 
+        // TODO(SIMINT-164) pm.Show() crashes with drag drop 
         //[Theory]
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpenCloseOk(string modelName)
@@ -44,7 +45,7 @@ namespace SW2URDF.Test
             
         }
 
-        // TODO pm.Show() crashes with drag drop 
+        // TODO(SIMINT-164) pm.Show() crashes with drag drop 
         //[Theory]
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpenCloseNotOk(string modelName)
@@ -58,7 +59,7 @@ namespace SW2URDF.Test
             Xunit.Assert.True(true, "Property manager failed to open/close with cancel");
         }
 
-        // TODO pm.Show() crashes with drag drop 
+        // TODO(SIMINT-164) pm.Show() crashes with drag drop 
         //[Theory]
         //[InlineData("3_DOF_ARM")]
         public void TestPreviewExport(string modelName)

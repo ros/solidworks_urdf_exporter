@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SW2URDF.Test
 {
     /// <summary>
-    /// TODO (brawner) Implement tests covering public methods below
+    /// TODO(SIMINT-164) Implement tests covering public methods below
     /// </summary>
     public class TestURDFMerge : SW2URDFTest
     {

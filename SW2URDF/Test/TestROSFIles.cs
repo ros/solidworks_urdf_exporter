@@ -2,7 +2,7 @@
 namespace SW2URDF.Test
 {
     /// <summary>
-    /// Todo(brawner) write tests to test existance of ROS files
+    /// Todo(SIMINT-164) write tests to test existance of ROS files
     /// </summary>
     public class TestROSFIles : SW2URDFTest
     {

@@ -1,12 +1,7 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace SW2URDF.Test
@@ -16,7 +11,6 @@ namespace SW2URDF.Test
     {
         public TestExportHelper(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         [Theory]
@@ -38,7 +32,6 @@ namespace SW2URDF.Test
             Assert.NotNull(helper.URDFRobot);
             Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
-
         }
 
         [Theory]
@@ -56,7 +49,7 @@ namespace SW2URDF.Test
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
-            helper.ExportRobot(true);
+            helper.ExportRobot(false);
             Assert.NotNull(helper.URDFRobot);
             Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
@@ -165,7 +158,7 @@ namespace SW2URDF.Test
         }
 
         /*
-         * TODO(brawnen) Part document tests not working (OpenSWPartDocument)
+         * TODO(SIMINT-164) Part document tests not working (OpenSWPartDocument)
         [Theory]
         [InlineData("TOY_BLOCK")]
         public void TestExportLink(string modelName)
@@ -203,7 +196,6 @@ namespace SW2URDF.Test
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
-
         [Theory]
         [InlineData("3_DOF_ARM", new double[] { 0, 0, 1 }, "global_origin", new double[] { 0, 0, 1 })]
         public void TestLocalizeAxis(string modelName, double[] axis, string coordSys, double[] expected)
@@ -215,7 +207,11 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData("3_DOF_ARM", new string[] { "Origin_global", "Origin_prox_joint", "Origin_dist_joint", "Origin_effector_joint" })]
+        [InlineData("3_DOF_ARM", new string[] {
+            "Origin_global",
+            "Origin_prox_joint",
+            "Origin_dist_joint",
+            "Origin_effector_joint" })]
         public void TestGetRefCoordinateSystems(string modelName, string[] expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
@@ -225,7 +221,10 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData("3_DOF_ARM", new string[] { "Axis_prox_joint", "Axis_dist_joint", "Axis_effector_joint" })]
+        [InlineData("3_DOF_ARM", new string[] {
+            "Axis_prox_joint",
+            "Axis_dist_joint",
+            "Axis_effector_joint" })]
         public void TestGetRefAxes(string modelName, string[] expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);

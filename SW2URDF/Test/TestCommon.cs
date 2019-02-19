@@ -106,6 +106,7 @@ namespace SW2URDF.Test
 
         [Theory]
         [InlineData(MODEL_NAME_3_DOF_ARM, 0)]
+        [InlineData(MODEL_NAME_ORIGINAL_3_DOF_ARM, 3)]
         public void TestFindHiddenComponens(string modelName, int expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
@@ -117,6 +118,7 @@ namespace SW2URDF.Test
 
         [Theory]
         [InlineData(MODEL_NAME_3_DOF_ARM)]
+        [InlineData(MODEL_NAME_ORIGINAL_3_DOF_ARM)]
         public void TestShowAllComponents(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
@@ -129,15 +131,23 @@ namespace SW2URDF.Test
 
         [Theory]
         [InlineData(MODEL_NAME_3_DOF_ARM)]
+        [InlineData(MODEL_NAME_ORIGINAL_3_DOF_ARM)]
         public void TestShowComponents(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(false));
-            List<Component2> hiddenComponents = 
-                hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
+
+            // AssemblyDoc.GetComponentsByName only works on top level components.
+            List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(true));
+            List<Component2> hiddenComponents = new List<Component2>();
+            foreach(string name in hiddenComponentNames)
+            {
+                Component2 hiddenComp = assyDoc.GetComponentByName(name);
+                Assert.NotNull(hiddenComp);
+                hiddenComponents.Add(hiddenComp);
+            }
             Common.ShowComponents(doc, hiddenComponents);
-            Assert.Equal(0, Common.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
+            Assert.Equal(0, Common.FindHiddenComponents(assyDoc.GetComponents(true)).Count);
 
             SwApp.CloseAllDocuments(true);
         }
@@ -216,8 +226,6 @@ namespace SW2URDF.Test
             Common.LoadSWComponents(doc, baseNode, problemLinks);
             Assert.Empty(problemLinks);
 
-
-
             Link baseLink = baseNode.GetLink();
             baseLink.SWMainComponent = baseLink.SWComponents[0];
             Common.SaveSWComponents(doc, baseLink);
@@ -242,7 +250,11 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(MODEL_NAME_3_DOF_ARM, "3_DOF_ARM_BASE-1", new byte[] { 248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83, 0, 69, 0, 45, 0, 49, 0, 64, 0, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 4, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
+        [InlineData(MODEL_NAME_3_DOF_ARM, "3_DOF_ARM_BASE-1", new byte[] {
+            248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95,
+            0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83, 0, 69, 0, 45, 0, 49, 0, 64, 0, 51,
+            0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 4, 0, 0, 0, 16, 0, 0, 0,
+            1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
         public void TestSaveSWComponent(string modelName, string componentName, byte[] expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
@@ -289,14 +301,16 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(MODEL_NAME_3_DOF_ARM, new byte[] { 248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83, 0, 69, 0, 45, 0, 49, 0, 64, 0, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 4, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
+        [InlineData(MODEL_NAME_3_DOF_ARM, new byte[] { 248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26,
+            51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83,
+            0, 69, 0, 45, 0, 49, 0, 64, 0, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0,
+            77, 0, 4, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
         public void TestLoadSWComponent(string modelName, byte[] pid)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool abortProcess);
             baseNode.Link.SWMainComponentPID = baseNode.Link.SWComponentPIDs[0];
-            //baseNode.Link.SWMainComponentPID = pid;
             Component2 component = Common.LoadSWComponent(doc, baseNode.Link.SWMainComponentPID);
             Assert.NotNull(component);
 

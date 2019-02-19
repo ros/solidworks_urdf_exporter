@@ -3,7 +3,6 @@ using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
 using SW2URDF.Utilities;
 using System;
-using System.Collections.Generic;
 using Xunit;
 namespace SW2URDF.Test
 {
@@ -127,12 +126,36 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 0.0, 0.0 }, new double[] { 1.0, 0.0 }, new double[] { 0.0, 0.0 }, new double[] { 0.0, 0.0 })]
-        [InlineData(new double[] { 0.0, 0.0 }, new double[] { 0.0, 1.0 }, new double[] { 0.0, 0.0 }, new double[] { 0.0, 0.0 })]
-        [InlineData(new double[] { 1.0, 0.0 }, new double[] { 1.0, 0.0 }, new double[] { 0.0, 0.0 }, new double[] { 1.0, 0.0 })]
-        [InlineData(new double[] { 1.0, 0.0 }, new double[] { 0.0, 1.0 }, new double[] { 0.0, 0.0 }, new double[] { 0.0, 0.0 })]
-        [InlineData(new double[] { 1.0, 1.0 }, new double[] { 1.0, 0.0 }, new double[] { 0.0, 0.0 }, new double[] { 1.0, 0.0 })]
-        [InlineData(new double[] { 1.0, 1.0 }, new double[] { 0.0, 1.0 }, new double[] { 0.0, 0.0 }, new double[] { 0.0, 1.0 })]
+        [InlineData(
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 1.0, 0.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 0.0, 0.0 })]
+        [InlineData(
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 0.0, 1.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 0.0, 0.0 })]
+        [InlineData(
+            new double[] { 1.0, 0.0 }, 
+            new double[] { 1.0, 0.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 1.0, 0.0 })]
+        [InlineData(
+            new double[] { 1.0, 0.0 }, 
+            new double[] { 0.0, 1.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 0.0, 0.0 })]
+        [InlineData(
+            new double[] { 1.0, 1.0 }, 
+            new double[] { 1.0, 0.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 1.0, 0.0 })]
+        [InlineData(
+            new double[] { 1.0, 1.0 }, 
+            new double[] { 0.0, 1.0 }, 
+            new double[] { 0.0, 0.0 }, 
+            new double[] { 0.0, 1.0 })]
         public void TestClosestPointOnLineToPoint(double[] point, double[] line, double[] pointOnLine, double[] expected)
         {
             double[] result = MathOps.ClosestPointOnLineToPoint(point, line, pointOnLine);
@@ -143,9 +166,19 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(0.0, 1.0, 0.0, 1.0, 0.0, 1.0, new double[] { 1.0, 1.0, 1.0 }, new double[] { 0.0, 0.0, 0.0 }, new double[] { 0.0, 0.0, 0.0 })]
-        [InlineData(0.0, 1.0, 0.0, 1.0, 0.0, 1.0, new double[] { 1.0, 1.0, 1.0 }, new double[] { 1.0, 1.0, 1.0 }, new double[] { 1.0, 1.0, 1.0 })]
-        public void TestClosestPointOnLineWithinBox(double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, double[] line, double[] pointOnLine, double[] expected)
+        [InlineData(
+            0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 
+            new double[] { 1.0, 1.0, 1.0 }, 
+            new double[] { 0.0, 0.0, 0.0 }, 
+            new double[] { 0.0, 0.0, 0.0 })]
+        [InlineData(
+            0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 
+            new double[] { 1.0, 1.0, 1.0 }, 
+            new double[] { 1.0, 1.0, 1.0 }, 
+            new double[] { 1.0, 1.0, 1.0 })]
+        public void TestClosestPointOnLineWithinBox(
+            double xMin, double xMax, double yMin, double yMax, double zMin, double zMax, 
+            double[] line, double[] pointOnLine, double[] expected)
         {
             double[] result = MathOps.ClosestPointOnLineWithinBox(xMin, xMax, yMin, yMax, zMin, zMax, line, pointOnLine);
             for (int i = 0; i < expected.Length; i++)
@@ -155,7 +188,9 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0 }, new double[] { 12.0, 13.0, 14.0 })]
+        [InlineData(
+            new double[] { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0 },
+            new double[] { 12.0, 13.0, 14.0 })]
         // https://numerics.mathdotnet.com/api/MathNet.Numerics.LinearAlgebra.Double/DenseMatrix.htm#Create
         public void TestGetXYZDenseMatrix(double[] matrixData, double[] expected)
         {
@@ -168,7 +203,9 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0 }, new double[] { 9.0, 10.0, 11.0 })]
+        [InlineData(
+            new double[] { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0 }, 
+            new double[] { 9.0, 10.0, 11.0 })]
         // http://help.solidworks.com/2012/english/api/sldworksapi/solidworks.interop.sldworks~solidworks.interop.sldworks.imathutility~icreatetransform.html
         public void TestGetXYZMathTransform(double[] matrixData, double[] expected)
         {
@@ -182,10 +219,18 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] {1, 0, 0 ,0, 0, 1, 0 ,0, 0, 0, 1, 0, 0, 0, 0, 1}, new double[] {0, 0, 0})]
-        [InlineData(new double[] { 1, 0, 0, 0,    0, 0, 1, 0,      -1, 0, 0, 0,    0, 0, 0, 1 }, new double[] { Math.PI / 2.0, 0, 0 })]
-        [InlineData(new double[] { 0, 0, -1, 0,    0, 1, 0, 0,    1, 0, 0, 0,    0, 0, 0, 1 }, new double[] { 0, Math.PI / 2.0, 0 })]
-        [InlineData(new double[] { 0, 1, 0, 0,    -1, 0, 0, 0,     0, 0, 1, 0,     0, 0, 0, 1 }, new double[] { 0, 0, Math.PI / 2.0 })]
+        [InlineData(
+            new double[] {1, 0, 0 ,0, 0, 1, 0 ,0, 0, 0, 1, 0, 0, 0, 0, 1}, 
+            new double[] {0, 0, 0})]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { Math.PI / 2.0, 0, 0 })]
+        [InlineData(
+            new double[] { 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { 0, Math.PI / 2.0, 0 })]
+        [InlineData(
+            new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 }, 
+            new double[] { 0, 0, Math.PI / 2.0 })]
         public void TestGetRPYDenseMatrix(double[] matrixData, double[] expected)
         {
             Matrix<double> m = new DenseMatrix(4, 4, matrixData);
@@ -199,7 +244,9 @@ namespace SW2URDF.Test
         [Theory]
         //Ordering (Row, Column) 
         // {(0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), (2, 2), (3,0) (3,1), (3,2), (3,3), (0,3), (1,3), (2,3)
-        [InlineData(new double[] { 1, 0, 0,    0, 1, 0,    0, 0, 1,   0, 0, 0,    1, 0, 0, 0 }, new double[] { 0, 0, 0 })]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 }, 
+            new double[] { 0, 0, 0 })]
         public void TestGetRPYMathTransform(double[] matrixData, double[] expected)
         {
             MathUtility util = SwApp.GetMathUtility();
@@ -212,10 +259,18 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 0, 0, 0 },             new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { Math.PI / 2.0, 0, 0 }, new double[] { 1, 0, 0, 0,  0, 0, 1, 0,  0, -1, 0, 0,  0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, Math.PI / 2.0, 0 }, new double[] { 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, 0, Math.PI / 2.0 }, new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, 0 },             
+            new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { Math.PI / 2.0, 0, 0 },
+            new double[] { 1, 0, 0, 0,  0, 0, 1, 0,  0, -1, 0, 0,  0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, Math.PI / 2.0, 0 }, 
+            new double[] { 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, Math.PI / 2.0 },
+            new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
         public void TestGetRotation(double[] rpy, double[] expected)
         {
             double[] result = MathOps.GetRotation(rpy).ToColumnWiseArray();
@@ -226,8 +281,10 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] {0, 0, 0 }, new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 1, 2, 3 }, new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1 })]
+        [InlineData(new double[] {0, 0, 0 }, 
+            new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(new double[] { 1, 2, 3 }, 
+            new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1 })]
         public void TestGetTranslation(double[] xyz, double[] expected)
         {
             double[] result = MathOps.GetTranslation(xyz).ToColumnWiseArray();
@@ -238,11 +295,26 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 0, 0, 0 },new double[] { 0.0, 0.0, 0.0 }, new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 1, 2, 3 }, new double[] { 0.0, 0.0, 0.0 }, new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1 })]
-        [InlineData(new double[] { 0, 0, 0 }, new double[] { Math.PI / 2.0, 0, 0 }, new double[] { 1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, 0, 0 }, new double[] { 0.0, Math.PI / 2.0, 0}, new double[] { 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, 0, 0 }, new double[] { 0.0, 0.0,  Math.PI / 2.0}, new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, 0 }, 
+            new double[] { 0.0, 0.0, 0.0 },
+            new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 1, 2, 3 }, 
+            new double[] { 0.0, 0.0, 0.0 }, 
+            new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1 })]
+        [InlineData(
+            new double[] { 0, 0, 0 }, 
+            new double[] { Math.PI / 2.0, 0, 0 }, 
+            new double[] { 1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, 0 }, 
+            new double[] { 0.0, Math.PI / 2.0, 0}, 
+            new double[] { 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, 0 }, 
+            new double[] { 0.0, 0.0,  Math.PI / 2.0}, 
+            new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
         public void TestGetTransformationFromXYZRPY(double[] xyz, double[] rpy, double[] expected)
         {
             double[] result = MathOps.GetTransformation(xyz, rpy).ToColumnWiseArray();
@@ -257,11 +329,21 @@ namespace SW2URDF.Test
         // (0, 0), (1, 0), (2, 0), (3, 0), (0, 1), (1, 1),(2, 1),(3, 1), (0, 2), (1, 2), (2, 2), (3, 2),  (0, 3), (1, 3), (2, 3), (3, 3),
         //Math Transform Ordering (Row, Column) 
         // {(0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), (2, 2), (3,0) (3,1), (3,2), (3,3), (0,3), (1,3), (2,3)
-        [InlineData(new double[] { 1, 0, 0,   0, 1, 0,   0, 0, 1,   0, 0, 0, 1,   0, 0, 0 },  new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1})]
-        [InlineData(new double[] { 1, 0, 0,   0, 1, 0,   0, 0, 1,   0, 0, 0, 1,   2, 3, 4 },  new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 1, 0, 0,   0, 0, -1,  0, 1, 0,   0, 0, 0, 1,   0, 0, 0},   new double[] { 1, 0, 0, 0, 0, -1, 0, 1, 0})]
-        [InlineData(new double[] { 0, 0, -1,  0, 1, 0,   1, 0, 0,   0, 0, 0, 1,   0, 0, 0 },  new double[] { 0, 0, -1, 0, 1, 0, 1, 0, 0})]
-        [InlineData(new double[] { 0, 1, 0,   -1, 0, 0,  0, 0, 1,   0, 0, 0, 1,   0, 0, 0 },  new double[] { 0, 1, 0, -1, 0, 0, 0, 0, 1})]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 },  
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1})]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3, 4 },  
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0},   
+            new double[] { 1, 0, 0, 0, 0, -1, 0, 1, 0})]
+        [InlineData(
+            new double[] { 0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 },  
+            new double[] { 0, 0, -1, 0, 1, 0, 1, 0, 0})]
+        [InlineData(
+            new double[] { 0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 },  
+            new double[] { 0, 1, 0, -1, 0, 0, 0, 0, 1})]
 
         public void TestGetRotationMatrixFromMathTransform(double[] mathTransformData, double[] expected)
         {
@@ -276,11 +358,21 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 },  new double[] { 1, 0, 0, 0,   0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 })]
-        [InlineData(new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3, 4, 1, 0, 0, 0 },  new double[] { 1, 0, 0, 0,   0, 1, 0, 0,  0, 0, 1, 0,  2, 3, 4, 1 })]
-        [InlineData(new double[] { 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0 }, new double[] { 1, 0, 0, 0,   0, 0, -1, 0,  0, 1, 0, 0, 0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, new double[] { 0, 0, -1, 0,  0, 1, 0, 0,  1, 0, 0, 0,  0, 0, 0, 1 })]
-        [InlineData(new double[] { 0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 }, new double[] { 0, 1, 0, 0,  -1, 0, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 },  
+            new double[] { 1, 0, 0, 0,   0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3, 4, 1, 0, 0, 0 },  
+            new double[] { 1, 0, 0, 0,   0, 1, 0, 0,  0, 0, 1, 0,  2, 3, 4, 1 })]
+        [InlineData(
+            new double[] { 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0 }, 
+            new double[] { 1, 0, 0, 0,   0, 0, -1, 0,  0, 1, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 0, -1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, 
+            new double[] { 0, 0, -1, 0,  0, 1, 0, 0,  1, 0, 0, 0,  0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 }, 
+            new double[] { 0, 1, 0, 0,  -1, 0, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 })]
         public void TestGetTransformationFromMathTransform(double[] matrixData, double[] expected)
         {
             MathUtility util = SwApp.GetMathUtility();
