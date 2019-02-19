@@ -20,7 +20,8 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             PrivateType serialization = new PrivateType(typeof(Serialization));
-            object swAttObj = serialization.InvokeStatic("FindSWSaveAttribute", new object[] { doc, "URDF Export Configuration" });
+            object swAttObj = serialization.InvokeStatic(
+                "FindSWSaveAttribute", new object[] { doc, "URDF Export Configuration" });
             Xunit.Assert.NotNull(swAttObj);
 
             Attribute swAtt = (Attribute)swAttObj;
@@ -32,7 +33,8 @@ namespace SW2URDF.Test
             Xunit.Assert.NotNull(data);
             Xunit.Assert.NotEmpty(data);
 
-            LinkNode baseNode = (LinkNode)serialization.InvokeStatic("LoadConfigFromStringXML", new object[] { data });
+            LinkNode baseNode = (LinkNode)serialization.InvokeStatic(
+                "LoadConfigFromStringXML", new object[] { data });
             Link link = baseNode.GetLink();
             Xunit.Assert.Equal(expNumLinks, Common.GetCount(link));
         }
@@ -58,7 +60,8 @@ namespace SW2URDF.Test
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
 
             PrivateType serialization = new PrivateType(typeof(Serialization));
-            string newData = (string)serialization.InvokeStatic("SerializeToString", new object[] { baseNode });
+            string newData = (string)serialization.InvokeStatic(
+                "SerializeToString", new object[] { baseNode });
             Xunit.Assert.NotNull(newData);
             Xunit.Assert.NotEmpty(newData);
 

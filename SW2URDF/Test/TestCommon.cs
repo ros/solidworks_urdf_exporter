@@ -37,7 +37,8 @@ namespace SW2URDF.Test
             Link baseLink = baseNode.GetLink();
             List<Component2> componentsToSelect = new List<Component2>();
             AddLinkComponents(baseLink, componentsToSelect);
-            HashSet<string> componentsToSelectNames = new HashSet<string>(componentsToSelect.Select(component => component.Name2));
+            HashSet<string> componentsToSelectNames = 
+                new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
             Common.SelectComponents(doc, baseLink, true);
             SelectionMgr selManager = doc.SelectionManager;
@@ -64,7 +65,8 @@ namespace SW2URDF.Test
 
             Link baseLink = baseNode.GetLink();
             List<Component2> componentsToSelect = baseLink.SWComponents;
-            HashSet<string> componentsToSelectNames = new HashSet<string>(componentsToSelect.Select(component => component.Name2));
+            HashSet<string> componentsToSelectNames = 
+                new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
             Common.SelectComponents(doc, componentsToSelect, true);
             SelectionMgr selManager = doc.SelectionManager;
@@ -91,7 +93,8 @@ namespace SW2URDF.Test
 
             Link baseLink = baseNode.GetLink();
             List<Component2> componentsToSelect = baseLink.SWComponents;
-            HashSet<string> componentsToSelectNames = new HashSet<string>(componentsToSelect.Select(component => component.Name2));
+            HashSet<string> componentsToSelectNames = 
+                new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
             Common.SelectComponents(doc, componentsToSelect, true);
             List<Component2> selectedComponents = new List<Component2>();
@@ -131,7 +134,8 @@ namespace SW2URDF.Test
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
             List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(false));
-            List<Component2> hiddenComponents = hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
+            List<Component2> hiddenComponents = 
+                hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
             Common.ShowComponents(doc, hiddenComponents);
             Assert.Equal(0, Common.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
 
@@ -145,7 +149,8 @@ namespace SW2URDF.Test
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
             List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(false));
-            List<Component2> hiddenComponents = hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
+            List<Component2> hiddenComponents = 
+                hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
             Common.ShowAllComponents(doc, new List<string>());
             Common.HideComponents(doc, hiddenComponents);
             List<string> hiddenComponentNames2 = Common.FindHiddenComponents(assyDoc.GetComponents(false));

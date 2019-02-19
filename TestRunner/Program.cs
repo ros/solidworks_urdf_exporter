@@ -22,14 +22,9 @@ namespace TestRunner
 
         public static int Main(string[] args)
         {
-
-
-            var testAssembly = "C:\\Users\\brawner\\workspace\\sw2urdf\\SW2URDF\\bin\\x64\\Debug\\SW2URDF.dll";
-            //SldWorks swApp = new SldWorks();
-            
-            string typeName = null;// args.Length == 2 ? args[1] : null;
-
-            
+            var testAssembly = 
+                "C:\\Users\\brawner\\workspace\\sw2urdf\\SW2URDF\\bin\\x64\\Debug\\SW2URDF.dll";            
+            string typeName = null;
 
             using (var runner = AssemblyRunner.WithAppDomain(testAssembly))
             {
@@ -48,14 +43,8 @@ namespace TestRunner
 
                 finished.WaitOne();
                 finished.Dispose();
-
-               // swApp.ExitApp();
-                //swApp = null;
-
                 return result;
             }
-            
-
         }
 
         public static bool FilterByClass(ITestCase testCase)
@@ -76,7 +65,11 @@ namespace TestRunner
         static void OnExecutionComplete(ExecutionCompleteInfo info)
         {
             lock (consoleLock)
-                Console.WriteLine($"Finished: {info.TotalTests} tests in {Math.Round(info.ExecutionTime, 3)}s ({info.TestsFailed} failed, {info.TestsSkipped} skipped)");
+                Console.WriteLine(
+                    $"Finished: {info.TotalTests} tests in" + 
+                    $"{Math.Round(info.ExecutionTime, 3)}s " + 
+                    $"({info.TestsFailed} failed, " + 
+                    $"{info.TestsSkipped} skipped)");
 
             finished.Set();
         }

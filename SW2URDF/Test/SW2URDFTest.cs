@@ -109,7 +109,8 @@ namespace SW2URDF.Test
             int filetype = (int)swDocumentTypes_e.swDocASSEMBLY;
             string configuration = "";
 
-            ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, configuration, ref Errors, ref Warnings);
+            ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, 
+                                           configuration, ref Errors, ref Warnings);
             Assert.Equal(0, Errors);
             Assert.Equal(0, Warnings);
             return doc;
@@ -127,7 +128,8 @@ namespace SW2URDF.Test
             int filetype = (int)swDocumentTypes_e.swDocASSEMBLY;
             string configuration = "";
 
-            ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, configuration, ref Errors, ref Warnings);
+            ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, 
+                                           configuration, ref Errors, ref Warnings);
             Assert.Equal(0, Errors);
             Assert.Equal(0, Warnings);
             return doc;
