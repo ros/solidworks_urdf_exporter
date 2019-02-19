@@ -41,7 +41,7 @@ namespace SW2URDF.URDFExport.URDFMerge
             return mergedRoot;
         }
 
-        public List<Link> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
+        private List<Link> MergeItems(ItemCollection cadCollection, URDFTreeCorrespondance correspondance)
         {
             List<Link> merged = new List<Link>();
 

@@ -128,20 +128,6 @@ namespace SW2URDF.URDFExport
             model.ShowComponent2();
         }
 
-        //Shows the components in the link
-        public static void ShowComponents(ModelDoc2 model, Link Link)
-        {
-            SelectComponents(model, Link, true);
-            model.ShowComponent2();
-        }
-
-        //Hides the components from a link
-        public static void HideComponents(ModelDoc2 model, Link Link)
-        {
-            SelectComponents(model, Link, true);
-            model.HideComponent2();
-        }
-
         //Hides the components from a list
         public static void HideComponents(ModelDoc2 model, List<Component2> components)
         {
@@ -159,22 +145,12 @@ namespace SW2URDF.URDFExport
             return count;
         }
 
-        public static int GetCount(LinkNode node)
-        {
-            int count = 1;
-            foreach (LinkNode child in node.Nodes)
-            {
-                count += GetCount(child);
-            }
-            return count;
-        }
-
         public static int GetCount(TreeNodeCollection nodes)
         {
             int count = 0;
             foreach (LinkNode node in nodes)
             {
-                count += GetCount(node);
+                count += GetCount(node.Nodes);
             }
             return count;
         }
@@ -193,14 +169,6 @@ namespace SW2URDF.URDFExport
             foreach (LinkNode child in node.Nodes)
             {
                 RetrieveSWComponentPIDs(model, child);
-            }
-        }
-
-        public static void RetrieveSWComponentPIDs(ModelDoc2 model, TreeView tree)
-        {
-            foreach (LinkNode node in tree.Nodes)
-            {
-                RetrieveSWComponentPIDs(model, node);
             }
         }
 

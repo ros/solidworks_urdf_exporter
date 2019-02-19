@@ -61,7 +61,7 @@ namespace SW2URDF.URDFExport
         }
 
         // This method now only works for the part exporter
-        public Link CreateBaseLinkFromActiveModel()
+        private Link CreateBaseLinkFromActiveModel()
         {
             // If the model is a part
             if (ActiveSWModel.GetType() == (int)swDocumentTypes_e.swDocPART)
@@ -73,7 +73,7 @@ namespace SW2URDF.URDFExport
 
         // This creates a Link from a Part ModelDoc. It basically just extracts the material
         // properties and saves them to the appropriate fields.
-        public Link CreateLinkFromPartModel(ModelDoc2 swModel)
+        private Link CreateLinkFromPartModel(ModelDoc2 swModel)
         {
             Link Link = new Link(null);
             Link.Name = swModel.GetTitle();
@@ -112,7 +112,7 @@ namespace SW2URDF.URDFExport
 
         //This is only used by the Part Exporter, but it localizes the link to the Origin_global
         // coordinate system
-        public void LocalizeLink(Link Link, Matrix<double> GlobalTransform)
+        private void LocalizeLink(Link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
             Matrix<double> linkCoMTransform = MathOps.GetTranslation(Link.Inertial.Origin.GetXYZ());
@@ -182,7 +182,7 @@ namespace SW2URDF.URDFExport
             return true;
         }
 
-        public Link CreateBaseLinkFromComponents(LinkNode node)
+        private Link CreateBaseLinkFromComponents(LinkNode node)
         {
             // Build the link from the partdoc
             Link link = CreateLinkFromComponents(null, node);
@@ -200,7 +200,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Method which builds an entire link and iterates through.
-        public Link CreateLink(LinkNode node, int count)
+        private Link CreateLink(LinkNode node, int count)
         {
             progressBar.UpdateTitle("Building link: " + node.Name);
             progressBar.UpdateProgress(count);
@@ -325,7 +325,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Method which builds a single link
-        public Link CreateLinkFromComponents(Link parent, LinkNode node)
+        private Link CreateLinkFromComponents(Link parent, LinkNode node)
         {
             if (node.Link.SWComponents.Count > 0)
             {
@@ -358,7 +358,7 @@ namespace SW2URDF.URDFExport
             return node.Link;
         }
 
-        public List<Body2> GetBodies(List<Component2> components)
+        private List<Body2> GetBodies(List<Component2> components)
         {
             object bodyInfo = null;
             List<Body2> bodies = new List<Body2>();
@@ -393,7 +393,7 @@ namespace SW2URDF.URDFExport
         #region Joint methods
 
         //Base method for constructing a joint from a parent link and child link.
-        public bool CreateJoint(Link parent, Link child)
+        private bool CreateJoint(Link parent, Link child)
         {
             CheckRefGeometryExists(child);
 
@@ -479,13 +479,13 @@ namespace SW2URDF.URDFExport
         }
 
         // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
-        public void CreateRefOrigin(Joint Joint)
+        private void CreateRefOrigin(Joint Joint)
         {
             CreateRefOrigin(Joint.Origin, Joint.CoordinateSystemName);
         }
 
         // Creates a Reference Coordinate System in the SolidWorks Model to symbolize the joint location
-        public void CreateRefOrigin(Origin Origin, string CoordinateSystemName)
+        private void CreateRefOrigin(Origin Origin, string CoordinateSystemName)
         {
             // Adds the sketch segments and point to the 3D sketch. The sketchEnties are the actual
             // items created (and their locations)
@@ -564,7 +564,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Creates the Origin_global coordinate system
-        public void CreateBaseRefOrigin(bool zIsUp)
+        private void CreateBaseRefOrigin(bool zIsUp)
         {
             if (!ActiveSWModel.Extension.SelectByID2(
                     "Origin_global", "COORDSYS", 0, 0, 0, false, 0, null, 0))
@@ -589,7 +589,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Creates a Reference Axis to be used to calculate the joint axis
-        public void CreateRefAxis(Joint Joint)
+        private void CreateRefAxis(Joint Joint)
         {
             //Adds sketch segment
             SketchSegment rotaxis = AddSketchGeometry(Joint.Axis, Joint.Origin, Joint.CoordinateSystemName);
@@ -606,7 +606,7 @@ namespace SW2URDF.URDFExport
 
         // Takes a links joint and calculates the local transform from the global transforms of
         // the parent and child. It also converts the axis to local values
-        public void LocalizeJoint(Joint Joint, string parentCoordsysName)
+        private void LocalizeJoint(Joint Joint, string parentCoordsysName)
         {
             MathTransform parentTransform = GetCoordinateSystemTransform(parentCoordsysName);
             double[] parentRPY = MathOps.GetRPY(parentTransform);
@@ -635,7 +635,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Funny method I created that inserts a RefAxis and then finds the reference to it.
-        public Feature InsertAxis(SketchSegment axis)
+        private Feature InsertAxis(SketchSegment axis)
         {
             //First select the axis
             SelectData data = ActiveSWModel.SelectionManager.CreateSelectData();
@@ -671,7 +671,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Inserts a sketch into the main assembly and name it
-        public string Setup3DSketch()
+        private string Setup3DSketch()
         {
             bool sketchExists =
                 ActiveSWModel.Extension.SelectByID2(
@@ -688,7 +688,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Adds lines and a point to create the entities for a reference coordinates
-        public object[] AddSketchGeometry(Origin Origin)
+        private object[] AddSketchGeometry(Origin Origin)
         {
             //Find if the sketch exists first
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
@@ -742,7 +742,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Inserts a sketch segment for use when creating a Reference Axis
-        public SketchSegment AddSketchGeometry(Axis axis, Origin origin, string coordSysName)
+        private SketchSegment AddSketchGeometry(Axis axis, Origin origin, string coordSysName)
         {
             if (ActiveSWModel.SketchManager.ActiveSketch == null)
             {
@@ -905,7 +905,7 @@ namespace SW2URDF.URDFExport
 
         //This now needs to be able to get the component, and it's associated coordinate system name.
         //Then it needs to transform to the top level assembly (sounds like fun).
-        public void EstimateGlobalJointFromRefGeometry(Link parent, Link child)
+        private void EstimateGlobalJointFromRefGeometry(Link parent, Link child)
         {
             MathTransform GlobalCoordsysTransform =
                 GetCoordinateSystemTransform(child.Joint.CoordinateSystemName);
@@ -928,7 +928,7 @@ namespace SW2URDF.URDFExport
         // coordinate systems that are embedded in subcomponents, and apply the correct transformation to return
         // it to a global transform. It assumes that the coordinate system name is formatted like:
         // "Coordinate System 1 <assy/subassy/comp>" where the full Component2.Name2 is between the <>
-        public MathTransform GetCoordinateSystemTransform(string CoordinateSystemName)
+        private MathTransform GetCoordinateSystemTransform(string CoordinateSystemName)
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             MathTransform ComponentTransform = default(MathTransform);
@@ -967,7 +967,7 @@ namespace SW2URDF.URDFExport
             return GlobalCoordsysTransform;
         }
 
-        public void MoveOrigin(Link parent, Link nonLocalizedChild)
+        private void MoveOrigin(Link parent, Link nonLocalizedChild)
         {
             double xMax = Double.MinValue;
             double yMax = Double.MinValue;
@@ -1003,7 +1003,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Calculates the axis from a Reference Axis in the model
-        public void EstimateAxis(Joint Joint)
+        private void EstimateAxis(Joint Joint)
         {
             Joint.Axis.SetXYZ(EstimateAxis(Joint.AxisName));
         }
@@ -1017,7 +1017,7 @@ namespace SW2URDF.URDFExport
             return GetRefAxis(axisName);
         }
 
-        public double[] GetRefAxis(string axisStr)
+        private double[] GetRefAxis(string axisStr)
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             string axisName = axisStr;
@@ -1083,7 +1083,7 @@ namespace SW2URDF.URDFExport
         }
 
         // This is called by the above method and the getRefAxis method
-        public double[] LocalizeAxis(double[] Axis, MathTransform coordsysTransform)
+        private double[] LocalizeAxis(double[] Axis, MathTransform coordsysTransform)
         {
             if (coordsysTransform != null)
             {
@@ -1095,7 +1095,7 @@ namespace SW2URDF.URDFExport
             return MathOps.Threshold(Axis, 0.00001);
         }
 
-        public double[] GlobalAxis(double[] axis, Matrix<double> transform)
+        private double[] GlobalAxis(double[] axis, Matrix<double> transform)
         {
             double[] transformedAxis = new double[axis.Length];
             if (transform != null)
@@ -1109,7 +1109,7 @@ namespace SW2URDF.URDFExport
             return MathOps.Threshold(transformedAxis, 0.00001);
         }
 
-        public double[] GlobalAxis(double[] axis, MathTransform coordsysTransform)
+        private double[] GlobalAxis(double[] axis, MathTransform coordsysTransform)
         {
             if (coordsysTransform != null)
             {
@@ -1242,7 +1242,7 @@ namespace SW2URDF.URDFExport
 
         //This method adds in the limits from a limit mate, to make a joint a revolute joint.
         // It really needs to checked for correctness.
-        public void AddLimits(Joint Joint, List<Mate2> limitMates,
+        private void AddLimits(Joint Joint, List<Mate2> limitMates,
             Component2 parentComponent, Component2 childComponent)
         {
             logger.Info("Parent SW Component: " + parentComponent.Name2);
@@ -1302,7 +1302,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Suppresses limit mates to make it easier to find the free degree of freedom in a joint
-        public List<Mate2> SuppressLimitMates(IComponent2 component)
+        private List<Mate2> SuppressLimitMates(IComponent2 component)
         {
             ModelDoc2 modelDoc = component.GetModelDoc2();
             List<Mate2> limitMates = new List<Mate2>();
@@ -1337,7 +1337,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Unsuppresses limit mates that were suppressed before
-        public void UnsuppressLimitMates(List<Mate2> limitMates)
+        private void UnsuppressLimitMates(List<Mate2> limitMates)
         {
             foreach (Mate2 swMate in limitMates)
             {
@@ -1348,7 +1348,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Unfixes components that were fixed to find the free degree of freedom
-        public void UnFixComponents(List<Component2> components)
+        private void UnFixComponents(List<Component2> components)
         {
             foreach (Component2 comp in components)
             {
@@ -1362,19 +1362,7 @@ namespace SW2URDF.URDFExport
 
         //Verifies that the reference geometry still exists. This can happen if the reference
         // geometry was deleted but the configuration was kept
-        public void CheckRefGeometryExists(Joint Joint)
-        {
-            if (!CheckRefCoordsysExists(Joint.CoordinateSystemName))
-            {
-                Joint.CoordinateSystemName = "Automatically Generate";
-            }
-            if (!CheckRefAxisExists(Joint.AxisName))
-            {
-                Joint.AxisName = "Automatically Generate";
-            }
-        }
-
-        public void CheckRefGeometryExists(Link link)
+        private void CheckRefGeometryExists(Link link)
         {
             if (!CheckRefCoordsysExists(link.Joint.CoordinateSystemName))
             {
@@ -1386,12 +1374,12 @@ namespace SW2URDF.URDFExport
             }
         }
 
-        public bool CheckRefCoordsysExists(string OriginName)
+        private bool CheckRefCoordsysExists(string OriginName)
         {
             return ReferenceCoordinateSystemNames.Contains(OriginName);
         }
 
-        public bool CheckRefAxisExists(string AxisName)
+        private bool CheckRefAxisExists(string AxisName)
         {
             return ReferenceAxesNames.Contains(AxisName);
         }
