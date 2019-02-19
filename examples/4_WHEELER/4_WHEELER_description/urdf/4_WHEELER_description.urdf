@@ -1,20 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.4.4-6-g2742936-dirty  Build Version: 1.4.6968.15956
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="4_WHEELER_description">
   <link
     name="base_link">
     <inertial>
       <origin
-        xyz="-0.0141165384615385 5.97109332406286E-20 0.00692383725632013"
+        xyz="-0.0141165384615385 4.23948754846086E-19 0.00692383725632013"
         rpy="0 0 0" />
       <mass
         value="0.563205630345987" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="0.00117384279611469"
+        ixy="9.99854565423472E-20"
+        ixz="-1.5465718715316E-20"
+        iyy="0.000382342529746245"
+        iyz="1.9910139953764E-20"
+        izz="0.00132140486649909" />
     </inertial>
     <visual>
       <origin
@@ -44,17 +48,17 @@
     name="front_right_link">
     <inertial>
       <origin
-        xyz="0.0150232018561485 1.73472347597681E-18 1.38777878078145E-17"
+        xyz="0.0150232018561485 0 0"
         rpy="0 0 0" />
       <mass
-        value="0.0846266521060751" />
+        value="0.084626652106075" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="3.81697371488008E-05"
+        ixy="1.15941736867104E-37"
+        ixz="-1.38810202635152E-24"
+        iyy="2.54252769409231E-05"
+        iyz="1.06543524839393E-40"
+        izz="2.54252769409231E-05" />
     </inertial>
     <visual>
       <origin
@@ -91,7 +95,9 @@
     <child
       link="front_right_link" />
     <axis
-      xyz="-1 0 0" />
+      xyz="1 0 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
   <link
     name="back_right_link">
@@ -102,12 +108,12 @@
       <mass
         value="0.084626652106075" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="3.81697371488008E-05"
+        ixy="-7.40219872782327E-38"
+        ixz="7.0944970673424E-24"
+        iyy="2.54252769409231E-05"
+        iyz="2.64481672201998E-40"
+        izz="2.54252769409231E-05" />
     </inertial>
     <visual>
       <origin
@@ -144,7 +150,9 @@
     <child
       link="back_right_link" />
     <axis
-      xyz="-1 0 0" />
+      xyz="1 0 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
   <link
     name="front_left_link">
@@ -155,12 +163,12 @@
       <mass
         value="0.084626652106075" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="3.81697371488008E-05"
+        ixy="-8.25084535794452E-38"
+        ixz="8.66046310517947E-24"
+        iyy="2.54252769409231E-05"
+        iyz="2.95137923266854E-38"
+        izz="2.54252769409231E-05" />
     </inertial>
     <visual>
       <origin
@@ -197,7 +205,9 @@
     <child
       link="front_left_link" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
   <link
     name="back_left_link">
@@ -208,12 +218,12 @@
       <mass
         value="0.084626652106075" />
       <inertia
-        ixx="0"
-        ixy="0"
-        ixz="0"
-        iyy="0"
-        iyz="0"
-        izz="0" />
+        ixx="3.81697371488008E-05"
+        ixy="-8.25084535794452E-38"
+        ixz="7.84265519175544E-24"
+        iyy="2.54252769409231E-05"
+        iyz="-8.35361953230723E-38"
+        izz="2.54252769409231E-05" />
     </inertial>
     <visual>
       <origin
@@ -250,6 +260,8 @@
     <child
       link="back_left_link" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
   </joint>
 </robot>
