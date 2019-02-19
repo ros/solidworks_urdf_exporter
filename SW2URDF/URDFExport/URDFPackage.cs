@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using SW2URDF.UI;
 using System;
 using System.IO;
 
@@ -27,6 +28,7 @@ namespace SW2URDF.URDFExport
 {
     public class URDFPackage
     {
+        public static IMessageBox MessageBox = new MessageBoxHelper();
         public string PackageName { get; }
 
         public string PackageDirectory { get; }
@@ -69,7 +71,7 @@ namespace SW2URDF.URDFExport
 
         public void CreateDirectories()
         {
-            System.Windows.Forms.MessageBox.Show("Creating URDF Package \"" +
+            MessageBox.Show("Creating URDF Package \"" +
                 PackageName + "\" at:\n" + WindowsPackageDirectory);
             if (!Directory.Exists(WindowsPackageDirectory))
             {
