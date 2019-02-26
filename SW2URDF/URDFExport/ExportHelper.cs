@@ -146,6 +146,7 @@ namespace SW2URDF.URDFExport
             //Setting up the progress bar
             logger.Info("Beginning the export process");
             int progressBarBound = Common.GetCount(URDFRobot.BaseLink);
+            iSwApp.GetUserProgressBar(out progressBar);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
             //Creating package directories
@@ -437,7 +438,7 @@ namespace SW2URDF.URDFExport
                 else
                 {
                     logger.Info("Copying " + log_filename + " to " + destination);
-                    File.Copy(log_filename, destination);
+                    File.Copy(log_filename, destination, true);
                 }
             }
         }

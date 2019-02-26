@@ -133,6 +133,11 @@ namespace SW2URDF.URDFExport
             PMPage.Show2(0);
         }
 
+        public void Close(bool ok)
+        {
+            PMPage.Close(ok);
+        }
+
         //The following runs when a new instance of the class is created
         public ExportPropertyManager(SldWorks swAppPtr)
         {
