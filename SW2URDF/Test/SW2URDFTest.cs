@@ -31,44 +31,37 @@ namespace SW2URDF.Test
 
         public string GetDebugDirectory()
         {
-            string baseDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-            return baseDirectory;
+            return System.AppDomain.CurrentDomain.BaseDirectory;
         }
 
         public string GetX64Directory()
         {
-            string debugDirectory = GetDebugDirectory();
-            return Path.GetDirectoryName(debugDirectory);
+            return Path.GetDirectoryName(GetDebugDirectory());
         }
 
         public string GetBinDirectory()
         {
-            string x64Directory = GetX64Directory();
-            return Path.GetDirectoryName(x64Directory);
+            return Path.GetDirectoryName(GetX64Directory());
         }
 
         public string GetProjectDirectory()
         {
-            string binDirectory = GetBinDirectory();
-            return Path.GetDirectoryName(binDirectory);
+            return Path.GetDirectoryName(GetBinDirectory());
         }
 
         public string GetSolutionDirectory()
         {
-            string projectDirectory = GetProjectDirectory();
-            return Path.GetDirectoryName(projectDirectory);
+            return Path.GetDirectoryName(GetProjectDirectory());
         }
 
         public string GetExamplesDirectory()
         {
-            string solutionDirectory = GetSolutionDirectory();
-            return Path.Combine(solutionDirectory, "examples");
+            return Path.Combine(GetSolutionDirectory(), "examples");
         }
 
         public string GetModelDirectory(string modelName)
         {
-            string examplesDirectory = GetExamplesDirectory();
-            return Path.Combine(examplesDirectory, modelName);
+            return Path.Combine(GetExamplesDirectory(), modelName);
         }
 
         public string GetPackageDirectory(string modelName)
@@ -80,14 +73,12 @@ namespace SW2URDF.Test
 
         public string GetURDFDirectory(string modelName)
         {
-            string packageDirectory = GetPackageDirectory(modelName);
-            return Path.Combine(packageDirectory, "urdf");
+            return Path.Combine(GetPackageDirectory(modelName), "urdf");
         }
 
         public string GetMeshesDirectory(string modelName)
         {
-            string packageDirectory = GetPackageDirectory(modelName);
-            return Path.Combine(packageDirectory, "meshes");
+            return Path.Combine(GetPackageDirectory(modelName), "meshes");
         }
 
         public string GetCSVPath(string modelName)
@@ -104,15 +95,15 @@ namespace SW2URDF.Test
             string modelDirectory = GetModelDirectory(modelName);
             string filename = Path.Combine(modelDirectory, modelName + ".SLDASM");
             Assert.True(File.Exists(filename));
-            int Errors = 0;
-            int Warnings = 0;
+            int errors = 0;
+            int warnings = 0;
             int filetype = (int)swDocumentTypes_e.swDocASSEMBLY;
             string configuration = "";
 
             ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, 
-                                           configuration, ref Errors, ref Warnings);
-            Assert.Equal(0, Errors);
-            Assert.Equal(0, Warnings);
+                                           configuration, ref errors, ref warnings);
+            Assert.Equal(0, errors);
+            Assert.Equal(0, warnings);
             return doc;
         }
 
@@ -123,15 +114,15 @@ namespace SW2URDF.Test
             string modelDirectory = GetModelDirectory(modelName);
             string filename = Path.Combine(modelDirectory, modelName + ".SLDPRT");
             Assert.True(File.Exists(filename));
-            int Errors = 0;
-            int Warnings = 0;
+            int errors = 0;
+            int warnings = 0;
             int filetype = (int)swDocumentTypes_e.swDocASSEMBLY;
             string configuration = "";
 
             ModelDoc2 doc = SwApp.OpenDoc6(filename, filetype, (int)swOpenDocOptions_e.swOpenDocOptions_Silent, 
-                                           configuration, ref Errors, ref Warnings);
-            Assert.Equal(0, Errors);
-            Assert.Equal(0, Warnings);
+                                           configuration, ref errors, ref warnings);
+            Assert.Equal(0, errors);
+            Assert.Equal(0, warnings);
             return doc;
         }
 

@@ -42,7 +42,6 @@ namespace SW2URDF.Test
             pm.Close(true);
             SwApp.CloseAllDocuments(true);
             Xunit.Assert.True(true, "Property manager failed to open/close with okay");
-            
         }
 
         // TODO(SIMINT-164) pm.Show() crashes with drag drop 
@@ -72,7 +71,5 @@ namespace SW2URDF.Test
             obj.Invoke("ExportButtonPress");
             Xunit.Assert.NotNull(obj.GetProperty("Exporter.URDFRobot"));
         }
-
-
     }
 }

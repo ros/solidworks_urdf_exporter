@@ -11,7 +11,6 @@ namespace SW2URDF.Test
     {
         public TestSerialization(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         [Theory]
@@ -58,6 +57,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            Xunit.Assert.False(error);
 
             PrivateType serialization = new PrivateType(typeof(Serialization));
             string newData = (string)serialization.InvokeStatic(

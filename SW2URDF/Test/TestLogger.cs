@@ -9,7 +9,6 @@ namespace SW2URDF.Test
     {
         public TestLogger(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         public void TestGetLogger()

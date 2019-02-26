@@ -56,9 +56,6 @@ namespace SW2URDF.Test
             Assert.Equal(expected, MathOps.Max(array));
         }
 
-
-
-
         [Theory]
         [InlineData(0, 0, 1, 0)]
         [InlineData(1, 0, -1, -1)]

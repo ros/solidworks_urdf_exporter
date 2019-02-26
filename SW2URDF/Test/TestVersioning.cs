@@ -8,7 +8,6 @@ namespace SW2URDF.Test
     {
         public TestVersioning(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         [Fact]

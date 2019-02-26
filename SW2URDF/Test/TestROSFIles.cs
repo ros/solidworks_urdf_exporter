@@ -8,7 +8,6 @@ namespace SW2URDF.Test
     {
         public TestROSFIles(SWTestFixture fixture) : base(fixture)
         {
-
         }
     }
 }

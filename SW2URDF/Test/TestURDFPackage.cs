@@ -12,7 +12,6 @@ namespace SW2URDF.Test
     {
         public TestURDFPackage(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         [Fact]
@@ -43,7 +42,6 @@ namespace SW2URDF.Test
         {
             string tempDirectory = CreateRandomTempDirectory();
             string name = Path.GetRandomFileName();
-            Directory.CreateDirectory(tempDirectory);
             URDFPackage pkg = new URDFPackage(name, tempDirectory);
             Mock<IMessageBox> messageBoxMock = new Mock<IMessageBox>();
             messageBoxMock.Setup(m => m.Show(It.IsAny<string>()))

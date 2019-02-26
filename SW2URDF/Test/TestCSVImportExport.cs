@@ -14,7 +14,6 @@ namespace SW2URDF.Test
     {
         public TestCSVImportExport(SWTestFixture fixture) : base(fixture)
         {
-
         }
 
         [Theory]
@@ -39,6 +38,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool abortProcess);
+            Assert.False(abortProcess);
             Link baseLink = baseNode.GetLink();
             Robot robot = new Robot();
             robot.SetBaseLink(baseLink);
