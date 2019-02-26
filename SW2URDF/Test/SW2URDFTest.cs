@@ -1,7 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using System.IO;
-using System.Reflection;
 using Xunit;
 
 namespace SW2URDF.Test
