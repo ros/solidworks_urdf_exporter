@@ -1,9 +1,0 @@
-Bin
-bin
-obj
-*.user
-*.suo
-*.vsdoc
-TestResults
-*.sdf
-Version.cs
