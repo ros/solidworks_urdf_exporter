@@ -1,7 +1,6 @@
 ﻿using SolidWorks.Interop.sldworks;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;

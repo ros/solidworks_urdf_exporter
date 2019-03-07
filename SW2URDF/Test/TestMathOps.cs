@@ -1,5 +1,5 @@
-﻿using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
+﻿using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Double;
 using SolidWorks.Interop.sldworks;
 using SW2URDF.Utilities;
 using System;
@@ -270,7 +270,7 @@ namespace SW2URDF.Test
             new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
         public void TestGetRotation(double[] rpy, double[] expected)
         {
-            double[] result = MathOps.GetRotation(rpy).ToColumnWiseArray();
+            double[] result = MathOps.GetRotation(rpy).AsColumnMajorArray();
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], result[i], 10);
@@ -284,7 +284,7 @@ namespace SW2URDF.Test
             new double[] { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 2, 3, 1 })]
         public void TestGetTranslation(double[] xyz, double[] expected)
         {
-            double[] result = MathOps.GetTranslation(xyz).ToColumnWiseArray();
+            double[] result = MathOps.GetTranslation(xyz).AsColumnMajorArray();
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], result[i], 10);
@@ -314,7 +314,7 @@ namespace SW2URDF.Test
             new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
         public void TestGetTransformationFromXYZRPY(double[] xyz, double[] rpy, double[] expected)
         {
-            double[] result = MathOps.GetTransformation(xyz, rpy).ToColumnWiseArray();
+            double[] result = MathOps.GetTransformation(xyz, rpy).AsColumnMajorArray();
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], result[i], 10);
@@ -347,7 +347,7 @@ namespace SW2URDF.Test
             MathUtility util = SwApp.GetMathUtility();
             MathTransform transform = util.CreateTransform((object)mathTransformData);
             
-            double[] result = MathOps.GetRotationMatrix(transform).ToColumnWiseArray();
+            double[] result = MathOps.GetRotationMatrix(transform).AsColumnMajorArray();
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], result[i]);
@@ -374,7 +374,7 @@ namespace SW2URDF.Test
         {
             MathUtility util = SwApp.GetMathUtility();
             MathTransform transform = util.CreateTransform((object)matrixData);
-            double[] result = MathOps.GetTransformation(transform).ToColumnWiseArray();
+            double[] result = MathOps.GetTransformation(transform).AsColumnMajorArray();
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], result[i]);

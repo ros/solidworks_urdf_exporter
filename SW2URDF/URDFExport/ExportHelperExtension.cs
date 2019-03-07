@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
 using SW2URDF.URDF;
@@ -144,7 +144,7 @@ namespace SW2URDF.URDFExport
 
             // Wait are you saying that even though the matrix was trasposed from column major
             // order, you are writing it in row-major order here. Yes, yes I am.
-            double[] moment = linkLocalMomentInertia.ToRowWiseArray();
+            double[] moment = linkLocalMomentInertia.AsRowMajorArray();
             Link.Inertial.Inertia.SetMomentMatrix(moment);
 
             Link.Collision.Origin.SetXYZ(MathOps.GetXYZ(localCollisionTransform));
@@ -702,7 +702,7 @@ namespace SW2URDF.URDFExport
 
             //Calculate the lines that need to be drawn
             Matrix<double> transform = MathOps.GetRotation(Origin.GetRPY());
-            Matrix<double> Axes = 0.01 * DenseMatrix.Identity(4);
+            Matrix<double> Axes = 0.01 * DenseMatrix.CreateIdentity(4);
             Matrix<double> tA = transform * Axes;
 
             // origin at X, Y, Z

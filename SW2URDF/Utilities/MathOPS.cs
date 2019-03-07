@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
-using MathNet.Numerics.LinearAlgebra.Generic;
 using SolidWorks.Interop.sldworks;
 using System;
 using System.Collections.Generic;
@@ -184,9 +184,9 @@ namespace SW2URDF.Utilities
 
         public static Matrix<double> GetRotation(double[] RPY)
         {
-            Matrix<double> RX = DenseMatrix.Identity(4);
-            Matrix<double> RY = DenseMatrix.Identity(4);
-            Matrix<double> RZ = DenseMatrix.Identity(4);
+            Matrix<double> RX = DenseMatrix.CreateIdentity(4);
+            Matrix<double> RY = DenseMatrix.CreateIdentity(4);
+            Matrix<double> RZ = DenseMatrix.CreateIdentity(4);
 
             RX[1, 1] = Math.Cos(RPY[0]);
             RX[1, 2] = -Math.Sin(RPY[0]);
@@ -208,7 +208,7 @@ namespace SW2URDF.Utilities
 
         public static Matrix<double> GetTranslation(double[] XYZ)
         {
-            Matrix<double> m = DenseMatrix.Identity(4);
+            Matrix<double> m = DenseMatrix.CreateIdentity(4);
             m[0, 3] = XYZ[0]; m[1, 3] = XYZ[1]; m[2, 3] = XYZ[2];
             return m;
         }
@@ -222,7 +222,7 @@ namespace SW2URDF.Utilities
 
         public static Matrix GetRotationMatrix(MathTransform transform)
         {
-            var rot = new DenseMatrix(3);
+            Matrix rot = new DenseMatrix(3);
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
