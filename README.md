@@ -1,6 +1,6 @@
 # SolidWorks to URDF Exporter
 
-Authored and maintained by [Stephen Brawner](brawner@gmail.com) with additional support by [PickNik Consulting](https://picknik.ai).
+Authored and maintained by [Stephen Brawner](brawner@gmail.com). Past supporters include [PickNik Consulting](https://picknik.ai), Verb Surgical, Open Robotics, and Willow Garage. 
 
 ## Usage
 
