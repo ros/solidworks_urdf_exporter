@@ -466,7 +466,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File $(SolutionDir)scripts\UpdateVersionInfo.ps1 --filename $(ProjectDir)Versioning\VersionInfo.cs</PreBuildEvent>
+    <PreBuildEvent>"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -File "$(SolutionDir)scripts\UpdateVersionInfo.ps1" --filename "$(ProjectDir)Versioning\VersionInfo.cs"</PreBuildEvent>
     <PostBuildEvent>
 :REGISTRATION
 IF "$(TargetFrameworkVersion)"=="v4.5.2" GOTO NET40
