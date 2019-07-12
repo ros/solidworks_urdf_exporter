@@ -144,7 +144,7 @@ namespace SW2URDF.URDFExport
 
             // Wait are you saying that even though the matrix was trasposed from column major
             // order, you are writing it in row-major order here. Yes, yes I am.
-            double[] moment = linkLocalMomentInertia.AsRowMajorArray();
+            double[] moment = linkLocalMomentInertia.ToRowMajorArray();
             Link.Inertial.Inertia.SetMomentMatrix(moment);
 
             Link.Collision.Origin.SetXYZ(MathOps.GetXYZ(localCollisionTransform));
