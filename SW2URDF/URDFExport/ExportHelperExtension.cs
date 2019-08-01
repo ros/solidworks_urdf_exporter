@@ -828,7 +828,7 @@ namespace SW2URDF.URDFExport
                         out int L2Status, out MathVector LDir2);
                 if (RPoint1 != null)
                 {
-                    logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.get_IArrayData());
+                    logger.Info("R1: " + R1Status + ", " + RPoint1 + ", " + R1DirStatus + ", " + RDir1.ArrayData);
                 }
                 else
                 {
@@ -837,7 +837,7 @@ namespace SW2URDF.URDFExport
 
                 if (RPoint2 != null)
                 {
-                    logger.Info("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2.get_IArrayData());
+                    logger.Info("R2: " + R2Status + ", " + RPoint2 + ", " + R2DirStatus + ", " + RDir2.ArrayData);
                 }
                 else
                 {
@@ -845,7 +845,7 @@ namespace SW2URDF.URDFExport
                 }
                 if (LDir1 != null)
                 {
-                    logger.Info("L1: " + L1Status + ", " + LDir1.get_IArrayData());
+                    logger.Info("L1: " + L1Status + ", " + LDir1.ArrayData);
                 }
                 else
                 {
@@ -853,7 +853,7 @@ namespace SW2URDF.URDFExport
                 }
                 if (LDir2 != null)
                 {
-                    logger.Info("L2: " + ", " + LDir2.get_IArrayData());
+                    logger.Info("L2: " + ", " + LDir2.ArrayData);
                 }
                 else
                 {
