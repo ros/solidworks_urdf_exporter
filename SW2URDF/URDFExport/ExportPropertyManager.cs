@@ -537,12 +537,6 @@ namespace SW2URDF.URDFExport
         // selected one is then set
         private void TreeAfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (e.Action != TreeViewAction.ByMouse && e.Action != TreeViewAction.ByKeyboard)
-            {
-                logger.Info(e.Action);
-                return;
-            }
-
             try
             {
                 if (!automaticallySwitched && e.Node != null)
