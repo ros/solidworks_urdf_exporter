@@ -72,7 +72,7 @@ namespace SW2URDF.URDF
             SoftUpperAttribute = new URDFAttribute("soft_upper", false, null);
             SoftLowerAttribute = new URDFAttribute("soft_lower", false, null);
             KPositionAttribute = new URDFAttribute("k_position", false, null);
-            KVelocityAttribute = new URDFAttribute("k_velocity", true, 0.0);
+            KVelocityAttribute = new URDFAttribute("k_velocity", true, null);
 
             Attributes.Add(SoftUpperAttribute);
             Attributes.Add(SoftLowerAttribute);
