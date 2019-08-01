@@ -222,9 +222,11 @@ namespace SW2URDF.URDFExport
             Exporter.SetComputeJointKinematics(PMComputeJointKinematics.Checked);
             Exporter.SetComputeJointLimits(PMComputeJointLimits.Checked);
 
-            if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree)) // Only if everything is A-OK, then do we proceed.
+            // Only if everything is A-OK, then do we proceed.
+            if (CheckIfNamesAreUnique((LinkNode)Tree.Nodes[0]) && CheckNodesComplete(Tree))
             {
-                PMPage.Close(true); //It saves automatically when sending Okay as true;
+                //It saves automatically when sending Okay as true;
+                PMPage.Close(true); 
                 AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
 
                 //This call can be a real sink of processing time if the model is large.

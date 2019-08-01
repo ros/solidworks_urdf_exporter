@@ -142,6 +142,7 @@ namespace SW2URDF.UI
         //Joint form configuration controls
         private void AssemblyExportFormLoad(object sender, EventArgs e)
         {
+            Exporter.UpdateReferenceGeometries();
             FillJointTree();
         }
 
