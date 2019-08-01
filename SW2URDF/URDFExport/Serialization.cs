@@ -93,7 +93,7 @@ namespace SW2URDF.URDFExport
         public static void SaveConfigTreeXML(SldWorks swApp, ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             string oldData = GetConfigTreeData(model, out double version);
-            if (version < SERIALIZATION_VERSION)
+            if (oldData.Length > 0 && version < SERIALIZATION_VERSION)
             {
                 MessageBox.Show("You have a URDF configuration with an outdated save format. It will automatically be " +
                     "upgraded to the latest version and saved to the configuration named \"" +
