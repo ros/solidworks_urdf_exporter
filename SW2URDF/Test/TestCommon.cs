@@ -265,7 +265,7 @@ namespace SW2URDF.Test
 
         [Theory]
         [InlineData(MODEL_NAME_3_DOF_ARM, "3_DOF_ARM_BASE-1", new byte[] {
-            248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95,
+            224, 46, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95,
             0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83, 0, 69, 0, 45, 0, 49, 0, 64, 0, 51,
             0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 4, 0, 0, 0, 16, 0, 0, 0,
             1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
@@ -317,11 +317,8 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData(MODEL_NAME_3_DOF_ARM, new byte[] { 248, 42, 0, 0, 5, 0, 0, 0, 255, 254, 255, 26,
-            51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0, 77, 0, 95, 0, 66, 0, 65, 0, 83,
-            0, 69, 0, 45, 0, 49, 0, 64, 0, 51, 0, 95, 0, 68, 0, 79, 0, 70, 0, 95, 0, 65, 0, 82, 0,
-            77, 0, 4, 0, 0, 0, 16, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 17, 0, 0, 0, })]
-        public void TestLoadSWComponent(string modelName, byte[] pid)
+        [InlineData(MODEL_NAME_3_DOF_ARM)]
+        public void TestLoadSWComponent(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
