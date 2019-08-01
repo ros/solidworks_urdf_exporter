@@ -62,6 +62,7 @@ namespace SW2URDF.URDF
             XmlWriter writer = mWriter.writer;
             writer.WriteStartDocument();
             writer.WriteStartElement("package");
+            writer.WriteAttributeString("format", "2");
 
             description.WriteElement(writer);
 
