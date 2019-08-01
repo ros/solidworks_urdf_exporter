@@ -432,9 +432,6 @@ namespace SW2URDF.URDFExport
                 }
             }
 
-            
-
-
             if (coordSysName == "Automatically Generate")
             {
                 child.Joint.CoordinateSystemName = "Origin_" + child.Joint.Name;
@@ -1228,6 +1225,18 @@ namespace SW2URDF.URDFExport
                 }
             }
             return featureNames;
+        }
+
+        public void UpdateReferenceGeometries()
+        {
+            List<string> coordinateSystemNames = FindRefGeoNames("CoordSys");
+            List<string> axesNames = FindRefGeoNames("RefAxis");
+
+            ReferenceCoordinateSystemNames.Clear();
+            ReferenceCoordinateSystemNames.AddRange(coordinateSystemNames);
+
+            ReferenceAxesNames.Clear();
+            ReferenceAxesNames.AddRange(axesNames);
         }
 
         public List<string> GetRefCoordinateSystems()
