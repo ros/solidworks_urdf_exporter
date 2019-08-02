@@ -207,7 +207,7 @@
             // 
             this.buttonLinksExportUrdfOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonLinksExportUrdfOnly.Location = new System.Drawing.Point(759, 653);
-            this.buttonLinksExportUrdfOnly.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.buttonLinksExportUrdfOnly.Margin = new System.Windows.Forms.Padding(2);
             this.buttonLinksExportUrdfOnly.Name = "buttonLinksExportUrdfOnly";
             this.buttonLinksExportUrdfOnly.Size = new System.Drawing.Size(150, 23);
             this.buttonLinksExportUrdfOnly.TabIndex = 94;
@@ -1496,7 +1496,7 @@
             // 
             this.MimicCheckBox.AutoSize = true;
             this.MimicCheckBox.Location = new System.Drawing.Point(530, 580);
-            this.MimicCheckBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.MimicCheckBox.Margin = new System.Windows.Forms.Padding(2);
             this.MimicCheckBox.Name = "MimicCheckBox";
             this.MimicCheckBox.Size = new System.Drawing.Size(107, 17);
             this.MimicCheckBox.TabIndex = 235;
@@ -1508,7 +1508,7 @@
             // 
             this.MimicJointComboBox.FormattingEnabled = true;
             this.MimicJointComboBox.Location = new System.Drawing.Point(532, 620);
-            this.MimicJointComboBox.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.MimicJointComboBox.Margin = new System.Windows.Forms.Padding(2);
             this.MimicJointComboBox.Name = "MimicJointComboBox";
             this.MimicJointComboBox.Size = new System.Drawing.Size(158, 21);
             this.MimicJointComboBox.TabIndex = 236;
@@ -1529,7 +1529,7 @@
             // textBoxMimicMultiplier
             // 
             this.textBoxMimicMultiplier.Location = new System.Drawing.Point(766, 600);
-            this.textBoxMimicMultiplier.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBoxMimicMultiplier.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxMimicMultiplier.Name = "textBoxMimicMultiplier";
             this.textBoxMimicMultiplier.Size = new System.Drawing.Size(66, 20);
             this.textBoxMimicMultiplier.TabIndex = 238;
@@ -1538,7 +1538,7 @@
             // textBoxMimicOffset
             // 
             this.textBoxMimicOffset.Location = new System.Drawing.Point(766, 622);
-            this.textBoxMimicOffset.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBoxMimicOffset.Margin = new System.Windows.Forms.Padding(2);
             this.textBoxMimicOffset.Name = "textBoxMimicOffset";
             this.textBoxMimicOffset.Size = new System.Drawing.Size(66, 20);
             this.textBoxMimicOffset.TabIndex = 239;
@@ -1582,9 +1582,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1073, 687);
-            this.Controls.Add(this.LimitRequiredLabel);
-            this.Controls.Add(this.AxisRequiredLabel);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.panelLinkProperties);
             this.Controls.Add(this.buttonJointNext);
             this.Controls.Add(this.buttonJointCancel);
@@ -1663,6 +1660,9 @@
             this.Controls.Add(this.textBoxMimicOffset);
             this.Controls.Add(this.textBoxMimicMultiplier);
             this.Controls.Add(this.MimicEquationLabel);
+            this.Controls.Add(this.LimitRequiredLabel);
+            this.Controls.Add(this.AxisRequiredLabel);
+            this.Controls.Add(this.label1);
             this.MinimumSize = new System.Drawing.Size(1089, 726);
             this.Name = "AssemblyExportForm";
             this.Text = "SolidWorks Assembly to URDF Exporter";
