@@ -2,6 +2,9 @@
 
 Authored and maintained by [Stephen Brawner](brawner@gmail.com). Past supporters include [PickNik Consulting](https://picknik.ai), Verb Surgical, Open Robotics, and Willow Garage. 
 
+## Latest Release
+https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
+
 ## Usage
 
 See the [ROS Wiki](http://wiki.ros.org/sw_urdf_exporter) and associated [tutorials](http://wiki.ros.org/sw_urdf_exporter/Tutorials).
