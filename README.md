@@ -28,3 +28,4 @@ See the [ROS Wiki](http://wiki.ros.org/sw_urdf_exporter) and associated [tutoria
 
 1. `AxImp.exe` error - Check the installation of the .Net Tools. If there is no error, install the Windows 10 SDK.
 1. `Resourse.resx` error - Check if `sw2urdf/SW2URDF/Resources.resx` exists and is empty. If empty, delete this file then right click the `SW2URDF` in the Solution Explorer and select `Properties`. Navigate to the Resources tab and click the button to create a new file.
+1. Mesh coordinate error - Check the version of SolidWorks and Service Pack. SolidWorks 2019 or Service Pack 5 is required. See [this issue](https://github.com/ros/solidworks_urdf_exporter/issues/73).
