@@ -7,7 +7,7 @@ https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
 
 ## SolidWorks Version Requirements
 
-1. Exported meshes do not match SolidWorks model - Check the version of SolidWorks and Service Pack. SolidWorks 2018 with Service Pack 5 or later is required. See [this issue](https://github.com/ros/solidworks_urdf_exporter/issues/73).
+1. The minimum required version of SolidWorks for use with this add-in is 2018 Service Pack 5. SolidWorks 2017 or earlier may work. See [this issue](https://github.com/ros/solidworks_urdf_exporter/issues/73).
 
 ## Usage
 
