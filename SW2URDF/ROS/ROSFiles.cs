@@ -234,10 +234,8 @@ namespace SW2URDF.ROS
             elements = new List<LaunchElement>
             {
                 new LaunchArg("model"),
-                new LaunchArg("gui", "False"),
                 new LaunchParam("robot_description", "", "$(find " + package + ")/urdf/" + robotURDF),
-                new LaunchParam("use_gui", "$(arg gui)"),
-                new LaunchNode("joint_state_publisher", "joint_state_publisher", "joint_state_publisher"),
+                new LaunchNode("joint_state_publisher_gui", "joint_state_publisher_gui", "joint_state_publisher_gui"),
                 new LaunchNode("robot_state_publisher", "robot_state_publisher", "state_publisher"),
                 new LaunchNode("rviz", "rviz", "rviz", "-d $(find " + package + ")/urdf.rviz")
             };

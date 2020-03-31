@@ -50,7 +50,7 @@ namespace SW2URDF.URDF
             dependencies = new Dependencies(
                 new string[] { "catkin" },
                 new string[] {
-                    "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher", "gazebo" });
+                    "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher_gui", "gazebo" });
 
             author = new Author("TODO");
 
