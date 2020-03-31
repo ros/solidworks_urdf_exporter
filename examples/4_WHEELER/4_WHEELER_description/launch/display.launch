@@ -1,15 +1,9 @@
 <launch>
   <arg
     name="model" />
-  <arg
-    name="gui"
-    default="False" />
   <param
     name="robot_description"
     textfile="$(find 4_WHEELER_description)/urdf/4_WHEELER_description.urdf" />
-  <param
-    name="use_gui"
-    value="$(arg gui)" />
   <node
     name="joint_state_publisher_gui"
     pkg="joint_state_publisher_gui"
