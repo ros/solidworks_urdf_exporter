@@ -5,6 +5,8 @@ Authored and maintained by [Stephen Brawner](brawner@gmail.com). Past supporters
 ## Latest Release
 https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
 
+Please fill out [this survey](https://forms.gle/iZ9Sy6hPRD5qNqqg9) to help plan SolidWorks URDF Exporter 2.0!
+
 ## SolidWorks Version Requirements
 
 1. The minimum required version of SolidWorks for use with this add-in is 2018 Service Pack 5. SolidWorks 2017 or earlier may work. See [this issue](https://github.com/ros/solidworks_urdf_exporter/issues/73).
