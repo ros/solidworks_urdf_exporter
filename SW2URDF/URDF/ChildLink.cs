@@ -12,14 +12,8 @@ namespace SW2URDF.URDF
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         public ChildLink() : base("child", true)

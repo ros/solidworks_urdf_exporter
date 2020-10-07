@@ -12,14 +12,8 @@ namespace SW2URDF.URDF
 
         public double Rising
         {
-            get
-            {
-                return (double)RisingAttribute.Value;
-            }
-            set
-            {
-                RisingAttribute.Value = value;
-            }
+            get => (double)RisingAttribute.Value;
+            set => RisingAttribute.Value = value;
         }
 
         [DataMember]
@@ -27,14 +21,8 @@ namespace SW2URDF.URDF
 
         public double Falling
         {
-            get
-            {
-                return (double)FallingAttribute.Value;
-            }
-            set
-            {
-                FallingAttribute.Value = value;
-            }
+            get => (double)FallingAttribute.Value;
+            set => FallingAttribute.Value = value;
         }
 
         public Calibration() : base("calibration", false)

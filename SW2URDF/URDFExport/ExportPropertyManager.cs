@@ -53,11 +53,11 @@ namespace SW2URDF.URDFExport
         public Link previouslySelectedLink;
         public List<Link> linksToVisit;
         public LinkNode rightClickedNode;
-        private ContextMenuStrip docMenu;
+        private readonly ContextMenuStrip docMenu;
 
         //General objects required for the PropertyManager page
 
-        private PropertyManagerPage2 PMPage;
+        private readonly PropertyManagerPage2 PMPage;
         private PropertyManagerPageGroup PMGroup;
         private PropertyManagerPageSelectionbox PMSelection;
         private PropertyManagerPageButton PMButtonExport;

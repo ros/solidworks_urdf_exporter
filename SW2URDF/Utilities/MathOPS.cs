@@ -39,7 +39,7 @@ namespace SW2URDF.Utilities
 
         public static T Max<T>(T[] array) where T : IComparable<T>
         {
-            T result = default(T);
+            T result = default;
             if (array.Length > 0)
             {
                 result = array[0];
@@ -58,7 +58,7 @@ namespace SW2URDF.Utilities
 
         public static T Min<T>(T[] array) where T : IComparable<T>
         {
-            T result = default(T);
+            T result = default;
             if (array.Length > 0)
             {
                 result = array[0];

@@ -504,7 +504,7 @@ namespace SW2URDF.URDFExport
             double yAxisY = (double)sketchEntities[10];
             double yAxisZ = (double)sketchEntities[11];
 
-            IFeature coordinates = default(IFeature);
+            IFeature coordinates = default;
             ActiveSWModel.ClearSelection2(true);
             SelectionMgr selectionManager = ActiveSWModel.SelectionManager;
             SelectData data = selectionManager.CreateSelectData();
@@ -928,7 +928,7 @@ namespace SW2URDF.URDFExport
         private MathTransform GetCoordinateSystemTransform(string CoordinateSystemName)
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
-            MathTransform ComponentTransform = default(MathTransform);
+            MathTransform ComponentTransform = default;
             if (CoordinateSystemName == null)
             {
                 throw new Exception("Coordinate system string is null");
@@ -1018,8 +1018,8 @@ namespace SW2URDF.URDFExport
         {
             ModelDoc2 ComponentModel = ActiveSWModel;
             string axisName = axisStr;
-            RefAxis axis = default(RefAxis);
-            MathTransform ComponentTransform = default(MathTransform);
+            RefAxis axis = default;
+            MathTransform ComponentTransform = default;
 
             if (axisStr.Contains("<") && axisStr.Contains(">"))
             {

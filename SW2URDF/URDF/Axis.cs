@@ -13,14 +13,8 @@ namespace SW2URDF.URDF
 
         private double[] XYZ
         {
-            get
-            {
-                return (double[])XYZAttribute.Value;
-            }
-            set
-            {
-                XYZAttribute.Value = value;
-            }
+            get => (double[])XYZAttribute.Value;
+            set => XYZAttribute.Value = value;
         }
 
         public double[] GetXYZ()
@@ -35,38 +29,20 @@ namespace SW2URDF.URDF
 
         public double X
         {
-            get
-            {
-                return XYZ[0];
-            }
-            set
-            {
-                XYZ[0] = value;
-            }
+            get => XYZ[0];
+            set => XYZ[0] = value;
         }
 
         public double Y
         {
-            get
-            {
-                return XYZ[1];
-            }
-            set
-            {
-                XYZ[1] = value;
-            }
+            get => XYZ[1];
+            set => XYZ[1] = value;
         }
 
         public double Z
         {
-            get
-            {
-                return XYZ[2];
-            }
-            set
-            {
-                XYZ[2] = value;
-            }
+            get => XYZ[2];
+            set => XYZ[2] = value;
         }
 
         public Axis() : base("axis", false)

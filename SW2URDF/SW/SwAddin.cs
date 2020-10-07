@@ -29,6 +29,7 @@ using SW2URDF.URDFExport;
 using SW2URDF.Utilities;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -123,14 +124,14 @@ namespace SW2URDF.SW
             {
                 logger.Error("There was a problem registering this dll: SWattr is null. \n\"" +
                     nl.Message + "\"", nl);
-                MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
-                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                // MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
+                //     nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
             catch (Exception e)
             {
                 logger.Error(e.Message);
-                MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
-                    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                // MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
+                //    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -172,11 +173,6 @@ namespace SW2URDF.SW
 
         public SwAddin()
         {
-            Application.ThreadException +=
-                new ThreadExceptionEventHandler(ExceptionHandler);
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            AppDomain.CurrentDomain.UnhandledException +=
-                new UnhandledExceptionEventHandler(UnhandledException);
             Logger.Setup();
         }
 
@@ -194,21 +190,25 @@ namespace SW2URDF.SW
 
         public bool ConnectToSW(object ThisSW, int cookie)
         {
+            logger.Info("Attempting to connect to SW");
             SwApp = (ISldWorks)ThisSW;
             addinID = cookie;
 
             //Setup callbacks
+            logger.Info("Setting up callbacks");
             SwApp.SetAddinCallbackInfo(0, this, addinID);
 
             #region Setup the Command Manager
-
+            logger.Info("Setting up command manager");
             CmdMgr = SwApp.GetCommandManager(cookie);
+
+            logger.Info("Adding command manager");
             AddCommandMgr();
 
             #endregion Setup the Command Manager
 
             #region Setup the Event Handlers
-
+            logger.Info("Adding event handlers");
             SwEventPtr = (SldWorks)SwApp;
             OpenDocs = new Hashtable();
             AttachEventHandlers();
@@ -245,11 +245,23 @@ namespace SW2URDF.SW
 
         public void AddCommandMgr()
         {
-            SwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File",
+            // Do not use AddMenuItem5 here despite the obselete warning, AddMenuItem5 doesn't work
+            int ret = SwApp.AddMenuItem4((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File",
                 10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
+            if (0 != ret)
+            {
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'File'");
+                return;
+            }
             logger.Info("Adding Assembly export to file menu");
-            SwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File",
-                10, "PartURDFExporter", "", "Export part as URDF file", "");
+            ret = SwApp.AddMenuItem4((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File",
+                0, "PartURDFExporter", "", "Export part as URDF file", "");
+            if (0 != ret)
+            {
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Export'");
+                return;
+            }
+
             logger.Info("Adding Part export to file menu");
         }
 

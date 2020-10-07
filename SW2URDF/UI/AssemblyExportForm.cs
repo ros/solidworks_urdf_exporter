@@ -43,13 +43,12 @@ namespace SW2URDF.UI
         public bool AutoUpdatingForm;
         public AttributeDef saveConfigurationAttributeDef;
 
-        private SldWorks swApp;
-        private ModelDoc2 ActiveSWModel;
-        private StringBuilder NewNodeMap = new StringBuilder(128);
+        private readonly SldWorks swApp;
+        private readonly ModelDoc2 ActiveSWModel;
         private LinkNode previouslySelectedNode;
-        private Control[] jointBoxes;
-        private Control[] linkBoxes;
-        private LinkNode BaseNode;
+        private readonly Control[] jointBoxes;
+        private readonly Control[] linkBoxes;
+        private readonly LinkNode BaseNode;
 
         public AssemblyExportForm(SldWorks SwApp, LinkNode node, ExportHelper exporter)
         {
@@ -370,12 +369,11 @@ namespace SW2URDF.UI
             // valid input.
             TextBox textBox = (TextBox)sender;
             string potentialText = textBox.Text + e.KeyChar;
-
             bool parseSuccess =
                 double.TryParse(potentialText,
                     URDFAttribute.URDFNumberStyle,
                     URDFAttribute.URDFNumberFormat,
-                    out double result);
+                    out _);
 
             // If the key pressed is not a digit, +/- sign or the decimal separator than ignore it (e.Handled = true)
             e.Handled = (!parseSuccess &&

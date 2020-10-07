@@ -112,7 +112,7 @@ namespace SW2URDF.SW
 
     public class PartEventHandler : DocumentEventHandler
     {
-        private PartDoc doc;
+        private readonly PartDoc doc;
 
         public PartEventHandler(ModelDoc2 modDoc, SwAddin addin)
             : base(modDoc, addin)
@@ -281,7 +281,7 @@ namespace SW2URDF.SW
 
     public class DrawingEventHandler : DocumentEventHandler
     {
-        private DrawingDoc doc;
+        private readonly DrawingDoc doc;
 
         public DrawingEventHandler(ModelDoc2 modDoc, SwAddin addin)
             : base(modDoc, addin)
