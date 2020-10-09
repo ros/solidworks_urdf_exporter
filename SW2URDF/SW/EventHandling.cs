@@ -144,7 +144,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -196,7 +196,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -310,7 +310,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -343,7 +343,7 @@ namespace SW2URDF.SW
         }
 
         //EventHandlers
-        public int OnDestroy(int destroyType)
+        public static int OnDestroy(int destroyType)
         {
             switch (destroyType)
             {
@@ -358,7 +358,7 @@ namespace SW2URDF.SW
             }
         }
 
-        public int OnRepaint(int repaintType)
+        public static int OnRepaint(int repaintType)
         {
             return 0;
         }

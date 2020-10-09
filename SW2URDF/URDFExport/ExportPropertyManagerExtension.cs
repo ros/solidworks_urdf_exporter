@@ -34,8 +34,8 @@ namespace SW2URDF.URDFExport
 {
     public partial class ExportPropertyManager : PropertyManagerPage2Handler9
     {
-        public static readonly double CONFIGURATION_VERSION = 1.3;
-        public static readonly double SOAP_MIN_VERSION = 1.3;
+        public static readonly double ConfigurationVersion = 1.3;
+        public static readonly double SoapMinVersion = 1.3;
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
@@ -568,7 +568,7 @@ namespace SW2URDF.URDFExport
                 ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             ActiveSWModel.Extension.SelectByID2
-                (Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+                (Serialization.UrdfConfigurationSwAttributeName, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);

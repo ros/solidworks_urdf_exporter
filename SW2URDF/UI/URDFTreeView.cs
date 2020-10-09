@@ -162,7 +162,7 @@ namespace SW2URDF.UI
             TreeModified(this, new TreeModifiedEventArgs { Tree = this });
         }
 
-        private bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
+        private static bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
         {
             pointOnElement.X = 1;
             IInputElement result = item.InputHitTest(pointOnElement);
@@ -176,7 +176,7 @@ namespace SW2URDF.UI
         /// <param name="items"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
+        private static TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
         {
             List<TreeViewItem> flattened = tree.Flatten();
 

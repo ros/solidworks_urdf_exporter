@@ -26,8 +26,8 @@ namespace SW2URDF.UI
 
         public event EventHandler<TreeMergedEventArgs> TreeMerged = delegate { };
 
-        private static readonly int MAX_LABEL_CHARACTER_WIDTH = 40;
-        private static readonly int MAX_BUTTON_CHARACTER_WIDTH = 20;
+        private const int MAX_LABEL_CHARACTER_WIDTH = 40;
+        private const int MAX_BUTTON_CHARACTER_WIDTH = 20;
 
         private readonly string CSVFileName;
         private readonly string AssemblyName;
@@ -289,7 +289,7 @@ namespace SW2URDF.UI
             SelectedLink = null;
         }
 
-        private string ShortenStringForLabel(string text, int numCharacters)
+        private static string ShortenStringForLabel(string text, int numCharacters)
         {
             string result = text;
             if (text.Length > numCharacters)
@@ -301,7 +301,7 @@ namespace SW2URDF.UI
             return result;
         }
 
-        private TextBlock BuildTextBlock(string boldBit, string regularBit)
+        private static TextBlock BuildTextBlock(string boldBit, string regularBit)
         {
             TextBlock block = new TextBlock();
             block.Inlines.Add(new Bold(new Run(boldBit)));
@@ -417,7 +417,7 @@ namespace SW2URDF.UI
         /// <param name="treeView"></param>
         /// <param name="target"></param>
         /// <param name="package"></param>
-        private void ProcessDragDropOnItem(TreeViewItem target, TreeViewItem package, int position = -1)
+        private static void ProcessDragDropOnItem(TreeViewItem target, TreeViewItem package, int position = -1)
         {
             // The parent of the package could be either a TreeView or TreeViewItem
             ItemsControl packageParent = (ItemsControl)package.Parent;
@@ -457,7 +457,7 @@ namespace SW2URDF.UI
             }
         }
 
-        private bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
+        private static bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
         {
             pointOnElement.X = 1;
             IInputElement result = item.InputHitTest(pointOnElement);
@@ -471,7 +471,7 @@ namespace SW2URDF.UI
         /// <param name="items"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
+        private static TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
         {
             List<TreeViewItem> flattened = tree.Flatten();
 

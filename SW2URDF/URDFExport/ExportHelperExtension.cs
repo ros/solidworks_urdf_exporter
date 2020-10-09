@@ -73,7 +73,7 @@ namespace SW2URDF.URDFExport
 
         // This creates a Link from a Part ModelDoc. It basically just extracts the material
         // properties and saves them to the appropriate fields.
-        private Link CreateLinkFromPartModel(ModelDoc2 swModel)
+        private static Link CreateLinkFromPartModel(ModelDoc2 swModel)
         {
             Link Link = new Link(null);
             Link.Name = swModel.GetTitle();
@@ -112,7 +112,7 @@ namespace SW2URDF.URDFExport
 
         //This is only used by the Part Exporter, but it localizes the link to the Origin_global
         // coordinate system
-        private void LocalizeLink(Link Link, Matrix<double> GlobalTransform)
+        private static void LocalizeLink(Link Link, Matrix<double> GlobalTransform)
         {
             Matrix<double> GlobalTransformInverse = GlobalTransform.Inverse();
             Matrix<double> linkCoMTransform = MathOps.GetTranslation(Link.Inertial.Origin.GetXYZ());
@@ -311,7 +311,7 @@ namespace SW2URDF.URDFExport
             link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
         }
 
-        private void ComputeVisualCollisionProperties(Link link)
+        private static void ComputeVisualCollisionProperties(Link link)
         {
             link.Visual.Origin.SetXYZ(new double[3] { 0, 0, 0 });
             link.Visual.Origin.SetRPY(new double[3] { 0, 0, 0 });
@@ -1074,7 +1074,7 @@ namespace SW2URDF.URDFExport
         }
 
         // This is called by the above method and the getRefAxis method
-        private double[] LocalizeAxis(double[] Axis, MathTransform coordsysTransform)
+        private static double[] LocalizeAxis(double[] Axis, MathTransform coordsysTransform)
         {
             if (coordsysTransform != null)
             {
@@ -1086,7 +1086,7 @@ namespace SW2URDF.URDFExport
             return MathOps.Threshold(Axis, 0.00001);
         }
 
-        private double[] GlobalAxis(double[] axis, Matrix<double> transform)
+        private static double[] GlobalAxis(double[] axis, Matrix<double> transform)
         {
             double[] transformedAxis = new double[axis.Length];
             if (transform != null)
@@ -1100,7 +1100,7 @@ namespace SW2URDF.URDFExport
             return MathOps.Threshold(transformedAxis, 0.00001);
         }
 
-        private double[] GlobalAxis(double[] axis, MathTransform coordsysTransform)
+        private static double[] GlobalAxis(double[] axis, MathTransform coordsysTransform)
         {
             if (coordsysTransform != null)
             {
@@ -1172,7 +1172,7 @@ namespace SW2URDF.URDFExport
             }
         }
 
-        private Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
+        private static Dictionary<string, string> GetComponentRefGeoNames(string StringToParse)
         {
             string RefGeoName = StringToParse;
             string ComponentName = "";
@@ -1241,7 +1241,7 @@ namespace SW2URDF.URDFExport
 
         //This method adds in the limits from a limit mate, to make a joint a revolute joint.
         // It really needs to checked for correctness.
-        private void AddLimits(Joint Joint, List<Mate2> limitMates,
+        private static void AddLimits(Joint Joint, List<Mate2> limitMates,
             Component2 parentComponent, Component2 childComponent)
         {
             logger.Info("Parent SW Component: " + parentComponent.Name2);
@@ -1301,7 +1301,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Suppresses limit mates to make it easier to find the free degree of freedom in a joint
-        private List<Mate2> SuppressLimitMates(IComponent2 component)
+        private static List<Mate2> SuppressLimitMates(IComponent2 component)
         {
             List<Mate2> limitMates = new List<Mate2>();
 
@@ -1334,7 +1334,7 @@ namespace SW2URDF.URDFExport
         }
 
         // Unsuppresses limit mates that were suppressed before
-        private void UnsuppressLimitMates(List<Mate2> limitMates)
+        private static void UnsuppressLimitMates(List<Mate2> limitMates)
         {
             foreach (Mate2 swMate in limitMates)
             {

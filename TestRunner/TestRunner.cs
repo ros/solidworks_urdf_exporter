@@ -7,7 +7,7 @@ using Xunit.Runners;
 
 namespace TestRunner
 {
-    public class Program
+    static public class Program
     {
         // We use consoleLock because messages can arrive in parallel, so we want to make sure we get
         // consistent console output.
@@ -37,7 +37,7 @@ namespace TestRunner
 
             using (var runner = AssemblyRunner.WithAppDomain(testAssembly))
             {
-                if (args.Length > 0)
+                if (null != args && args.Length > 0)
                 {
                     TestNameFilter = args[0];
                     runner.TestCaseFilter += FilterByClass;
@@ -58,7 +58,7 @@ namespace TestRunner
 
         public static bool FilterByClass(ITestCase testCase)
         {
-            if (testCase.DisplayName.Contains(TestNameFilter))
+            if (null != testCase && testCase.DisplayName.Contains(TestNameFilter))
             {
                 return true;
             }

@@ -11,9 +11,9 @@ namespace SW2URDF.Test
     /// </summary>
     public abstract class SW2URDFTest : IClassFixture<SWTestFixture>
     {
-        public const string MODEL_NAME_3_DOF_ARM = "3_DOF_ARM";
-        public const string MODEL_NAME_4_WHEELER = "4_WHEELER";
-        public const string MODEL_NAME_ORIGINAL_3_DOF_ARM = "ORIGINAL_3_DOF_ARM";
+        public const string ModelName3DofArm = "3_DOF_ARM";
+        public const string ModelName4Wheeler = "4_WHEELER";
+        public const string ModelNameOriginal3DofArm = "ORIGINAL_3_DOF_ARM";
         protected readonly SWTestFixture TestFixture;
         protected readonly SldWorks SwApp;
         public SW2URDFTest(SWTestFixture fixture)
@@ -28,59 +28,59 @@ namespace SW2URDF.Test
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
-        public string GetDebugDirectory()
+        public static string GetDebugDirectory()
         {
             return System.AppDomain.CurrentDomain.BaseDirectory;
         }
 
-        public string GetX64Directory()
+        public static string GetX64Directory()
         {
             return Path.GetDirectoryName(GetDebugDirectory());
         }
 
-        public string GetBinDirectory()
+        public static string GetBinDirectory()
         {
             return Path.GetDirectoryName(GetX64Directory());
         }
 
-        public string GetProjectDirectory()
+        public static string GetProjectDirectory()
         {
             return Path.GetDirectoryName(GetBinDirectory());
         }
 
-        public string GetSolutionDirectory()
+        public static string GetSolutionDirectory()
         {
             return Path.GetDirectoryName(GetProjectDirectory());
         }
 
-        public string GetExamplesDirectory()
+        public static string GetExamplesDirectory()
         {
             return Path.Combine(GetSolutionDirectory(), "examples");
         }
 
-        public string GetModelDirectory(string modelName)
+        public static string GetModelDirectory(string modelName)
         {
             return Path.Combine(GetExamplesDirectory(), modelName);
         }
 
-        public string GetPackageDirectory(string modelName)
+        public static string GetPackageDirectory(string modelName)
         {
             string modelDirectory = GetModelDirectory(modelName);
             string package_name = modelName + "_description";
             return Path.Combine(modelDirectory, package_name);
         }
 
-        public string GetURDFDirectory(string modelName)
+        public static string GetURDFDirectory(string modelName)
         {
             return Path.Combine(GetPackageDirectory(modelName), "urdf");
         }
 
-        public string GetMeshesDirectory(string modelName)
+        public static string GetMeshesDirectory(string modelName)
         {
             return Path.Combine(GetPackageDirectory(modelName), "meshes");
         }
 
-        public string GetCSVPath(string modelName)
+        public static string GetCSVPath(string modelName)
         {
             string urdfDirectory = GetURDFDirectory(modelName);
             string fileName = modelName + "_description.csv";
@@ -125,7 +125,7 @@ namespace SW2URDF.Test
             return doc;
         }
 
-        public string CreateRandomTempDirectory()
+        public static string CreateRandomTempDirectory()
         {
             string name = Path.GetRandomFileName();
             string tempDirectory = Path.Combine(Path.GetTempPath(), name);

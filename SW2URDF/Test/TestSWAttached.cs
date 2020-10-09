@@ -10,7 +10,7 @@ namespace SW2URDF.Test
         }
 
         [Fact]
-        public void Test_SWOpens()
+        public void TestSWOpens()
         {
             Assert.NotNull(SwApp);
         }
@@ -19,7 +19,7 @@ namespace SW2URDF.Test
         [InlineData("3_DOF_ARM")]
         [InlineData("4_WHEELER")]
         [InlineData("ORIGINAL_3_DOF_ARM")]
-        public void Test_ModelDoc_Opens(string modelName)
+        public void TestModelDocOpens(string modelName)
         {
             OpenSWDocument(modelName);
             Assert.True(SwApp.CloseAllDocuments(true));

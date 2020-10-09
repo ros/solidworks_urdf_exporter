@@ -26,13 +26,6 @@ namespace SW2URDF.URDF
     //The base class for packageXML elements. Again, I guess I like having empty base classes
     public class PackageElement
     {
-        public PackageElement()
-        {
-        }
-
-        public void WriteElement()
-        {
-        }
     }
 
     //Top level class for the package XML file.

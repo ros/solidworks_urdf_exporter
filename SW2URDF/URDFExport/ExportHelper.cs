@@ -400,7 +400,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
-        public bool CorrectSTLMesh(string filename)
+        public static bool CorrectSTLMesh(string filename)
         {
             logger.Info("Removing SW header in STL file");
             try
@@ -422,7 +422,7 @@ namespace SW2URDF.URDFExport
 
         #endregion Export Methods
 
-        private void CopyLogFile(URDFPackage package)
+        private static void CopyLogFile(URDFPackage package)
         {
             string destination = package.WindowsPackageDirectory + "export.log";
             string log_filename = Logger.GetFileName();

@@ -226,7 +226,7 @@ namespace SW2URDF.UI
             AutoUpdatingForm = false;
         }
 
-        public void FillBlank(Control[] boxes)
+        public static void FillBlank(Control[] boxes)
         {
             foreach (Control box in boxes)
             {
@@ -345,28 +345,6 @@ namespace SW2URDF.UI
             }
         }
 
-        //Fills either TreeView from the URDF robot
-        public void FillTreeViewFromRobot(Robot Robot, TreeView tree)
-        {
-            LinkNode baseNode = new LinkNode();
-            Link baseLink = Robot.BaseLink;
-            baseNode.Name = baseLink.Name;
-            baseNode.Text = baseLink.Name;
-            baseNode.Link = baseLink;
-            baseNode.IsBaseNode = true;
-            baseNode.Link.Name = baseLink.Name;
-            baseNode.Link.SWComponents = baseLink.SWComponents;
-            baseNode.Link.Joint.CoordinateSystemName = "Origin_global";
-            baseNode.IsIncomplete = false;
-
-            foreach (Link child in baseLink.Children)
-            {
-                baseNode.Nodes.Add(CreateLinkNodeFromLink(child));
-            }
-            tree.Nodes.Add(baseNode);
-            tree.ExpandAll();
-        }
-
         //Fills specifically the joint TreeView
         public void FillJointTree()
         {
@@ -407,7 +385,7 @@ namespace SW2URDF.UI
         }
 
         //Converts a Link to a LinkNode
-        public LinkNode CreateLinkNodeFromLink(Link Link)
+        public static LinkNode CreateLinkNodeFromLink(Link Link)
         {
             LinkNode node = new LinkNode(Link);
             node.Link.Children.Clear();

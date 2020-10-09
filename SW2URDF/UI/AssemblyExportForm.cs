@@ -107,7 +107,7 @@ namespace SW2URDF.UI
                 textBox.KeyPress += NumericalTextBoxKeyPress;
             }
 
-            saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+            saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.UrdfConfigurationSwAttributeName);
             int Options = 0;
 
             saveConfigurationAttributeDef.AddParameter(
@@ -299,7 +299,9 @@ namespace SW2URDF.UI
                 FileName = Exporter.PackageName
             };
 
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            bool saveResult = DialogResult.OK == saveFileDialog1.ShowDialog();
+            saveFileDialog1.Dispose();
+            if (saveResult)
             {
                 Exporter.SavePath = Path.GetDirectoryName(saveFileDialog1.FileName);
                 Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);

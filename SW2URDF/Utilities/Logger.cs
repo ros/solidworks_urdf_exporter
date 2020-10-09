@@ -20,7 +20,7 @@ namespace SW2URDF.Utilities
         }
     }
 
-    public class Logger
+    public static class Logger
     {
         private static bool Initialized = false;
 

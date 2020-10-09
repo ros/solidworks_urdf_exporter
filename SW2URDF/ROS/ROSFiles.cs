@@ -26,10 +26,6 @@ using System.Xml;
 
 namespace SW2URDF.ROS
 {
-    internal class ROSFiles
-    {
-    }
-
     public abstract class LaunchElement
     {
         public abstract void WriteFile(XmlWriter writer);

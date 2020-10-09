@@ -9,7 +9,7 @@ namespace SW2URDF.URDF
     [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Joint : URDFElement
     {
-        public static readonly List<string> AVAILABLE_TYPES = new List<string>
+        public static readonly List<string> AvailableTypes = new List<string>
         {
             "revolute", "continuous", "prismatic", "fixed", "floating", "planar"
         };

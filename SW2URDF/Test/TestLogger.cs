@@ -11,17 +11,17 @@ namespace SW2URDF.Test
         {
         }
 
-        public void TestGetLogger()
+        public static void TestGetLogger()
         {
             Assert.NotNull(Logger.GetLogger());
         }
 
-        public void TestGetLoggerTwice()
+        public static void TestGetLoggerTwice()
         {
             Assert.Equal(Logger.GetLogger(), Logger.GetLogger());
         }
 
-        public void TestLoggerFileExists()
+        public static void TestLoggerFileExists()
         {
             ILog logger = Logger.GetLogger();
             string filename = Logger.GetFileName();

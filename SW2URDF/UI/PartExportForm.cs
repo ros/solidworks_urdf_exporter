@@ -53,6 +53,7 @@ namespace SW2URDF.UI
             {
                 textBox_save_as.Text = saveFileDialog1.FileName;
             }
+            saveFileDialog1.Dispose();
         }
 
         #endregion Basic event handelers
