@@ -26,7 +26,7 @@ namespace SW2URDF.Test
             ILog logger = Logger.GetLogger();
             string filename = Logger.GetFileName();
             string message = "Hello there";
-            Logger.GetLogger().Info(message);
+            logger.Info(message);
             LogManager.Flush(1000);
             Assert.True(File.Exists(filename));
 

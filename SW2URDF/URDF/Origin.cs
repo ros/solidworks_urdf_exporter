@@ -16,14 +16,8 @@ namespace SW2URDF.URDF
 
         private double[] XYZ
         {
-            get
-            {
-                return (double[])XYZAttribute.Value;
-            }
-            set
-            {
-                XYZAttribute.Value = value;
-            }
+            get => (double[])XYZAttribute.Value;
+            set => XYZAttribute.Value = value;
         }
 
         public double[] GetXYZ()
@@ -38,50 +32,26 @@ namespace SW2URDF.URDF
 
         public double X
         {
-            get
-            {
-                return XYZ[0];
-            }
-            set
-            {
-                XYZ[0] = value;
-            }
+            get => XYZ[0];
+            set => XYZ[0] = value;
         }
 
         public double Y
         {
-            get
-            {
-                return XYZ[1];
-            }
-            set
-            {
-                XYZ[1] = value;
-            }
+            get => XYZ[1];
+            set => XYZ[1] = value;
         }
 
         public double Z
         {
-            get
-            {
-                return XYZ[2];
-            }
-            set
-            {
-                XYZ[2] = value;
-            }
+            get => XYZ[2];
+            set => XYZ[2] = value;
         }
 
         private double[] RPY
         {
-            get
-            {
-                return (double[])RPYAttribute.Value;
-            }
-            set
-            {
-                RPYAttribute.Value = value;
-            }
+            get => (double[])RPYAttribute.Value;
+            set => RPYAttribute.Value = value;
         }
 
         public double[] GetRPY()
@@ -96,44 +66,26 @@ namespace SW2URDF.URDF
 
         public double Roll
         {
-            get
-            {
-                return RPY[0];
-            }
-            set
-            {
-                RPY[0] = value;
-            }
+            get => RPY[0];
+            set => RPY[0] = value;
         }
 
         public double Pitch
         {
-            get
-            {
-                return RPY[1];
-            }
-            set
-            {
-                RPY[1] = value;
-            }
+            get => RPY[1];
+            set => RPY[1] = value;
         }
 
         public double Yaw
         {
-            get
-            {
-                return RPY[2];
-            }
-            set
-            {
-                RPY[2] = value;
-            }
+            get => RPY[2];
+            set => RPY[2] = value;
         }
 
         [DataMember]
         public bool isCustomized;
 
-        public Origin(string csvContext, bool isRequired) : base("origin", isRequired)
+        public Origin(bool isRequired) : base("origin", isRequired)
         {
             isCustomized = false;
 

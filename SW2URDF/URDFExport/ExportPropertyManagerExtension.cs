@@ -37,36 +37,6 @@ namespace SW2URDF.URDFExport
         public static readonly double CONFIGURATION_VERSION = 1.3;
         public static readonly double SOAP_MIN_VERSION = 1.3;
 
-        private bool AskUserConfigurationSave(bool warnUser, string newData, string oldData, double previousVersion)
-        {
-            bool success = (oldData != newData);
-            if (oldData != newData)
-            {
-                if (previousVersion != CONFIGURATION_VERSION)
-                {
-                    if (MessageBox.Show("The configuration has changed, would you like to save and " +
-                    "update the configuration to the latest version?",
-                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        success = true;
-                    }
-                }
-                else if (warnUser)
-                {
-                    if (MessageBox.Show("The configuration has changed, would you like to save?",
-                    "Save Export Configuration", MessageBoxButtons.YesNo) == DialogResult.Yes)
-                    {
-                        success = true;
-                    }
-                }
-                else
-                {
-                    success = true;
-                }
-            }
-            return success;
-        }
-
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             Common.RetrieveSWComponentPIDs(model, BaseNode);
@@ -116,15 +86,6 @@ namespace SW2URDF.URDFExport
                     box.CurrentSelection = i;
                 }
                 i++;
-            }
-        }
-
-        // Adds an asterix to the node text if it is incomplete (not currently used)
-        private void UpdateNodeNames(TreeView tree)
-        {
-            foreach (LinkNode node in tree.Nodes)
-            {
-                UpdateNodeNames(node);
             }
         }
 
@@ -486,44 +447,6 @@ namespace SW2URDF.URDFExport
             }
         }
 
-        //Only allows components to be selected for the PMPage selection box
-        private void SetComponentFilters()
-        {
-            swSelectType_e[] filters = new swSelectType_e[1];
-            filters[0] = swSelectType_e.swSelCOMPONENTS;
-            object filterObj = null;
-            filterObj = filters;
-            PMSelection.SetSelectionFilters(filterObj);
-        }
-
-        // This removes the component only filters so that the export tool can select sketches,
-        // sketch items etc while the PMPage is active and items are added to the selection box.
-        // Because the PMPage closes before selections need to occur, this method is no longer used.
-        private void SetGeneralFilters()
-        {
-            swSelectType_e[] filters = new swSelectType_e[15];
-            filters[0] = swSelectType_e.swSelCOMPONENTS;
-            filters[1] = swSelectType_e.swSelEXTSKETCHPOINTS;
-            filters[2] = swSelectType_e.swSelEXTSKETCHSEGS;
-            filters[3] = swSelectType_e.swSelSKETCHES;
-            filters[4] = swSelectType_e.swSelSKETCHPOINTS;
-            filters[5] = swSelectType_e.swSelSKETCHSEGS;
-            filters[6] = swSelectType_e.swSelCOORDSYS;
-            filters[7] = swSelectType_e.swSelDATUMAXES;
-            filters[8] = swSelectType_e.swSelDATUMPOINTS;
-            filters[9] = swSelectType_e.swSelCONNECTIONPOINTS;
-            filters[10] = swSelectType_e.swSelFRAMEPOINT;
-            filters[11] = swSelectType_e.swSelMIDPOINTS;
-            filters[12] = swSelectType_e.swSelROUTEPOINTS;
-            filters[13] = swSelectType_e.swSelSKETCHPOINTFEAT;
-            filters[14] = swSelectType_e.swSelVERTICES;
-
-            object filterObj = null;
-
-            filterObj = filters;
-            PMSelection.SetSelectionFilters(filterObj);
-        }
-
         //Populates the TreeView with the organized links from the robot
         public void FillTreeViewFromRobot(Robot robot)
         {
@@ -568,7 +491,7 @@ namespace SW2URDF.URDFExport
         /// <returns>bool representing success of load. If false, PMPage should not open</returns>
         public bool LoadConfigTree()
         {
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(swApp, ActiveSWModel, out bool abortProcess);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(ActiveSWModel, out bool abortProcess);
 
             if (abortProcess)
             {

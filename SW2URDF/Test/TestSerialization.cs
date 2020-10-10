@@ -44,7 +44,7 @@ namespace SW2URDF.Test
         public void TestLoadBaseNodeFromModel(string modelName, int expNumLinks)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Xunit.Assert.False(error);
             Xunit.Assert.NotNull(baseNode);
             Xunit.Assert.Equal(expNumLinks, Common.GetCount(baseNode.GetLink()));
@@ -56,7 +56,7 @@ namespace SW2URDF.Test
         public void TestSerializeToString(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Xunit.Assert.False(error);
 
             PrivateType serialization = new PrivateType(typeof(Serialization));

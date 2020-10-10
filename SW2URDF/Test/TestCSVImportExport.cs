@@ -37,7 +37,7 @@ namespace SW2URDF.Test
         public void TestWriteRobotToCSV(string modelName, int expNumLines)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool abortProcess);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
             Link baseLink = baseNode.GetLink();
             Robot robot = new Robot();

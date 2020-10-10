@@ -17,7 +17,7 @@ namespace SW2URDF.URDF
 
         public Visual() : base("visual", false)
         {
-            Origin = new Origin("Visual", false);
+            Origin = new Origin(false);
             Geometry = new Geometry();
             Material = new Material();
 

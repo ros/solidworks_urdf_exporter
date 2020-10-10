@@ -312,8 +312,7 @@ namespace SW2URDF.URDFExport
             int errors = 0;
             int warnings = 0;
 
-            string coordsysName = "";
-            coordsysName = link.Joint.CoordinateSystemName;
+            string coordsysName = link.Joint.CoordinateSystemName;
 
             logger.Info(link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 

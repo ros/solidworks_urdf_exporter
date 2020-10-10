@@ -11,10 +11,10 @@ namespace TestRunner
     {
         // We use consoleLock because messages can arrive in parallel, so we want to make sure we get
         // consistent console output.
-        static object consoleLock = new object();
+        static readonly object consoleLock = new object();
 
         // Use an event to know when we're done
-        static ManualResetEvent finished = new ManualResetEvent(false);
+        static readonly ManualResetEvent finished = new ManualResetEvent(false);
 
         // Start out assuming success; we'll set this to 1 if we get a failed test
         static int result = 0;

@@ -14,7 +14,7 @@ namespace SW2URDF.URDF
 
         public Collision() : base("collision", false)
         {
-            Origin = new Origin("Colission", false);
+            Origin = new Origin(false);
             Geometry = new Geometry();
 
             ChildElements.Add(Origin);

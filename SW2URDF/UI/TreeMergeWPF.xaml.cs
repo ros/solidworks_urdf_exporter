@@ -245,21 +245,6 @@ namespace SW2URDF.UI
             PropertiesLoadedLabel.Content = new TextBlock { Text = labelText };
         }
 
-        private bool IsValidLinkName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return false;
-            }
-
-            if (LoadedCSVLinkNames.Contains(name))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         private void OnUpdateButtonClick(object sender, RoutedEventArgs e)
         {
             string updatedName = SelectedLinkName.Text;
@@ -304,31 +289,6 @@ namespace SW2URDF.UI
             SelectedLink = null;
         }
 
-        private void SetDropdownContextMenu(Button button, string name, string defaultText)
-        {
-            button.Visibility = Visibility.Visible;
-            if (name == null)
-            {
-                return;
-            }
-
-            TextBlock buttonText = (TextBlock)button.Content;
-
-            foreach (MenuItem item in button.ContextMenu.Items)
-            {
-                TextBlock header = (TextBlock)item.Header;
-                if (header.Text == name)
-                {
-                    item.IsChecked = true;
-                    buttonText.Text = name;
-                    return;
-                }
-            }
-
-            logger.Error("Item " + name + " was not found in the dropdown for " + button.Name);
-            buttonText.Text = defaultText;
-        }
-
         private string ShortenStringForLabel(string text, int numCharacters)
         {
             string result = text;
@@ -351,7 +311,6 @@ namespace SW2URDF.UI
 
         private void ConfigureLabels()
         {
-            string longAssemblyName = ShortenStringForLabel(AssemblyName, MAX_LABEL_CHARACTER_WIDTH);
             string shortAssemblyName = ShortenStringForLabel(AssemblyName, MAX_BUTTON_CHARACTER_WIDTH);
 
             string longCSVFilename = ShortenStringForLabel(CSVFileName, MAX_LABEL_CHARACTER_WIDTH);
@@ -458,7 +417,7 @@ namespace SW2URDF.UI
         /// <param name="treeView"></param>
         /// <param name="target"></param>
         /// <param name="package"></param>
-        private void ProcessDragDropOnItem(TreeView treeView, TreeViewItem target, TreeViewItem package, int position = -1)
+        private void ProcessDragDropOnItem(TreeViewItem target, TreeViewItem package, int position = -1)
         {
             // The parent of the package could be either a TreeView or TreeViewItem
             ItemsControl packageParent = (ItemsControl)package.Parent;
@@ -558,14 +517,14 @@ namespace SW2URDF.UI
             {
                 // If they drop it inbetween a parent and its first child, then that means they
                 // want to set it as the closest's first item.
-                ProcessDragDropOnItem(tree, closest, package, 0);
+                ProcessDragDropOnItem(closest, package, 0);
             }
             else
             {
                 // If the closest was found, then add it to its parent at the appropriate index
                 TreeViewItem parent = (TreeViewItem)closest.Parent;
                 int closestIndex = parent.Items.IndexOf(closest);
-                ProcessDragDropOnItem(tree, parent, package, closestIndex + 1);
+                ProcessDragDropOnItem(parent, package, closestIndex + 1);
             }
         }
 
@@ -582,7 +541,7 @@ namespace SW2URDF.UI
             if (e.Source.GetType() == typeof(TreeViewItem))
             {
                 // Dropping onto a Tree node
-                ProcessDragDropOnItem(tree, (TreeViewItem)e.Source, package);
+                ProcessDragDropOnItem((TreeViewItem)e.Source, package);
             }
             else if (e.Source.GetType() == typeof(TreeView))
             {
@@ -639,25 +598,6 @@ namespace SW2URDF.UI
             }
 
             return item;
-        }
-
-        private void SetMenu(Button button, List<string> menuContents)
-        {
-            button.ContextMenu.Items.Clear();
-            bool isFirst = true;
-            foreach (string menuItemLabel in menuContents)
-            {
-                MenuItem menuItem = new MenuItem
-                {
-                    Header = new TextBlock { Text = menuItemLabel },
-                    IsCheckable = true,
-                    IsChecked = isFirst,
-                };
-                isFirst = false;
-
-                menuItem.Checked += MenuItemChecked;
-                button.ContextMenu.Items.Add(menuItem);
-            }
         }
 
         private void MenuClick(object sender, RoutedEventArgs e)

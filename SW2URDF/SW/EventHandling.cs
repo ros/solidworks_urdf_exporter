@@ -61,7 +61,7 @@ namespace SW2URDF.SW
             {
                 if (!openModelViews.Contains(mView))
                 {
-                    DocView dView = new DocView(userAddin, mView, this);
+                    DocView dView = new DocView(mView, this);
                     dView.AttachEventHandlers();
                     openModelViews.Add(mView, dView);
                 }
@@ -98,13 +98,9 @@ namespace SW2URDF.SW
 
         public bool DetachModelViewEventHandler(ModelView mView)
         {
-            DocView dView;
             if (openModelViews.Contains(mView))
             {
-                dView = (DocView)openModelViews[mView];
                 openModelViews.Remove(mView);
-                mView = null;
-                dView = null;
             }
             return true;
         }
@@ -221,7 +217,6 @@ namespace SW2URDF.SW
                         }
                         break;
                     }
-
                 case swComponentSuppressionState_e.swComponentResolved:
                     {
                         if ((modDoc != null) && !swAddin.OpenDocs.Contains(modDoc))
@@ -230,16 +225,14 @@ namespace SW2URDF.SW
                         }
                         break;
                     }
-
                 case swComponentSuppressionState_e.swComponentSuppressed:
                     break;
-
                 case swComponentSuppressionState_e.swComponentLightweight:
                     break;
-
                 case swComponentSuppressionState_e.swComponentFullyLightweight:
                     break;
-
+                case swComponentSuppressionState_e.swComponentInternalIdMismatch:
+                    break;
                 default:
                     break;
             }
@@ -325,16 +318,12 @@ namespace SW2URDF.SW
 
     public class DocView
     {
-        private readonly ISldWorks iSwApp;
-        private readonly SwAddin userAddin;
         private readonly ModelView mView;
         private readonly DocumentEventHandler parent;
 
-        public DocView(SwAddin addin, IModelView mv, DocumentEventHandler doc)
+        public DocView(IModelView mv, DocumentEventHandler doc)
         {
-            userAddin = addin;
             mView = (ModelView)mv;
-            iSwApp = userAddin.SwApp;
             parent = doc;
         }
 

@@ -68,7 +68,7 @@ namespace SW2URDF.UI
                                                 textBoxIzz,
                                                 "G5");
 
-                Link.Visual.Material.FillBoxes(comboBoxMaterials, "G5");
+                Link.Visual.Material.FillBoxes(comboBoxMaterials);
                 textBoxTexture.Text = Link.Visual.Material.Texture.wFilename;
 
                 Link.Visual.Material.Color.FillBoxes(domainUpDownRed,

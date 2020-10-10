@@ -260,42 +260,38 @@ namespace SW2URDF.URDFExport
         // Converts a single PID to a Component2 object
         public static Component2 LoadSWComponent(ModelDoc2 model, byte[] PID)
         {
-            int Errors = 0;
             string byteAsString = PIDToString(PID);
-            if (PID != null)
+            if (PID == null)
             {
-                object obj = model.Extension.GetObjectByPersistReference3(PID, out Errors);
-                Component2 component = (Component2)obj;
-                return component;
+                throw new System.Exception("PID " + byteAsString + " was null. Is the configuration corrupted?");    
             }
-            else
+
+            object obj = model.Extension.GetObjectByPersistReference3(PID, out int Errors);
+            if (Errors == 0)
             {
-                logger.Error("PID " + byteAsString + " was null. Is the configuration corrupted?");
+                return (Component2)obj;
             }
-            if (Errors != 0)
+            switch ((swPersistReferencedObjectStates_e)Errors)
             {
-                switch ((swPersistReferencedObjectStates_e)Errors)
-                {
-                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Deleted:
-                        logger.Error("The component associated with PID " + byteAsString + " was deleted");
-                        break;
+                case swPersistReferencedObjectStates_e.swPersistReferencedObject_Deleted:
+                    logger.Error("The component associated with PID " + byteAsString + " was deleted");
+                    break;
 
-                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Invalid:
-                        logger.Error("The component associated with PID " + byteAsString + " was found to be invalid");
-                        break;
+                case swPersistReferencedObjectStates_e.swPersistReferencedObject_Invalid:
+                    logger.Error("The component associated with PID " + byteAsString + " was found to be invalid");
+                    break;
 
-                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
-                        logger.Error("The component associated with PID " + byteAsString + " is suppressed");
-                        break;
+                case swPersistReferencedObjectStates_e.swPersistReferencedObject_Suppressed:
+                    logger.Error("The component associated with PID " + byteAsString + " is suppressed");
+                    break;
 
-                    case swPersistReferencedObjectStates_e.swPersistReferencedObject_Ok:
-                        break;
+                case swPersistReferencedObjectStates_e.swPersistReferencedObject_Ok:
+                    break;
 
-                    default:
-                        logger.Error("The component associated with PID " + byteAsString +
-                            " was not loaded due to an unspecified error (" + Errors + ")");
-                        break;
-                }
+                default:
+                    logger.Error("The component associated with PID " + byteAsString +
+                        " was not loaded due to an unspecified error (" + Errors + ")");
+                    break;
             }
             return null;
         }

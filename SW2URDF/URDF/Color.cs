@@ -12,62 +12,32 @@ namespace SW2URDF.URDF
 
         private double[] RGBA
         {
-            get
-            {
-                return (double[])RGBAAttribute.Value;
-            }
-            set
-            {
-                RGBAAttribute.Value = value;
-            }
+            get => (double[])RGBAAttribute.Value;
+            set => RGBAAttribute.Value = value;
         }
 
         public double Red
         {
-            get
-            {
-                return RGBA[0];
-            }
-            set
-            {
-                RGBA[0] = value;
-            }
+            get => RGBA[0];
+            set => RGBA[0] = value;
         }
 
         public double Green
         {
-            get
-            {
-                return RGBA[1];
-            }
-            set
-            {
-                RGBA[1] = value;
-            }
+            get => RGBA[1];
+            set => RGBA[1] = value;
         }
 
         public double Blue
         {
-            get
-            {
-                return RGBA[2];
-            }
-            set
-            {
-                RGBA[2] = value;
-            }
+            get => RGBA[2];
+            set => RGBA[2] = value;
         }
 
         public double Alpha
         {
-            get
-            {
-                return RGBA[3];
-            }
-            set
-            {
-                RGBA[3] = value;
-            }
+            get => RGBA[3];
+            set => RGBA[3] = value;
         }
 
         public Color() : base("color", false)

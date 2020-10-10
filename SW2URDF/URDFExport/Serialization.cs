@@ -55,11 +55,11 @@ namespace SW2URDF.URDFExport
         /// </summary>
         /// <param name="model">ModelDoc containing the URDF configuration</param>
         /// <returns>TreeView LinkNode loaded from configuration</returns>
-        public static LinkNode LoadBaseNodeFromModel(SldWorks swApp, ModelDoc2 model, out bool error)
+        public static LinkNode LoadBaseNodeFromModel(ModelDoc2 model, out bool error)
         {
             string data = GetConfigTreeData(model, out double configVersion);
 
-            LinkNode basenode = null;
+            LinkNode basenode;
             if (configVersion > SERIALIZATION_VERSION)
             {
                 MessageBox.Show("The configuration saved in this model is newer than what this " +
@@ -254,7 +254,6 @@ namespace SW2URDF.URDFExport
         /// <returns>Serialized data string</returns>
         private static string GetConfigTreeData(ModelDoc2 model, out double version)
         {
-            object[] objects = model.FeatureManager.GetFeatures(true);
             string data = "";
             version = 0.0;
 
@@ -293,7 +292,6 @@ namespace SW2URDF.URDFExport
             foreach (Object obj in objects)
             {
                 Feature feature = (Feature)obj;
-                string t = feature.GetTypeName2();
                 if (feature.GetTypeName2() == "Attribute")
                 {
                     SolidWorks.Interop.sldworks.Attribute att =
@@ -372,7 +370,7 @@ namespace SW2URDF.URDFExport
         /// <param name="data">string to save</param>
         /// <param name="attributeName">Name of attribute to save to</param>
         private static void SaveDataToModelDoc(SldWorks swApp, ModelDoc2 model,
-            string data, string archivedData = null)
+            string data)
         {
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =

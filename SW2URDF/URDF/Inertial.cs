@@ -17,7 +17,7 @@ namespace SW2URDF.URDF
 
         public Inertial() : base("inertial", false)
         {
-            Origin = new Origin("Inertia", false);
+            Origin = new Origin(false);
             Mass = new Mass();
             Inertia = new Inertia();
 

@@ -25,7 +25,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -46,7 +46,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(false);
@@ -67,7 +67,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -88,7 +88,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(false);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -109,7 +109,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(false);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -130,7 +130,7 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(false);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -147,7 +147,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -188,7 +188,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(SwApp, doc, out bool error);
+            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
 
             helper.CreateRobotFromTreeView(baseNode);
@@ -200,7 +200,7 @@ namespace SW2URDF.Test
         [InlineData("3_DOF_ARM", new double[] { 0, 0, 1 }, "global_origin", new double[] { 0, 0, 1 })]
         public void TestLocalizeAxis(string modelName, double[] axis, string coordSys, double[] expected)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
             Assert.Equal(expected, helper.LocalizeAxis(axis, coordSys));
             Assert.True(SwApp.CloseAllDocuments(true));
@@ -214,7 +214,7 @@ namespace SW2URDF.Test
             "Origin_effector_joint" })]
         public void TestGetRefCoordinateSystems(string modelName, string[] expected)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
             Assert.Equal(new List<string>(expected), helper.GetRefCoordinateSystems());
             Assert.True(SwApp.CloseAllDocuments(true));
@@ -227,7 +227,7 @@ namespace SW2URDF.Test
             "Axis_effector_joint" })]
         public void TestGetRefAxes(string modelName, string[] expected)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
             Assert.Equal(new List<string>(expected), helper.GetRefAxes());
             Assert.True(SwApp.CloseAllDocuments(true));

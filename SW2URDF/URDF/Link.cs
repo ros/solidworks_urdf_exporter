@@ -22,14 +22,8 @@ namespace SW2URDF.URDF
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         [DataMember]
@@ -164,15 +158,6 @@ namespace SW2URDF.URDF
         {
             base.SetElement(externalElement);
             SetSWComponents((Link)externalElement);
-        }
-
-        public override void SetElementFromData(List<string> context, StringDictionary dictionary)
-        {
-            string componentsContext = "Link.SWComponents";
-            string componentsValue = dictionary[componentsContext];
-            string[] componentNames = componentsValue.Split(';');
-
-            base.SetElementFromData(context, dictionary);
         }
 
         public void SetSWComponents(Link externalLink)

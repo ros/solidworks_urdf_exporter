@@ -19,14 +19,8 @@ namespace SW2URDF.URDF
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         [DataMember]
@@ -34,14 +28,8 @@ namespace SW2URDF.URDF
 
         public string Type
         {
-            get
-            {
-                return (string)TypeAttribute.Value;
-            }
-            set
-            {
-                TypeAttribute.Value = value;
-            }
+            get => (string)TypeAttribute.Value;
+            set => TypeAttribute.Value = value;
         }
 
         [DataMember]
@@ -79,7 +67,7 @@ namespace SW2URDF.URDF
 
         public Joint() : base("joint", false)
         {
-            Origin = new Origin("Joint", false);
+            Origin = new Origin(false);
             Parent = new ParentLink();
             Child = new ChildLink();
             Axis = new Axis();

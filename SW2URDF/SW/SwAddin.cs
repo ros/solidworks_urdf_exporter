@@ -29,7 +29,6 @@ using SW2URDF.URDFExport;
 using SW2URDF.Utilities;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -465,11 +464,14 @@ namespace SW2URDF.SW
                 }
                 else if (OpenDocs.Contains(modDoc))
                 {
-                    bool connected = false;
                     DocumentEventHandler docHandler = (DocumentEventHandler)OpenDocs[modDoc];
                     if (docHandler != null)
                     {
-                        connected = docHandler.ConnectModelViews();
+                        bool connected = docHandler.ConnectModelViews();
+                        if (!connected)
+                        {
+                            logger.Warn("Failed to connect to model views");
+                        }
                     }
                 }
 
@@ -484,10 +486,9 @@ namespace SW2URDF.SW
                 return false;
             }
 
-            DocumentEventHandler docHandler = null;
-
             if (!OpenDocs.Contains(modDoc))
             {
+                DocumentEventHandler docHandler;
                 switch (modDoc.GetType())
                 {
                     case (int)swDocumentTypes_e.swDocPART:
@@ -518,11 +519,7 @@ namespace SW2URDF.SW
 
         public bool DetachModelEventHandler(ModelDoc2 modDoc)
         {
-            DocumentEventHandler docHandler;
-            docHandler = (DocumentEventHandler)OpenDocs[modDoc];
             OpenDocs.Remove(modDoc);
-            modDoc = null;
-            docHandler = null;
             return true;
         }
 
