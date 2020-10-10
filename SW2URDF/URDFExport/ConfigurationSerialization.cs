@@ -22,7 +22,7 @@ namespace SW2URDF.URDFExport
     /// At least in regards to reading the old configuration. I'm also choosing to save any old xml
     /// formats to a second attribute in case they need to be reloaded.
     /// </summary>
-    public static class Serialization
+    public static class ConfigurationSerialization
     {
         private static readonly log4net.ILog logger = Logger.GetLogger();
 

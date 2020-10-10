@@ -39,8 +39,8 @@ namespace SW2URDF.URDFExport
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Common.RetrieveSWComponentPIDs(model, BaseNode);
-            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
+            CommonSwOperations.RetrieveSWComponentPIDs(model, BaseNode);
+            ConfigurationSerialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         //As nodes are created and destroyed, this menu gets called a lot. It basically just
@@ -121,7 +121,7 @@ namespace SW2URDF.URDFExport
             {
                 currentNode.Nodes.RemoveAt(currentNode.Nodes.Count - 1);
             }
-            int itemsCount = Common.GetCount(Tree.Nodes);
+            int itemsCount = CommonSwOperations.GetCount(Tree.Nodes);
             int itemHeight = 1 + itemsCount * Tree.ItemHeight;
             int min = 163;
             int max = 600;
@@ -328,7 +328,7 @@ namespace SW2URDF.URDFExport
                     previouslySelectedNode.Link.Joint.CoordinateSystemName =
                         PMComboBoxGlobalCoordsys.get_ItemText(-1);
                 }
-                Common.GetSelectedComponents(
+                CommonSwOperations.GetSelectedComponents(
                     ActiveSWModel, previouslySelectedNode.Link.SWComponents, PMSelection.Mark);
             }
         }
@@ -371,7 +371,7 @@ namespace SW2URDF.URDFExport
             PMNumberBoxChildCount.Value = node.Nodes.Count;
 
             //Selecting the associated link components
-            Common.SelectComponents(ActiveSWModel, node.Link.SWComponents, true, PMSelection.Mark);
+            CommonSwOperations.SelectComponents(ActiveSWModel, node.Link.SWComponents, true, PMSelection.Mark);
 
             //Setting joint properties
             if (!node.IsBaseNode && node.Parent != null)
@@ -491,7 +491,7 @@ namespace SW2URDF.URDFExport
         /// <returns>bool representing success of load. If false, PMPage should not open</returns>
         public bool LoadConfigTree()
         {
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(ActiveSWModel, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(ActiveSWModel, out bool abortProcess);
 
             if (abortProcess)
             {
@@ -504,7 +504,7 @@ namespace SW2URDF.URDFExport
 
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
 
-            if (baseNode == null || !baseNode.GetLink().AreRequiredFieldsSatisfied())
+            if (baseNode == null || !baseNode.RebuildLink().AreRequiredFieldsSatisfied())
             {
                 loadConfigurationControl.Tip = 
                     "Your configuration has not been fully exported. This feature may not work correctly";
@@ -523,7 +523,7 @@ namespace SW2URDF.URDFExport
             else
             {
                 List<string> problemLinks = new List<string>();
-                Common.LoadSWComponents(ActiveSWModel, baseNode, problemLinks);
+                CommonSwOperations.LoadSWComponents(ActiveSWModel, baseNode, problemLinks);
 
                 if (problemLinks.Count > 0)
                 {
@@ -568,7 +568,7 @@ namespace SW2URDF.URDFExport
                 ("URDF Reference", "SKETCH", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             ActiveSWModel.Extension.SelectByID2
-                (Serialization.UrdfConfigurationSwAttributeName, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
+                (ConfigurationSerialization.UrdfConfigurationSwAttributeName, "ATTRIBUTE", 0, 0, 0, true, 0, null, 0);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);
             SelectFeatures(node);
             ActiveSWModel.FeatureManager.MoveToFolder("URDF Export Items", "", false);

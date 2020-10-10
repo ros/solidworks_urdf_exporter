@@ -34,16 +34,16 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Link baseLink = baseNode.GetLink();
+            Link baseLink = baseNode.RebuildLink();
             List<Component2> componentsToSelect = new List<Component2>();
             AddLinkComponents(baseLink, componentsToSelect);
             HashSet<string> componentsToSelectNames = 
                 new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
-            Common.SelectComponents(doc, baseLink, true);
+            CommonSwOperations.SelectComponents(doc, baseLink, true);
             SelectionMgr selManager = doc.SelectionManager;
             int numSelected = selManager.GetSelectedObjectCount2(-1);
             Assert.Equal(componentsToSelect.Count, numSelected);
@@ -67,15 +67,15 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Link baseLink = baseNode.GetLink();
+            Link baseLink = baseNode.RebuildLink();
             List<Component2> componentsToSelect = baseLink.SWComponents;
             HashSet<string> componentsToSelectNames = 
                 new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
-            Common.SelectComponents(doc, componentsToSelect, true);
+            CommonSwOperations.SelectComponents(doc, componentsToSelect, true);
             SelectionMgr selManager = doc.SelectionManager;
 
             // -1 is the Mark, set to negative one if it's not being used.
@@ -102,17 +102,17 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Link baseLink = baseNode.GetLink();
+            Link baseLink = baseNode.RebuildLink();
             List<Component2> componentsToSelect = baseLink.SWComponents;
             HashSet<string> componentsToSelectNames = 
                 new HashSet<string>(componentsToSelect.Select(component => component.Name2));
 
-            Common.SelectComponents(doc, componentsToSelect, true);
+            CommonSwOperations.SelectComponents(doc, componentsToSelect, true);
             List<Component2> selectedComponents = new List<Component2>();
-            Common.GetSelectedComponents(doc, selectedComponents);
+            CommonSwOperations.GetSelectedComponents(doc, selectedComponents);
             Assert.Equal(componentsToSelect.Count, selectedComponents.Count);
 
             SwApp.CloseAllDocuments(true);
@@ -125,7 +125,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            Assert.Equal(expected, Common.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
+            Assert.Equal(expected, CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
 
             SwApp.CloseAllDocuments(true);
         }
@@ -137,8 +137,8 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            Common.ShowAllComponents(doc, new List<string>());
-            Assert.Equal(0, Common.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
+            CommonSwOperations.ShowAllComponents(doc, new List<string>());
+            Assert.Equal(0, CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(false)).Count);
 
             SwApp.CloseAllDocuments(true);
         }
@@ -152,7 +152,7 @@ namespace SW2URDF.Test
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
 
             // AssemblyDoc.GetComponentsByName only works on top level components.
-            List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(true));
+            List<string> hiddenComponentNames = CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(true));
             List<Component2> hiddenComponents = new List<Component2>();
             foreach(string name in hiddenComponentNames)
             {
@@ -160,8 +160,8 @@ namespace SW2URDF.Test
                 Assert.NotNull(hiddenComp);
                 hiddenComponents.Add(hiddenComp);
             }
-            Common.ShowComponents(doc, hiddenComponents);
-            Assert.Equal(0, Common.FindHiddenComponents(assyDoc.GetComponents(true)).Count);
+            CommonSwOperations.ShowComponents(doc, hiddenComponents);
+            Assert.Equal(0, CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(true)).Count);
 
             SwApp.CloseAllDocuments(true);
         }
@@ -172,12 +172,12 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
-            List<string> hiddenComponentNames = Common.FindHiddenComponents(assyDoc.GetComponents(false));
+            List<string> hiddenComponentNames = CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(false));
             List<Component2> hiddenComponents = 
                 hiddenComponentNames.Select(name => assyDoc.GetComponentByName(name)).ToList();
-            Common.ShowAllComponents(doc, new List<string>());
-            Common.HideComponents(doc, hiddenComponents);
-            List<string> hiddenComponentNames2 = Common.FindHiddenComponents(assyDoc.GetComponents(false));
+            CommonSwOperations.ShowAllComponents(doc, new List<string>());
+            CommonSwOperations.HideComponents(doc, hiddenComponents);
+            List<string> hiddenComponentNames2 = CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(false));
             Assert.Equal(hiddenComponentNames.Count, hiddenComponentNames2.Count);
 
             SwApp.CloseAllDocuments(true);
@@ -188,11 +188,11 @@ namespace SW2URDF.Test
         public void TestGetCountLink(string modelName, int expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Link baseLink = baseNode.GetLink();
-            Assert.Equal(expected, Common.GetCount(baseLink));
+            Link baseLink = baseNode.RebuildLink();
+            Assert.Equal(expected, CommonSwOperations.GetCount(baseLink));
 
             SwApp.CloseAllDocuments(true);
         }
@@ -202,10 +202,10 @@ namespace SW2URDF.Test
         public void TestGetCountNodeCollection(string modelName, int expected)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Assert.Equal(expected, Common.GetCount(baseNode.Nodes));
+            Assert.Equal(expected, CommonSwOperations.GetCount(baseNode.Nodes));
 
             SwApp.CloseAllDocuments(true);
         }
@@ -215,10 +215,10 @@ namespace SW2URDF.Test
         public void TestRetrieveSWComponentPIDs(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
-            Common.RetrieveSWComponentPIDs(doc, baseNode);
+            CommonSwOperations.RetrieveSWComponentPIDs(doc, baseNode);
             Assert.Equal(baseNode.Link.SWComponents.Count, baseNode.Link.SWComponentPIDs.Count);
 
             SwApp.CloseAllDocuments(true);
@@ -229,16 +229,16 @@ namespace SW2URDF.Test
         public void TestSaveSWComponentsLink(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
 
             List<string> problemLinks = new List<string>();
-            Common.LoadSWComponents(doc, baseNode, problemLinks);
+            CommonSwOperations.LoadSWComponents(doc, baseNode, problemLinks);
             Assert.Empty(problemLinks);
 
-            Link baseLink = baseNode.GetLink();
+            Link baseLink = baseNode.RebuildLink();
             baseLink.SWMainComponent = baseLink.SWComponents[0];
-            Common.SaveSWComponents(doc, baseLink);
+            CommonSwOperations.SaveSWComponents(doc, baseLink);
             Assert.Equal(baseLink.SWComponents.Count, baseLink.SWComponentPIDs.Count);
             Assert.NotNull(baseLink.SWMainComponentPID);
 
@@ -253,7 +253,7 @@ namespace SW2URDF.Test
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
             object[] componentObjs = assyDoc.GetComponents(false);
             List<Component2> components = componentObjs.Cast<Component2>().ToList();
-            List<byte[]> pids = Common.SaveSWComponents(doc, components);
+            List<byte[]> pids = CommonSwOperations.SaveSWComponents(doc, components);
             Assert.Equal(pids.Count, components.Count);
 
             SwApp.CloseAllDocuments(true);
@@ -271,10 +271,10 @@ namespace SW2URDF.Test
             AssemblyDoc assyDoc = (AssemblyDoc)doc;
             Component2 component = assyDoc.GetComponentByName(componentName);
             Assert.NotNull(component);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
             baseNode.Link.SWMainComponent = component;
-            byte[] pid = Common.SaveSWComponent(doc, baseNode.Link.SWMainComponent);
+            byte[] pid = CommonSwOperations.SaveSWComponent(doc, baseNode.Link.SWMainComponent);
             Assert.NotNull(pid);
             Assert.Equal(expected.Length, pid.Length);
             SwApp.CloseAllDocuments(true);
@@ -285,10 +285,10 @@ namespace SW2URDF.Test
         public void TestLoadSWComponentsLinkNode(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
             List<string> problemLinks = new List<string>();
-            Common.LoadSWComponents(doc, baseNode, problemLinks);
+            CommonSwOperations.LoadSWComponents(doc, baseNode, problemLinks);
             Assert.Empty(problemLinks);
             
             SwApp.CloseAllDocuments(true);
@@ -299,9 +299,9 @@ namespace SW2URDF.Test
         public void TestLoadSWComponentsList(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
-            List<Component2> components = Common.LoadSWComponents(doc, baseNode.Link.SWComponentPIDs);
+            List<Component2> components = CommonSwOperations.LoadSWComponents(doc, baseNode.Link.SWComponentPIDs);
             Assert.Equal(baseNode.Link.SWComponentPIDs.Count, components.Count);
 
             SwApp.CloseAllDocuments(true);
@@ -312,10 +312,10 @@ namespace SW2URDF.Test
         public void TestLoadSWComponent(string modelName)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool abortProcess);
             Assert.False(abortProcess);
             baseNode.Link.SWMainComponentPID = baseNode.Link.SWComponentPIDs[0];
-            Component2 component = Common.LoadSWComponent(doc, baseNode.Link.SWMainComponentPID);
+            Component2 component = CommonSwOperations.LoadSWComponent(doc, baseNode.Link.SWMainComponentPID);
             Assert.NotNull(component);
 
             SwApp.CloseAllDocuments(true);
@@ -327,7 +327,7 @@ namespace SW2URDF.Test
         [InlineData(new byte[] {97, 98, 99 }, "abc")]
         public void TestPIDToString(byte[] pid, string expected)
         {
-            Assert.Equal(expected, Common.PIDToString(pid));
+            Assert.Equal(expected, CommonSwOperations.PIDToString(pid));
         }
     }
 }

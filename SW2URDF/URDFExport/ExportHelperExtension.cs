@@ -160,7 +160,7 @@ namespace SW2URDF.URDFExport
             ExportErrorWhy = "";
             URDFRobot = new Robot();
 
-            progressBar.Start(0, Common.GetCount(baseNode.Nodes) + 1, "Building links");
+            progressBar.Start(0, CommonSwOperations.GetCount(baseNode.Nodes) + 1, "Building links");
             int count = 0;
 
             progressBar.UpdateProgress(count);
@@ -1352,7 +1352,7 @@ namespace SW2URDF.URDFExport
                 logger.Info("Unfixing component " + comp.GetID());
             }
 
-            Common.SelectComponents(ActiveSWModel, components, true);
+            CommonSwOperations.SelectComponents(ActiveSWModel, components, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.UnfixComponent();
         }
@@ -1409,7 +1409,7 @@ namespace SW2URDF.URDFExport
                     logger.Info("Component " + comp.GetID() + " is already fixed");
                 }
             }
-            Common.SelectComponents(ActiveSWModel, componentsToFix, true);
+            CommonSwOperations.SelectComponents(ActiveSWModel, componentsToFix, true);
             AssemblyDoc assy = (AssemblyDoc)ActiveSWModel;
             assy.FixComponent();
             return componentsToUnfix;

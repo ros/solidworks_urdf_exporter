@@ -65,12 +65,12 @@ namespace SW2URDF.URDF
             return cloned;
         }
 
-        public Link GetLink()
+        public Link RebuildLink()
         {
             Link.Children.Clear();
             foreach (LinkNode child in Nodes)
             {
-                Link.Children.Add(child.GetLink());
+                Link.Children.Add(child.RebuildLink());
             }
             return Link;
         }

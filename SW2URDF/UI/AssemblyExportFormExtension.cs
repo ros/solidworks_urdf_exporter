@@ -438,8 +438,8 @@ namespace SW2URDF.UI
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Common.RetrieveSWComponentPIDs(model, BaseNode);
-            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
+            CommonSwOperations.RetrieveSWComponentPIDs(model, BaseNode);
+            ConfigurationSerialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         public void ChangeAllNodeFont(LinkNode node, Font font)

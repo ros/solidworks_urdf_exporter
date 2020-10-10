@@ -107,7 +107,7 @@ namespace SW2URDF.UI
                 textBox.KeyPress += NumericalTextBoxKeyPress;
             }
 
-            saveConfigurationAttributeDef = SwApp.DefineAttribute(Serialization.UrdfConfigurationSwAttributeName);
+            saveConfigurationAttributeDef = SwApp.DefineAttribute(ConfigurationSerialization.UrdfConfigurationSwAttributeName);
             int Options = 0;
 
             saveConfigurationAttributeDef.AddParameter(

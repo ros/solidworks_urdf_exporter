@@ -25,12 +25,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -46,12 +46,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(false);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -67,12 +67,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -88,12 +88,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(false);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -109,12 +109,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(false);
             helper.SetComputeJointLimits(true);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -130,12 +130,12 @@ namespace SW2URDF.Test
             helper.SetComputeJointKinematics(true);
             helper.SetComputeJointLimits(false);
             helper.SetComputeVisualCollision(true);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
             Assert.NotNull(helper.URDFRobot);
-            Assert.Equal(expNumLinks, Common.GetCount(helper.URDFRobot.BaseLink));
+            Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
         }
 
@@ -147,7 +147,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
             helper.ExportRobot(true);
@@ -188,7 +188,7 @@ namespace SW2URDF.Test
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
-            LinkNode baseNode = Serialization.LoadBaseNodeFromModel(doc, out bool error);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
 
             helper.CreateRobotFromTreeView(baseNode);

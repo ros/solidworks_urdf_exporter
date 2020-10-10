@@ -329,7 +329,7 @@ namespace SW2URDF.URDFExport
             LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
 
-            if (existingBaseNode == null || !existingBaseNode.GetLink().AreRequiredFieldsSatisfied())
+            if (existingBaseNode == null || !existingBaseNode.RebuildLink().AreRequiredFieldsSatisfied())
             {
                 logger.Warn("Loading a configuration with an incomplete export");
                 if (MessageBox.Show(
@@ -364,7 +364,7 @@ namespace SW2URDF.URDFExport
                     string filename = loadFileDialog.SafeFileName;
                     string assemblyTitle = ActiveSWModel.GetTitle();
 
-                    Link existingBaseLink = existingBaseNode.GetLink();
+                    Link existingBaseLink = existingBaseNode.RebuildLink();
                     TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
                         filename, assemblyTitle);
                     wpf.TreeMerged += TreeMergeCompleted;

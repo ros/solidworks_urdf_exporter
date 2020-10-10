@@ -358,13 +358,13 @@
     </Compile>
     <Compile Include="URDFExport\CSV\ContextToColumns.cs" />
     <Compile Include="URDFExport\CSV\CSVImportExport.cs" />
-    <Compile Include="URDFExport\Serialization.cs" />
+    <Compile Include="URDFExport\ConfigurationSerialization.cs" />
     <Compile Include="URDFExport\ExportHelper.cs" />
     <Compile Include="URDFExport\ExportHelperExtension.cs" />
     <Compile Include="UI\AssemblyExportFormExtension.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="URDFExport\Common.cs" />
+    <Compile Include="URDFExport\CommonSwOperations.cs" />
     <Compile Include="URDFExport\ExportPropertyManagerExtension.cs" />
     <Compile Include="Utilities\MathOPS.cs" />
     <Compile Include="SW\EventHandling.cs" />

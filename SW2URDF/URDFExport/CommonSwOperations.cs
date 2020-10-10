@@ -31,7 +31,7 @@ using System.Windows.Forms;
 
 namespace SW2URDF.URDFExport
 {
-    public static class Common
+    public static class CommonSwOperations
     {
         private static readonly ILog logger = Logger.GetLogger();
 
