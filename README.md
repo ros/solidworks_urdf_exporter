@@ -3,9 +3,7 @@
 Authored and maintained by [Stephen Brawner](brawner@gmail.com). Past supporters include [PickNik Consulting](https://picknik.ai), Verb Surgical, Open Robotics, and Willow Garage. 
 
 ## Latest Release
-https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
-
-Please fill out [this survey](https://forms.gle/iZ9Sy6hPRD5qNqqg9) to help plan SolidWorks URDF Exporter 2.0!
+https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.6.0
 
 ## SolidWorks Version Requirements
 
