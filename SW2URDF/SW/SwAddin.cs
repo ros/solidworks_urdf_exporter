@@ -56,7 +56,7 @@ namespace SW2URDF.SW
 
         #region Local Variables
 
-        private int addinID = 0;
+        private int add_in_id_ = 0;
 
         public const int mainCmdGroupID = 5;
         public const int mainItemID1 = 0;
@@ -123,14 +123,14 @@ namespace SW2URDF.SW
             {
                 logger.Error("There was a problem registering this dll: SWattr is null. \n\"" +
                     nl.Message + "\"", nl);
-                MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
-                    nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                // MessageBox.Show("There was a problem registering this dll: SWattr is null. \n\"" +
+                //     nl.Message + "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
             catch (Exception e)
             {
                 logger.Error(e.Message);
-                MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
-                    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
+                // MessageBox.Show("There was a problem registering the function: \n\"" + e.Message +
+                //    "\"\nEmail your maintainer with the log file found at " + Logger.GetFileName());
             }
         }
 
@@ -172,11 +172,6 @@ namespace SW2URDF.SW
 
         public SwAddin()
         {
-            Application.ThreadException +=
-                new ThreadExceptionEventHandler(ExceptionHandler);
-            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
-            AppDomain.CurrentDomain.UnhandledException +=
-                new UnhandledExceptionEventHandler(UnhandledException);
             Logger.Setup();
         }
 
@@ -194,21 +189,25 @@ namespace SW2URDF.SW
 
         public bool ConnectToSW(object ThisSW, int cookie)
         {
+            logger.Info("Attempting to connect to SW");
             SwApp = (ISldWorks)ThisSW;
-            addinID = cookie;
+            add_in_id_ = cookie;
 
             //Setup callbacks
-            SwApp.SetAddinCallbackInfo(0, this, addinID);
+            logger.Info("Setting up callbacks");
+            SwApp.SetAddinCallbackInfo(0, this, add_in_id_);
 
             #region Setup the Command Manager
-
+            logger.Info("Setting up command manager");
             CmdMgr = SwApp.GetCommandManager(cookie);
+
+            logger.Info("Adding command manager");
             AddCommandMgr();
 
             #endregion Setup the Command Manager
 
             #region Setup the Event Handlers
-
+            logger.Info("Adding event handlers");
             SwEventPtr = (SldWorks)SwApp;
             OpenDocs = new Hashtable();
             AttachEventHandlers();
@@ -245,14 +244,38 @@ namespace SW2URDF.SW
 
         public void AddCommandMgr()
         {
-            SwApp.AddMenuItem3((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File",
-                10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
+            // Do not use AddMenuItem5 here despite the obselete warning, AddMenuItem5 doesn't work
+            string[] images = {
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_20x20.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_32x32.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_40x40.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_64x64.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_96x96.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_128x128.png",
+            };
+            int ret = SwApp.AddMenuItem5((int)swDocumentTypes_e.swDocASSEMBLY, add_in_id_, "Export as URDF@&Tools",
+                -1, "AssemblyURDFExporter", "", "Export assembly as URDF file", images);
+            if (ret < 0)
+            {
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Tools'");
+                return;
+            }
             logger.Info("Adding Assembly export to file menu");
-            SwApp.AddMenuItem3((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File",
-                10, "PartURDFExporter", "", "Export part as URDF file", "");
+            ret = SwApp.AddMenuItem5((int)swDocumentTypes_e.swDocPART, add_in_id_, "Export as URDF@&Tools",
+                -1, "PartURDFExporter", "", "Export part as URDF file", images);
+            if (ret < 0)
+            {
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Tools'");
+                return;
+            }
+
             logger.Info("Adding Part export to file menu");
         }
 
+        public int ToolbarEnableMethod()
+        {
+            return 1;
+        }
         public void RemoveCommandMgr()
         {
             SwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as URDF@&File", "");
@@ -343,6 +366,7 @@ namespace SW2URDF.SW
                 PartExportForm exportForm = new PartExportForm((SldWorks)SwApp);
                 logger.Info("Showing part");
                 exportForm.Show();
+                exportForm.Dispose();
             }
         }
 
@@ -453,11 +477,14 @@ namespace SW2URDF.SW
                 }
                 else if (OpenDocs.Contains(modDoc))
                 {
-                    bool connected = false;
                     DocumentEventHandler docHandler = (DocumentEventHandler)OpenDocs[modDoc];
                     if (docHandler != null)
                     {
-                        connected = docHandler.ConnectModelViews();
+                        bool connected = docHandler.ConnectModelViews();
+                        if (!connected)
+                        {
+                            logger.Warn("Failed to connect to model views");
+                        }
                     }
                 }
 
@@ -472,10 +499,9 @@ namespace SW2URDF.SW
                 return false;
             }
 
-            DocumentEventHandler docHandler = null;
-
             if (!OpenDocs.Contains(modDoc))
             {
+                DocumentEventHandler docHandler;
                 switch (modDoc.GetType())
                 {
                     case (int)swDocumentTypes_e.swDocPART:
@@ -506,11 +532,7 @@ namespace SW2URDF.SW
 
         public bool DetachModelEventHandler(ModelDoc2 modDoc)
         {
-            DocumentEventHandler docHandler;
-            docHandler = (DocumentEventHandler)OpenDocs[modDoc];
             OpenDocs.Remove(modDoc);
-            modDoc = null;
-            docHandler = null;
             return true;
         }
 

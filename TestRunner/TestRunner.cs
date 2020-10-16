@@ -7,14 +7,14 @@ using Xunit.Runners;
 
 namespace TestRunner
 {
-    public class Program
+    static public class Program
     {
         // We use consoleLock because messages can arrive in parallel, so we want to make sure we get
         // consistent console output.
-        static object consoleLock = new object();
+        static readonly object consoleLock = new object();
 
         // Use an event to know when we're done
-        static ManualResetEvent finished = new ManualResetEvent(false);
+        static readonly ManualResetEvent finished = new ManualResetEvent(false);
 
         // Start out assuming success; we'll set this to 1 if we get a failed test
         static int result = 0;
@@ -37,7 +37,7 @@ namespace TestRunner
 
             using (var runner = AssemblyRunner.WithAppDomain(testAssembly))
             {
-                if (args.Length > 0)
+                if (null != args && args.Length > 0)
                 {
                     TestNameFilter = args[0];
                     runner.TestCaseFilter += FilterByClass;
@@ -58,7 +58,7 @@ namespace TestRunner
 
         public static bool FilterByClass(ITestCase testCase)
         {
-            if (testCase.DisplayName.Contains(TestNameFilter))
+            if (null != testCase && testCase.DisplayName.Contains(TestNameFilter))
             {
                 return true;
             }

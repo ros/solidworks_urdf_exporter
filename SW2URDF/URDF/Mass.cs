@@ -12,14 +12,8 @@ namespace SW2URDF.URDF
 
         public double Value
         {
-            get
-            {
-                return (double)ValueAttribute.Value;
-            }
-            set
-            {
-                ValueAttribute.Value = value;
-            }
+            get => (double)ValueAttribute.Value;
+            set => ValueAttribute.Value = value;
         }
 
         public Mass() : base("mass", false)

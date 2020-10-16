@@ -18,14 +18,8 @@ namespace SW2URDF.URDF
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         public Material() : base("material", false)
@@ -39,7 +33,7 @@ namespace SW2URDF.URDF
             ChildElements.Add(Texture);
         }
 
-        public void FillBoxes(ComboBox box, string format)
+        public void FillBoxes(ComboBox box)
         {
             box.Text = Name;
         }

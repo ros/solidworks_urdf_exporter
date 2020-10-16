@@ -9,7 +9,7 @@ namespace SW2URDF.URDF
     [DataContract(IsReference = true, Namespace = "http://schemas.datacontract.org/2004/07/SW2URDF")]
     public class Joint : URDFElement
     {
-        public static readonly List<string> AVAILABLE_TYPES = new List<string>
+        public static readonly List<string> AvailableTypes = new List<string>
         {
             "revolute", "continuous", "prismatic", "fixed", "floating", "planar"
         };
@@ -19,14 +19,8 @@ namespace SW2URDF.URDF
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         [DataMember]
@@ -34,14 +28,8 @@ namespace SW2URDF.URDF
 
         public string Type
         {
-            get
-            {
-                return (string)TypeAttribute.Value;
-            }
-            set
-            {
-                TypeAttribute.Value = value;
-            }
+            get => (string)TypeAttribute.Value;
+            set => TypeAttribute.Value = value;
         }
 
         [DataMember]
@@ -79,7 +67,7 @@ namespace SW2URDF.URDF
 
         public Joint() : base("joint", false)
         {
-            Origin = new Origin("Joint", false);
+            Origin = new Origin(false);
             Parent = new ParentLink();
             Child = new ChildLink();
             Axis = new Axis();

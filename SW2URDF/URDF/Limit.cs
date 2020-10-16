@@ -21,50 +21,26 @@ namespace SW2URDF.URDF
 
         public double Lower
         {
-            get
-            {
-                return (double)LowerAttribute.Value;
-            }
-            set
-            {
-                LowerAttribute.Value = value;
-            }
+            get => (double)LowerAttribute.Value;
+            set => LowerAttribute.Value = value;
         }
 
         public double Upper
         {
-            get
-            {
-                return (double)UpperAttribute.Value;
-            }
-            set
-            {
-                UpperAttribute.Value = value;
-            }
+            get => (double)UpperAttribute.Value;
+            set => UpperAttribute.Value = value;
         }
 
         public double Effort
         {
-            get
-            {
-                return (double)EffortAttribute.Value;
-            }
-            set
-            {
-                EffortAttribute.Value = value;
-            }
+            get => (double)EffortAttribute.Value;
+            set => EffortAttribute.Value = value;
         }
 
         public double Velocity
         {
-            get
-            {
-                return (double)VelocityAttribute.Value;
-            }
-            set
-            {
-                VelocityAttribute.Value = value;
-            }
+            get => (double)VelocityAttribute.Value;
+            set => VelocityAttribute.Value = value;
         }
 
         public Limit() : base("limit", false)

@@ -53,11 +53,11 @@ namespace SW2URDF.URDFExport
         public Link previouslySelectedLink;
         public List<Link> linksToVisit;
         public LinkNode rightClickedNode;
-        private ContextMenuStrip docMenu;
+        private readonly ContextMenuStrip docMenu;
 
         //General objects required for the PropertyManager page
 
-        private PropertyManagerPage2 PMPage;
+        private readonly PropertyManagerPage2 PMPage;
         private PropertyManagerPageGroup PMGroup;
         private PropertyManagerPageSelectionbox PMSelection;
         private PropertyManagerPageButton PMButtonExport;
@@ -74,12 +74,8 @@ namespace SW2URDF.URDFExport
         private PropertyManagerPageCheckbox PMComputeJointKinematics;
         private PropertyManagerPageCheckbox PMComputeJointLimits;
 
-        private PropertyManagerPageLabel PMLabelLinkName;
         private PropertyManagerPageLabel PMLabelJointName;
-        private PropertyManagerPageLabel PMLabelSelection;
-        private PropertyManagerPageLabel PMLabelChildCount;
         private PropertyManagerPageLabel PMLabelParentLink;
-        private PropertyManagerPageLabel PMLabelParentLinkLabel;
         private PropertyManagerPageLabel PMLabelAxes;
         private PropertyManagerPageLabel PMLabelCoordSys;
         private PropertyManagerPageLabel PMLabelJointType;
@@ -98,25 +94,14 @@ namespace SW2URDF.URDFExport
         private const int GroupID = 1;
         private const int TextBoxLinkNameID = 2;
         private const int SelectionID = 3;
-        private const int ComboID = 4;
-        private const int ListID = 5;
-        private const int ButtonSaveID = 6;
         private const int NumBoxChildCountID = 7;
         private const int LabelLinkNameID = 8;
-        private const int LabelSelectionID = 9;
-        private const int LabelChildCountID = 10;
-        private const int LabelParentLinkID = 11;
-        private const int LabelParentLinkLabelID = 12;
-        private const int TextBoxJointNameID = 13;
         private const int LabelJointNameID = 14;
         private const int dotNetTree = 16;
         private const int ButtonExportID = 17;
-        private const int ComboBoxAxesID = 18;
         private const int ComboBoxCoordSysID = 19;
         private const int LabelAxesID = 20;
         private const int LabelCoordSysID = 21;
-        private const int ComboBoxJointTypeID = 22;
-        private const int LabelJointTypeID = 23;
         private const int IDGlobalCoordsys = 24;
         private const int IDLabelGlobalCoordsys = 25;
         private const int LoadConfigurationID = 26;
@@ -150,22 +135,19 @@ namespace SW2URDF.URDFExport
             linksToVisit = new List<Link>();
             docMenu = new ContextMenuStrip();
 
-            string PageTitle = null;
             string caption = null;
             string tip = null;
-            long options = 0;
             int longerrors = 0;
             int controlType = 0;
             int alignment = 0;
-            string[] listItems = new string[4];
 
             ActiveSWModel.ShowConfiguration2("URDF Export");
 
             #region Create and instantiate components of PM page
 
             //Set the variables for the page
-            PageTitle = "URDF Exporter";
-            options = (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_OkayButton +
+            string PageTitle = "URDF Exporter";
+            long options = (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_OkayButton +
                 (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_CancelButton +
                 (int)swPropertyManagerPageOptions_e.swPropertyManagerOptions_HandleKeystrokes;
 
@@ -280,22 +262,6 @@ namespace SW2URDF.URDFExport
             }
         }
 
-        private bool ExistingConfigurationEmpty()
-        {
-            if (Tree.Nodes.Count == 0)
-            {
-                return false;
-            }
-
-            LinkNode baseNode = (LinkNode)Tree.Nodes[0];
-
-            return (baseNode.Link.Name == "base_link" &&
-                baseNode.Nodes.Count == 0 &&
-                string.IsNullOrWhiteSpace(baseNode.Link.Joint.AxisName) &&
-                baseNode.Link.Joint.CoordinateSystemName == "Automatically Generate" &&
-                baseNode.Link.SWComponents.Count == 0);
-        }
-
         private void EnableControl(IPropertyManagerPageControl control, bool isEnabled = true)
         {
             control.Enabled = isEnabled;
@@ -363,7 +329,7 @@ namespace SW2URDF.URDFExport
             LinkNode existingBaseNode = (LinkNode)Tree.Nodes[0].Clone();
             IPropertyManagerPageControl loadConfigurationControl = (IPropertyManagerPageControl)PMButtonLoad;
 
-            if (existingBaseNode == null || !existingBaseNode.GetLink().AreRequiredFieldsSatisfied())
+            if (existingBaseNode == null || !existingBaseNode.RebuildLink().AreRequiredFieldsSatisfied())
             {
                 logger.Warn("Loading a configuration with an incomplete export");
                 if (MessageBox.Show(
@@ -398,7 +364,7 @@ namespace SW2URDF.URDFExport
                     string filename = loadFileDialog.SafeFileName;
                     string assemblyTitle = ActiveSWModel.GetTitle();
 
-                    Link existingBaseLink = existingBaseNode.GetLink();
+                    Link existingBaseLink = existingBaseNode.RebuildLink();
                     TreeMergeWPF wpf = new TreeMergeWPF(existingBaseLink, loadedLinks,
                         filename, assemblyTitle);
                     wpf.TreeMerged += TreeMergeCompleted;
@@ -745,8 +711,6 @@ namespace SW2URDF.URDFExport
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelParentLinkLabel = (PropertyManagerPageLabel)PMGroup.AddControl2(
-                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, "");
 
             //Create the parent link name label, the one that is updated
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
@@ -763,9 +727,7 @@ namespace SW2URDF.URDFExport
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelLinkName = (PropertyManagerPageLabel)PMGroup.AddControl2(
-                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
-
+            
             //Create the link name text box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
             caption = "base_link";
@@ -883,9 +845,7 @@ namespace SW2URDF.URDFExport
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelSelection = (PropertyManagerPageLabel)PMGroup.AddControl2(
-                LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
-
+            
             //Create selection box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Selectionbox;
             caption = "Link Components";
@@ -914,9 +874,7 @@ namespace SW2URDF.URDFExport
             alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
-            PMLabelChildCount = (PropertyManagerPageLabel)PMGroup.AddControl
-                (LabelLinkNameID, (short)controlType, caption, (short)alignment, (int)options, tip);
-
+            
             //Create the number box
             controlType = (int)swPropertyManagerPageControlType_e.swControlType_Numberbox;
             caption = "";

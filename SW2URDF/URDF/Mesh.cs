@@ -11,14 +11,8 @@ namespace SW2URDF.URDF
 
         public string Filename
         {
-            get
-            {
-                return (string)FilenameAttribute.Value;
-            }
-            set
-            {
-                FilenameAttribute.Value = value;
-            }
+            get => (string)FilenameAttribute.Value;
+            set => FilenameAttribute.Value = value;
         }
 
         public Mesh() : base("mesh", false)

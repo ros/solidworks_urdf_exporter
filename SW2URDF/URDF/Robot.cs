@@ -11,18 +11,12 @@ namespace SW2URDF.URDF
         public Link BaseLink { get; private set; }
 
         [DataMember]
-        private URDFAttribute NameAttribute;
+        private readonly URDFAttribute NameAttribute;
 
         public string Name
         {
-            get
-            {
-                return (string)NameAttribute.Value;
-            }
-            set
-            {
-                NameAttribute.Value = value;
-            }
+            get => (string)NameAttribute.Value;
+            set => NameAttribute.Value = value;
         }
 
         public Robot() : base("robot", true)

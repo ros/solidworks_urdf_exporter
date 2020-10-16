@@ -56,7 +56,6 @@ namespace SW2URDF.URDFExport.URDFMerge
 
         private Link MergeItem(TreeViewItem cadItem, URDFTreeCorrespondance correspondance)
         {
-            TreeViewItem merged = new TreeViewItem();
             Link cadLink = (Link)cadItem.Tag;
             Link csvLink = correspondance.GetCorrespondingLink(cadItem);
 

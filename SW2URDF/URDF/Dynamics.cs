@@ -12,14 +12,8 @@ namespace SW2URDF.URDF
 
         public double Damping
         {
-            get
-            {
-                return (double)DampingAttribute.Value;
-            }
-            set
-            {
-                DampingAttribute.Value = value;
-            }
+            get => (double)DampingAttribute.Value;
+            set => DampingAttribute.Value = value;
         }
 
         [DataMember]
@@ -27,14 +21,8 @@ namespace SW2URDF.URDF
 
         public double Friction
         {
-            get
-            {
-                return (double)FrictionAttribute.Value;
-            }
-            set
-            {
-                FrictionAttribute.Value = value;
-            }
+            get => (double)FrictionAttribute.Value;
+            set => FrictionAttribute.Value = value;
         }
 
         public Dynamics() : base("dynamics", false)
@@ -48,8 +36,8 @@ namespace SW2URDF.URDF
 
         public void FillBoxes(TextBox boxDamping, TextBox boxFriction, string format)
         {
-            boxDamping.Text = DampingAttribute.GetTextFromDoubleValue();
-            boxFriction.Text = FrictionAttribute.GetTextFromDoubleValue();
+            boxDamping.Text = DampingAttribute.GetTextFromDoubleValue(format);
+            boxFriction.Text = FrictionAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxDamping, TextBox boxFriction)

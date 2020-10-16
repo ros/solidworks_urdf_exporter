@@ -21,7 +21,6 @@ THE SOFTWARE.
 */
 
 using SolidWorks.Interop.sldworks;
-using SolidWorks.Interop.swconst;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
 using System;
@@ -69,7 +68,7 @@ namespace SW2URDF.UI
                                                 textBoxIzz,
                                                 "G5");
 
-                Link.Visual.Material.FillBoxes(comboBoxMaterials, "G5");
+                Link.Visual.Material.FillBoxes(comboBoxMaterials);
                 textBoxTexture.Text = Link.Visual.Material.Texture.wFilename;
 
                 Link.Visual.Material.Color.FillBoxes(domainUpDownRed,
@@ -227,7 +226,7 @@ namespace SW2URDF.UI
             AutoUpdatingForm = false;
         }
 
-        public void FillBlank(Control[] boxes)
+        public static void FillBlank(Control[] boxes)
         {
             foreach (Control box in boxes)
             {
@@ -346,28 +345,6 @@ namespace SW2URDF.UI
             }
         }
 
-        //Fills either TreeView from the URDF robot
-        public void FillTreeViewFromRobot(Robot Robot, TreeView tree)
-        {
-            LinkNode baseNode = new LinkNode();
-            Link baseLink = Robot.BaseLink;
-            baseNode.Name = baseLink.Name;
-            baseNode.Text = baseLink.Name;
-            baseNode.Link = baseLink;
-            baseNode.IsBaseNode = true;
-            baseNode.Link.Name = baseLink.Name;
-            baseNode.Link.SWComponents = baseLink.SWComponents;
-            baseNode.Link.Joint.CoordinateSystemName = "Origin_global";
-            baseNode.IsIncomplete = false;
-
-            foreach (Link child in baseLink.Children)
-            {
-                baseNode.Nodes.Add(CreateLinkNodeFromLink(child));
-            }
-            tree.Nodes.Add(baseNode);
-            tree.ExpandAll();
-        }
-
         //Fills specifically the joint TreeView
         public void FillJointTree()
         {
@@ -408,7 +385,7 @@ namespace SW2URDF.UI
         }
 
         //Converts a Link to a LinkNode
-        public LinkNode CreateLinkNodeFromLink(Link Link)
+        public static LinkNode CreateLinkNodeFromLink(Link Link)
         {
             LinkNode node = new LinkNode(Link);
             node.Link.Children.Clear();
@@ -438,16 +415,6 @@ namespace SW2URDF.UI
             return Link;
         }
 
-        private string CheckLinkAlpha(Link node)
-        {
-            if (node.Visual.Material.Color.Alpha < 1.0)
-            {
-                return "Alpha value is below 1.0 (" +
-                    node.Visual.Material.Color.Alpha + ")";
-            }
-            return "";
-        }
-
         private void CheckLinksForWarnings(Link node, StringBuilder builder)
         {
             string msg = "";
@@ -471,35 +438,8 @@ namespace SW2URDF.UI
 
         public void SaveConfigTree(ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
-            Common.RetrieveSWComponentPIDs(model, BaseNode);
-            Serialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
-        }
-
-        private SolidWorks.Interop.sldworks.Attribute CreateSWSaveAttribute(ISldWorks iSwApp, string name)
-        {
-            int Options = 0;
-            int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
-            ModelDoc2 ActiveSWModel = iSwApp.ActiveDoc;
-            Object[] objects = ActiveSWModel.FeatureManager.GetFeatures(true);
-            foreach (Object obj in objects)
-            {
-                Feature feat = (Feature)obj;
-                string t = feat.GetTypeName2();
-                if (feat.GetTypeName2() == "Attribute")
-                {
-                    SolidWorks.Interop.sldworks.Attribute att =
-                        (SolidWorks.Interop.sldworks.Attribute)feat.GetSpecificFeature2();
-                    if (att.GetName() == name)
-                    {
-                        return att;
-                    }
-                }
-            }
-
-            SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                saveConfigurationAttributeDef.CreateInstance5(ActiveSWModel, null,
-                Serialization.URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, Options, ConfigurationOptions);
-            return saveExporterAttribute;
+            CommonSwOperations.RetrieveSWComponentPIDs(model, BaseNode);
+            ConfigurationSerialization.SaveConfigTreeXML(swApp, model, BaseNode, warnUser);
         }
 
         public void ChangeAllNodeFont(LinkNode node, Font font)

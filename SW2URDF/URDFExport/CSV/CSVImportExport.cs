@@ -87,7 +87,6 @@ namespace SW2URDF.URDFExport.CSV
         /// <param name="stream">Stream to write to</param>
         private static void WriteHeaderToCSV(CsvWriter writer)
         {
-            StringBuilder builder = new StringBuilder();
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
                 string columnName = (string)entry.Value;
@@ -106,7 +105,6 @@ namespace SW2URDF.URDFExport.CSV
             foreach (DictionaryEntry entry in ContextToColumns.Dictionary)
             {
                 string context = (string)entry.Key;
-                string column = (string)entry.Value;
                 if (dictionary.Contains(context))
                 {
                     object value = dictionary[context];

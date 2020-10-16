@@ -27,74 +27,38 @@ namespace SW2URDF.URDF
 
         public double Ixx
         {
-            get
-            {
-                return (double)IxxAttribute.Value;
-            }
-            set
-            {
-                IxxAttribute.Value = value;
-            }
+            get => (double)IxxAttribute.Value;
+            set => IxxAttribute.Value = value;
         }
 
         public double Ixy
         {
-            get
-            {
-                return (double)IxyAttribute.Value;
-            }
-            set
-            {
-                IxyAttribute.Value = value;
-            }
+            get => (double)IxyAttribute.Value;
+            set => IxyAttribute.Value = value;
         }
 
         public double Ixz
         {
-            get
-            {
-                return (double)IxzAttribute.Value;
-            }
-            set
-            {
-                IxzAttribute.Value = value;
-            }
+            get => (double)IxzAttribute.Value;
+            set => IxzAttribute.Value = value;
         }
 
         public double Iyy
         {
-            get
-            {
-                return (double)IyyAttribute.Value;
-            }
-            set
-            {
-                IyyAttribute.Value = value;
-            }
+            get => (double)IyyAttribute.Value;
+            set => IyyAttribute.Value = value;
         }
 
         public double Iyz
         {
-            get
-            {
-                return (double)IyzAttribute.Value;
-            }
-            set
-            {
-                IyzAttribute.Value = value;
-            }
+            get => (double)IyzAttribute.Value;
+            set => IyzAttribute.Value = value;
         }
 
         public double Izz
         {
-            get
-            {
-                return (double)IzzAttribute.Value;
-            }
-            set
-            {
-                IzzAttribute.Value = value;
-            }
+            get => (double)IzzAttribute.Value;
+            set => IzzAttribute.Value = value;
         }
 
         public Inertia() : base("inertia", false)
@@ -148,10 +112,6 @@ namespace SW2URDF.URDF
 
         internal double[] GetMoment()
         {
-            double Iyx = Ixy;
-            double Izx = Ixz;
-            double Izy = Iyz;
-
             return new double[] { Ixx, Ixy, Ixz, Ixy, Iyy, Iyz, Ixz, Iyz, Izz };
         }
     }

@@ -145,7 +145,7 @@ namespace SW2URDF.URDFExport
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
-            int progressBarBound = Common.GetCount(URDFRobot.BaseLink);
+            int progressBarBound = CommonSwOperations.GetCount(URDFRobot.BaseLink);
             iSwApp.GetUserProgressBar(out progressBar);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
@@ -192,7 +192,7 @@ namespace SW2URDF.URDFExport
 
             //Saving part as STL mesh
             AssemblyDoc assyDoc = (AssemblyDoc)ActiveSWModel;
-            List<string> hiddenComponents = Common.FindHiddenComponents(assyDoc.GetComponents(false));
+            List<string> hiddenComponents = CommonSwOperations.FindHiddenComponents(assyDoc.GetComponents(false));
             logger.Info("Found " + hiddenComponents.Count + " hidden components " + String.Join(", ", hiddenComponents));
             logger.Info("Hiding all components");
             ActiveSWModel.Extension.SelectAll();
@@ -212,7 +212,7 @@ namespace SW2URDF.URDFExport
             finally
             {
                 logger.Info("Showing all components except previously hidden components");
-                Common.ShowAllComponents(ActiveSWModel, hiddenComponents);
+                CommonSwOperations.ShowAllComponents(ActiveSWModel, hiddenComponents);
 
                 logger.Info("Resetting STL preferences");
                 ResetUserPreferences();
@@ -312,8 +312,7 @@ namespace SW2URDF.URDFExport
             int errors = 0;
             int warnings = 0;
 
-            string coordsysName = "";
-            coordsysName = link.Joint.CoordinateSystemName;
+            string coordsysName = link.Joint.CoordinateSystemName;
 
             logger.Info(link.Name + ": Exporting STL with coordinate frame " + coordsysName);
 
@@ -322,7 +321,7 @@ namespace SW2URDF.URDFExport
 
             logger.Info(link.Name + ": Reference geometry name " + names["component"]);
 
-            Common.ShowComponents(ActiveSWModel, link.SWComponents);
+            CommonSwOperations.ShowComponents(ActiveSWModel, link.SWComponents);
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
                 (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
@@ -336,7 +335,7 @@ namespace SW2URDF.URDFExport
                 logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + 
                     " or warnings " + warnings);
             }
-            Common.HideComponents(ActiveSWModel, link.SWComponents);
+            CommonSwOperations.HideComponents(ActiveSWModel, link.SWComponents);
 
             bool success = CorrectSTLMesh(windowsMeshFilename);
             if (!success)
@@ -401,7 +400,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
-        public bool CorrectSTLMesh(string filename)
+        public static bool CorrectSTLMesh(string filename)
         {
             logger.Info("Removing SW header in STL file");
             try
@@ -423,7 +422,7 @@ namespace SW2URDF.URDFExport
 
         #endregion Export Methods
 
-        private void CopyLogFile(URDFPackage package)
+        private static void CopyLogFile(URDFPackage package)
         {
             string destination = package.WindowsPackageDirectory + "export.log";
             string log_filename = Logger.GetFileName();

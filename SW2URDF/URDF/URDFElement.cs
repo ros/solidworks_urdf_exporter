@@ -33,8 +33,8 @@ namespace SW2URDF.URDF
 
         public virtual ExtensionDataObject ExtensionData
         {
-            get { return ExtensionDataValue; }
-            set { ExtensionDataValue = value; }
+            get => ExtensionDataValue;
+            set => ExtensionDataValue = value;
         }
 
         public URDFElement(string elementName, bool required)
@@ -209,10 +209,6 @@ namespace SW2URDF.URDF
             {
                 pair.Item1.SetElement(pair.Item2);
             }
-        }
-
-        public void CheckChildElements(params URDFElement[] children)
-        {
         }
     }
 }

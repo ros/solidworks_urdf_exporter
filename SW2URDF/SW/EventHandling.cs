@@ -61,7 +61,7 @@ namespace SW2URDF.SW
             {
                 if (!openModelViews.Contains(mView))
                 {
-                    DocView dView = new DocView(userAddin, mView, this);
+                    DocView dView = new DocView(mView, this);
                     dView.AttachEventHandlers();
                     openModelViews.Add(mView, dView);
                 }
@@ -98,13 +98,9 @@ namespace SW2URDF.SW
 
         public bool DetachModelViewEventHandler(ModelView mView)
         {
-            DocView dView;
             if (openModelViews.Contains(mView))
             {
-                dView = (DocView)openModelViews[mView];
                 openModelViews.Remove(mView);
-                mView = null;
-                dView = null;
             }
             return true;
         }
@@ -112,7 +108,7 @@ namespace SW2URDF.SW
 
     public class PartEventHandler : DocumentEventHandler
     {
-        private PartDoc doc;
+        private readonly PartDoc doc;
 
         public PartEventHandler(ModelDoc2 modDoc, SwAddin addin)
             : base(modDoc, addin)
@@ -148,7 +144,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -200,7 +196,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -221,7 +217,6 @@ namespace SW2URDF.SW
                         }
                         break;
                     }
-
                 case swComponentSuppressionState_e.swComponentResolved:
                     {
                         if ((modDoc != null) && !swAddin.OpenDocs.Contains(modDoc))
@@ -230,16 +225,14 @@ namespace SW2URDF.SW
                         }
                         break;
                     }
-
                 case swComponentSuppressionState_e.swComponentSuppressed:
                     break;
-
                 case swComponentSuppressionState_e.swComponentLightweight:
                     break;
-
                 case swComponentSuppressionState_e.swComponentFullyLightweight:
                     break;
-
+                case swComponentSuppressionState_e.swComponentInternalIdMismatch:
+                    break;
                 default:
                     break;
             }
@@ -281,7 +274,7 @@ namespace SW2URDF.SW
 
     public class DrawingEventHandler : DocumentEventHandler
     {
-        private DrawingDoc doc;
+        private readonly DrawingDoc doc;
 
         public DrawingEventHandler(ModelDoc2 modDoc, SwAddin addin)
             : base(modDoc, addin)
@@ -317,7 +310,7 @@ namespace SW2URDF.SW
             return 0;
         }
 
-        public int OnNewSelection()
+        public static int OnNewSelection()
         {
             return 0;
         }
@@ -325,16 +318,12 @@ namespace SW2URDF.SW
 
     public class DocView
     {
-        private readonly ISldWorks iSwApp;
-        private readonly SwAddin userAddin;
         private readonly ModelView mView;
         private readonly DocumentEventHandler parent;
 
-        public DocView(SwAddin addin, IModelView mv, DocumentEventHandler doc)
+        public DocView(IModelView mv, DocumentEventHandler doc)
         {
-            userAddin = addin;
             mView = (ModelView)mv;
-            iSwApp = userAddin.SwApp;
             parent = doc;
         }
 
@@ -354,7 +343,7 @@ namespace SW2URDF.SW
         }
 
         //EventHandlers
-        public int OnDestroy(int destroyType)
+        public static int OnDestroy(int destroyType)
         {
             switch (destroyType)
             {
@@ -369,7 +358,7 @@ namespace SW2URDF.SW
             }
         }
 
-        public int OnRepaint(int repaintType)
+        public static int OnRepaint(int repaintType)
         {
             return 0;
         }

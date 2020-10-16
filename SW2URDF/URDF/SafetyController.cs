@@ -21,50 +21,26 @@ namespace SW2URDF.URDF
 
         public double SoftLower
         {
-            get
-            {
-                return (double)SoftLowerAttribute.Value;
-            }
-            set
-            {
-                SoftLowerAttribute.Value = value;
-            }
+            get => (double)SoftLowerAttribute.Value;
+            set => SoftLowerAttribute.Value = value;
         }
 
         public double SoftUpper
         {
-            get
-            {
-                return (double)SoftUpperAttribute.Value;
-            }
-            set
-            {
-                SoftUpperAttribute.Value = value;
-            }
+            get => (double)SoftUpperAttribute.Value;
+            set => SoftUpperAttribute.Value = value;
         }
 
         public double KPosition
         {
-            get
-            {
-                return (double)KPositionAttribute.Value;
-            }
-            set
-            {
-                KPositionAttribute.Value = value;
-            }
+            get => (double)KPositionAttribute.Value;
+            set => KPositionAttribute.Value = value;
         }
 
         public double KVelocity
         {
-            get
-            {
-                return (double)KVelocityAttribute.Value;
-            }
-            set
-            {
-                KVelocityAttribute.Value = value;
-            }
+            get => (double)KVelocityAttribute.Value;
+            set => KVelocityAttribute.Value = value;
         }
 
         public SafetyController() : base("safety_controller", false)
@@ -83,10 +59,10 @@ namespace SW2URDF.URDF
         public void FillBoxes(TextBox boxLower, TextBox boxUpper,
             TextBox boxPosition, TextBox boxVelocity, string format)
         {
-            boxLower.Text = SoftLowerAttribute.GetTextFromDoubleValue();
-            boxUpper.Text = SoftUpperAttribute.GetTextFromDoubleValue();
-            boxPosition.Text = KPositionAttribute.GetTextFromDoubleValue();
-            boxVelocity.Text = KVelocityAttribute.GetTextFromDoubleValue();
+            boxLower.Text = SoftLowerAttribute.GetTextFromDoubleValue(format);
+            boxUpper.Text = SoftUpperAttribute.GetTextFromDoubleValue(format);
+            boxPosition.Text = KPositionAttribute.GetTextFromDoubleValue(format);
+            boxVelocity.Text = KVelocityAttribute.GetTextFromDoubleValue(format);
         }
 
         public void SetValues(TextBox boxLower, TextBox boxUpper,

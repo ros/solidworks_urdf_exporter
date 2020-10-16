@@ -22,26 +22,26 @@ namespace SW2URDF.URDFExport
     /// At least in regards to reading the old configuration. I'm also choosing to save any old xml
     /// formats to a second attribute in case they need to be reloaded.
     /// </summary>
-    public static class Serialization
+    public static class ConfigurationSerialization
     {
         private static readonly log4net.ILog logger = Logger.GetLogger();
 
         /// <summary>
         /// Current Serialization version
         /// </summary>
-        private const double SERIALIZATION_VERSION = 1.4;
+        private const double SerializationVersion = 1.4;
 
         /// <summary>
         /// Previous versions of serialization were set at 1 in the SW Document. This is
         /// used to denote the version at which the serialization scheme was modified.
         /// </summary>
-        private const double MIN_DATA_CONTRACT_VERSION = 1.3;
+        private const double MinDataContractVersion = 1.3;
 
         /// <summary>
         /// The name given to the URDF configuration in the ModelDoc Feature tree. This is displayed to the
         /// user
         /// </summary>
-        public const string URDF_CONFIGURATION_SW_ATTRIBUTE_NAME = "URDF Export Configuration (v1.4)";
+        public const string UrdfConfigurationSwAttributeName= "URDF Export Configuration (v1.4)";
 
         public static List<string> PREVIOUS_URDF_CONFIGURATION_NAMES = new List<string>() {
             "URDF Export Configuration (v1.3)",
@@ -55,21 +55,21 @@ namespace SW2URDF.URDFExport
         /// </summary>
         /// <param name="model">ModelDoc containing the URDF configuration</param>
         /// <returns>TreeView LinkNode loaded from configuration</returns>
-        public static LinkNode LoadBaseNodeFromModel(SldWorks swApp, ModelDoc2 model, out bool error)
+        public static LinkNode LoadBaseNodeFromModel(ModelDoc2 model, out bool error)
         {
             string data = GetConfigTreeData(model, out double configVersion);
 
-            LinkNode basenode = null;
-            if (configVersion > SERIALIZATION_VERSION)
+            LinkNode basenode;
+            if (configVersion > SerializationVersion)
             {
                 MessageBox.Show("The configuration saved in this model is newer than what this " +
-                    "exporter supports " + string.Format("({0} > {1})", configVersion, SERIALIZATION_VERSION) +
+                    "exporter supports " + string.Format("({0} > {1})", configVersion, SerializationVersion) +
                     ". Please update your exporter version");
                 error = true;
                 return null;
             }
 
-            if (configVersion >= MIN_DATA_CONTRACT_VERSION)
+            if (configVersion >= MinDataContractVersion)
             {
                 basenode = DeserializeFromString(data);
             }
@@ -93,11 +93,11 @@ namespace SW2URDF.URDFExport
         public static void SaveConfigTreeXML(SldWorks swApp, ModelDoc2 model, LinkNode BaseNode, bool warnUser)
         {
             string oldData = GetConfigTreeData(model, out double version);
-            if (oldData.Length > 0 && version < SERIALIZATION_VERSION)
+            if (oldData.Length > 0 && version < SerializationVersion)
             {
                 MessageBox.Show("You have a URDF configuration with an outdated save format. It will automatically be " +
                     "upgraded to the latest version and saved to the configuration named \"" +
-                    URDF_CONFIGURATION_SW_ATTRIBUTE_NAME + "\". " +
+                    UrdfConfigurationSwAttributeName + "\". " +
                     "Old configurations can be deleted at your convenience.");
                 warnUser = false;
             }
@@ -220,6 +220,8 @@ namespace SW2URDF.URDFExport
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                // Not reading external files, so this can set to prohibit. Resolves CA3075
+                textReader.DtdProcessing = DtdProcessing.Prohibit;
                 SerialNode sNode = (SerialNode)serializer.Deserialize(textReader);
                 textReader.Close();
 
@@ -254,13 +256,12 @@ namespace SW2URDF.URDFExport
         /// <returns>Serialized data string</returns>
         private static string GetConfigTreeData(ModelDoc2 model, out double version)
         {
-            object[] objects = model.FeatureManager.GetFeatures(true);
             string data = "";
             version = 0.0;
 
             // Check for most recent serialization version
             SolidWorks.Interop.sldworks.Attribute swAtt =
-                FindSWSaveAttribute(model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+                FindSWSaveAttribute(model, UrdfConfigurationSwAttributeName);
 
             // If not found, check for an older version
             if (swAtt == null)
@@ -293,7 +294,6 @@ namespace SW2URDF.URDFExport
             foreach (Object obj in objects)
             {
                 Feature feature = (Feature)obj;
-                string t = feature.GetTypeName2();
                 if (feature.GetTypeName2() == "Attribute")
                 {
                     SolidWorks.Interop.sldworks.Attribute att =
@@ -346,7 +346,7 @@ namespace SW2URDF.URDFExport
 
             int Options = 0;
             AttributeDef saveConfigurationAttributeDef;
-            saveConfigurationAttributeDef = swApp.DefineAttribute(URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+            saveConfigurationAttributeDef = swApp.DefineAttribute(UrdfConfigurationSwAttributeName);
 
             saveConfigurationAttributeDef.AddParameter(
                 "data", (int)swParamType_e.swParamTypeString, 0, Options);
@@ -355,12 +355,12 @@ namespace SW2URDF.URDFExport
             saveConfigurationAttributeDef.AddParameter(
                 "date", (int)swParamType_e.swParamTypeString, 0, Options);
             saveConfigurationAttributeDef.AddParameter(
-                "exporterVersion", (int)swParamType_e.swParamTypeDouble, SERIALIZATION_VERSION, Options);
+                "exporterVersion", (int)swParamType_e.swParamTypeDouble, SerializationVersion, Options);
             saveConfigurationAttributeDef.Register();
 
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
                 saveConfigurationAttributeDef.CreateInstance5(
-                    model, null, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME, Options, ConfigurationOptions);
+                    model, null, UrdfConfigurationSwAttributeName, Options, ConfigurationOptions);
             return saveExporterAttribute;
         }
 
@@ -372,11 +372,11 @@ namespace SW2URDF.URDFExport
         /// <param name="data">string to save</param>
         /// <param name="attributeName">Name of attribute to save to</param>
         private static void SaveDataToModelDoc(SldWorks swApp, ModelDoc2 model,
-            string data, string archivedData = null)
+            string data)
         {
             int ConfigurationOptions = (int)swInConfigurationOpts_e.swAllConfiguration;
             SolidWorks.Interop.sldworks.Attribute saveExporterAttribute =
-                CreateSWSaveAttribute(swApp, model, URDF_CONFIGURATION_SW_ATTRIBUTE_NAME);
+                CreateSWSaveAttribute(swApp, model, UrdfConfigurationSwAttributeName);
 
             Parameter param = saveExporterAttribute.GetParameter("data");
             param.SetStringValue2(data, ConfigurationOptions, "");
@@ -385,7 +385,7 @@ namespace SW2URDF.URDFExport
             param = saveExporterAttribute.GetParameter("date");
             param.SetStringValue2(DateTime.Now.ToString(), ConfigurationOptions, "");
             param = saveExporterAttribute.GetParameter("exporterVersion");
-            param.SetDoubleValue2(SERIALIZATION_VERSION, ConfigurationOptions, "");
+            param.SetDoubleValue2(SerializationVersion, ConfigurationOptions, "");
         }
 
         #endregion Private Methods

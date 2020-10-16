@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SolidWorks.Interop.sldworks;
 using SW2URDF.SW;
 using SW2URDF.URDFExport;
 using Xunit;
@@ -23,7 +22,7 @@ namespace SW2URDF.Test
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpens(string modelName)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
             SwAddin addin = new SwAddin();
             addin.ConnectToSW(SwApp, 0);
             addin.SetupAssemblyExporter();
@@ -35,7 +34,7 @@ namespace SW2URDF.Test
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpenCloseOk(string modelName)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
 
             ExportPropertyManager pm = new ExportPropertyManager(SwApp);
             pm.Show();
@@ -49,7 +48,7 @@ namespace SW2URDF.Test
         //[InlineData("3_DOF_ARM")]
         public void TestPropertyManagerOpenCloseNotOk(string modelName)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
 
             ExportPropertyManager pm = new ExportPropertyManager(SwApp);
             pm.Show();
@@ -63,7 +62,7 @@ namespace SW2URDF.Test
         //[InlineData("3_DOF_ARM")]
         public void TestPreviewExport(string modelName)
         {
-            ModelDoc2 doc = OpenSWDocument(modelName);
+            OpenSWDocument(modelName);
             ExportPropertyManager pm = new ExportPropertyManager(SwApp);
             pm.Show();
 

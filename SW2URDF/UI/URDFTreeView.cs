@@ -122,7 +122,7 @@ namespace SW2URDF.UI
         /// <param name="treeView"></param>
         /// <param name="target"></param>
         /// <param name="package"></param>
-        private void ProcessDragDropOnItem(TreeView treeView, TreeViewItem target, TreeViewItem package, int position = -1)
+        private void ProcessDragDropOnItem(TreeViewItem target, TreeViewItem package, int position = -1)
         {
             // The parent of the package could be either a TreeView or TreeViewItem
             ItemsControl packageParent = (ItemsControl)package.Parent;
@@ -162,7 +162,7 @@ namespace SW2URDF.UI
             TreeModified(this, new TreeModifiedEventArgs { Tree = this });
         }
 
-        private bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
+        private static bool IsPointToSideOfElement(TreeViewItem item, Point pointOnElement)
         {
             pointOnElement.X = 1;
             IInputElement result = item.InputHitTest(pointOnElement);
@@ -176,7 +176,7 @@ namespace SW2URDF.UI
         /// <param name="items"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
+        private static TreeViewItem GetItemToSideOfPoint(URDFTreeView tree, DragEventArgs e)
         {
             List<TreeViewItem> flattened = tree.Flatten();
 
@@ -222,14 +222,14 @@ namespace SW2URDF.UI
             {
                 // If they drop it inbetween a parent and its first child, then that means they
                 // want to put set it as the closest's first item.
-                ProcessDragDropOnItem(tree, closest, package, 0);
+                ProcessDragDropOnItem(closest, package, 0);
             }
             else
             {
                 // If the closest was found, then add it to its parent at the appropriate index
                 TreeViewItem parent = (TreeViewItem)closest.Parent;
                 int closestIndex = parent.Items.IndexOf(closest);
-                ProcessDragDropOnItem(tree, parent, package, closestIndex + 1);
+                ProcessDragDropOnItem(parent, package, closestIndex + 1);
             }
         }
 
@@ -246,7 +246,7 @@ namespace SW2URDF.UI
             if (e.Source.GetType() == typeof(TreeViewItem))
             {
                 // Dropping onto a Tree node
-                ProcessDragDropOnItem(tree, (TreeViewItem)e.Source, package);
+                ProcessDragDropOnItem((TreeViewItem)e.Source, package);
             }
             else if (e.Source.GetType() == typeof(TreeView))
             {
@@ -290,7 +290,7 @@ namespace SW2URDF.UI
             TreeView treeView = sender as TreeView;
             if (e.MouseDevice.LeftButton == MouseButtonState.Pressed)
             {
-                DependencyObject dependencyObject = treeView.InputHitTest(e.GetPosition(treeView)) as DependencyObject;
+                treeView.InputHitTest(e.GetPosition(treeView));
                 //Point downPos = e.GetPosition(null);
 
                 if (treeView.SelectedValue != null)
