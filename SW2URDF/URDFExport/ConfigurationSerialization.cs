@@ -220,6 +220,8 @@ namespace SW2URDF.URDFExport
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(SerialNode));
                 XmlTextReader textReader = new XmlTextReader(new StringReader(data));
+                // Not reading external files, so this can set to prohibit. Resolves CA3075
+                textReader.DtdProcessing = DtdProcessing.Prohibit;
                 SerialNode sNode = (SerialNode)serializer.Deserialize(textReader);
                 textReader.Close();
 

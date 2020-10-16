@@ -56,7 +56,7 @@ namespace SW2URDF.SW
 
         #region Local Variables
 
-        private int addinID = 0;
+        private int add_in_id_ = 0;
 
         public const int mainCmdGroupID = 5;
         public const int mainItemID1 = 0;
@@ -191,11 +191,11 @@ namespace SW2URDF.SW
         {
             logger.Info("Attempting to connect to SW");
             SwApp = (ISldWorks)ThisSW;
-            addinID = cookie;
+            add_in_id_ = cookie;
 
             //Setup callbacks
             logger.Info("Setting up callbacks");
-            SwApp.SetAddinCallbackInfo(0, this, addinID);
+            SwApp.SetAddinCallbackInfo(0, this, add_in_id_);
 
             #region Setup the Command Manager
             logger.Info("Setting up command manager");
@@ -245,25 +245,37 @@ namespace SW2URDF.SW
         public void AddCommandMgr()
         {
             // Do not use AddMenuItem5 here despite the obselete warning, AddMenuItem5 doesn't work
-            int ret = SwApp.AddMenuItem4((int)swDocumentTypes_e.swDocASSEMBLY, addinID, "Export as URDF@&File",
-                10, "AssemblyURDFExporter", "", "Export assembly as URDF file", "");
-            if (0 != ret)
+            string[] images = {
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_20x20.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_32x32.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_40x40.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_64x64.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_96x96.png",
+                "C:\\Program Files\\SOLIDWORKS Corp\\SOLIDWORKS\\URDFExporter\\images\\ros_logo_128x128.png",
+            };
+            int ret = SwApp.AddMenuItem5((int)swDocumentTypes_e.swDocASSEMBLY, add_in_id_, "Export as URDF@&Tools",
+                -1, "AssemblyURDFExporter", "", "Export assembly as URDF file", images);
+            if (ret < 0)
             {
-                logger.Error("Failure to add menu item 'Export as URDF' to menu 'File'");
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Tools'");
                 return;
             }
             logger.Info("Adding Assembly export to file menu");
-            ret = SwApp.AddMenuItem4((int)swDocumentTypes_e.swDocPART, addinID, "Export as URDF@&File",
-                0, "PartURDFExporter", "", "Export part as URDF file", "");
-            if (0 != ret)
+            ret = SwApp.AddMenuItem5((int)swDocumentTypes_e.swDocPART, add_in_id_, "Export as URDF@&Tools",
+                -1, "PartURDFExporter", "", "Export part as URDF file", images);
+            if (ret < 0)
             {
-                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Export'");
+                logger.Error("Failure to add menu item 'Export as URDF' to menu 'Tools'");
                 return;
             }
 
             logger.Info("Adding Part export to file menu");
         }
 
+        public int ToolbarEnableMethod()
+        {
+            return 1;
+        }
         public void RemoveCommandMgr()
         {
             SwApp.RemoveMenu((int)swDocumentTypes_e.swDocASSEMBLY, "Export as URDF@&File", "");
