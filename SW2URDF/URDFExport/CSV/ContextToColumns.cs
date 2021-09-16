@@ -69,8 +69,8 @@ namespace SW2URDF.URDFExport.CSV
             { "Link.Joint.Calibration.falling", "Calibration falling" },
             { "Link.Joint.Dynamics.damping", "Dynamics Damping" },
             { "Link.Joint.Dynamics.friction", "Dynamics Friction" },
-            { "Link.Joint.SafetyController.soft_upper" ,"Safety Soft Upper"},
-            { "Link.Joint.SafetyController.soft_lower", "Safety Soft Lower" },
+            { "Link.Joint.SafetyController.soft_upper_limit" ,"Safety Soft Upper"},
+            { "Link.Joint.SafetyController.soft_lower_limit", "Safety Soft Lower" },
             { "Link.Joint.SafetyController.k_position","Safety K Position"},
             { "Link.Joint.SafetyController.k_velocity","Safety K Velocity"},
         };

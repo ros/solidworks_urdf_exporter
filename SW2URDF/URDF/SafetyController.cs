@@ -45,8 +45,8 @@ namespace SW2URDF.URDF
 
         public SafetyController() : base("safety_controller", false)
         {
-            SoftUpperAttribute = new URDFAttribute("soft_upper", false, null);
-            SoftLowerAttribute = new URDFAttribute("soft_lower", false, null);
+            SoftUpperAttribute = new URDFAttribute("soft_upper_limit", false, null);
+            SoftLowerAttribute = new URDFAttribute("soft_lower_limit", false, null);
             KPositionAttribute = new URDFAttribute("k_position", false, null);
             KVelocityAttribute = new URDFAttribute("k_velocity", true, null);
 
