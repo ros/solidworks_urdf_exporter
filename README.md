@@ -3,7 +3,14 @@
 Authored and maintained by [Stephen Brawner](brawner@gmail.com). Past supporters include [PickNik Consulting](https://picknik.ai), Verb Surgical, Open Robotics, and Willow Garage. 
 
 ## Latest Release
+**SolidWorks 2021**
+https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.6.1
+
+**SolidWorks 2020**
 https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.6.0
+
+**SolidWorks 2019**
+https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
 
 ## SolidWorks Version Requirements
 
