@@ -12,7 +12,7 @@ https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.6.1
 
 https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.6.0
 
-**SolidWorks 2019**
+**SolidWorks 2019 on 2018 SP 5**
 
 https://github.com/ros/solidworks_urdf_exporter/releases/tag/1.5.1
 
