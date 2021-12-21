@@ -31,6 +31,7 @@ See the [ROS Wiki](http://wiki.ros.org/sw_urdf_exporter) and associated [tutoria
     1. From Visual Studio: `Tools > Get Tools and Features...`
     1. Check `.NET desktop development` package
     1. Select `Modify`
+1. Install the [SolidWorks API tools](https://help.solidworks.com/2019/english/api/sldworksapiprogguide/GettingStarted/SolidWorks_API_Getting_Started_Overview.htm)
 1. Launch Visual Studio with admin privileges. Right click and select `Run as Administrator`
 1. Open `sw2urdf/SW2URDF.sln`  
 1. Enable Debugging
