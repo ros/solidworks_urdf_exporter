@@ -307,7 +307,10 @@ namespace SW2URDF.UI
                 Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);
 
                 logger.Info("Saving URDF package to " + saveFileDialog1.FileName);
-                Exporter.ExportRobot(exportSTL);
+
+                bool isSTL = radioButtonStl.Checked;
+                Exporter.ExportRobot(exportSTL, isSTL);
+
                 Close();
             }
         }

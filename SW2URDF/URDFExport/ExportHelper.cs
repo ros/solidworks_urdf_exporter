@@ -29,6 +29,7 @@ using SW2URDF.URDFExport.CSV;
 using SW2URDF.Utilities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Xml.Serialization;
@@ -141,7 +142,7 @@ namespace SW2URDF.URDFExport
         #region Export Methods
 
         // Beginning method for exporting the full package
-        public void ExportRobot(bool exportSTL = true)
+        public void ExportRobot(bool exportSTL = true, bool isSTL = true)
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
@@ -202,7 +203,7 @@ namespace SW2URDF.URDFExport
             try
             {
                 logger.Info("Beginning individual files export");
-                ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL);
+                ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL, isSTL);
                 success = true;
             }
             catch (Exception e)
@@ -263,7 +264,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        private void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true)
+        private void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true, bool isSTL = true)
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + link.Name);
@@ -275,7 +276,7 @@ namespace SW2URDF.URDFExport
                 count += 1;
                 if (!child.isFixedFrame)
                 {
-                    ExportFiles(child, package, count, exportSTL);
+                    ExportFiles(child, package, count, exportSTL, isSTL);
                 }
             }
 
@@ -295,16 +296,73 @@ namespace SW2URDF.URDFExport
 
             // Create the mesh filenames. SolidWorks likes to use / but that will get messy in filenames so use _ instead
             string linkName = link.Name.Replace('/', '_');
-            string meshFilename = package.MeshesDirectory + linkName + ".STL";
-            string windowsMeshFileName = package.WindowsMeshesDirectory + linkName + ".STL";
+            string meshFilename = package.MeshesDirectory + linkName;
+            string windowsMeshFileName = package.WindowsMeshesDirectory + linkName;
+            if (isSTL)
+            {
+                meshFilename += ".STL";
+                windowsMeshFileName += ".STL";
+            }
+            else
+            {
+                meshFilename += ".3dxml";
+                windowsMeshFileName += ".3dxml";
+            }
             // Export STL
             if (exportSTL)
             {
-                SaveSTL(link, windowsMeshFileName);
+                if (isSTL)
+                {
+                    SaveSTL(link, windowsMeshFileName);
+                }
+                else
+                {
+                    Save3dxml(link, windowsMeshFileName);
+                }
             }
 
             link.Visual.Geometry.Mesh.Filename = meshFilename;
             link.Collision.Geometry.Mesh.Filename = meshFilename;
+        }
+
+        private void Save3dxml(Link link, string windowsMeshFilename)
+        {
+            int errors = 0;
+            int warnings = 0;
+
+            string coordsysName = link.Joint.CoordinateSystemName;
+
+            logger.Info(link.Name + ": Exporting 3dxml with coordinate frame " + coordsysName);
+
+            Dictionary<string, string> names = GetComponentRefGeoNames(coordsysName);
+            ModelDoc2 ActiveDoc = ActiveSWModel;
+
+            logger.Info(link.Name + ": Reference geometry name " + names["component"]);
+
+            CommonSwOperations.ShowComponents(ActiveSWModel, link.SWComponents);
+
+            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
+                (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
+            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
+
+            logger.Info("Saving 3dxml to " + windowsMeshFilename);
+
+            // === 3dxml Translate Link === //
+            MathTransform coordSysTransform =
+            ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
+            Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
+            LocalizeLink(link, GlobalTransform);
+            // === 3dxml Translate Link === //
+
+            ActiveDoc.Extension.SaveAs(windowsMeshFilename,
+                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
+
+            if (errors + warnings != 0)
+            {
+                logger.Warn("Exporting 3dxml for link " + link.Name + " failed with error " + errors +
+                    " or warnings " + warnings);
+            }
+            CommonSwOperations.HideComponents(ActiveSWModel, link.SWComponents);
         }
 
         private bool SaveSTL(Link link, string windowsMeshFilename)
