@@ -142,7 +142,7 @@ namespace SW2URDF.URDFExport
         #region Export Methods
 
         // Beginning method for exporting the full package
-        public void ExportRobot(bool exportSTL = true, bool isSTL = true)
+        public void ExportRobot(bool exportSTL = true, MeshExportFormat meshFormat = MeshExportFormat.STL)
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
@@ -203,7 +203,7 @@ namespace SW2URDF.URDFExport
             try
             {
                 logger.Info("Beginning individual files export");
-                ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL, isSTL);
+                ExportFiles(URDFRobot.BaseLink, package, 0, exportSTL, meshFormat);
                 success = true;
             }
             catch (Exception e)
@@ -264,7 +264,7 @@ namespace SW2URDF.URDFExport
         }
 
         //Recursive method for exporting each link (and writing it to the URDF)
-        private void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true, bool isSTL = true)
+        private void ExportFiles(Link link, URDFPackage package, int count, bool exportSTL = true, MeshExportFormat meshFormat = MeshExportFormat.STL)
         {
             progressBar.UpdateProgress(count);
             progressBar.UpdateTitle("Exporting mesh: " + link.Name);
@@ -276,7 +276,7 @@ namespace SW2URDF.URDFExport
                 count += 1;
                 if (!child.isFixedFrame)
                 {
-                    ExportFiles(child, package, count, exportSTL, isSTL);
+                    ExportFiles(child, package, count, exportSTL, meshFormat);
                 }
             }
 
@@ -298,29 +298,41 @@ namespace SW2URDF.URDFExport
             string linkName = link.Name.Replace('/', '_');
             string meshFilename = package.MeshesDirectory + linkName;
             string windowsMeshFileName = package.WindowsMeshesDirectory + linkName;
-            if (isSTL)
+            switch(meshFormat)
             {
-                meshFilename += ".STL";
-                windowsMeshFileName += ".STL";
-            }
-            else
-            {
-                meshFilename += ".3dxml";
-                windowsMeshFileName += ".3dxml";
+                case MeshExportFormat.STL:
+                    meshFilename += ".STL";
+                    windowsMeshFileName += ".STL";
+                    break;
+
+                case MeshExportFormat.THREEDXML:
+                    meshFilename += ".3dxml";
+                    windowsMeshFileName += ".3dxml";
+                    break;
+
+                default:
+                    meshFilename += ".STL";
+                    windowsMeshFileName += ".STL";
+                    break;
             }
             // Export STL
             if (exportSTL)
             {
-                if (isSTL)
+                switch (meshFormat)
                 {
-                    SaveSTL(link, windowsMeshFileName);
-                }
-                else
-                {
-                    Save3dxml(link, windowsMeshFileName);
+                    case MeshExportFormat.STL:
+                        SaveSTL(link, windowsMeshFileName);
+                        break;
+
+                    case MeshExportFormat.THREEDXML:
+                        Save3dxml(link, windowsMeshFileName);
+                        break;
+
+                    default:
+                        SaveSTL(link, windowsMeshFileName);
+                        break;
                 }
             }
-
             link.Visual.Geometry.Mesh.Filename = meshFilename;
             link.Collision.Geometry.Mesh.Filename = meshFilename;
         }

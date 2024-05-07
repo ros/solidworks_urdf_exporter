@@ -308,8 +308,20 @@ namespace SW2URDF.UI
 
                 logger.Info("Saving URDF package to " + saveFileDialog1.FileName);
 
-                bool isSTL = radioButtonStl.Checked;
-                Exporter.ExportRobot(exportSTL, isSTL);
+                MeshExportFormat meshFormat;
+                if(radioButtonStl.Checked)
+                {
+                    meshFormat = MeshExportFormat.STL;
+                }
+                else if(radioButton3dxml.Checked)
+                {
+                    meshFormat = MeshExportFormat.THREEDXML;
+                }
+                else
+                {
+                    meshFormat = MeshExportFormat.STL;
+                }
+                Exporter.ExportRobot(exportSTL, meshFormat);
 
                 Close();
             }

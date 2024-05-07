@@ -1417,4 +1417,10 @@ namespace SW2URDF.URDFExport
 
         #endregion Joint methods
     }
+
+    public enum MeshExportFormat
+    {
+        STL,
+        THREEDXML
+    }
 }
