@@ -360,10 +360,50 @@ namespace SW2URDF.URDFExport
             logger.Info("Saving 3dxml to " + windowsMeshFilename);
 
             // === 3dxml Translate Link === //
+            // MathTransform coordSysTransform =
+            //     ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
+            // ModelDoc2 linkModel = link.SWMainComponent.GetModelDoc2();
+            
+            string linkModelName = names["component"];
+            string linkModelSuffix = " <" + linkModelName + ">";
+            // Coord is inside sub-assembly.
+            if(coordsysName.Contains(linkModelSuffix))
+            {
+                coordsysName = coordsysName.Replace(linkModelSuffix, "");
+                logger.Info($"Suffix of {linkModelName} was removed from coordsysName : {coordsysName}");
+            }
+            // Coord is outside sub-assembly.
+            else
+            {
+                logger.Info($"Did not contain suffix in coordsysName : {coordsysName}");
+            }
+
+            ModelDoc2 linkModel;
+            // The link has no components: Base link
+            if (linkModelName == "")
+            {
+                logger.Info(linkModelName + " : names component null");
+                linkModel = ActiveDoc;
+            }
+            // The link has components: Sub-assembly
+            else
+            {
+                logger.Info(linkModelName + " : names component is : " + names["component"]);
+                linkModel = link.SWMainComponent.GetModelDoc2();
+            }
             MathTransform coordSysTransform =
-            ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
-            Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
-            LocalizeLink(link, GlobalTransform);
+                linkModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
+
+            if (coordSysTransform != null)
+            {
+                logger.Info("Localizing Link : " + coordsysName);
+                Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
+                LocalizeLink(link, GlobalTransform);
+            }
+            else
+            {
+                logger.Warn("coordSysTransform was null : " + coordsysName);
+            }
             // === 3dxml Translate Link === //
 
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
