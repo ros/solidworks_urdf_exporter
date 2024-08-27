@@ -366,7 +366,6 @@ namespace SW2URDF.SW
                 PartExportForm exportForm = new PartExportForm((SldWorks)SwApp);
                 logger.Info("Showing part");
                 exportForm.Show();
-                exportForm.Dispose();
             }
         }
 
