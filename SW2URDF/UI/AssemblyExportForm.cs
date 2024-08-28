@@ -307,7 +307,22 @@ namespace SW2URDF.UI
                 Exporter.PackageName = Path.GetFileName(saveFileDialog1.FileName);
 
                 logger.Info("Saving URDF package to " + saveFileDialog1.FileName);
-                Exporter.ExportRobot(exportSTL);
+
+                MeshExportFormat meshFormat;
+                if(radioButtonStl.Checked)
+                {
+                    meshFormat = MeshExportFormat.STL;
+                }
+                else if(radioButton3dxml.Checked)
+                {
+                    meshFormat = MeshExportFormat.THREEDXML;
+                }
+                else
+                {
+                    meshFormat = MeshExportFormat.STL;
+                }
+                Exporter.ExportRobot(exportSTL, meshFormat);
+
                 Close();
             }
         }

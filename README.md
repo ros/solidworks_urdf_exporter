@@ -40,6 +40,15 @@ See the [ROS Wiki](http://wiki.ros.org/sw_urdf_exporter) and associated [tutoria
     1. Ensure `Configuration:` is set to `Debug`
     1. Ensure `Start external program:` is pointing to the SolidWorks executable. For example `C:\Program Files\SOLIDWORKS Corp\SOLIDWORKS\SLDWORKS.exe`
 
+## Converting mesh format from 3dxml to dae
+
+Executing the following command will convert the format of the exported mesh from 3DXML to DAE, and rewrite the URDF, allowing you to display colored meshes in visualization tools like RViz:
+
+```bash
+pip3 install scikit-robot -U
+convert-urdf-mesh <URDF_PATH> --output <OUTPUT_URDF_PATH>
+```
+
 ### Trouble Shooting
 
 1. `AxImp.exe` error - Check the installation of the .Net Tools. If there is no error, install the Windows 10 SDK.
