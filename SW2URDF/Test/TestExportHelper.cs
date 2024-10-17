@@ -14,10 +14,13 @@ namespace SW2URDF.Test
         }
 
         [Theory]
-        [InlineData("3_DOF_ARM", 4)]
-        [InlineData("4_WHEELER", 5)]
-        [InlineData("ORIGINAL_3_DOF_ARM", 4)]
-        public void TestExportRobot(string modelName, int expNumLinks)
+        [InlineData("3_DOF_ARM", 4, MeshExportFormat.STL)]
+        [InlineData("4_WHEELER", 5, MeshExportFormat.STL)]
+        [InlineData("ORIGINAL_3_DOF_ARM", 4, MeshExportFormat.STL)]
+        [InlineData("3_DOF_ARM", 4, MeshExportFormat.THREEDXML)]
+        [InlineData("4_WHEELER", 5, MeshExportFormat.THREEDXML)]
+        [InlineData("ORIGINAL_3_DOF_ARM", 4, MeshExportFormat.THREEDXML)]
+        public void TestExportRobot(string modelName, int expNumLinks, MeshExportFormat meshExportFormat)
         {
             ModelDoc2 doc = OpenSWDocument(modelName);
             ExportHelper helper = new ExportHelper(SwApp);
@@ -28,7 +31,7 @@ namespace SW2URDF.Test
             LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
             Assert.False(error);
             helper.CreateRobotFromTreeView(baseNode);
-            helper.ExportRobot(true);
+            helper.ExportRobot(true, meshExportFormat);
             Assert.NotNull(helper.URDFRobot);
             Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
