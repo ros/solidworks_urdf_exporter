@@ -359,52 +359,60 @@ namespace SW2URDF.URDFExport
 
             logger.Info("Saving 3dxml to " + windowsMeshFilename);
 
-            // === 3dxml Translate Link === //
-            // MathTransform coordSysTransform =
-            //     ActiveSWModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
-            // ModelDoc2 linkModel = link.SWMainComponent.GetModelDoc2();
-            
+            // === 3dxml Localize Link === //
+
+            // Remove suffix from coordinate-system name.
+            // ex. "Joint Origin <Arm_link-1>" -> "Joint Origin"
+            // Suffix is included when coordinate is inside sub-assembly.
             string linkModelName = names["component"];
             string linkModelSuffix = " <" + linkModelName + ">";
-            // Coord is inside sub-assembly.
             if(coordsysName.Contains(linkModelSuffix))
             {
                 coordsysName = coordsysName.Replace(linkModelSuffix, "");
                 logger.Info($"Suffix of {linkModelName} was removed from coordsysName : {coordsysName}");
             }
-            // Coord is outside sub-assembly.
-            else
-            {
-                logger.Info($"Did not contain suffix in coordsysName : {coordsysName}");
-            }
 
+            // Get the model document of the link.
             ModelDoc2 linkModel;
-            // The link has no components: Base link
-            if (linkModelName == "")
+            bool isBaseLink = linkModelName == "";
+            if (isBaseLink)
             {
-                logger.Info(linkModelName + " : names component null");
                 linkModel = ActiveDoc;
             }
-            // The link has components: Sub-assembly
             else
             {
-                logger.Info(linkModelName + " : names component is : " + names["component"]);
-                linkModel = link.SWMainComponent.GetModelDoc2();
+                if (link.SWMainComponent != null)
+                {
+                    linkModel = link.SWMainComponent.GetModelDoc2();
+                }
+                else
+                {
+                    logger.Warn("Could not get linkModel because SWMainComponent was null");
+                    linkModel = null;
+                }
             }
-            MathTransform coordSysTransform =
-                linkModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
 
-            if (coordSysTransform != null)
+            // Localize the link to the certain place.
+            if (linkModel != null)
             {
-                logger.Info("Localizing Link : " + coordsysName);
-                Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
-                LocalizeLink(link, GlobalTransform);
+                MathTransform coordSysTransform =
+                    linkModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
+                if (coordSysTransform != null)
+                {
+                    logger.Info("Localizing Link : " + coordsysName);
+                    Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
+                    LocalizeLink(link, GlobalTransform);
+                }
+                else
+                {
+                    logger.Warn("coordSysTransform was null : " + coordsysName);
+                }
             }
             else
-            {
-                logger.Warn("coordSysTransform was null : " + coordsysName);
+            { 
+                logger.Warn("Link model was null.");
             }
-            // === 3dxml Translate Link === //
+            // === 3dxml Localize Link === //
 
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
