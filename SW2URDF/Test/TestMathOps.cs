@@ -228,6 +228,18 @@ namespace SW2URDF.Test
         [InlineData(
             new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 }, 
             new double[] { 0, 0, Math.PI / 2.0 })]
+        [InlineData(
+            new double[] { 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { 0, -Math.PI / 2.0, 0 })]
+        [InlineData(
+            new double[] { 0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { -Math.PI / 2.0, Math.PI / 2.0, 0 })]
+        [InlineData(
+            new double[] { 0, 0, 1, 0, 0.7071067811865476, 0.7071067811865476, 0, 0, -0.7071067811865476, 0.7071067811865476, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { -Math.PI / 4.0, -Math.PI / 2.0, 0 })]
+        [InlineData(
+            new double[] { 0, 0, 1, 0, -0.7071067811865476, -0.7071067811865476, 0, 0, 0.7071067811865476, -0.7071067811865476, 0, 0, 0, 0, 0, 1 }, 
+            new double[] { 3 * Math.PI / 4.0, -Math.PI / 2.0, 0 })]
         public void TestGetRPYDenseMatrix(double[] matrixData, double[] expected)
         {
             Matrix<double> m = new DenseMatrix(4, 4, matrixData);
@@ -268,6 +280,18 @@ namespace SW2URDF.Test
         [InlineData(
             new double[] { 0, 0, Math.PI / 2.0 },
             new double[] { 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 0, -Math.PI / 2.0, 0 },
+            new double[] { 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { -Math.PI / 2.0, Math.PI / 2.0, 0 },
+            new double[] { 0, 0, -1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { -Math.PI / 4.0, -Math.PI / 2.0, 0 },
+            new double[] { 0, 0, 1, 0, 0.7071067811865476, 0.7071067811865476, 0, 0, -0.7071067811865476, 0.7071067811865476, 0, 0, 0, 0, 0, 1 })]
+        [InlineData(
+            new double[] { 3 * Math.PI / 4.0, -Math.PI / 2.0, 0 },
+            new double[] { 0, 0, 1, 0, -0.7071067811865476, -0.7071067811865476, 0, 0, 0.7071067811865476, -0.7071067811865476, 0, 0, 0, 0, 0, 1 })]
         public void TestGetRotation(double[] rpy, double[] expected)
         {
             double[] result = MathOps.GetRotation(rpy).AsColumnMajorArray();
