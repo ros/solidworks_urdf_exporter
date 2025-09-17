@@ -1256,14 +1256,26 @@ namespace SW2URDF.URDFExport
                 {
                     MateEntity2 entity = swMate.MateEntity(i);
                     entities.Add(entity.ReferenceComponent);
-                    logger.Info("Adding component entity: " + entity.ReferenceComponent.Name2);
-
-                    Component2 parent = entity.ReferenceComponent.GetParent();
-                    while (parent != null)
+                    if (entity.ReferenceComponent != null)
                     {
-                        logger.Info("Adding component entity: " + parent.Name2);
-                        entities.Add(parent);
-                        parent = parent.GetParent();
+                        if (entity.ReferenceComponent.Name2 != null)
+                        {
+                            logger.Info("Adding component entity: " + entity.ReferenceComponent.Name2);
+                        }
+                        Component2 parent = entity.ReferenceComponent.GetParent();
+                        while (parent != null)
+                        {
+                            if (parent.Name2 != null)
+                            {
+                                logger.Info("Adding component entity: " + parent.Name2);
+                            }
+                            entities.Add(parent);
+                            parent = parent.GetParent();
+                        }
+                    }
+                    else
+                    {
+                        logger.Warn("Mate entity has no reference component");
                     }
                 }
 
