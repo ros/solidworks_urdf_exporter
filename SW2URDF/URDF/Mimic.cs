@@ -76,6 +76,13 @@ namespace SW2URDF.URDF
             OffsetAttribute.SetDoubleValueFromString(offsetText);
         }
 
+        public void Clear()
+        {
+            JointNameAttribute.Value = null;
+            MultiplierAttribute.Value = null;
+            OffsetAttribute.Value = null;
+        }
+
         internal void FillBoxes(TextBox textBoxMimicMultiplier, TextBox textBoxMimicOffset)
         {
             textBoxMimicMultiplier.Text = MultiplierAttribute.GetTextFromDoubleValue();
