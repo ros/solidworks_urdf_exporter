@@ -332,3 +332,5 @@ ASALocalRun/
 *.zip
 
 SW2URDF/Versioning/VersionInfo.cs
+INSTALL/OUTPUT
+SW2URDF/sdformat_swig.dll
