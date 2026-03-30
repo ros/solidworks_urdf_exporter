@@ -103,15 +103,12 @@ namespace SW2URDF.URDFExport
         {
             using (StreamWriter file = new StreamWriter(WindowsCMakeLists))
             {
-                file.WriteLine("cmake_minimum_required(VERSION 2.8.3)\r\n");
+                file.WriteLine("cmake_minimum_required(VERSION 3.5)\r\n");
                 file.WriteLine("project(" + PackageName + ")\r\n");
-                file.WriteLine("find_package(catkin REQUIRED)\r\n");
-                file.WriteLine("catkin_package()\r\n");
-                file.WriteLine("find_package(roslaunch)\r\n");
-                file.WriteLine("foreach(dir config launch meshes urdf)");
-                file.WriteLine("\tinstall(DIRECTORY ${dir}/");
-                file.WriteLine("\t\tDESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})");
-                file.WriteLine("endforeach(dir)");
+                file.WriteLine("find_package(ament REQUIRED)\r\n");
+                file.WriteLine("install(\r\n\tDIRECTORY config launch meshes urdf/");
+                file.WriteLine("\r\n\tDESTINATION share/${PROJECT_NAME})");
+                file.WriteLine("ament_package()\r\n");
             }
         }
 

@@ -41,7 +41,7 @@ namespace SW2URDF.URDF
             description = new Description(name);
 
             dependencies = new Dependencies(
-                new string[] { "catkin" },
+                new string[] { "ament_cmake" },
                 new string[] {
                     "roslaunch", "robot_state_publisher", "rviz", "joint_state_publisher_gui", "gazebo" });
 
@@ -55,7 +55,7 @@ namespace SW2URDF.URDF
             XmlWriter writer = mWriter.writer;
             writer.WriteStartDocument();
             writer.WriteStartElement("package");
-            writer.WriteAttributeString("format", "2");
+            writer.WriteAttributeString("format", "3");
 
             description.WriteElement(writer);
 
@@ -65,7 +65,8 @@ namespace SW2URDF.URDF
 
             writer.WriteStartElement("export");
 
-            writer.WriteStartElement("architecture_independent");
+            writer.WriteStartElement("build_type");
+            writer.WriteElement("ament_cmake")
             writer.WriteEndElement();
 
             writer.WriteEndElement();
@@ -121,10 +122,11 @@ namespace SW2URDF.URDF
         private readonly string[] buildTool;
         private readonly string[] buildExec;
 
-        public Dependencies(string[] buildTool, string[] buildExec)
+        public Dependencies(string[] buildTool, string[] buildExec, string[] testDepend)
         {
             this.buildTool = buildTool;
             this.buildExec = buildExec;
+            this.testDepend = testDepend;
         }
 
         public void WriteElement(XmlWriter writer)
@@ -139,6 +141,13 @@ namespace SW2URDF.URDF
             foreach (string depend in buildExec)
             {
                 writer.WriteStartElement("depend");
+                writer.WriteString(depend);
+                writer.WriteEndElement();
+            }
+
+            foreach (string depend in testDepend)
+            {
+                writer.WriteStartElement("test_depend");
                 writer.WriteString(depend);
                 writer.WriteEndElement();
             }
