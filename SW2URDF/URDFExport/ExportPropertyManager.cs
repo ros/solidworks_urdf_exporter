@@ -73,6 +73,8 @@ namespace SW2URDF.URDFExport
         private PropertyManagerPageCheckbox PMComputeVisualCollision;
         private PropertyManagerPageCheckbox PMComputeJointKinematics;
         private PropertyManagerPageCheckbox PMComputeJointLimits;
+        private PropertyManagerPageCheckbox PMSearchNestedGeometry;
+        private PropertyManagerPageTextbox PMReferenceGeometryFilter;
 
         private PropertyManagerPageLabel PMLabelJointName;
         private PropertyManagerPageLabel PMLabelParentLink;
@@ -110,6 +112,9 @@ namespace SW2URDF.URDFExport
         private const int ComputeJointKinematicsID = 29;
         private const int ComputeJointLimitsID = 30;
         private const int LoadedCSVFilenameID = 31;
+        private const int SearchNestedGeometryID = 32;
+        private const int ReferenceGeometryFilterID = 33;
+        private const int LabelReferenceGeometryFilterID = 34;
 
         #endregion class variables
 
@@ -489,6 +494,11 @@ namespace SW2URDF.URDFExport
                 LinkNode node = (LinkNode)Tree.SelectedNode;
                 node.Text = PMTextBoxLinkName.Text;
                 node.Name = PMTextBoxLinkName.Text;
+            }
+            else if (Id == ReferenceGeometryFilterID)
+            {
+                Exporter.SetReferenceGeometryFilter(Text);
+                RefreshReferenceGeometryControls();
             }
         }
 
@@ -945,6 +955,38 @@ namespace SW2URDF.URDFExport
                 ComputeJointLimitsID, (short)controlType, caption, (short)alignment, (int)options, tip);
             PMComputeJointLimits.Checked = true;
 
+            // Reference geometry search options. The checkbox enables searching for coordinate
+            // systems / axes in nested components; the textbox filters the listed names. Both
+            // re-enumerate and refresh the dropdowns immediately when changed.
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Checkbox;
+            caption = "Search nested components";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "List coordinate systems and axes found inside sub-assemblies and parts, " +
+                "not just the top level assembly and its immediate components.";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMSearchNestedGeometry = PMGroup.AddControl2(
+                SearchNestedGeometryID, (short)controlType, caption, (short)alignment, (int)options, tip);
+            PMSearchNestedGeometry.Checked = false;
+
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Label;
+            caption = "Filter reference geometry by name:";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_LeftEdge;
+            tip = "";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible;
+            PMGroup.AddControl2(LabelReferenceGeometryFilterID, (short)controlType, caption,
+                (short)alignment, (int)options, tip);
+
+            controlType = (int)swPropertyManagerPageControlType_e.swControlType_Textbox;
+            caption = "";
+            alignment = (int)swPropertyManagerPageControlLeftAlign_e.swControlAlign_Indent;
+            tip = "Optional: only list coordinate systems / axes whose name contains this text " +
+                "(case-insensitive). Leave blank to list everything.";
+            options = (int)swAddControlOptions_e.swControlOptions_Visible +
+                (int)swAddControlOptions_e.swControlOptions_Enabled;
+            PMReferenceGeometryFilter = (PropertyManagerPageTextbox)PMGroup.AddControl2(
+                ReferenceGeometryFilterID, (short)controlType, caption, (short)alignment, (int)options, tip);
+
             options = (int)swAddControlOptions_e.swControlOptions_Visible +
                 (int)swAddControlOptions_e.swControlOptions_Enabled;
             PMButtonExport = PMGroup.AddControl2(ButtonExportID,
@@ -1003,8 +1045,29 @@ namespace SW2URDF.URDFExport
         // regularly called anyway
         void IPropertyManagerPage2Handler9.OnCheckboxCheck(int Id, bool Checked)
         {
-            logger.Info("OnCheckboxCheck called. This method no longer throws an Exception. " +
-                " It just silently does nothing. Ok, except for this logging message");
+            try
+            {
+                if (Id == SearchNestedGeometryID)
+                {
+                    Exporter.SetSearchNestedReferenceGeometry(Checked);
+                    RefreshReferenceGeometryControls();
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error("Exception caught handling checkbox " + Id, e);
+            }
+        }
+
+        // Re-fill the coordinate system / axis dropdowns for the currently selected node after
+        // the reference-geometry search options change.
+        private void RefreshReferenceGeometryControls()
+        {
+            LinkNode node = Tree?.SelectedNode as LinkNode;
+            if (node != null)
+            {
+                FillPropertyManager(node);
+            }
         }
 
         void IPropertyManagerPage2Handler9.OnComboboxEditChanged(int Id, string Text)
