@@ -142,7 +142,8 @@ namespace SW2URDF.URDFExport
         #region Export Methods
 
         // Beginning method for exporting the full package
-        public void ExportRobot(bool exportSTL = true, MeshExportFormat meshFormat = MeshExportFormat.STL)
+        public void ExportRobot(bool exportSTL = true, MeshExportFormat meshFormat = MeshExportFormat.STL,
+            ROSVersion rosVersion = ROSVersion.ROS1)
         {
             //Setting up the progress bar
             logger.Info("Beginning the export process");
@@ -158,31 +159,46 @@ namespace SW2URDF.URDFExport
             string windowsURDFFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".urdf";
             string windowsCSVFileName = package.WindowsRobotsDirectory + URDFRobot.Name + ".csv";
             string windowsPackageXMLFileName = package.WindowsPackageDirectory + "package.xml";
+            string robotURDF = URDFRobot.Name + ".urdf";
 
-            //Create CMakeLists
-            logger.Info("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
-            package.CreateCMakeLists();
+            if (rosVersion == ROSVersion.ROS2)
+            {
+                // ROS 2 (ament_cmake) scaffold: package.xml format 3, ament CMakeLists and
+                // Python launch files. Geometry/URDF export below is shared with ROS 1.
+                logger.Info("Creating ROS 2 (ament) package scaffold");
+                ROS2Files.WriteCMakeLists(package.WindowsCMakeLists, PackageName);
+                package.CreateConfigYAML(URDFRobot.GetJointNames(false));
+                ROS2Files.WritePackageXML(windowsPackageXMLFileName, PackageName);
+                ROS2Files.WriteDisplayLaunch(package.WindowsLaunchDirectory, PackageName, robotURDF);
+                ROS2Files.WriteGazeboLaunch(package.WindowsLaunchDirectory, PackageName, robotURDF, URDFRobot.Name);
+            }
+            else
+            {
+                //Create CMakeLists
+                logger.Info("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
+                package.CreateCMakeLists();
 
-            //Create Config joint names, not sure how this is used...
-            logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
-            package.CreateConfigYAML(URDFRobot.GetJointNames(false));
+                //Create Config joint names, not sure how this is used...
+                logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
+                package.CreateConfigYAML(URDFRobot.GetJointNames(false));
 
-            //Creating package.xml file
-            logger.Info("Creating package.xml at " + windowsPackageXMLFileName);
-            PackageXMLWriter packageXMLWriter = new PackageXMLWriter(windowsPackageXMLFileName);
-            PackageXML packageXML = new PackageXML(PackageName);
-            packageXML.WriteElement(packageXMLWriter);
+                //Creating package.xml file
+                logger.Info("Creating package.xml at " + windowsPackageXMLFileName);
+                PackageXMLWriter packageXMLWriter = new PackageXMLWriter(windowsPackageXMLFileName);
+                PackageXML packageXML = new PackageXML(PackageName);
+                packageXML.WriteElement(packageXMLWriter);
 
-            //Creating RVIZ launch file
-            Rviz rviz = new Rviz(PackageName, URDFRobot.Name + ".urdf");
-            logger.Info("Creating RVIZ launch file in " + package.WindowsLaunchDirectory);
-            rviz.WriteFiles(package.WindowsLaunchDirectory);
+                //Creating RVIZ launch file
+                Rviz rviz = new Rviz(PackageName, robotURDF);
+                logger.Info("Creating RVIZ launch file in " + package.WindowsLaunchDirectory);
+                rviz.WriteFiles(package.WindowsLaunchDirectory);
 
-            //Creating Gazebo launch file
-            Gazebo gazebo = new Gazebo(URDFRobot.Name, PackageName, URDFRobot.Name + ".urdf");
-            logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
+                //Creating Gazebo launch file
+                Gazebo gazebo = new Gazebo(URDFRobot.Name, PackageName, robotURDF);
+                logger.Info("Creating Gazebo launch file in " + package.WindowsLaunchDirectory);
 
-            gazebo.WriteFile(package.WindowsLaunchDirectory);
+                gazebo.WriteFile(package.WindowsLaunchDirectory);
+            }
 
             //Customizing STL preferences to how I want them
             logger.Info("Saving existing STL preferences");

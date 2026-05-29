@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 using SolidWorks.Interop.sldworks;
 using SolidWorks.Interop.swconst;
+using SW2URDF.ROS;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
 using SW2URDF.Utilities;
@@ -321,7 +322,9 @@ namespace SW2URDF.UI
                 {
                     meshFormat = MeshExportFormat.STL;
                 }
-                Exporter.ExportRobot(exportSTL, meshFormat);
+
+                ROSVersion rosVersion = radioButtonRos2.Checked ? ROSVersion.ROS2 : ROSVersion.ROS1;
+                Exporter.ExportRobot(exportSTL, meshFormat, rosVersion);
 
                 Close();
             }
