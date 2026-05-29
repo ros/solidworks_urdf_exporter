@@ -375,60 +375,9 @@ namespace SW2URDF.URDFExport
 
             logger.Info("Saving 3dxml to " + windowsMeshFilename);
 
-            // === 3dxml Localize Link === //
-
-            // Remove suffix from coordinate-system name.
-            // ex. "Joint Origin <Arm_link-1>" -> "Joint Origin"
-            // Suffix is included when coordinate is inside sub-assembly.
-            string linkModelName = names["component"];
-            string linkModelSuffix = " <" + linkModelName + ">";
-            if(coordsysName.Contains(linkModelSuffix))
-            {
-                coordsysName = coordsysName.Replace(linkModelSuffix, "");
-                logger.Info($"Suffix of {linkModelName} was removed from coordsysName : {coordsysName}");
-            }
-
-            // Get the model document of the link.
-            ModelDoc2 linkModel;
-            bool isBaseLink = linkModelName == "";
-            if (isBaseLink)
-            {
-                linkModel = ActiveDoc;
-            }
-            else
-            {
-                if (link.SWMainComponent != null)
-                {
-                    linkModel = link.SWMainComponent.GetModelDoc2();
-                }
-                else
-                {
-                    logger.Warn("Could not get linkModel because SWMainComponent was null");
-                    linkModel = null;
-                }
-            }
-
-            // Localize the link to the certain place.
-            if (linkModel != null)
-            {
-                MathTransform coordSysTransform =
-                    linkModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
-                if (coordSysTransform != null)
-                {
-                    logger.Info("Localizing Link : " + coordsysName);
-                    Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
-                    LocalizeLink(link, GlobalTransform);
-                }
-                else
-                {
-                    logger.Warn("coordSysTransform was null : " + coordsysName);
-                }
-            }
-            else
-            { 
-                logger.Warn("Link model was null.");
-            }
-            // === 3dxml Localize Link === //
+            // Align the link's visual/collision/inertial origins with its coordinate system
+            // so the exported mesh lines up with the URDF link frame.
+            LocalizeLinkToCoordinateSystem(link, coordsysName, names);
 
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
@@ -461,6 +410,12 @@ namespace SW2URDF.URDFExport
                 (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
             SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
+            // Align the link's visual/collision/inertial origins with its coordinate system
+            // so the exported mesh lines up with the URDF link frame. Without this, STL meshes
+            // for links whose coordinate system is not at the assembly origin are misplaced
+            // (issues #87 / #116). Mirrors the 3dxml export path.
+            LocalizeLinkToCoordinateSystem(link, coordsysName, names);
+
             logger.Info("Saving STL to " + windowsMeshFilename);
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
                 (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
@@ -478,6 +433,66 @@ namespace SW2URDF.URDFExport
                     "may not be readable by CAD programs that aren't SolidWorks");
             }
             return success;
+        }
+
+        // Repositions the link's visual/collision/inertial origins into the link's own
+        // coordinate-system frame. The mesh itself is exported in the assembly's global
+        // frame, so this is what makes the mesh line up with the URDF link origin. Shared
+        // by the STL and 3dxml export paths.
+        private void LocalizeLinkToCoordinateSystem(Link link, string coordsysName,
+            Dictionary<string, string> names)
+        {
+            // Remove suffix from coordinate-system name.
+            // ex. "Joint Origin <Arm_link-1>" -> "Joint Origin"
+            // Suffix is included when coordinate is inside sub-assembly.
+            string linkModelName = names["component"];
+            string linkModelSuffix = " <" + linkModelName + ">";
+            if (coordsysName.Contains(linkModelSuffix))
+            {
+                coordsysName = coordsysName.Replace(linkModelSuffix, "");
+                logger.Info($"Suffix of {linkModelName} was removed from coordsysName : {coordsysName}");
+            }
+
+            // Get the model document of the link.
+            ModelDoc2 linkModel;
+            bool isBaseLink = linkModelName == "";
+            if (isBaseLink)
+            {
+                linkModel = ActiveSWModel;
+            }
+            else
+            {
+                if (link.SWMainComponent != null)
+                {
+                    linkModel = link.SWMainComponent.GetModelDoc2();
+                }
+                else
+                {
+                    logger.Warn("Could not get linkModel because SWMainComponent was null");
+                    linkModel = null;
+                }
+            }
+
+            // Localize the link to the certain place.
+            if (linkModel != null)
+            {
+                MathTransform coordSysTransform =
+                    linkModel.Extension.GetCoordinateSystemTransformByName(coordsysName);
+                if (coordSysTransform != null)
+                {
+                    logger.Info("Localizing Link : " + coordsysName);
+                    Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
+                    LocalizeLink(link, GlobalTransform);
+                }
+                else
+                {
+                    logger.Warn("coordSysTransform was null : " + coordsysName);
+                }
+            }
+            else
+            {
+                logger.Warn("Link model was null.");
+            }
         }
 
         public void ExportLink(bool zIsUp)
