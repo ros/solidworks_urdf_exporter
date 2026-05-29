@@ -1148,11 +1148,16 @@ namespace SW2URDF.URDFExport
                 logger.Info("Proceeding through assembly components");
                 AssemblyDoc assyDoc = (AssemblyDoc)modelDoc;
 
-                // Get top level components in an assembly. If the user wants to use a reference
-                // coordinate system or axis not located in the top level assembly, then it will
-                // need to be in a top level component. This will probably be ok because most
-                // users keep their reference geometry in the top level assembly as it is.
-                object[] components = assyDoc.GetComponents(true);
+                // By default we only look at the top level components in an assembly: reference
+                // geometry must then live in the top level assembly or a top level component,
+                // which is how most users organize their models.
+                //
+                // When SearchNestedReferenceGeometry is enabled we instead enumerate every
+                // component at every depth in a single flat pass (GetComponents(false)). Each
+                // Component2.Name2 returned this way is relative to the top level assembly, which
+                // is exactly what the transform resolution (GetCoordinateSystemTransform /
+                // GetRefAxis, also using GetComponents(false)) expects.
+                object[] components = assyDoc.GetComponents(!SearchNestedReferenceGeometry);
 
                 // If there are no components in an assembly, this object will be null.
                 if (components != null)
@@ -1163,9 +1168,15 @@ namespace SW2URDF.URDFExport
                         ModelDoc2 doc = comp.GetModelDoc2();
                         if (doc != null)
                         {
-                            //We already have all the components in an assembly, we don't want
-                            // to recur as we go through them. (topLevelOnly = true)
+                            //We already have all the components we need (flat in nested mode,
+                            // top level otherwise), so collect each component's own features
+                            // without recurring again. (topLevelOnly = true)
                             GetFeaturesOfType(doc, featureName, true, comp.Name2, features);
+                        }
+                        else
+                        {
+                            logger.Warn("Skipping reference geometry search in component with no " +
+                                "model document (lightweight or suppressed?): " + comp.Name2);
                         }
                     }
                 }
@@ -1204,6 +1215,14 @@ namespace SW2URDF.URDFExport
             {
                 foreach (Feature feat in features[key])
                 {
+                    // Skip names that don't match the (optional) name filter. Matching is on the
+                    // geometry's own name, not the "<component>" suffix.
+                    if (!string.IsNullOrEmpty(ReferenceGeometryFilter) &&
+                        feat.Name.IndexOf(ReferenceGeometryFilter, StringComparison.OrdinalIgnoreCase) < 0)
+                    {
+                        continue;
+                    }
+
                     if (String.IsNullOrWhiteSpace(key))
                     {
                         featureNames.Add(feat.Name);

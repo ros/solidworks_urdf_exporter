@@ -92,6 +92,15 @@ namespace SW2URDF.URDFExport
         private bool ComputeJointKinematics;
         private bool ComputeJointLimits;
 
+        // When true, reference coordinate systems and axes are searched at every component
+        // depth, not just the top level assembly and its immediate components. Default off.
+        private bool SearchNestedReferenceGeometry;
+
+        // Case-insensitive substring that an enumerated coordinate system / axis name must
+        // contain to appear in the dropdowns. Empty means no filtering. Useful to keep the
+        // lists manageable when SearchNestedReferenceGeometry is on.
+        private string ReferenceGeometryFilter;
+
         #endregion class variables
 
         // Constructor for SW2URDF Exporter class
@@ -102,6 +111,11 @@ namespace SW2URDF.URDFExport
 
             SavePath = System.Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
             PackageName = ActiveSWModel.GetTitle();
+
+            // Defaults must be set before the initial enumeration below so that out-of-the-box
+            // behaviour (top level only, unfiltered) is unchanged.
+            SearchNestedReferenceGeometry = false;
+            ReferenceGeometryFilter = "";
 
             ReferenceCoordinateSystemNames = FindRefGeoNames("CoordSys");
             ReferenceAxesNames = FindRefGeoNames("RefAxis");
@@ -130,6 +144,22 @@ namespace SW2URDF.URDFExport
         public void SetComputeJointLimits(bool computeJointLimits)
         {
             ComputeJointLimits = computeJointLimits;
+        }
+
+        // Enable/disable searching for reference geometry in nested (deeper than top level)
+        // components, then refresh the coordinate system and axis lists.
+        public void SetSearchNestedReferenceGeometry(bool searchNested)
+        {
+            SearchNestedReferenceGeometry = searchNested;
+            UpdateReferenceGeometries();
+        }
+
+        // Set the case-insensitive name filter applied to enumerated reference geometry, then
+        // refresh the coordinate system and axis lists. Pass null or "" to disable filtering.
+        public void SetReferenceGeometryFilter(string filter)
+        {
+            ReferenceGeometryFilter = filter ?? "";
+            UpdateReferenceGeometries();
         }
 
         private void ConstructExporter(SldWorks iSldWorksApp)
