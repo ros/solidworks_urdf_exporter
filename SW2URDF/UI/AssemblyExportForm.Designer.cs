@@ -640,7 +640,6 @@
             // radioButtonRos1
             //
             this.radioButtonRos1.AutoSize = true;
-            this.radioButtonRos1.Checked = true;
             this.radioButtonRos1.Location = new System.Drawing.Point(11, 18);
             this.radioButtonRos1.Name = "radioButtonRos1";
             this.radioButtonRos1.Size = new System.Drawing.Size(53, 16);
@@ -652,10 +651,12 @@
             // radioButtonRos2
             //
             this.radioButtonRos2.AutoSize = true;
+            this.radioButtonRos2.Checked = true;
             this.radioButtonRos2.Location = new System.Drawing.Point(11, 44);
             this.radioButtonRos2.Name = "radioButtonRos2";
             this.radioButtonRos2.Size = new System.Drawing.Size(53, 16);
             this.radioButtonRos2.TabIndex = 1;
+            this.radioButtonRos2.TabStop = true;
             this.radioButtonRos2.Text = "ROS 2";
             this.radioButtonRos2.UseVisualStyleBackColor = true;
             //
