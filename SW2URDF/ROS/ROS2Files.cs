@@ -22,7 +22,10 @@ THE SOFTWARE.
 
 using log4net;
 using SW2URDF.Utilities;
+using System;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SW2URDF.ROS
 {
@@ -39,6 +42,45 @@ namespace SW2URDF.ROS
     public static class ROS2Files
     {
         private static readonly ILog logger = Logger.GetLogger();
+
+        // Coerce a name into a valid ROS 2 / colcon package name: lowercase, only [a-z0-9_],
+        // starts with a letter, no doubled or edge underscores. Strips a trailing SolidWorks
+        // extension (e.g. a default package name of "3_DOF_ARM.SLDASM" becomes "pkg_3_dof_arm").
+        public static string SanitizePackageName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "robot_description";
+            }
+
+            string s = name.Trim();
+            foreach (string ext in new[] { ".sldasm", ".sldprt" })
+            {
+                if (s.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                {
+                    s = s.Substring(0, s.Length - ext.Length);
+                    break;
+                }
+            }
+
+            s = s.ToLowerInvariant();
+            StringBuilder sb = new StringBuilder(s.Length);
+            foreach (char c in s)
+            {
+                sb.Append((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ? c : '_');
+            }
+
+            string result = Regex.Replace(sb.ToString(), "_+", "_").Trim('_');
+            if (result.Length == 0)
+            {
+                return "robot_description";
+            }
+            if (!char.IsLetter(result[0]))
+            {
+                result = "pkg_" + result;
+            }
+            return result;
+        }
 
         // ament_cmake package manifest (package.xml, format 3).
         public static void WritePackageXML(string savePath, string packageName)

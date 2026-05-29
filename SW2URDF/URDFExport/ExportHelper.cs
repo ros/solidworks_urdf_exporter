@@ -181,6 +181,19 @@ namespace SW2URDF.URDFExport
             iSwApp.GetUserProgressBar(out progressBar);
             progressBar.Start(0, progressBarBound, "Creating package directories");
 
+            // ROS 2 / colcon package names must be lowercase [a-z0-9_]; a default name like
+            // "3_DOF_ARM.SLDASM" would be rejected. Sanitize before the directory and files
+            // are created so the folder, package.xml <name> and CMake project all agree.
+            if (rosVersion == ROSVersion.ROS2)
+            {
+                string sanitized = ROS2Files.SanitizePackageName(PackageName);
+                if (sanitized != PackageName)
+                {
+                    logger.Info("Sanitized ROS 2 package name from '" + PackageName + "' to '" + sanitized + "'");
+                    PackageName = sanitized;
+                }
+            }
+
             //Creating package directories
             logger.Info("Creating package directories with name " + PackageName + " and save path " + SavePath);
             URDFPackage package = new URDFPackage(PackageName, SavePath);
