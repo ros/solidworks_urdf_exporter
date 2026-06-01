@@ -83,8 +83,14 @@ namespace SW2URDF.ROS
                 file.WriteLine();
                 file.WriteLine("find_package(ament_cmake REQUIRED)");
                 file.WriteLine();
-                file.WriteLine("install(DIRECTORY config launch meshes textures urdf");
-                file.WriteLine("  DESTINATION share/${PROJECT_NAME})");
+                // Install only the resource directories the exporter actually produced.
+                // install(DIRECTORY ...) errors on a directory that does not exist (e.g. a
+                // model with no textures or meshes), which would fail colcon build.
+                file.WriteLine("foreach(dir config launch meshes textures urdf)");
+                file.WriteLine("  if(EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/${dir}\")");
+                file.WriteLine("    install(DIRECTORY ${dir} DESTINATION share/${PROJECT_NAME})");
+                file.WriteLine("  endif()");
+                file.WriteLine("endforeach()");
                 file.WriteLine();
                 file.WriteLine("ament_package()");
             }
@@ -110,14 +116,12 @@ namespace SW2URDF.ROS
                 file.WriteLine("def generate_launch_description():");
                 file.WriteLine("    pkg_share = get_package_share_directory('" + packageName + "')");
                 file.WriteLine("    default_model = os.path.join(pkg_share, 'urdf', '" + robotURDF + "')");
-                file.WriteLine("    default_rviz = os.path.join(pkg_share, 'urdf.rviz')");
                 file.WriteLine();
                 file.WriteLine("    robot_description = ParameterValue(");
                 file.WriteLine("        Command(['xacro ', LaunchConfiguration('model')]), value_type=str)");
                 file.WriteLine();
                 file.WriteLine("    return LaunchDescription([");
                 file.WriteLine("        DeclareLaunchArgument(name='model', default_value=default_model),");
-                file.WriteLine("        DeclareLaunchArgument(name='rvizconfig', default_value=default_rviz),");
                 file.WriteLine("        Node(");
                 file.WriteLine("            package='robot_state_publisher',");
                 file.WriteLine("            executable='robot_state_publisher',");
@@ -131,7 +135,6 @@ namespace SW2URDF.ROS
                 file.WriteLine("            package='rviz2',");
                 file.WriteLine("            executable='rviz2',");
                 file.WriteLine("            output='screen',");
-                file.WriteLine("            arguments=['-d', LaunchConfiguration('rvizconfig')],");
                 file.WriteLine("        ),");
                 file.WriteLine("    ])");
             }
