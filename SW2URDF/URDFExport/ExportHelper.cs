@@ -169,8 +169,10 @@ namespace SW2URDF.URDFExport
                 ROS2Files.WriteCMakeLists(package.WindowsCMakeLists, PackageName);
                 package.CreateConfigYAML(URDFRobot.GetJointNames(false));
                 ROS2Files.WritePackageXML(windowsPackageXMLFileName, PackageName);
+                ROS2Files.WriteRvizConfig(package.WindowsPackageDirectory + @"rviz\urdf.rviz", URDFRobot.BaseLink.Name);
                 ROS2Files.WriteDisplayLaunch(package.WindowsLaunchDirectory, PackageName, robotURDF);
                 ROS2Files.WriteGazeboLaunch(package.WindowsLaunchDirectory, PackageName, robotURDF, URDFRobot.Name);
+                ROS2Files.WriteGzSimLaunch(package.WindowsLaunchDirectory, PackageName, robotURDF, URDFRobot.Name);
             }
             else
             {
