@@ -233,7 +233,7 @@ namespace SW2URDF.ROS
                 new LaunchParam("robot_description", "", "$(find " + package + ")/urdf/" + robotURDF),
                 new LaunchNode("joint_state_publisher_gui", "joint_state_publisher_gui", "joint_state_publisher_gui"),
                 new LaunchNode("robot_state_publisher", "robot_state_publisher", "robot_state_publisher"),
-                new LaunchNode("rviz", "rviz", "rviz", "-d $(find " + package + ")/urdf.rviz")
+                new LaunchNode("rviz", "rviz", "rviz", "-d $(find " + package + ")/rviz/urdf.rviz")
             };
         }
 

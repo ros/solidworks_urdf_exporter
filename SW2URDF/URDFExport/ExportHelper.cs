@@ -163,6 +163,10 @@ namespace SW2URDF.URDFExport
             logger.Info("Creating CMakeLists.txt at " + package.WindowsCMakeLists);
             package.CreateCMakeLists();
 
+            //Create the RViz config that display.launch references via -d
+            logger.Info("Creating RViz config at " + package.WindowsRvizConfig);
+            package.CreateRvizConfig(URDFRobot.BaseLink.Name);
+
             //Create Config joint names, not sure how this is used...
             logger.Info("Creating joint names config at " + package.WindowsConfigYAML);
             package.CreateConfigYAML(URDFRobot.GetJointNames(false));
