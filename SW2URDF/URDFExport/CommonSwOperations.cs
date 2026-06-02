@@ -121,18 +121,49 @@ namespace SW2URDF.URDFExport
             ShowComponents(model, componentsToShow);
         }
 
-        //Shows the components in the list. Useful  for exporting STLs
+        //Shows the components in the list. Useful  for exporting STLs.
+        // Sub-assembly components are expanded so leaf parts are toggled too,
+        // otherwise ShowComponent2 only flips the container and the inner
+        // geometry stays hidden, producing empty STLs.
         public static void ShowComponents(ModelDoc2 model, List<Component2> components)
         {
-            SelectComponents(model, components, true);
+            SelectComponents(model, ExpandSubAssemblies(components), true);
             model.ShowComponent2();
         }
 
-        //Hides the components from a list
+        //Hides the components from a list. Same sub-assembly expansion as ShowComponents.
         public static void HideComponents(ModelDoc2 model, List<Component2> components)
         {
-            SelectComponents(model, components, true);
+            SelectComponents(model, ExpandSubAssemblies(components), true);
             model.HideComponent2();
+        }
+
+        private static List<Component2> ExpandSubAssemblies(List<Component2> components)
+        {
+            List<Component2> expanded = new List<Component2>();
+            foreach (Component2 component in components)
+            {
+                AppendComponentAndDescendants(component, expanded);
+            }
+            return expanded;
+        }
+
+        private static void AppendComponentAndDescendants(Component2 component, List<Component2> sink)
+        {
+            if (component == null)
+            {
+                return;
+            }
+            sink.Add(component);
+            object[] children = (object[])component.GetChildren();
+            if (children == null)
+            {
+                return;
+            }
+            foreach (object child in children)
+            {
+                AppendComponentAndDescendants(child as Component2, sink);
+            }
         }
 
         public static int GetCount(Link Link)
