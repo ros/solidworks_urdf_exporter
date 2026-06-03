@@ -37,7 +37,7 @@
     </UpgradeBackupLocation>
     <StartProgram>C:\PROGRA~1\SOLIDW~1\SOLIDW~1\\SldWorks.exe</StartProgram>
     <StartAction>Program</StartAction>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <OldToolsVersion>2.0</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile>
@@ -513,6 +513,7 @@
     <PreBuildEvent>"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -ExecutionPolicy Bypass -File "$(SolutionDir)scripts\UpdateVersionInfo.ps1" --filename "$(ProjectDir)Versioning\VersionInfo.cs"</PreBuildEvent>
     <PostBuildEvent>
 :REGISTRATION
+IF "$(TargetFrameworkVersion)"=="v4.8" GOTO NET40
 IF "$(TargetFrameworkVersion)"=="v4.5.2" GOTO NET40
 IF "$(TargetFrameworkVersion)"=="v4.5" GOTO NET40
 IF "$(TargetFrameworkVersion)"=="v4.0" GOTO NET40
