@@ -1,0 +1,18 @@
+<launch>
+  <param
+    name="robot_description"
+    textfile="$(find 4_WHEELER_NESTED_description)/urdf/4_WHEELER_NESTED_description.urdf" />
+  <node
+    name="joint_state_publisher_gui"
+    pkg="joint_state_publisher_gui"
+    type="joint_state_publisher_gui" />
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="robot_state_publisher" />
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find 4_WHEELER_NESTED_description)/rviz/urdf.rviz" />
+</launch>
