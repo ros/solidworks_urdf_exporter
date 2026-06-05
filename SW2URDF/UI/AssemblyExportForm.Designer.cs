@@ -462,7 +462,7 @@
             this.label44.Name = "label44";
             this.label44.Size = new System.Drawing.Size(144, 13);
             this.label44.TabIndex = 23;
-            this.label44.Text = "Moment of Inertia (Kg * m^-2)";
+            this.label44.Text = "Moment of Inertia (Kg * m^2)";
             // 
             // label45
             // 
