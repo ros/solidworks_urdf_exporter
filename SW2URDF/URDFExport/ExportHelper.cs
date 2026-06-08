@@ -439,11 +439,28 @@ namespace SW2URDF.URDFExport
 
             logger.Info(link.Name + ": Reference geometry name " + names["component"]);
 
+            // Choose the coordinate system SOLIDWORKS exports the STL relative to. The export
+            // preference only resolves names that exist at the top level of the assembly, so a
+            // coordinate system defined inside a sub-assembly cannot be used directly and the
+            // mesh falls back to the global frame (issues #87 / #116). When the selection is
+            // nested, materialize a top-level reference coordinate system at the same global
+            // pose -- the transform the joint origin already uses, which is depth-independent --
+            // and export relative to that, so the mesh stays baked at the link origin.
+            string exportCoordsysName = names["geo"];
+            if (!string.IsNullOrEmpty(names["component"]))
+            {
+                string nestedExportCoordsys = CreateGlobalMeshCoordinateSystem(link, coordsysName);
+                if (!string.IsNullOrEmpty(nestedExportCoordsys))
+                {
+                    exportCoordsysName = nestedExportCoordsys;
+                }
+            }
+
             CommonSwOperations.ShowComponents(ActiveSWModel, link.SWComponents);
 
             int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
                 (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
-            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
+            SetLinkSpecificSTLPreferences(exportCoordsysName, link.STLQualityFine, ActiveDoc);
 
             logger.Info("Saving STL to " + windowsMeshFilename);
             ActiveDoc.Extension.SaveAs(windowsMeshFilename,
