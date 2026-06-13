@@ -2,6 +2,7 @@
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
 using System.Collections.Generic;
+using System.IO;
 using Xunit;
 
 namespace SW2URDF.Test
@@ -35,6 +36,50 @@ namespace SW2URDF.Test
             Assert.NotNull(helper.URDFRobot);
             Assert.Equal(expNumLinks, CommonSwOperations.GetCount(helper.URDFRobot.BaseLink));
             Assert.True(SwApp.CloseAllDocuments(true));
+        }
+
+        // Each wheel link in this model selects a sub-assembly nested two levels below the top
+        // assembly. Before the sub-assembly visibility fix, ShowComponents revealed only the
+        // selected node and not the leaf parts beneath that nested sub-assembly, so SaveAs wrote
+        // a header-only STL with no triangles. Export to a temporary directory and assert that
+        // every exported link mesh actually contains geometry.
+        [Theory]
+        [InlineData("4_WHEELER_NESTED")]
+        public void TestExportRobotNestedSubAssemblyMeshesNotEmpty(string modelName)
+        {
+            ModelDoc2 doc = OpenSWDocument(modelName);
+            ExportHelper helper = new ExportHelper(SwApp);
+            helper.SetComputeInertial(true);
+            helper.SetComputeJointKinematics(true);
+            helper.SetComputeJointLimits(true);
+            helper.SetComputeVisualCollision(true);
+            LinkNode baseNode = ConfigurationSerialization.LoadBaseNodeFromModel(doc, out bool error);
+            Assert.False(error);
+            helper.CreateRobotFromTreeView(baseNode);
+
+            helper.SavePath = CreateRandomTempDirectory() + Path.DirectorySeparatorChar;
+            string meshesDirectory = Path.Combine(helper.SavePath, helper.PackageName, "meshes");
+            helper.ExportRobot(true, MeshExportFormat.STL);
+
+            string[] meshFiles = Directory.GetFiles(meshesDirectory, "*.STL");
+            Assert.NotEmpty(meshFiles);
+            foreach (string meshFile in meshFiles)
+            {
+                Assert.True(GetBinaryStlTriangleCount(meshFile) > 0,
+                    Path.GetFileName(meshFile) + " was exported with no triangles");
+            }
+            Assert.True(SwApp.CloseAllDocuments(true));
+        }
+
+        // Triangle count from a binary STL: an 80-byte header followed by a UInt32 count.
+        private static uint GetBinaryStlTriangleCount(string path)
+        {
+            using (FileStream stream = File.OpenRead(path))
+            using (BinaryReader reader = new BinaryReader(stream))
+            {
+                stream.Seek(80, SeekOrigin.Begin);
+                return reader.ReadUInt32();
+            }
         }
 
         [Theory]
