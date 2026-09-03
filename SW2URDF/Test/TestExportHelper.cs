@@ -1,7 +1,11 @@
-﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.sldworks;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SW2URDF.Test
@@ -234,6 +238,103 @@ namespace SW2URDF.Test
             ExportHelper helper = new ExportHelper(SwApp);
             Assert.Equal(new List<string>(expected), helper.GetRefAxes());
             Assert.True(SwApp.CloseAllDocuments(true));
+        }
+    }
+
+    public class TestSTLValidation
+    {
+        [Fact]
+        public void TestCorrectSTLMeshClearsHeaderAndPreservesGeometry()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(path)))
+                {
+                    writer.Write(new byte[80]);
+                    writer.Write((uint)1);
+                    writer.Write(new byte[50]);
+                }
+
+                Assert.True(ExportHelper.CorrectSTLMesh(path));
+                byte[] data = File.ReadAllBytes(path);
+                Assert.Equal(134, data.Length);
+                Assert.Equal((uint)1, BitConverter.ToUInt32(data, 80));
+                for (int i = 0; i < 80; i++)
+                {
+                    Assert.Equal(0, data[i]);
+                }
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [Fact]
+        public void TestCorrectSTLMeshRejectsHeaderOnlyFile()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllBytes(path, new byte[80]);
+                Assert.False(ExportHelper.CorrectSTLMesh(path));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [Fact]
+        public void TestCorrectSTLMeshWaitsForFileRelease()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(path)))
+                {
+                    writer.Write(new byte[80]);
+                    writer.Write((uint)1);
+                    writer.Write(new byte[50]);
+                }
+
+                FileStream lockedFile = new FileStream(
+                    path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                Task releaseLock = Task.Run(() =>
+                {
+                    Thread.Sleep(300);
+                    lockedFile.Dispose();
+                });
+
+                Assert.True(ExportHelper.CorrectSTLMesh(path));
+                releaseLock.Wait();
+            }
+            finally
+            {
+                File.Delete(path);
+            }
+        }
+
+        [Fact]
+        public void TestCorrectSTLMeshRejectsTruncatedTriangleData()
+        {
+            string path = Path.GetTempFileName();
+            try
+            {
+                using (BinaryWriter writer = new BinaryWriter(File.OpenWrite(path)))
+                {
+                    writer.Write(new byte[80]);
+                    writer.Write((uint)2);
+                    writer.Write(new byte[50]);
+                }
+
+                Assert.False(ExportHelper.CorrectSTLMesh(path));
+            }
+            finally
+            {
+                File.Delete(path);
+            }
         }
     }
 }
