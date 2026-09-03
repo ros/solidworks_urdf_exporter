@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright (c) 2015 Stephen Brawner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -418,7 +418,8 @@ namespace SW2URDF.URDFExport
                 child.Joint.Type = jointType;
             }
             else if (coordSysName == "Automatically Generate" ||
-                axisName == "Automatically Generate" || jointType == "Automatically Detect")
+                (JointUsesAxis(jointType) && axisName == "Automatically Generate") ||
+                jointType == "Automatically Detect")
             {
                 // We have to estimate the joint if the user specifies automatic for either the
                 // reference coordinate system, the reference axis or the joint type.
@@ -1373,10 +1374,17 @@ namespace SW2URDF.URDFExport
             {
                 link.Joint.CoordinateSystemName = "Automatically Generate";
             }
-            if (!CheckRefAxisExists(link.Joint.AxisName))
+            // Fixed URDF joints do not have an axis. Marking a missing fixed-joint axis
+            // for automatic generation would unnecessarily invoke the DOF estimator.
+            if (JointUsesAxis(link.Joint.Type) && !CheckRefAxisExists(link.Joint.AxisName))
             {
                 link.Joint.AxisName = "Automatically Generate";
             }
+        }
+
+        internal static bool JointUsesAxis(string jointType)
+        {
+            return jointType != "fixed";
         }
 
         private bool CheckRefCoordsysExists(string OriginName)

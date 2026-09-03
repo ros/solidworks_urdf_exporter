@@ -1,4 +1,4 @@
-﻿using SolidWorks.Interop.sldworks;
+using SolidWorks.Interop.sldworks;
 using SW2URDF.URDF;
 using SW2URDF.URDFExport;
 using System.Collections.Generic;
@@ -234,6 +234,20 @@ namespace SW2URDF.Test
             ExportHelper helper = new ExportHelper(SwApp);
             Assert.Equal(new List<string>(expected), helper.GetRefAxes());
             Assert.True(SwApp.CloseAllDocuments(true));
+        }
+    }
+
+    public class TestJointGeometry
+    {
+        [Theory]
+        [InlineData("fixed", false)]
+        [InlineData("revolute", true)]
+        [InlineData("continuous", true)]
+        [InlineData("prismatic", true)]
+        [InlineData("Automatically Detect", true)]
+        public void TestJointUsesAxis(string jointType, bool expected)
+        {
+            Assert.Equal(expected, ExportHelper.JointUsesAxis(jointType));
         }
     }
 }
