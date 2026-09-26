@@ -31,6 +31,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Xml.Serialization;
 
@@ -441,21 +442,32 @@ namespace SW2URDF.URDFExport
 
             CommonSwOperations.ShowComponents(ActiveSWModel, link.SWComponents);
 
-            int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
-                (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
-            SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
-
-            logger.Info("Saving STL to " + windowsMeshFilename);
-            ActiveDoc.Extension.SaveAs(windowsMeshFilename,
-                (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null, ref errors, ref warnings);
-            if (errors + warnings != 0)
+            bool success;
+            try
             {
-                logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors + 
-                    " or warnings " + warnings);
-            }
-            CommonSwOperations.HideComponents(ActiveSWModel, link.SWComponents);
+                int saveOptions = (int)swSaveAsOptions_e.swSaveAsOptions_Silent |
+                    (int)swSaveAsOptions_e.swSaveAsOptions_Copy;
+                SetLinkSpecificSTLPreferences(names["geo"], link.STLQualityFine, ActiveDoc);
 
-            bool success = CorrectSTLMesh(windowsMeshFilename);
+                logger.Info("Saving STL to " + windowsMeshFilename);
+                ActiveDoc.Extension.SaveAs(windowsMeshFilename,
+                    (int)swSaveAsVersion_e.swSaveAsCurrentVersion, saveOptions, null,
+                    ref errors, ref warnings);
+                if (errors + warnings != 0)
+                {
+                    logger.Warn("Exporting STL for link " + link.Name + " failed with error " + errors +
+                        " or warnings " + warnings);
+                }
+
+                // SaveAs may return before SolidWorks releases the output file. Keep the
+                // source geometry visible until the STL can be opened and validated.
+                success = CorrectSTLMesh(windowsMeshFilename);
+            }
+            finally
+            {
+                CommonSwOperations.HideComponents(ActiveSWModel, link.SWComponents);
+            }
+
             if (!success)
             {
                 logger.Warn("There was an issue exporting the STL for " + link.Name + ". It " +
@@ -517,24 +529,95 @@ namespace SW2URDF.URDFExport
             ResetUserPreferences();
         }
 
-        //Writes an empty header to the STL to get rid of the BS that SolidWorks adds to a binary STL file
+        // Waits for SolidWorks to release a binary STL, verifies that its triangle data is
+        // complete, and then clears the SolidWorks-specific header.
         public static bool CorrectSTLMesh(string filename)
         {
-            logger.Info("Removing SW header in STL file");
-            try
+            const int maxAttempts = 150;
+            const int retryDelayMilliseconds = 200;
+            Exception lastError = null;
+
+            logger.Info("Waiting for a complete STL file before removing the SW header");
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                using (FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Write, FileShare.None))
+                try
                 {
-                    byte[] emptyHeader = new byte[80];
-                    fileStream.Write(emptyHeader, 0, emptyHeader.Length);
+                    using (FileStream fileStream = new FileStream(
+                        filename, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        if (!TryGetBinarySTLTriangleCount(fileStream, out uint triangleCount,
+                            out string validationError))
+                        {
+                            logger.Warn("Correcting the STL " + filename + " failed: " +
+                                validationError);
+                            return false;
+                        }
+
+                        fileStream.Position = 0;
+                        fileStream.Write(new byte[80], 0, 80);
+                        fileStream.Flush(true);
+                        logger.Info("Validated STL with " + triangleCount +
+                            " triangles and removed SW header");
+                        return true;
+                    }
+                }
+                catch (IOException e)
+                {
+                    lastError = e;
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    lastError = e;
+                }
+
+                if (attempt < maxAttempts)
+                {
+                    Thread.Sleep(retryDelayMilliseconds);
                 }
             }
-            catch (Exception e)
+
+            logger.Warn("Correcting the STL " + filename + " failed after waiting " +
+                (maxAttempts * retryDelayMilliseconds / 1000) +
+                " seconds for SolidWorks to release it", lastError);
+            return false;
+        }
+
+        private static bool TryGetBinarySTLTriangleCount(FileStream fileStream,
+            out uint triangleCount, out string validationError)
+        {
+            triangleCount = 0;
+            validationError = null;
+
+            if (fileStream.Length < 84)
             {
-                logger.Warn("Correcting the STL " + filename + " failed. This STL may not be " +
-                    "readable by ROS or other CAD programs", e);
+                validationError = "the binary STL is shorter than its 84-byte header";
                 return false;
             }
+
+            fileStream.Position = 80;
+            byte[] triangleCountBytes = new byte[4];
+            if (fileStream.Read(triangleCountBytes, 0, triangleCountBytes.Length) !=
+                triangleCountBytes.Length)
+            {
+                validationError = "the STL triangle count is incomplete";
+                return false;
+            }
+
+            triangleCount = BitConverter.ToUInt32(triangleCountBytes, 0);
+            if (triangleCount == 0)
+            {
+                validationError = "the STL contains no triangles";
+                return false;
+            }
+
+            long expectedLength = 84L + (50L * triangleCount);
+            if (fileStream.Length < expectedLength)
+            {
+                validationError = "the STL triangle data is incomplete; expected at least " +
+                    expectedLength + " bytes but found " + fileStream.Length;
+                return false;
+            }
+
             return true;
         }
 
