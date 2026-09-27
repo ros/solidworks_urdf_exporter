@@ -37,6 +37,7 @@ namespace SW2URDF.URDFExport
         public string RobotsDirectory { get; }
         public string ConfigDirectory { get; }
         public string LaunchDirectory { get; }
+        public string RvizDirectory { get; }
 
         public string WindowsPackageDirectory { get; }
         public string WindowsMeshesDirectory { get; }
@@ -44,8 +45,10 @@ namespace SW2URDF.URDFExport
         public string WindowsRobotsDirectory { get; }
         public string WindowsLaunchDirectory { get; }
         public string WindowsConfigDirectory { get; }
+        public string WindowsRvizDirectory { get; }
         public string WindowsCMakeLists { get; }
         public string WindowsConfigYAML { get; }
+        public string WindowsRvizConfig { get; }
 
         public URDFPackage(string name, string dir)
         {
@@ -56,6 +59,7 @@ namespace SW2URDF.URDFExport
             TexturesDirectory = PackageDirectory + @"textures/";
             LaunchDirectory = PackageDirectory + @"launch/";
             ConfigDirectory = PackageDirectory + @"config/";
+            RvizDirectory = PackageDirectory + @"rviz/";
 
             char last = dir[dir.Length - 1];
             dir = (last == '\\') ? dir : dir + @"\";
@@ -65,8 +69,10 @@ namespace SW2URDF.URDFExport
             WindowsTexturesDirectory = WindowsPackageDirectory + @"textures\";
             WindowsLaunchDirectory = WindowsPackageDirectory + @"launch\";
             WindowsConfigDirectory = WindowsPackageDirectory + @"config\";
+            WindowsRvizDirectory = WindowsPackageDirectory + @"rviz\";
             WindowsCMakeLists = WindowsPackageDirectory + @"CMakeLists.txt";
             WindowsConfigYAML = WindowsConfigDirectory + @"joint_names_" + name + ".yaml";
+            WindowsRvizConfig = WindowsRvizDirectory + @"urdf.rviz";
         }
 
         public void CreateDirectories()
@@ -97,6 +103,10 @@ namespace SW2URDF.URDFExport
             {
                 Directory.CreateDirectory(WindowsConfigDirectory);
             }
+            if (!Directory.Exists(WindowsRvizDirectory))
+            {
+                Directory.CreateDirectory(WindowsRvizDirectory);
+            }
         }
 
         public void CreateCMakeLists()
@@ -108,7 +118,7 @@ namespace SW2URDF.URDFExport
                 file.WriteLine("find_package(catkin REQUIRED)\r\n");
                 file.WriteLine("catkin_package()\r\n");
                 file.WriteLine("find_package(roslaunch)\r\n");
-                file.WriteLine("foreach(dir config launch meshes urdf)");
+                file.WriteLine("foreach(dir config launch meshes urdf rviz)");
                 file.WriteLine("\tinstall(DIRECTORY ${dir}/");
                 file.WriteLine("\t\tDESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})");
                 file.WriteLine("endforeach(dir)");
@@ -128,6 +138,109 @@ namespace SW2URDF.URDFExport
 
                 file.WriteLine("]");
             }
+        }
+
+        // RViz display config referenced by display.launch (-d). {0} is the fixed frame
+        // (the robot's base link); the literal <Fixed Frame> tokens are RViz's own.
+        private const string RvizConfigTemplate =
+@"Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /RobotModel1
+        - /TF1
+      Splitter Ratio: 0.5
+    Tree Height: 565
+Visualization Manager:
+  Class: """"
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 0.1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: """"
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Alpha: 1
+      Marker Scale: 0.3
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Update Interval: 0
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Default Light: true
+    Fixed Frame: {0}
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 1.0
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.5
+      Target Frame: <Fixed Frame>
+      Yaw: 0.785
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 846
+  Width: 1200
+  Hide Left Dock: false
+  Hide Right Dock: false
+";
+
+        public void CreateRvizConfig(string fixedFrame)
+        {
+            File.WriteAllText(WindowsRvizConfig, string.Format(RvizConfigTemplate, fixedFrame));
         }
     }
 }
