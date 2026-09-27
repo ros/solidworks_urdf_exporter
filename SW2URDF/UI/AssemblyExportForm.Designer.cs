@@ -71,6 +71,9 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.radioButton3dxml = new System.Windows.Forms.RadioButton();
             this.radioButtonStl = new System.Windows.Forms.RadioButton();
+            this.groupBoxRosVersion = new System.Windows.Forms.GroupBox();
+            this.radioButtonRos1 = new System.Windows.Forms.RadioButton();
+            this.radioButtonRos2 = new System.Windows.Forms.RadioButton();
             this.radioButtonFine = new System.Windows.Forms.RadioButton();
             this.radioButtonCourse = new System.Windows.Forms.RadioButton();
             this.label10 = new System.Windows.Forms.Label();
@@ -187,6 +190,7 @@
             this.groupBox5.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.groupBoxRosVersion.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelLinkProperties
@@ -550,6 +554,7 @@
             // 
             this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(this.groupBox1);
+            this.groupBox4.Controls.Add(this.groupBoxRosVersion);
             this.groupBox4.Controls.Add(this.radioButtonFine);
             this.groupBox4.Controls.Add(this.radioButtonCourse);
             this.groupBox4.Controls.Add(this.label10);
@@ -620,9 +625,42 @@
             this.radioButtonStl.TabStop = true;
             this.radioButtonStl.Text = "STL (grayscale)";
             this.radioButtonStl.UseVisualStyleBackColor = true;
-            // 
+            //
+            // groupBoxRosVersion
+            //
+            this.groupBoxRosVersion.Controls.Add(this.radioButtonRos2);
+            this.groupBoxRosVersion.Controls.Add(this.radioButtonRos1);
+            this.groupBoxRosVersion.Location = new System.Drawing.Point(315, 160);
+            this.groupBoxRosVersion.Name = "groupBoxRosVersion";
+            this.groupBoxRosVersion.Size = new System.Drawing.Size(122, 70);
+            this.groupBoxRosVersion.TabIndex = 75;
+            this.groupBoxRosVersion.TabStop = false;
+            this.groupBoxRosVersion.Text = "ROS Version";
+            //
+            // radioButtonRos1
+            //
+            this.radioButtonRos1.AutoSize = true;
+            this.radioButtonRos1.Checked = true;
+            this.radioButtonRos1.Location = new System.Drawing.Point(11, 18);
+            this.radioButtonRos1.Name = "radioButtonRos1";
+            this.radioButtonRos1.Size = new System.Drawing.Size(53, 16);
+            this.radioButtonRos1.TabIndex = 0;
+            this.radioButtonRos1.TabStop = true;
+            this.radioButtonRos1.Text = "ROS 1";
+            this.radioButtonRos1.UseVisualStyleBackColor = true;
+            //
+            // radioButtonRos2
+            //
+            this.radioButtonRos2.AutoSize = true;
+            this.radioButtonRos2.Location = new System.Drawing.Point(11, 44);
+            this.radioButtonRos2.Name = "radioButtonRos2";
+            this.radioButtonRos2.Size = new System.Drawing.Size(53, 16);
+            this.radioButtonRos2.TabIndex = 1;
+            this.radioButtonRos2.Text = "ROS 2";
+            this.radioButtonRos2.UseVisualStyleBackColor = true;
+            //
             // radioButtonFine
-            // 
+            //
             this.radioButtonFine.AutoSize = true;
             this.radioButtonFine.Location = new System.Drawing.Point(101, 171);
             this.radioButtonFine.Name = "radioButtonFine";
@@ -1714,6 +1752,8 @@
             this.groupBox4.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBoxRosVersion.ResumeLayout(false);
+            this.groupBoxRosVersion.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1875,5 +1915,8 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton radioButton3dxml;
         private System.Windows.Forms.RadioButton radioButtonStl;
+        private System.Windows.Forms.GroupBox groupBoxRosVersion;
+        private System.Windows.Forms.RadioButton radioButtonRos1;
+        private System.Windows.Forms.RadioButton radioButtonRos2;
     }
 }
