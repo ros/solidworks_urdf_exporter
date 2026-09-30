@@ -165,7 +165,7 @@ namespace SW2URDF.URDFExport
                 {
                     ser.WriteObject(stream, link);
                     stream.Flush();
-                    data = Encoding.ASCII.GetString(stream.GetBuffer(), 0, (int)stream.Position);
+                    data = Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Position);
                 }
                 catch (SerializationException e)
                 {
@@ -185,7 +185,7 @@ namespace SW2URDF.URDFExport
             LinkNode baseNode = null;
             if (!string.IsNullOrWhiteSpace(data))
             {
-                using (MemoryStream stream = new MemoryStream(Encoding.ASCII.GetBytes(data)))
+                using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
                 {
                     DataContractSerializer ser =
                         new DataContractSerializer(typeof(Link));
