@@ -586,6 +586,53 @@ namespace SW2URDF.URDFExport
             }
         }
 
+        // Materializes a top-level reference coordinate system at the global pose of a
+        // (possibly nested) coordinate system, and returns its name. The STL export
+        // coordinate-system preference only resolves coordinate systems at the top level of the
+        // document being saved, so a system defined inside a sub-assembly cannot be used to
+        // localize the mesh and SOLIDWORKS falls back to the global frame.
+        // The global transform is taken from GetCoordinateSystemTransform -- the same one the
+        // joint origin uses, which composes the owning component's Transform2 and is therefore
+        // correct at any nesting depth -- so the generated top-level system coincides with the
+        // selected one and the mesh is baked at the link origin, exactly as the auto-generated
+        // Origin_<joint> systems already are. Returns null if the transform cannot be resolved.
+        private string CreateGlobalMeshCoordinateSystem(Link link, string coordsysName)
+        {
+            MathTransform globalTransform = GetCoordinateSystemTransform(coordsysName);
+            if (globalTransform == null)
+            {
+                logger.Warn("Could not resolve a global transform for '" + coordsysName +
+                    "'; mesh for link " + link.Name + " will be exported in the global frame");
+                return null;
+            }
+
+            if (referenceSketchName == null)
+            {
+                referenceSketchName = Setup3DSketch();
+            }
+
+            Joint meshFrame = new Joint();
+            meshFrame.Origin.SetXYZ(MathOps.GetXYZ(globalTransform));
+            meshFrame.Origin.SetRPY(MathOps.GetRPY(globalTransform));
+
+            // Pick a unique top-level name (the model may already hold one from a prior export,
+            // mirroring how auto-generated Origin_<joint> names are de-duplicated).
+            string baseName = "Mesh_origin_" + link.Name.Replace('/', '_');
+            string name = baseName;
+            int i = 2;
+            ActiveSWModel.ClearSelection2(true);
+            while (ActiveSWModel.Extension.SelectByID2(name, "COORDSYS", 0, 0, 0, false, 0, null, 0))
+            {
+                ActiveSWModel.ClearSelection2(true);
+                name = baseName + i.ToString();
+                i++;
+            }
+
+            meshFrame.CoordinateSystemName = name;
+            CreateRefOrigin(meshFrame);
+            return name;
+        }
+
         // Creates a Reference Axis to be used to calculate the joint axis
         private void CreateRefAxis(Joint Joint)
         {
