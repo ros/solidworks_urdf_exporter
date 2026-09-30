@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 25f2e4c  Build Version: 1.6.9650.27696
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="4_WHEELER_NESTED_description">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0141165384615385 1.92116548051542E-18 0.0069190520362904"
+        rpy="0 0 0" />
+      <mass
+        value="0.563365165980808" />
+      <inertia
+        ixx="0.00116991160584325"
+        ixy="1.08541480873037E-19"
+        ixz="-1.21271091266427E-20"
+        iyy="0.000379959750479481"
+        iyz="2.37730438953325E-20"
+        izz="0.00131589792050722" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="front_right_link">
+    <inertial>
+      <origin
+        xyz="0.0160973084886128 -1.21430643318376E-17 -2.08166817117217E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.0948368282302419" />
+      <inertia
+        ixx="4.90180492807281E-05"
+        ixy="1.59355527597186E-21"
+        ixz="-5.57899635461016E-22"
+        iyy="2.67081223942584E-05"
+        iyz="1.35119091414065E-21"
+        izz="2.67081223942584E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/front_right_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/front_right_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_right_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0516165384615384 -0.05 -0.00997411961288419"
+      rpy="1.5707963267949 0 3.14159265358979" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_right_link" />
+    <axis
+      xyz="1 0 0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="back_right_link">
+    <inertial>
+      <origin
+        xyz="0.0160973084886128 1.21430643318376E-17 -6.93889390390723E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.0948368282302419" />
+      <inertia
+        ixx="4.90180492807281E-05"
+        ixy="1.02975700590794E-22"
+        ixz="2.17716963245722E-22"
+        iyy="2.67081223942584E-05"
+        iyz="-2.11467000306239E-21"
+        izz="2.67081223942584E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/back_right_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/back_right_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_right_joint"
+    type="continuous">
+    <origin
+      xyz="-0.0516165384615384 0.05 -0.00997411961288421"
+      rpy="1.5707963267949 0 3.14159265358979" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_right_link" />
+    <axis
+      xyz="1 0 0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="front_left_link">
+    <inertial>
+      <origin
+        xyz="0.0160973084886128 5.20417042793042E-18 -2.08166817117217E-17"
+        rpy="0 0 0" />
+      <mass
+        value="0.0948368282302419" />
+      <inertia
+        ixx="4.90180492807281E-05"
+        ixy="7.5311181916667E-23"
+        ixz="1.07045414697907E-22"
+        iyy="2.67081223942584E-05"
+        iyz="2.12254491328202E-22"
+        izz="2.67081223942584E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/front_left_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/front_left_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_left_joint"
+    type="continuous">
+    <origin
+      xyz="0.0233834615384615 -0.05 -0.0099741196128842"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_left_link" />
+    <axis
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="back_left_link">
+    <inertial>
+      <origin
+        xyz="0.0160973084886128 6.93889390390723E-18 6.93889390390723E-18"
+        rpy="0 0 0" />
+      <mass
+        value="0.0948368282302419" />
+      <inertia
+        ixx="4.90180492807281E-05"
+        ixy="-5.66724053795126E-22"
+        ixz="-4.24781852640203E-22"
+        iyy="2.67081223942584E-05"
+        iyz="5.0340698813362E-22"
+        izz="2.67081223942584E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/back_left_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://4_WHEELER_NESTED_description/meshes/back_left_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="back_left_joint"
+    type="continuous">
+    <origin
+      xyz="0.0233834615384615 0.05 -0.00997411961288421"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="back_left_link" />
+    <axis
+      xyz="-1 0 0" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+</robot>
