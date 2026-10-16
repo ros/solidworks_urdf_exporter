@@ -238,77 +238,142 @@ namespace SW2URDF.URDFExport
             return link;
         }
 
-        /// <summary>
-        /// Gets the Moment of Inertia of specific component bodies with respect to the coordinate system.
-        /// This reuses some code with other methods because creating the mass property has to happen every time
-        /// </summary>
-        /// <param name="bodies">Component Bodies with which to get the MOI</param>
-        /// <param name="coordinateSystemTransform">The coordinate system to take the MOI with respect to</param>
-        /// <returns>Moment of Inertia array</returns>
-        private double[] GetComponentsMomentOfInertia(List<Body2> bodies, MathTransform coordinateSystemTransform)
+        // Holds the rigid-body mass properties of one leaf part, read directly from its own
+        // part document so that the numbers match the SolidWorks "Mass Properties" dialog.
+        private class LeafMass
         {
-            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-            swMass.SetCoordinateSystem(coordinateSystemTransform);
-            bool bRet = swMass.AddBodies(bodies.ToArray());
-            if (!bRet)
-            {
-                throw new Exception("Failed to add bodies to swMass");
-            }
-
-            return (double[])swMass.GetMomentOfInertia(
-            (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+            public double Mass;
+            public double[] CenterOfMassPartFrame;
+            public Matrix<double> InertiaAboutComPartFrame;
+            public Matrix<double> PartToAssemblyTransform;
+            public Vector<double> CenterOfMassAssemblyFrame;
+            public Matrix<double> AssemblyRotation;
         }
 
-        /// <summary>
-        /// Gets the components mass. This reuses some code with other methods because creating the
-        /// mass property has to happen every time
-        /// </summary>
-        /// <param name="bodies">Component Bodies with which to get the mass</param>
-        /// <returns>Mass value of component bodies</returns>
-        private double GetCompomentsMass(List<Body2> bodies)
+        // Recursively collects leaf components (parts) under a link's top-level components,
+        // each with its world (top-assembly-space) transform. Subassemblies are recursed
+        // into; only parts contribute mass (avoids double counting).
+        private void CollectLeafMasses(List<Component2> components, Matrix<double> parentWorld, List<LeafMass> sink)
         {
-            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-            bool bRet = swMass.AddBodies(bodies.ToArray());
-            if (!bRet)
+            foreach (Component2 comp in components)
             {
-                throw new Exception("Failed to add bodies to swMass");
+                if (comp == null) { continue; }
+
+                Matrix<double> local = MathOps.GetTransformation(comp.Transform2);
+                Matrix<double> world = parentWorld * local;
+
+                MassProperty mp = null;
+                try
+                {
+                    ModelDoc2 partDoc = comp.GetModelDoc2();
+                    mp = partDoc.Extension.CreateMassProperty();
+                }
+                catch (Exception ex)
+                {
+                    logger.Warn("Failed to read mass properties for '" + comp.Name2 + "': " + ex.Message);
+                    continue;
+                }
+
+                double mass = mp.Mass;
+                double[] com = mp.CenterOfMass;
+                double[] moment = mp.GetMomentOfInertia(
+                    (int)swMomentsOfInertiaReferenceFrame_e.swMomentsOfInertiaReferenceFrame_CenterOfMass);
+
+                // SolidWorks negative-tensor convention == URDF convention (no sign flip).
+                Matrix<double> J = MathOps.InertiaMomentToMatrix(moment);
+
+                sink.Add(new LeafMass
+                {
+                    Mass = mass,
+                    ComPart = com,
+                    JPart = J,
+                    World = world
+                });
+
+                object[] children = (object[])comp.GetChildren();
+                if (children != null && children.Length > 0)
+                {
+                    List<Component2> childComps = new List<Component2>();
+                    foreach (object child in children)
+                    {
+                        childComps.Add((Component2)child);
+                    }
+                    CollectLeafMasses(childComps, world, sink);
+                }
             }
-            return swMass.Mass;
         }
 
-        /// <summary>
-        /// Gets the Center of Mass with respect to the coordinate system. This reuses some code
-        /// with other similar methods because creating the mass property has to happen every time.
-        /// </summary>
-        /// <param name="bodies">Component bodies with which to get the mass</param>
-        /// <param name="coordinateSystemTransform">Coordinate system take get the centor of mess with respect to</param>
-        /// <returns>3D double array of center of mass</returns>
-        private double[] GetCompomentsCenterOfMass(List<Body2> bodies, MathTransform coordinateSystemTransform)
-        {
-            MassProperty swMass = ActiveSWModel.Extension.CreateMassProperty();
-            swMass.SetCoordinateSystem(coordinateSystemTransform);
-            bool bRet = swMass.AddBodies(bodies.ToArray());
-            if (!bRet)
-            {
-                throw new Exception("Failed to add bodies to swMass");
-            }
-            return swMass.CenterOfMass;
-        }
-
+        // Computes mass, center of mass and inertia for a link by combining its leaf parts
+        // with the parallel-axis theorem, then expressing the result in the link (joint)
+        // coordinate system. Because each part's numbers come from its own part document,
+        // the exported values agree with the SolidWorks Mass Properties dialog.
         private void ComputeInertialProperties(Link link)
         {
-            // Get the SolidWorks MathTransform that corresponds to the child coordinate system
+            List<LeafMass> leaves = new List<LeafMass>();
+            CollectLeafMasses(link.SWComponents, DenseMatrix.CreateIdentity(4), leaves);
+
+            if (leaves.Count == 0)
+            {
+                logger.Warn("No leaf parts found for link '" + link.Name +
+                    "'; leaving inertial values unchanged. Open lightweight components fully before exporting.");
+                return;
+            }
+
+            // 1) Each part's COM in assembly (world) space; accumulate total mass and COM.
+            double totalMass = 0.0;
+            Vector<double> comWorld = DenseVector.Create(3, 0.0);
+            foreach (LeafMass leaf in leaves)
+            {
+                Vector<double> cPart = DenseVector.OfArray(
+                    new double[] { leaf.CenterOfMassPartFrame[0], leaf.CenterOfMassPartFrame[1], leaf.CenterOfMassPartFrame[2], 1.0 });
+                Vector<double> cWorld = leaf.PartToAssemblyTransform * cPart;
+                leaf.CenterOfMassAssemblyFrame = cWorld.SubVector(0, 3);
+                leaf.AssemblyRotation = leaf.PartToAssemblyTransform.SubMatrix(0, 3, 0, 3);
+
+                totalMass += leaf.Mass;
+                comWorld += leaf.Mass * leaf.CenterOfMassAssemblyFrame;
+            }
+            comWorld = comWorld / totalMass;
+
+            // 2) Combined inertia about the combined COM, world axes (parallel-axis theorem).
+            Matrix<double> JWorld = DenseMatrix.CreateIdentity(3) * 0.0;
+            foreach (LeafMass leaf in leaves)
+            {
+                // Rotate this part's tensor into world axes.
+                Matrix<double> JPartRotated = leaf.AssemblyRotation * leaf.InertiaAboutComPartFrame * leaf.AssemblyRotation.Transpose();
+
+                // Shift from this part's COM to the combined COM: m*(|d|^2 I - d d^T).
+                Vector<double> d = leaf.CenterOfMassAssemblyFrame - comWorld;
+                double d2 = d.DotProduct(d);
+                Matrix<double> ddT = d.OuterProduct(d);
+
+                JWorld += JPartRotated + leaf.Mass * (d2 * DenseMatrix.CreateIdentity(3) - ddT);
+            }
+
+            // 3) Express combined COM and inertia in the link (joint) coordinate system.
             MathTransform jointTransform = GetCoordinateSystemTransform(link.Joint.CoordinateSystemName);
-            List<Body2> bodies = GetBodies(link.SWComponents);
+            Matrix<double> TLink = (jointTransform == null)
+                ? DenseMatrix.CreateIdentity(4)
+                : MathOps.GetTransformation(jointTransform);
+            Matrix<double> RLink = TLink.SubMatrix(0, 3, 0, 3);
 
-            double[] moment = GetComponentsMomentOfInertia(bodies, jointTransform);
-            link.Inertial.Inertia.SetMomentMatrix(moment);
+            Vector<double> comLink = TLink.Inverse() * DenseVector.OfArray(
+                new double[] { comWorld[0], comWorld[1], comWorld[2], 1.0 });
+            Matrix<double> JLink = RLink.Transpose() * JWorld * RLink;
 
-            link.Inertial.Mass.Value = GetCompomentsMass(bodies);
+            // 4) Write to URDF: inertial origin = COM in link frame; inertia about COM in link axes.
+            link.Inertial.Mass.Value = totalMass;
+            link.Inertial.Origin.SetXYZ(MathOps.Threshold(
+                new double[] { comLink[0], comLink[1], comLink[2] }, 1e-6));
+            link.Inertial.Origin.SetRPY(new double[] { 0, 0, 0 });
 
-            double[] centerOfMass = GetCompomentsCenterOfMass(bodies, jointTransform);
-            link.Inertial.Origin.SetXYZ(centerOfMass);
-            link.Inertial.Origin.SetRPY(new double[3] { 0, 0, 0 });
+            double[] moment9 = new double[]
+            {
+                JLink[0, 0], JLink[0, 1], JLink[0, 2],
+                JLink[1, 0], JLink[1, 1], JLink[1, 2],
+                JLink[2, 0], JLink[2, 1], JLink[2, 2]
+            };
+            link.Inertial.Inertia.SetMomentMatrix(moment9);
         }
 
         private static void ComputeVisualCollisionProperties(Link link)
@@ -1255,14 +1320,6 @@ namespace SW2URDF.URDFExport
                 for (int i = 0; i < swMate.GetMateEntityCount(); i++)
                 {
                     MateEntity2 entity = swMate.MateEntity(i);
-                    
-                    // Check if entity.ReferenceComponent is null and skip if so
-                    if (entity.ReferenceComponent == null)
-                    {
-                        logger.Warn("Mate entity has no reference component");
-                        continue;
-                    }
-                    
                     entities.Add(entity.ReferenceComponent);
                     logger.Info("Adding component entity: " + entity.ReferenceComponent.Name2);
 
@@ -1424,11 +1481,5 @@ namespace SW2URDF.URDFExport
         }
 
         #endregion Joint methods
-    }
-
-    public enum MeshExportFormat
-    {
-        STL,
-        THREEDXML
     }
 }

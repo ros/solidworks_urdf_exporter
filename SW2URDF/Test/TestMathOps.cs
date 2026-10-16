@@ -445,5 +445,40 @@ namespace SW2URDF.Test
                 Assert.Equal(expected[i], result[i]);
             }
         }
+
+        [Fact]
+        public void TestInertiaMomentToMatrix()
+        {
+            // SolidWorks moment array: [Ixx, Ixy, Ixz, Iyx, Iyy, Iyz, Izx, Izy, Izz]
+            double[] moment = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+            Matrix<double> J = MathOps.InertiaMomentToMatrix(moment);
+
+            Assert.Equal(1.0, J[0, 0]);
+            Assert.Equal(2.0, J[0, 1]);
+            Assert.Equal(3.0, J[0, 2]);
+            Assert.Equal(4.0, J[1, 0]);
+            Assert.Equal(5.0, J[1, 1]);
+            Assert.Equal(6.0, J[1, 2]);
+            Assert.Equal(7.0, J[2, 0]);
+            Assert.Equal(8.0, J[2, 1]);
+            Assert.Equal(9.0, J[2, 2]);
+        }
+
+        [Theory]
+        [InlineData(new double[] { 1, 0, 0 }, new double[] { 1, 0, 0 })]
+        [InlineData(new double[] { -1, 0, 0 }, new double[] { 1, 0, 0 })]
+        [InlineData(new double[] { 0, 1, 0 }, new double[] { 0, 1, 0 })]
+        [InlineData(new double[] { 0, -1, 0 }, new double[] { 0, 1, 0 })]
+        [InlineData(new double[] { 0, 0, 1 }, new double[] { 0, 0, 1 })]
+        [InlineData(new double[] { 0, 0, -1 }, new double[] { 0, 0, 1 })]
+        [InlineData(new double[] { -0.5, 0.5, 0 }, new double[] { 0.5, -0.5, 0 })]
+        public void TestNormalizeAxisPositiveDirection(double[] input, double[] expected)
+        {
+            MathOps.NormalizeAxisPositiveDirection(input);
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.Equal(expected[i], input[i], 6);
+            }
+        }
     }
 }

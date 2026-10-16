@@ -290,5 +290,17 @@ namespace SW2URDF.Utilities
             }
             return result;
         }
+
+        // Converts a 9-element moment-of-inertia array [Ixx,Ixy,Ixz,Iyx,Iyy,Iyz,Izx,Izy,Izz]
+        // (as returned by SolidWorks) into a 3x3 row-major matrix.
+        public static Matrix<double> InertiaMomentToMatrix(double[] moment)
+        {
+            return DenseMatrix.OfArray(new double[,]
+            {
+                { moment[0], moment[1], moment[2] },
+                { moment[3], moment[4], moment[5] },
+                { moment[6], moment[7], moment[8] }
+            });
+        }
     }
 }
