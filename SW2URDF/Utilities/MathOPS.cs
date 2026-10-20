@@ -290,5 +290,34 @@ namespace SW2URDF.Utilities
             }
             return result;
         }
+
+        // Returns a copy of the axis vector with the first non-zero component positive.
+        // This turns [-1,0,0]/[0,-1,0]/[0,0,-1] into [1,0,0]/[0,1,0]/[0,0,1].
+        public static double[] NormalizeAxisPositiveDirection(double[] axis, double tolerance = 1e-6)
+        {
+            double[] result = (double[])axis.Clone();
+            if (ShouldFlipSign(result, tolerance))
+            {
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = -result[i];
+                }
+            }
+            return result;
+        }
+
+        // Returns true if the first non-zero component of the vector is negative,
+        // meaning the whole vector should be flipped to prefer a positive direction.
+        private static bool ShouldFlipSign(double[] vector, double tolerance)
+        {
+            for (int i = 0; i < vector.Length; i++)
+            {
+                if (Math.Abs(vector[i]) > tolerance)
+                {
+                    return vector[i] < 0;
+                }
+            }
+            return false;
+        }
     }
 }

@@ -445,5 +445,30 @@ namespace SW2URDF.Test
                 Assert.Equal(expected[i], result[i]);
             }
         }
+
+        [Theory]
+        [InlineData(new double[] { 1, 0, 0 }, new double[] { 1, 0, 0 })]
+        [InlineData(new double[] { -1, 0, 0 }, new double[] { 1, 0, 0 })]
+        [InlineData(new double[] { 0, 1, 0 }, new double[] { 0, 1, 0 })]
+        [InlineData(new double[] { 0, -1, 0 }, new double[] { 0, 1, 0 })]
+        [InlineData(new double[] { 0, 0, 1 }, new double[] { 0, 0, 1 })]
+        [InlineData(new double[] { 0, 0, -1 }, new double[] { 0, 0, 1 })]
+        [InlineData(new double[] { -0.5, 0.5, 0 }, new double[] { 0.5, -0.5, 0 })]
+        public void TestNormalizeAxisPositiveDirection(double[] input, double[] expected)
+        {
+            double[] result = MathOps.NormalizeAxisPositiveDirection(input);
+            for (int i = 0; i < 3; i++)
+            {
+                Assert.Equal(expected[i], result[i], 6);
+            }
+        }
+
+        [Fact]
+        public void TestNormalizeAxisPositiveDirection_DoesNotMutateInput()
+        {
+            double[] input = { -1, 0, 0 };
+            MathOps.NormalizeAxisPositiveDirection(input);
+            Assert.Equal(-1.0, input[0]);
+        }
     }
 }

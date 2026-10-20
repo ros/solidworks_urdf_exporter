@@ -620,7 +620,10 @@ namespace SW2URDF.URDFExport
                 ParentJointGlobalTransform.Inverse() * ChildJointGlobalTransform;
             
             //Localize the axis to the Link's coordinate system.
-            Joint.Axis.SetXYZ(LocalizeAxis(Joint.Axis.GetXYZ(), Joint.CoordinateSystemName));
+            double[] localizedAxis = LocalizeAxis(Joint.Axis.GetXYZ(), Joint.CoordinateSystemName);
+
+            double[] normalizedAxis = MathOps.NormalizeAxisPositiveDirection(localizedAxis);
+            Joint.Axis.SetXYZ(normalizedAxis);
 
             // Get the array values and threshold them so small values are set to 0.
             Joint.Origin.SetXYZ(MathOps.GetXYZ(ChildJointOrigin));
@@ -1060,6 +1063,8 @@ namespace SW2URDF.URDFExport
 
                 // Transform to proper coordinates
                 axisVector = GlobalAxis(axisVector, ComponentTransform);
+
+                axisVector = MathOps.NormalizeAxisPositiveDirection(axisVector);
             }
 
             return axisVector;
