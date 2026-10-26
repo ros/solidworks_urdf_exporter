@@ -401,7 +401,9 @@ namespace SW2URDF.URDFExport
                 {
                     logger.Info("Localizing Link : " + coordsysName);
                     Matrix<double> GlobalTransform = MathOps.GetTransformation(coordSysTransform);
-                    LocalizeLink(link, GlobalTransform);
+                    // Assembly inertial properties are already expressed in the link frame.
+                    // Only the 3dxml geometry needs this placement correction.
+                    LocalizeMeshOrigins(link, GlobalTransform);
                 }
                 else
                 {
