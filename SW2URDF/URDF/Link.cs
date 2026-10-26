@@ -119,15 +119,15 @@ namespace SW2URDF.URDF
             writer.WriteStartElement("link");
             NameAttribute.WriteURDF(writer);
 
-            if (Inertial != null)
+            if (!isFixedFrame && Inertial != null)
             {
                 Inertial.WriteURDF(writer);
             }
-            if (Visual != null)
+            if (!isFixedFrame && Visual != null)
             {
                 Visual.WriteURDF(writer);
             }
-            if (Collision != null)
+            if (!isFixedFrame && Collision != null)
             {
                 Collision.WriteURDF(writer);
             }

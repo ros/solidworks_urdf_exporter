@@ -274,10 +274,13 @@ namespace SW2URDF.URDFExport
             foreach (Link child in link.Children)
             {
                 count += 1;
-                if (!child.isFixedFrame)
-                {
-                    ExportFiles(child, package, count, exportSTL, meshFormat);
-                }
+                ExportFiles(child, package, count, exportSTL, meshFormat);
+            }
+
+            // A reference frame has no mesh, but its descendants may have geometry.
+            if (link.isFixedFrame)
+            {
+                return;
             }
 
             // Copy the texture file (if it was specified) to the textures directory

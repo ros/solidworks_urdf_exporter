@@ -192,29 +192,13 @@ namespace SW2URDF.URDFExport
             return null;
         }
 
-        private void CheckNodeInertialComplete(LinkNode node)
-        {
-            if (node.Nodes.Count > 0 && node.Link.SWComponents.Count == 0)
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        Links with children cannot be empty. Select its associated components\r\n";
-            }
-        }
-
-        private void CheckNodeVisualComplete(LinkNode node)
-        {
-            if (node.Nodes.Count > 0 && node.Link.SWComponents.Count == 0)
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        Links with children cannot be empty. Select its associated components\r\n";
-            }
-        }
-
         private void CheckNodeJointComplete(LinkNode node)
         {
-            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.CoordinateSystemName == "Automatically Generate")
+            // The base origin can be generated without geometry. Other empty links
+            // are fixed reference frames and only need an explicit coordinate system.
+            if (!node.IsBaseNode && node.Link.SWComponents.Count == 0 &&
+                (String.IsNullOrWhiteSpace(node.Link.Joint.CoordinateSystemName) ||
+                 node.Link.Joint.CoordinateSystemName == "Automatically Generate"))
             {
                 node.IsIncomplete = true;
                 node.WhyIncomplete +=
@@ -222,21 +206,6 @@ namespace SW2URDF.URDFExport
                     "        without components. Either select an origin or at least one component.\r\n";
             }
 
-            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.AxisName == "Automatically Generate")
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        The reference axis cannot be automatically generated\r\n" +
-                    "        without components. Either select an axis or at least one component.";
-            }
-
-            if (node.Link.SWComponents.Count == 0 && node.Link.Joint.Type == "Automatically Generate")
-            {
-                node.IsIncomplete = true;
-                node.WhyIncomplete +=
-                    "        The joint type cannot be automatically detected\r\n" +
-                    "        without components. Either select an joint type or at least one component.";
-            }
         }
 
         //Sets the node's isIncomplete flag if the node has key items that need to be completed
@@ -255,8 +224,6 @@ namespace SW2URDF.URDFExport
                 node.WhyIncomplete += "        Joint name is empty. Fill in a unique joint name\r\n";
             }
 
-            CheckNodeInertialComplete(node);
-            CheckNodeVisualComplete(node);
             CheckNodeJointComplete(node);
         }
 
