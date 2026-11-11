@@ -351,6 +351,10 @@ namespace SW2URDF.UI
         {
             Font fontRegular = new Font(treeViewJointTree.Font, FontStyle.Regular);
             Font fontBold = new Font(treeViewJointTree.Font, FontStyle.Bold);
+            if (e.Node == null)
+            {
+                return;
+            }
             if (previouslySelectedNode != null)
             {
                 SaveLinkDataFromPropertyBoxes(previouslySelectedNode.Link);
@@ -423,6 +427,10 @@ namespace SW2URDF.UI
         {
             Font fontRegular = new Font(treeViewJointTree.Font, FontStyle.Regular);
             Font fontBold = new Font(treeViewJointTree.Font, FontStyle.Bold);
+            if (e.Node == null)
+            {
+                return;
+            }
             if (previouslySelectedNode != null && !previouslySelectedNode.IsBaseNode)
             {
                 SaveJointDataFromPropertyBoxes(previouslySelectedNode.Link.Joint);
