@@ -325,6 +325,8 @@
     <Compile Include="Test\SWTestFixture.cs" />
     <Compile Include="Test\TestCommon.cs" />
     <Compile Include="Test\TestCSVImportExport.cs" />
+    <Compile Include="Test\TestTreeKeyActions.cs" />
+    <Compile Include="URDFExport\TreeKeyActions.cs" />
     <Compile Include="Test\TestExportHelper.cs" />
     <Compile Include="Test\TestLogger.cs" />
     <Compile Include="Test\TestMathOps.cs" />
